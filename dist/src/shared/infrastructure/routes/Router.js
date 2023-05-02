@@ -24,3 +24,7 @@ const Router = (apiRouter, errorMiddleware) => {
     return router;
 };
 exports.Router = Router;
+const router_1 = __importDefault(require("../../../api/infrastructure/router"));
+const router = (0, express_1.Router)();
+router.use('/api', router_1.default);
+exports.default = router;

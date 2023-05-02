@@ -22,3 +22,11 @@ const apiRouter = () => {
     return apiRouter;
 };
 exports.apiRouter = apiRouter;
+const apiRouterx = (0, express_1.Router)();
+apiRouterx.use('/auth', auth_1.default);
+apiRouterx.use('/auth/admin', authAdmin_1.default);
+apiRouterx.use('/customer', customer_1.default);
+apiRouterx.use('/services', services_1.default);
+apiRouterx.use('/type-car', typeCar_1.default);
+apiRouterx.use('/type-customer', typeCustomer_1.default);
+exports.default = exports.apiRouter;

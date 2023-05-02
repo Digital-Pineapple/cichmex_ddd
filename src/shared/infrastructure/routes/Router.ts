@@ -28,3 +28,10 @@ export const Router = (apiRouter: ExpressRouter, errorMiddleware: ErrorMiddlewar
     return router;
 
 }
+
+import apiRouter from '../../../api/infrastructure/router';
+
+const router = ExpressRouter();
+router.use('/api', apiRouter);
+
+export default router;

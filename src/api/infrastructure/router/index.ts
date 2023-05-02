@@ -21,3 +21,13 @@ export const apiRouter = (): Router => {
 
     return apiRouter;
 }
+const apiRouterx = Router();
+
+apiRouterx.use('/auth', authRouter);
+apiRouterx.use('/auth/admin', authAdminRouter);
+apiRouterx.use('/customer', customerRouter);
+apiRouterx.use('/services', servicesRouter);
+apiRouterx.use('/type-car', typeCarRouter)
+apiRouterx.use('/type-customer', typeCustomer)
+
+export default apiRouter

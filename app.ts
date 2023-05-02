@@ -12,5 +12,4 @@ server
     .then(async () => {
         await container.invoke().resolve('db')
         console.log(`Env: ${config.NODE_ENV}`);
-    })
-
+    });
