@@ -25,8 +25,15 @@ export class AuthUseCase extends Authentication {
 
         return await this.generateJWT(customer);
     }
+    async findUser(email: string): Promise<ErrorHandler | IAuth> {
+        let customer = await this.authRepository.findOneItem({ email }, );
+        return await (customer);
+    }
+  
 
     async signUp(body: any): Promise<IAuth | ErrorHandler | null> {
+        console.log(body);
+        
         let customer = await this.authRepository.findOneItem({ email: body.email });
         if (customer) return new ErrorHandler('El usuario ya ha sido registrado',400);
 

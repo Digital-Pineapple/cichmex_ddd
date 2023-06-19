@@ -64,7 +64,7 @@ const CustomerSchema = new mongoose_1.Schema({
     },
     type_customer: {
         type: String,
-        enum: ['0', '1'],
+        enum: ['0', '1', '2'],
         default: '0',
     },
     profile_image: {
@@ -84,6 +84,10 @@ const CustomerSchema = new mongoose_1.Schema({
     status: {
         type: Boolean,
         default: true,
+    },
+    accountVerify: {
+        type: Boolean,
+        default: false,
     },
     // email_verified: {
     //     type: Boolean,
@@ -108,7 +112,7 @@ const CustomerSchema = new mongoose_1.Schema({
     criminal_record: {
         type: String,
         required: false,
-    }
+    },
 }, {
     timestamps: true,
     versionKey: false,

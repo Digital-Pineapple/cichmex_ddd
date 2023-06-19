@@ -29,8 +29,15 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             return yield this.generateJWT(customer);
         });
     }
+    findUser(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let customer = yield this.authRepository.findOneItem({ email });
+            return yield (customer);
+        });
+    }
     signUp(body) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(body);
             let customer = yield this.authRepository.findOneItem({ email: body.email });
             if (customer)
                 return new ErrorHandler_1.ErrorHandler('El usuario ya ha sido registrado', 400);

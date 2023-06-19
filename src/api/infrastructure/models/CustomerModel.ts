@@ -55,7 +55,7 @@ const CustomerSchema = new Schema<CustomerEntity> ({
     },
     type_customer: {
         type    :   String,
-        enum    :   ['0', '1'],
+        enum    :   ['0', '1','2'],
         default:    '0',
     },
     profile_image: {
@@ -75,6 +75,10 @@ const CustomerSchema = new Schema<CustomerEntity> ({
     status: {
         type    : Boolean,
         default : true,
+    },
+    accountVerify: {
+        type    : Boolean,
+        default : false,
     },
     // email_verified: {
     //     type: Boolean,
@@ -99,7 +103,8 @@ const CustomerSchema = new Schema<CustomerEntity> ({
     criminal_record: {
         type    : String,
         required: false,
-    }
+    },
+    
 },
     {
         timestamps: true,

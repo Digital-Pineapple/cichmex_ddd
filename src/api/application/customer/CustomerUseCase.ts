@@ -17,13 +17,11 @@ export class CustomerUseCase {
     }
 
     public async createNewCustomer(fullname: String,email: String,pass: Buffer): Promise<CustomerEntity | ErrorHandler | null> {
-
         const customer = await this.customerRepository.findOneItem({ email });
         if (customer) return new ErrorHandler('El usuario ya ha sido registrado',400);
         const salt = bcrypt.genSaltSync();
         const password = bcrypt.hashSync(pass,salt);
         return await this.customerRepository.createOne({ fullname,email,password });
-
     }
 
     public async updateOneCustomer(_id: string,updated: object): Promise<CustomerEntity | ErrorHandler | null> {

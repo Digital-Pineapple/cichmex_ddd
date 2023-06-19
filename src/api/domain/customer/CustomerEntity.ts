@@ -21,6 +21,7 @@ export interface CustomerEntity {
     google          ?:   Boolean;
     phone            :   IPhone;
     status           :   Boolean;
+    accountVerify    :   Boolean;
     facturapi_id    ?:   string;
     ine             ?:   string;
     curp            ?:   string;

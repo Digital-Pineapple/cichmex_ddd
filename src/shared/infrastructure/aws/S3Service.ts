@@ -23,14 +23,15 @@ export class S3Service {
     }
 
     async uploadToS3(key: string, file?: Express.Multer.File) {
+        
         try {
             const fileContent = Fs.readFileSync(file!.path);
             const params = {
                 Bucket  : this.bucket,
                 Key     : this.environment + key,
+                ContentType: "application/pdf", //
                 Body    : fileContent,
             };
-
             await this.s3.upload(params).promise();
             return { success: true, message: 'Archivo subido correctamente', key};
         } catch (error) {
@@ -51,12 +52,16 @@ export class S3Service {
     }
 
     async getUrlObject(key: string) {
+        console.log(key);
+        
         const params = {
             Bucket  : this.bucket,
             Key     :  this.environment + key,
             Expires : 300,
         }
-        return await this.s3.getSignedUrl('getObject', params);
+    return await this.s3.getSignedUrl('getObject', params);
+
+    
     }
 
 }

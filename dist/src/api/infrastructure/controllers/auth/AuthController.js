@@ -47,9 +47,9 @@ class AuthController extends ResponseData_1.ResponseData {
     }
     register(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { email, password, fullname, type_customer } = req.body;
+            const { email, password, fullname, type_customer, phone } = req.body;
             try {
-                const response = yield this.authUseCase.signUp({ fullname, email, password, type_customer });
+                const response = yield this.authUseCase.signUp({ fullname, email, password, type_customer, phone });
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {
@@ -63,11 +63,9 @@ class AuthController extends ResponseData_1.ResponseData {
             const { idToken, type_customer } = req.body;
             try {
                 const response = yield this.authUseCase.signInWithGoogle(idToken, type_customer);
-                response.user.profile_image = yield this.s3Service.getUrlObject(response.user.profile_image);
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {
-                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al iniciar sesión', 500));
             }
         });
@@ -124,9 +122,11 @@ class AuthController extends ResponseData_1.ResponseData {
         return __awaiter(this, void 0, void 0, function* () {
             const { user } = req;
             try {
-                const response = yield this.authUseCase.generateToken(user);
-                console.log(response);
-                response.user.profile_image = yield this.s3Service.getUrlObject((_a = response.user) === null || _a === void 0 ? void 0 : _a.profile_image);
+                const customer = yield this.authUseCase.findUser(user.email);
+                const response = yield this.authUseCase.generateToken(customer);
+                if (!response.user.profile_image) {
+                    response.user.profile_image = yield this.s3Service.getUrlObject((_a = response.user) === null || _a === void 0 ? void 0 : _a.profile_image);
+                }
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {
@@ -172,7 +172,7 @@ class AuthController extends ResponseData_1.ResponseData {
                 yield Promise.all(documents === null || documents === void 0 ? void 0 : documents.map((file) => __awaiter(this, void 0, void 0, function* () {
                     const pathObject = `${this.path}/${user._id}/${file[0].fieldname}`;
                     keys.push({ field: file[0].fieldname, key: pathObject });
-                    yield this.s3Service.uploadToS3(pathObject, file[0]);
+                    yield this.s3Service.uploadToS3(pathObject + ".pdf", file[0]);
                 })));
                 const response = yield this.authUseCase.uploadCustomerFiles(user._id, keys);
                 this.invoke(response, 200, res, 'Los archivos se subieron correctamente', next);

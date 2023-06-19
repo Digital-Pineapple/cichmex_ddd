@@ -16,6 +16,7 @@ class CustomerController extends ResponseData_1.ResponseData {
     constructor(customerUseCase, s3Service) {
         super();
         this.customerUseCase = customerUseCase;
+        this.s3Service = s3Service;
         this.path = '/customers';
         this.getAllCustomers = this.getAllCustomers.bind(this);
         this.createCustomer = this.createCustomer.bind(this);
@@ -27,9 +28,21 @@ class CustomerController extends ResponseData_1.ResponseData {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const customers = yield this.customerUseCase.getCustomers();
+                yield Promise.all(customers === null || customers === void 0 ? void 0 : customers.map((customer) => __awaiter(this, void 0, void 0, function* () {
+                    const ine = yield this.s3Service.getUrlObject(customer.ine + ".pdf");
+                    customer.ine = ine;
+                    const curp = yield this.s3Service.getUrlObject(customer.curp + ".pdf");
+                    customer.curp = curp;
+                    const criminal_record = yield this.s3Service.getUrlObject(customer.criminal_record + ".pdf");
+                    customer.criminal_record = criminal_record;
+                    const prook_address = yield this.s3Service.getUrlObject(customer.prook_address + ".pdf");
+                    customer.prook_address = prook_address;
+                    customer.profile_image = yield this.s3Service.getUrlObject(customer.profile_image);
+                })));
                 this.invoke(customers, 200, res, '', next);
             }
             catch (error) {
+                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al consultar los usuarios', 500));
             }
         });
@@ -39,6 +52,10 @@ class CustomerController extends ResponseData_1.ResponseData {
             const { id } = req.params;
             try {
                 const customer = yield this.customerUseCase.getDetailCustomer(id);
+                customer.ine = yield this.s3Service.getUrlObject((customer === null || customer === void 0 ? void 0 : customer.ine) + ".pdf");
+                customer.curp = yield this.s3Service.getUrlObject((customer === null || customer === void 0 ? void 0 : customer.curp) + ".pdf");
+                customer.criminal_record = yield this.s3Service.getUrlObject((customer === null || customer === void 0 ? void 0 : customer.criminal_record) + ".pdf");
+                customer.prook_address = yield this.s3Service.getUrlObject((customer === null || customer === void 0 ? void 0 : customer.prook_address) + ".pdf");
                 this.invoke(customer, 200, res, '', next);
             }
             catch (error) {
