@@ -46,9 +46,9 @@ export class ServicesController extends ResponseData {
 
     public async updateService(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { name, description } = req.body;
+        const { name, description, status } = req.body;
         try {
-            const response = await this.servicesUseCase.updateOneService(id, { name, description });
+            const response = await this.servicesUseCase.updateOneService(id, { name, description, status });
             this.invoke(response, 201, res, 'El servicio se actualizó con exito', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al actualizar el servicio', 500));   

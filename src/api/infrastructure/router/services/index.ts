@@ -18,6 +18,7 @@ customerRouter
     .post('/', servicesController.createService)
     .patch('/:id', servicesController.updateService)
     .delete('/:id', servicesController.deleteService)
+    
 
 export default customerRouter;
 

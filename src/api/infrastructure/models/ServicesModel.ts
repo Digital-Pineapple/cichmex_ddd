@@ -17,7 +17,9 @@ const ServiceSchema = new Schema<ServicesEntity>({
 },{
     versionKey  : false,
     timestamps  : true,
-});
+},
+
+);
 
 const ServiceModel = model('Service', ServiceSchema);
 
