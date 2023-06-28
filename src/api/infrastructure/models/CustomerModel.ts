@@ -118,5 +118,8 @@ CustomerSchema.method('toJSON', function () {
 });
 
 CustomerSchema.plugin(mongoosePaginate);
+const CustomerModel = model('Customer', CustomerSchema);
+
+export default CustomerModel;
 
 
