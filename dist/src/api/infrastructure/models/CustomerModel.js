@@ -122,3 +122,5 @@ CustomerSchema.method('toJSON', function () {
     return customer;
 });
 CustomerSchema.plugin(mongoose_paginate_v2_1.default);
+const CustomerModel = (0, mongoose_1.model)('Customer', CustomerSchema);
+exports.default = CustomerModel;
