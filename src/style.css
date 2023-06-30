@@ -1,0 +1,201 @@
+
+@font-face {
+    font-family: DosisExtraBold;
+    src: url('./assets/fonts/Dosis-ExtraBold.ttf');
+}@font-face {
+    font-family: BikoBold;
+    src: url('./assets/fonts/Biko_Bold.otf');
+}
+@font-face {
+    font-family: BikoBoldLight;
+    src: url('./assets/fonts/TerminalDosis-Light.ttf');
+}
+
+.banner_img{
+animation: movimiento 2.5s linear infinite;
+
+}
+.bg_animate{
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to rigth, #005c98, #505bda);
+    position: relative;
+    overflow: hidden;
+}
+
+.burbuja{
+
+border-radius: 50%;
+background: #fff;
+opacity: .3;
+position: absolute;
+z-index: 0;
+bottom: -150;
+
+animation: burbujas 5s linear  infinite;
+}
+
+.burbuja:nth-child(1){
+    width: 80px;
+    height: 80px;
+    left: 5%;
+    animation-duration: 3s;
+    animation-delay: 3s;
+
+}
+.burbuja:nth-child(2){
+    width: 100px;
+    height: 100px;
+    left: 35%;
+    animation-duration: 3s;
+    animation-delay: 5s;
+
+}
+.burbuja:nth-child(3){
+    width: 50px;
+    height: 50px;
+    left: 15%;
+    animation-duration: 6s;
+    animation-delay: 5s;
+
+}
+.burbuja:nth-child(4){
+    width: 10px;
+    height: 10px;
+    left: 90%;
+    animation-duration: 6s;
+    animation-delay: 3s;
+
+}
+.burbuja:nth-child(5){
+    width: 70px;
+    height: 70px;
+    left: 65%;
+    animation-duration: 3s;
+    animation-delay: 6s;
+
+}
+.burbuja:nth-child(6){
+    width: 20px;
+    height: 20px;
+    left: 50%;
+    animation-duration: 4s;
+    animation-delay: 7s;
+
+}
+.burbuja:nth-child(7){
+    width: 100px;
+    height: 100px;
+    left: 30%;
+    animation-duration: 5s;
+    animation-delay: 1s;
+
+}
+
+@keyframes burbujas {
+    0%{
+        bottom:0;
+        opacity: 0;
+    }
+    30%{
+        transform: translateX(30px);
+    }
+    50%{
+        opacity: .4;
+    }
+    100%{
+        bottom:100vh;
+        opacity: 0;
+    }
+
+}
+@keyframes movimiento{
+    0%{
+        transform: translate(0);
+    }
+    50%{
+        transform: translateY(30px);
+    }
+    100%{
+        transform: translateY(0);
+    }
+}
+
+.Gradient {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: linear-gradient(45deg, #0d2b6b, #0095ff, #66d3e4, #0095ff, #0d2b6b,#0d2b6b, #0095ff, #66d3e4, #0095ff, #0d2b6b);
+    background-size: 1000% 1000%;
+    animation: gradient 30s ease infinite;
+    animation-direction: alternate; 
+    z-index: 0;
+}
+.GradientItem {
+    position: relative;
+    background: linear-gradient(0deg, #CC3C5C 0%, rgba(13,43,107,1) 75%);
+    background-size: 100% 100%;
+    z-index: 0;
+}
+.GradientDocuments {
+    position: relative;
+    background: linear-gradient(45deg, #0d2b6b 0%, #95C8FF 90%);
+    background-size: 100% 100%;
+    z-index: 0;
+}
+.GradientSuccess {
+    position: relative;
+    background: linear-gradient(180deg, #0d2b6b 0%, #95C8FF 100%);
+    background-size: 100% 100%;
+    z-index: 0;
+}
+@keyframes gradient {
+    0%{background-position:0% 87%}
+    50%{background-position:100% 14%}
+    100%{background-position:0% 87%}
+}
+
+@keyframes slidein {
+    from {
+      margin-top: 100%;
+      width: 300%
+    }
+  
+    to {
+      margin-left: 0%;
+      width: 100%;
+    }
+  }
+.ImageCard{
+  width: 100%;
+  height: 400px;
+  background-image: url('img_flowers.jpg');
+  background-repeat: no-repeat;
+  background-size: contain;
+  border: 1px solid red;
+}
+
+.ModalStyle1{
+    
+        position: absolute;
+        max-height: fit-content;
+        background-color:#ffffff;
+        border: 3px solid #89C2FF;
+        box-shadow: 24;
+        padding: 4;
+        top: 20%;
+        left: 10%;
+        right: 10%;
+
+
+      
+}
+.ActionButtons{
+    position:relative;
+    width:100%;
+    justify-content:center;
+    background-color: #89C2FF;
+    
+
+
+}
