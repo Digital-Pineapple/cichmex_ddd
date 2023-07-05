@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { CategoryUseCase } from '../../../application/category/CategoryUseCase';
-import { CategoryController } from '../../controllers/CategoryController/CategoryController'
-import { CategoryRepository } from '../../repository/Category/CategoryRepository';
+import { CategoryRepository } from '../../repository/category/CategoryRepository';
 import CategoryModel from '../../models/CategoryModel';
+import { CategoryController } from '../../controllers/category/CategoryController';
 
 
 const categoryRouter = Router();
@@ -17,6 +17,7 @@ categoryRouter
     .post('/', categoryController.createCategory)
     .patch('/:id', categoryController.updateCategory)
     .delete('/:id', categoryController.deleteCategory)
+    .get('/search', categoryController.searchCategory)
     
 
 export default categoryRouter;

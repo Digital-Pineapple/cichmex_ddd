@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
-import { Subcategory } from '../../domain/category/Category';
+import { Subcategory } from '../../domain/category/CategoryEntity';
 
 const SubCategorySchema = new Schema<Subcategory>(
     {

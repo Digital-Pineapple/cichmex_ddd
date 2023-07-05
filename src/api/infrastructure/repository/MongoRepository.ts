@@ -31,5 +31,19 @@ export abstract class MongoRepository {
     public async findOneItem(query: Object, populateConfig?: any): Promise<any> {
         return await this.MODEL.findOne({...query, status: true}).populate(populateConfig);
     }
+    public async search(search: string) : Promise<any> {
+        const noSpecialCharacters = search.replace(
+          /[`~!@#$%^&*()_|+\-=?;:'"<>\{\}\[\]\\\/]/gi,
+          ""
+        );
+        return await this.MODEL.find({
+          status: true,
+          $or: [
+            {
+              name: { $regex: ".*" + noSpecialCharacters + ".*", $options: "i" },
+            },
+          ],
+        });
+      };
 
 }

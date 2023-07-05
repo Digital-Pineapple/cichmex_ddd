@@ -1,6 +1,6 @@
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { CategoriesRepository } from '../../domain/category/CategoriesRepository';
-import { Category } from '../../domain/category/Category';
+import { Category } from '../../domain/category/CategoryEntity';
 
 
 export class CategoryUseCase {
@@ -25,7 +25,10 @@ export class CategoryUseCase {
         return await this.categoriesRepository.updateOne(_id,updated);
     }
     public async deleteOneCategory(_id: string): Promise<Category | null> {
-        return this.categoriesRepository.updateOne(_id, update)
+        return this.categoriesRepository.updateOne(_id, {status: false})
+    }
+    public async searchCategory(search: string | ParsedQs | string[] | ParsedQs[] | undefined): Promise<Category | null> {
+        return this.categoriesRepository.search(search)
     }
 
 }

@@ -6,7 +6,7 @@ import customerRouter from './customer/';
 import servicesRouter from './services';
 import typeCarRouter from './typeCar';
 import typeCustomer from './typeCustomer';
-import categoryRouter from './Category';
+import categoryRouter from './category';
 
 export const apiRouter = (): Router => {
 

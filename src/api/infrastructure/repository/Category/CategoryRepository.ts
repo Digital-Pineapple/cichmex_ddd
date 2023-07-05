@@ -2,28 +2,40 @@ import { Model } from 'mongoose';
 import { CategoriesRepository as CategoryConfig } from '../../../domain/category/CategoriesRepository'
 
 import { MongoRepository } from '../MongoRepository';
-import { Category } from '../../../domain/category/Category';
-import CategoryModel from '../../models/CategoryModel';
+import { Category } from '../../../domain/category/CategoryEntity';
 
 
 export class CategoryRepository extends MongoRepository implements CategoryConfig {
     
 
-    async getAllCategory(): Promise<Category[] | null> {
-        return await CategoryModel.find();
+    constructor(protected CategoryModel: Model<any>) {
+        super(CategoryModel);
     }
-    async getOneCategory(_id: string): Promise<Category | null> {
-        return await CategoryModel.findById(_id);
+
+    async findOneCategory(query: Object): Promise<Category | null> {
+        return await this.findOneItem(query);
     }
-    async createCategory(body: object): Promise<Category | null> {
-        const typeCar = new CategoryModel(body);
-        return await typeCar.save();
+
+    async findByEmailCategory(email: String): Promise<Category | null> {
+        return await this.findOneItem({ email });
     }
-    async updateCategory(_id: string, update: Category): Promise<Category | null> {
-        return await CategoryModel.findByIdAndUpdate(_id, update);
+
+    async findByIdCategory(_id: String): Promise<Category | null> {
+        return await this.findById(_id);
     }
-    async deleteCategory(_id: string): Promise<Category | null> {
-        return await CategoryModel.findByIdAndUpdate(_id, { status: false });
+    async findAndUpdateCategory(_id: String, updated: object): Promise<Category | null> {
+        return await this.updateOne(_id, updated);
+    }
+    
+    async findAllCategorys(): Promise<Category[] | null> {
+        return await this.findAll();
+    }
+
+    async createOneCategory(body: Object): Promise<Category | null> {
+        return await this.createOne(body);
+    }
+    async searchCategory(body: Object): Promise<Category| null> {
+        return await this.createOne(body);
     }
    
 

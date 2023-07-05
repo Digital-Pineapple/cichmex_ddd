@@ -46,5 +46,19 @@ class MongoRepository {
             return yield this.MODEL.findOne(Object.assign(Object.assign({}, query), { status: true })).populate(populateConfig);
         });
     }
+    search(search) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const noSpecialCharacters = search.replace(/[`~!@#$%^&*()_|+\-=?;:'"<>\{\}\[\]\\\/]/gi, "");
+            return yield this.MODEL.find({
+                status: true,
+                $or: [
+                    {
+                        name: { $regex: ".*" + noSpecialCharacters + ".*", $options: "i" },
+                    },
+                ],
+            });
+        });
+    }
+    ;
 }
 exports.MongoRepository = MongoRepository;

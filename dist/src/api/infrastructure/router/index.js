@@ -11,7 +11,7 @@ const customer_1 = __importDefault(require("./customer/"));
 const services_1 = __importDefault(require("./services"));
 const typeCar_1 = __importDefault(require("./typeCar"));
 const typeCustomer_1 = __importDefault(require("./typeCustomer"));
-const Category_1 = __importDefault(require("./Category"));
+const category_1 = __importDefault(require("./category"));
 const apiRouter = () => {
     const apiRouter = (0, express_1.Router)();
     apiRouter.use('/auth', auth_1.default);
@@ -20,7 +20,7 @@ const apiRouter = () => {
     apiRouter.use('/services', services_1.default);
     apiRouter.use('/type-car', typeCar_1.default);
     apiRouter.use('/type-customer', typeCustomer_1.default);
-    apiRouter.use('/category', Category_1.default);
+    apiRouter.use('/category', category_1.default);
     return apiRouter;
 };
 exports.apiRouter = apiRouter;
@@ -31,5 +31,5 @@ apiRouterx.use('/customer', customer_1.default);
 apiRouterx.use('/services', services_1.default);
 apiRouterx.use('/type-car', typeCar_1.default);
 apiRouterx.use('/type-customer', typeCustomer_1.default);
-apiRouterx.use('/category', Category_1.default);
+apiRouterx.use('/category', category_1.default);
 exports.default = exports.apiRouter;

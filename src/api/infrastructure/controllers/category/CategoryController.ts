@@ -13,6 +13,7 @@ export class CategoryController extends ResponseData {
         this.createCategory      =   this.createCategory.bind(this);
         this.updateCategory      =   this.updateCategory.bind(this);
         this.deleteCategory      =   this.deleteCategory.bind(this);
+        this.searchCategory    =   this.searchCategory.bind(this);
     }
 
     public async getAllCategories(req: Request, res: Response, next: NextFunction) {
@@ -64,6 +65,19 @@ export class CategoryController extends ResponseData {
             this.invoke(response, 201, res, 'La categoria se elimino con exito', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error eliminar la categoria', 500));   
+        }
+    }
+    public async searchCategory(req: Request, res: Response, next: NextFunction) {
+        const {search } = req.query;
+        console.log(req.query);
+        
+        try {
+            const response = await this.categoryUseCase.searchCategory(search);
+            this.invoke(response, 201, res, 'Categoria encontrada', next);
+        } catch (error) {
+            console.log(error);
+            
+            next(new ErrorHandler('Hubo un error eliminar la categori', 500));   
         }
     }
 
