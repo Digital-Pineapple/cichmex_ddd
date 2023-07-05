@@ -5,28 +5,27 @@ import { Category } from '../../domain/category/Category';
 
 export class CategoryUseCase {
 
-    constructor(private readonly CategoriesRepository: CategoriesRepository) { }
+    constructor(private readonly categoriesRepository: CategoriesRepository) { }
 
     public async getCategories(): Promise<Category[] | ErrorHandler | null> {
-        return await this.CategoriesRepository.getAllCategory();
+        return await this.categoriesRepository.findAll();
     }
 
     public async getDetailCategory(_id: string): Promise<Category | ErrorHandler | null> {
-        return await this.CategoriesRepository.getOneCategory(_id);
+        return await this.categoriesRepository.findById(_id);
     }
 
-    public async createNewCategory(name: String, description: String, status:Boolean): Promise<Category | ErrorHandler | null> {
-        const category = await this.CategoriesRepository.createCategory({ name   });
+    public async createNewCategory(name: string, description: string, status: boolean): Promise<Category | ErrorHandler | null> {
+        const category = await this.categoriesRepository.findOneItem({name});
         if (category) return new ErrorHandler('La categoria ya ha sido registrado',400);
-      
-        return await this.CategoriesRepository.createCategory({ name, description, status });
+        return await this.categoriesRepository.createOne({ name, description, status });
     }
 
     public async updateOneCategory(_id: string,updated: Category): Promise<Category | ErrorHandler | null> {
-        return await this.CategoriesRepository.updateCategory(_id,updated);
+        return await this.categoriesRepository.updateOne(_id,updated);
     }
     public async deleteOneCategory(_id: string): Promise<Category | null> {
-        return this.CategoriesRepository.deleteCategory(_id)
+        return this.categoriesRepository.updateOne(_id, update)
     }
 
 }

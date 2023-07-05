@@ -15,7 +15,9 @@ export abstract class MongoRepository {
     public async findById(_id: String, populateConfig?: any): Promise<any> {
         return await this.MODEL.findById(_id);
     }
-
+    public async findByName(name: string): Promise<any> {
+        return await this.MODEL.find({ name});
+    }
     public async updateOne(_id: String, updated: object): Promise<any> {
         return await this.MODEL.findByIdAndUpdate(_id, updated, { new: true });
     }

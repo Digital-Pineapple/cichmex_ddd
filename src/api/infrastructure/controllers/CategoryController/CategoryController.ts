@@ -40,6 +40,8 @@ export class CategoryController extends ResponseData {
             const response = await this.categoryUseCase.createNewCategory(name, description,status);
             this.invoke(response, 201, res, 'La categoria se creo con exito', next);
         } catch (error) {
+            console.log(error);
+            
             next(new ErrorHandler('Hubo un error al crear la categoria', 500));
         }
     }

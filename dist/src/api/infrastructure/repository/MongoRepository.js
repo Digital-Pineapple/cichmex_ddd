@@ -24,6 +24,11 @@ class MongoRepository {
             return yield this.MODEL.findById(_id);
         });
     }
+    findByName(name) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.find({ name });
+        });
+    }
     updateOne(_id, updated) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.MODEL.findByIdAndUpdate(_id, updated, { new: true });
