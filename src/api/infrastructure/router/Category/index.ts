@@ -17,7 +17,7 @@ categoryRouter
     .post('/', categoryController.createCategory)
     .patch('/:id', categoryController.updateCategory)
     .delete('/:id', categoryController.deleteCategory)
-    .get('/search', categoryController.searchCategory)
+    .get('/search/search', categoryController.searchCategory)
     
 
 export default categoryRouter;
