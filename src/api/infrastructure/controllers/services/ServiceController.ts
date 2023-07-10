@@ -13,6 +13,7 @@ export class ServicesController extends ResponseData {
         this.createService      =   this.createService.bind(this);
         this.updateService      =   this.updateService.bind(this);
         this.deleteService      =   this.deleteService.bind(this);
+        this.searchService    =   this.searchService.bind(this);
     }
 
     public async getAllServices(req: Request, res: Response, next: NextFunction) {
@@ -64,6 +65,20 @@ export class ServicesController extends ResponseData {
             next(new ErrorHandler('Hubo un error eliminar el servicio', 500));   
         }
     }
+    public async searchService(req: Request, res: Response, next: NextFunction) {
+        const {search } = req.query;
+        console.log(req.query);
+        
+        try {
+            const response = await this.servicesUseCase.searchService(search);
+            this.invoke(response, 201, res, 'Categoria encontrada', next);
+        } catch (error) {
+            console.log(error);
+            
+            next(new ErrorHandler('Hubo un error eliminar la categori', 500));   
+        }
+    }
+
 
 
 }

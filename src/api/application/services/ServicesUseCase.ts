@@ -24,4 +24,7 @@ export class ServicesUseCase {
     public async deleteOneService(_id: string): Promise<ServicesEntity | null> {
         return this.servicesRepository.deleteOneService(_id)
     }
+    public async searchService(search: string | ParsedQs | string[] | ParsedQs[] | undefined): Promise<Category | null> {
+        return this.servicesRepository.search(search)
+    }
 }

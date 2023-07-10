@@ -11,7 +11,7 @@ const customer_1 = __importDefault(require("./customer/"));
 const services_1 = __importDefault(require("./services"));
 const typeCar_1 = __importDefault(require("./typeCar"));
 const typeCustomer_1 = __importDefault(require("./typeCustomer"));
-const category_1 = __importDefault(require("./category"));
+const category_1 = __importDefault(require("./Category"));
 const apiRouter = () => {
     const apiRouter = (0, express_1.Router)();
     apiRouter.use('/auth', auth_1.default);

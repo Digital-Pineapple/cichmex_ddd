@@ -77,7 +77,7 @@ export class CategoryController extends ResponseData {
         } catch (error) {
             console.log(error);
             
-            next(new ErrorHandler('Hubo un error eliminar la categori', 500));   
+            next(new ErrorHandler('No se encontro la categoria', 500));   
         }
     }
 
