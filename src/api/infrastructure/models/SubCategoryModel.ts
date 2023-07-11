@@ -1,14 +1,14 @@
 import { Schema, model } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
-import { Subcategory } from '../../domain/category/CategoryEntity';
+import { SubCategory } from '../../domain/subCategory/SubCategoryEntity';
 
-const SubCategorySchema = new Schema<Subcategory>(
+const SubCategorySchema = new Schema<SubCategory>(
     {
       name: {
         type: String,
         required: true,
       },
-      desription:{ 
+      description:{ 
       type: String,
       required: true,
       },
@@ -28,4 +28,5 @@ const SubCategorySchema = new Schema<Subcategory>(
     }
   );
 
-  const SubCategory = model("SubCategory", SubCategorySchema);
+  const SubCategoryModel = model("SubCategory", SubCategorySchema);
+  export default SubCategoryModel

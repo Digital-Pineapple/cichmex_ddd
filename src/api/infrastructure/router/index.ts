@@ -6,7 +6,8 @@ import customerRouter from './customer/';
 import servicesRouter from './services';
 import typeCarRouter from './typeCar';
 import typeCustomer from './typeCustomer';
-import categoryRouter from './category';
+import categoryRouter from './Category';
+import subCategoryRouter from './subCategory';
 
 export const apiRouter = (): Router => {
 
@@ -19,6 +20,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/type-car', typeCarRouter)
     apiRouter.use('/type-customer', typeCustomer)
     apiRouter.use('/category', categoryRouter)
+    apiRouter.use('/sub-category', subCategoryRouter)
 
 
     return apiRouter;
@@ -32,5 +34,6 @@ apiRouterx.use('/services', servicesRouter);
 apiRouterx.use('/type-car', typeCarRouter)
 apiRouterx.use('/type-customer', typeCustomer)
 apiRouterx.use('/category', categoryRouter)
+apiRouterx.use('/sub-category', subCategoryRouter)
 
 export default apiRouter

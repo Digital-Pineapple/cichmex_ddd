@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { CategoryUseCase } from '../../../application/category/CategoryUseCase';
-import { CategoryRepository } from '../../repository/category/CategoryRepository';
+import { CategoryRepository } from '../../repository/Category/CategoryRepository';
 import CategoryModel from '../../models/CategoryModel';
 import { CategoryController } from '../../controllers/category/CategoryController';
 
