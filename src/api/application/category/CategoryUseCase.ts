@@ -30,5 +30,8 @@ export class CategoryUseCase {
     public async searchCategory(search: string | ParsedQs | string[] | ParsedQs[] | undefined): Promise<Category | null> {
         return this.categoriesRepository.search(search)
     }
+    async updateCategoryPhoto(photo: string,category_id: string): Promise<Category> {
+        return await this.categoriesRepository.updateOne(category_id,{ category_image: photo });
+    }
 
 }

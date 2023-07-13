@@ -17,6 +17,10 @@ const CategorySchema = new Schema<Category>(
         required: true,
 
       },
+      category_image:{
+        type: String,
+        required: true,
+      }
     },
     {
       versionKey: false,
