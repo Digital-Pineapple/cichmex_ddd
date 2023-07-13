@@ -29,6 +29,11 @@ class CustomerUseCase {
             return yield this.customerRepository.findById(_id);
         });
     }
+    getCustomersByType(type) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.customerRepository.findOneItem({ type });
+        });
+    }
     createNewCustomer(fullname, email, pass) {
         return __awaiter(this, void 0, void 0, function* () {
             const customer = yield this.customerRepository.findOneItem({ email });

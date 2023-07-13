@@ -2,10 +2,10 @@ export interface SubCategory {
     name: string;
     description: string;
     status: boolean;
-    category: Category;
+    category: category;
 }
 
-export interface Category {
+export interface category {
     name: string;
     description: string;
     status: boolean; 

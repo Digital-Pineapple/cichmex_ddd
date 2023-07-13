@@ -16,6 +16,10 @@ export class CustomerUseCase {
         return await this.customerRepository.findById(_id);
     }
 
+    public async getCustomersByType(type: string): Promise<CustomerEntity | ErrorHandler | null> {
+        return await this.customerRepository.findOneItem({ type });
+    }
+
     public async createNewCustomer(fullname: String,email: String,pass: Buffer): Promise<CustomerEntity | ErrorHandler | null> {
         const customer = await this.customerRepository.findOneItem({ email });
         if (customer) return new ErrorHandler('El usuario ya ha sido registrado',400);

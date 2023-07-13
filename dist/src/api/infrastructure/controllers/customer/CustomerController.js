@@ -23,6 +23,7 @@ class CustomerController extends ResponseData_1.ResponseData {
         this.getCustomerDetail = this.getCustomerDetail.bind(this);
         this.updateCustomer = this.updateCustomer.bind(this);
         this.deleteCustomer = this.deleteCustomer.bind(this);
+        this.getAllCustomersByType = this.getAllCustomersByType.bind(this);
     }
     getAllCustomers(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -112,6 +113,19 @@ class CustomerController extends ResponseData_1.ResponseData {
             catch (error) {
                 console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al eliminar el usuario', 500));
+            }
+        });
+    }
+    getAllCustomersByType(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { type } = req.params;
+            try {
+                const customers = yield this.customerUseCase.getCustomersByType(type);
+                this.invoke(customers, 200, res, '', next);
+            }
+            catch (error) {
+                console.log(error);
+                next(new ErrorHandler_1.ErrorHandler('Hubo un error al consultar los usuarios', 500));
             }
         });
     }

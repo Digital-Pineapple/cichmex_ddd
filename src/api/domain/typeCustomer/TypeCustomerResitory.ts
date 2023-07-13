@@ -3,6 +3,8 @@ import { TypeCustomerEntity } from './TypeCustomerEntity';
 export interface TypeCustomerRepository {
 
     getAllTypeCustomers(): Promise<TypeCustomerEntity[] | null>
+   
+    getAllTypeCustomersByType(type: string): Promise<TypeCustomerEntity[] | null>
 
     getOneTypeCustomer(_id: string): Promise<TypeCustomerEntity | null>
 
@@ -11,5 +13,6 @@ export interface TypeCustomerRepository {
     updateOneTypeCustomer(_id: string, name: string): Promise<TypeCustomerEntity | null>
 
     deleteOneTypeCustomer(_id: string): Promise<TypeCustomerEntity | null>
+
 
 }

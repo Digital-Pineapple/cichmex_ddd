@@ -38,9 +38,9 @@ export class SubCategoryController extends ResponseData {
     }
 
     public async createSubCategory(req: Request, res: Response, next: NextFunction) {
-        const { name, description, status, Category } = req.body;
+        const { name, description, status, category } = req.body;
         try {
-            const response = await this.subCategoryUseCase.createNewSubCategory(name, description,status, Category);
+            const response = await this.subCategoryUseCase.createNewSubCategory(name, description,status, category);
             this.invoke(response, 201, res, 'La subcategoria se creo con exito', next);
         } catch (error) {
             console.log(error);
@@ -70,7 +70,7 @@ export class SubCategoryController extends ResponseData {
         }
     }
     public async searchSubCategory(req: Request, res: Response, next: NextFunction) {
-        const {search } = req.query;
+        const {search} = req.query;
         console.log(req.query);
         
         try {

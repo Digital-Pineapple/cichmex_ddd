@@ -17,6 +17,7 @@ export class CustomerController extends ResponseData {
         this.getCustomerDetail = this.getCustomerDetail.bind(this);
         this.updateCustomer = this.updateCustomer.bind(this);
         this.deleteCustomer = this.deleteCustomer.bind(this);
+        this.getAllCustomersByType = this.getAllCustomersByType.bind(this);
     }
 
     public async getAllCustomers(req: Request, res: Response, next: NextFunction) {
@@ -104,6 +105,17 @@ export class CustomerController extends ResponseData {
         } catch (error) {
             console.log(error);
             next(new ErrorHandler('Hubo un error al eliminar el usuario', 500));
+        }
+    }
+
+    public async getAllCustomersByType(req: Request, res: Response, next: NextFunction) {
+        const { type } = req.params;
+        try {
+            const customers = await this.customerUseCase.getCustomersByType(type);
+            this.invoke(customers, 200, res, '', next);
+        } catch (error) {
+            console.log(error);
+            next(new ErrorHandler('Hubo un error al consultar los usuarios', 500));
         }
     }
 

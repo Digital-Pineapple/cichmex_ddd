@@ -1,6 +1,6 @@
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { SubCategoriesRepository } from '../../domain/subCategory/SubCategoriesRepository';
-import { Category, SubCategory } from '../../domain/subCategory/SubCategoryEntity';
+import { category, SubCategory } from '../../domain/subCategory/SubCategoryEntity';
 
 
 export class SubCategoryUseCase {
@@ -15,10 +15,10 @@ export class SubCategoryUseCase {
         return await this.subCategoriesRepository.findById(_id);
     }
 
-    public async createNewSubCategory(name: string, description: string, status: boolean, Category:Category[]): Promise<SubCategory | ErrorHandler | null> {
+    public async createNewSubCategory(name: string, description: string, status: boolean, category:category): Promise<SubCategory | ErrorHandler | null> {
         const subCategory = await this.subCategoriesRepository.findOneItem({name});
         if (subCategory) return new ErrorHandler('La categoria ya ha sido registrado',400);
-        return await this.subCategoriesRepository.createOne({ name, description, status, Category });
+        return await this.subCategoriesRepository.createOne({ name, description, status, category });
     }
 
     public async updateOneSubCategory(_id: string,updated: SubCategory): Promise<SubCategory | ErrorHandler | null> {
