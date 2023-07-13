@@ -36,9 +36,9 @@ export class ServicesController extends ResponseData {
     }
 
     public async createService(req: Request, res: Response, next: NextFunction) {
-        const { name, description } = req.body;
+        const { name, description, status, subCategory } = req.body;
         try {
-            const response = await this.servicesUseCase.createNewService(name, description);
+            const response = await this.servicesUseCase.createNewService(name, description,status, subCategory);
             this.invoke(response, 201, res, 'El servicio se creo con exito', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al crear el servicio', 500));
@@ -47,9 +47,9 @@ export class ServicesController extends ResponseData {
 
     public async updateService(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { name, description, status } = req.body;
+        const { name, description, status, subCategory } = req.body;
         try {
-            const response = await this.servicesUseCase.updateOneService(id, { name, description, status });
+            const response = await this.servicesUseCase.updateOneService(id, { name, description, status, subCategory });
             this.invoke(response, 201, res, 'El servicio se actualizó con exito', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al actualizar el servicio', 500));   

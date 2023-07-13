@@ -13,7 +13,12 @@ const ServiceSchema = new Schema<ServicesEntity>({
     status: {
         type    : Boolean,
         default : true,
-    }
+    },
+    subCategory:{
+        type: Schema.Types.ObjectId,
+        ref:'SubCategory'
+
+      }
 },{
     versionKey  : false,
     timestamps  : true,
