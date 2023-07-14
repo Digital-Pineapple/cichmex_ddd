@@ -59,7 +59,6 @@ export class CategoryController extends ResponseData {
             const pathObject = `${this.path}/${id}/${req.file?.fieldname}`;
 
             const { message, key, url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject, req.file, "image/jpeg");
-            
             if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
             const response = await this.categoryUseCase.updateOneCategory(id, { name, description, status, category_image: key });
             console.log(response)

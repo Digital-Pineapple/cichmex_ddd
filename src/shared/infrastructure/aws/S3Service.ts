@@ -47,7 +47,6 @@ export class S3Service {
             const params = {
                 Bucket  : this.bucket,
                 Key     : this.environment + key,
-                ContentType: contentType, 
                 Expires : 300,
             }
             const url = await this.s3.getSignedUrl('getObject', params)
