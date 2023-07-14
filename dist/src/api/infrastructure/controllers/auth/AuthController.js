@@ -172,7 +172,7 @@ class AuthController extends ResponseData_1.ResponseData {
                 yield Promise.all(documents === null || documents === void 0 ? void 0 : documents.map((file) => __awaiter(this, void 0, void 0, function* () {
                     const pathObject = `${this.path}/${user._id}/${file[0].fieldname}`;
                     keys.push({ field: file[0].fieldname, key: pathObject });
-                    yield this.s3Service.uploadToS3(pathObject + ".pdf", file[0]);
+                    yield this.s3Service.uploadToS3(pathObject + ".pdf", file[0], "application/pdf");
                 })));
                 const response = yield this.authUseCase.uploadCustomerFiles(user._id, keys);
                 this.invoke(response, 200, res, 'Los archivos se subieron correctamente', next);

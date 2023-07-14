@@ -29,30 +29,32 @@ class S3Service {
             secretAccessKey: this.secretAccessKey,
         });
     }
-    uploadToS3(key, file) {
+    uploadToS3(key, file, contentType) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const fileContent = fs_1.default.readFileSync(file.path);
                 const params = {
                     Bucket: this.bucket,
                     Key: this.environment + key,
-                    ContentType: "application/pdf",
+                    ContentType: contentType,
                     Body: fileContent,
                 };
                 yield this.s3.upload(params).promise();
                 return { success: true, message: 'Archivo subido correctamente', key };
             }
             catch (error) {
+                console.log(error);
                 return { success: false, message: 'No se ha podido subir el archivo', key: '' };
             }
         });
     }
-    uploadToS3AndGetUrl(key, file) {
+    uploadToS3AndGetUrl(key, file, contentType) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.uploadToS3(key, file).then(({ message, success }) => __awaiter(this, void 0, void 0, function* () {
+            return yield this.uploadToS3(key, file, contentType).then(({ message, success }) => __awaiter(this, void 0, void 0, function* () {
                 const params = {
                     Bucket: this.bucket,
                     Key: this.environment + key,
+                    ContentType: contentType,
                     Expires: 300,
                 };
                 const url = yield this.s3.getSignedUrl('getObject', params);

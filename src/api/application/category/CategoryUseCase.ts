@@ -21,7 +21,7 @@ export class CategoryUseCase {
         return await this.categoriesRepository.createOne({ name, description, status });
     }
 
-    public async updateOneCategory(_id: string,updated: Category): Promise<Category | ErrorHandler | null> {
+    public async updateOneCategory(_id: string,updated: Category): Promise<Category> {
         return await this.categoriesRepository.updateOne(_id,updated);
     }
     public async deleteOneCategory(_id: string): Promise<Category | null> {

@@ -146,13 +146,12 @@ export class AuthController extends ResponseData {
         const documents = [ files?.ine, files?.curp, files?.prook_address, files?.criminal_record ];
         let keys: any = [];
         try {
-
             if(!files?.ine || !files?.curp || !files?.prook_address || !files?.criminal_record) return next(new ErrorHandler('los archivos son requeridos', 400));
 
             await Promise.all(documents?.map(async (file) => {
                 const pathObject = `${this.path}/${user._id}/${file[0].fieldname}`;
                 keys.push({ field: file[0].fieldname, key: pathObject })
-                await this.s3Service.uploadToS3(pathObject+ ".pdf", file[0])
+                await this.s3Service.uploadToS3(pathObject+ ".pdf", file[0], "application/pdf")
             }));
             const response = await this.authUseCase.uploadCustomerFiles(user._id, keys);
             this.invoke(response, 200, res, 'Los archivos se subieron correctamente', next);
