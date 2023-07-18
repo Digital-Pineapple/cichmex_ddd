@@ -5,7 +5,7 @@ import { SubCategory } from "../../domain/subCategory/SubCategoryEntity";
 
 export class ServicesUseCase {
 
-    constructor(private servicesRepository: ServicesRepository) { }
+    constructor(private readonly servicesRepository: ServicesRepository) { }
 
     public async getServices(): Promise<ServicesEntity[] | null> {
         return this.servicesRepository.findAll();
@@ -21,7 +21,7 @@ export class ServicesUseCase {
         return await this.servicesRepository.createOne({ name, description, status, subCategory });
     }
 
-    public async updateOneService(_id: string, updated: ServicesEntity): Promise<ServicesEntity| ErrorHandler | null> {
+    public async updateOneService(_id: string, updated: ServicesEntity): Promise<ServicesEntity> {
         return this.servicesRepository.updateOne(_id, updated);
     }
 

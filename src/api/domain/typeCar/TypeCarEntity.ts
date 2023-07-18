@@ -10,10 +10,10 @@ export interface IService {
     updatedAt       ?:   NativeDate;
 }
 export interface TypeCarEntity {
-    _id              :   string;
     name             :   string;
-    services         :   IService[];
-    status           :   boolean;
-    createdAt        :   NativeDate;
-    updatedAt        :   NativeDate;
+    services         ?:   IService[];
+    status           ?:   boolean;
+    typeCar_image    :   any;
+    createdAt       ?:   NativeDate;
+    updatedAt       ?:   NativeDate;
 }

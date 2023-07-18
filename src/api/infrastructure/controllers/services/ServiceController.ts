@@ -3,10 +3,12 @@ import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 
 import { ServicesUseCase } from '../../../application/services/ServicesUseCase';
+import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 
 export class ServicesController extends ResponseData {
+    protected path = '/services'
 
-    constructor(private servicesUseCase: ServicesUseCase) {
+    constructor(private servicesUseCase: ServicesUseCase , private readonly s3Service:S3Service) {
         super();
         this.getAllServices     =   this.getAllServices.bind(this);
         this.getService         =   this.getService.bind(this);
@@ -49,7 +51,13 @@ export class ServicesController extends ResponseData {
         const { id } = req.params;
         const { name, description, status, subCategory } = req.body;
         try {
-            const response = await this.servicesUseCase.updateOneService(id, { name, description, status, subCategory });
+            const pathObject = `${this.path}/${id}/${req.file?.fieldname}`;
+
+            const { message, key, url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject, req.file, "image/jpeg");
+            if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
+            const response = await this.servicesUseCase.updateOneService(id, { name, description, status, subCategory , service_image: key });
+            console.log(response)
+            response.service_image = url;
             this.invoke(response, 201, res, 'El servicio se actualizó con exito', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al actualizar el servicio', 500));   

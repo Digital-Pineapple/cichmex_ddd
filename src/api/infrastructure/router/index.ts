@@ -8,6 +8,7 @@ import typeCarRouter from './typeCar';
 import typeCustomer from './typeCustomer';
 import categoryRouter from './Category';
 import subCategoryRouter from './subCategory';
+import commissionRouter from './commission';
 
 export const apiRouter = (): Router => {
 
@@ -21,6 +22,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/type-customer', typeCustomer)
     apiRouter.use('/category', categoryRouter)
     apiRouter.use('/sub-category', subCategoryRouter)
+    apiRouter.use('/commission', commissionRouter)
 
 
     return apiRouter;
@@ -35,5 +37,6 @@ apiRouterx.use('/type-car', typeCarRouter)
 apiRouterx.use('/type-customer', typeCustomer)
 apiRouterx.use('/category', categoryRouter)
 apiRouterx.use('/sub-category', subCategoryRouter)
+apiRouterx.use('/commission',commissionRouter)
 
 export default apiRouter

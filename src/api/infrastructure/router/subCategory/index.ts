@@ -3,20 +3,24 @@ import { SubCategoryRepository } from '../../repository/subCategory/SubCategoryR
 import SubCategoryModel from '../../models/SubCategoryModel';
 import { SubCategoryUseCase } from '../../../application/subCategory/SubCategoryUseCase'
 import { SubCategoryController } from '../../controllers/subCategory/SubCategoryController';
+import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
+import { SubCategoryValidations } from '../../../../shared/infrastructure/validation/SubCategory/SubCategoryValidation';
 
 const subCategoryRouter = Router();
 
 const subCategoryRepository = new SubCategoryRepository(SubCategoryModel);
 const subCategoryUseCase = new SubCategoryUseCase(subCategoryRepository);
-const subcategoryController = new SubCategoryController(subCategoryUseCase);
+const s3Service          = new S3Service();
+const subCategoryValidations    = new SubCategoryValidations();
+const subCategoryController = new SubCategoryController(subCategoryUseCase, s3Service);
 
 subCategoryRouter
-    .get('/', subcategoryController.getAllSubCategories)
-    .get('/:id', subcategoryController.getSubCategory)
-    .post('/', subcategoryController.createSubCategory)
-    .patch('/:id', subcategoryController.updateSubCategory)
-    .delete('/:id', subcategoryController.deleteSubCategory)
-    .get('/search/search', subcategoryController.searchSubCategory)
+    .get('/', subCategoryController.getAllSubCategories)
+    .get('/:id', subCategoryController.getSubCategory)
+    .post('/', subCategoryController.createSubCategory)
+    .put('/:id', subCategoryValidations.subCategoryPhotoValidation, subCategoryController.updateSubCategory)
+    .delete('/:id', subCategoryController.deleteSubCategory)
+    .get('/search/search', subCategoryController.searchSubCategory)
 
 
 export default subCategoryRouter;

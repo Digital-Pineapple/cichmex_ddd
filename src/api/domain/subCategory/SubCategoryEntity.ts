@@ -1,12 +1,10 @@
+import { Category } from "../category/CategoryEntity";
+
 export interface SubCategory {
     name: string;
     description: string;
     status: boolean;
-    category: category;
+    subCategory_image : string;
+    category: Category;
 }
 
-export interface category {
-    name: string;
-    description: string;
-    status: boolean; 
-}

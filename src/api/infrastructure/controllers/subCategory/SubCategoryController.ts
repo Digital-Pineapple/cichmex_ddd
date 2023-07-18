@@ -2,13 +2,14 @@ import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 import { SubCategoryUseCase } from '../../../application/subCategory/SubCategoryUseCase';
+import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 
 
 
 
 export class SubCategoryController extends ResponseData {
-
-    constructor(private subCategoryUseCase:SubCategoryUseCase  ) {
+    protected path = '/subCategories';
+    constructor(private subCategoryUseCase:SubCategoryUseCase, private readonly s3Service:S3Service  ) {
         super();
         this.getAllSubCategories    =   this.getAllSubCategories.bind(this);
         this.getSubCategory         =   this.getSubCategory.bind(this);
@@ -53,8 +54,14 @@ export class SubCategoryController extends ResponseData {
         const { id } = req.params;
         const { name, description, status, category } = req.body;
         try {
-            const response = await this.subCategoryUseCase.updateOneSubCategory(id, { name, description, status, category });
-            this.invoke(response, 201, res, 'La subcategoria se actualizó con exito', next);
+            const pathObject = `${this.path}/${id}/${req.file?.fieldname}`;
+
+            const { message, key, url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject, req.file, "image/jpeg");
+            if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
+            const response = await this.subCategoryUseCase.updateOneSubCategory(id, { name, description, status, category , subCategory_image: key });
+            console.log(response)
+            response.category_image = url;
+            this.invoke(response, 201, res, 'La categoría se actualizó con éxito', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al actualizar la subcategoria', 500));   
         }

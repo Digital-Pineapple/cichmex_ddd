@@ -1,9 +1,10 @@
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { SubCategoriesRepository } from '../../domain/subCategory/SubCategoriesRepository';
-import { category, SubCategory } from '../../domain/subCategory/SubCategoryEntity';
+import { SubCategory } from '../../domain/subCategory/SubCategoryEntity';
 
 
 export class SubCategoryUseCase {
+    protected path = '/sub-category'
 
     constructor(private readonly subCategoriesRepository: SubCategoriesRepository) { }
 

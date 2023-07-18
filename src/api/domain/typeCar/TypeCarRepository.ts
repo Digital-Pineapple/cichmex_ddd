@@ -7,7 +7,7 @@ export interface TypeCarRepository {
 
     createTypeCar(body: object): Promise<TypeCarEntity | null>
 
-    updateOneTypeCar(_id: string, name: string): Promise<TypeCarEntity | null>
+    updateOneTypeCar(_id: string, updated: TypeCarEntity): Promise<TypeCarEntity | null>
 
     updateOneServiceFromTypeCar(_id: string, updated: IService): Promise<TypeCarEntity | null>
 

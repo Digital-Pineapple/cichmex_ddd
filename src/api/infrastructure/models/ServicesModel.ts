@@ -3,25 +3,30 @@ import { ServicesEntity } from '../../domain/services/ServicesEntity';
 
 const ServiceSchema = new Schema<ServicesEntity>({
     name: {
-        type    : String,
+        type: String,
         required: true,
     },
     description: {
-        type    : String,
+        type: String,
         required: true,
     },
     status: {
-        type    : Boolean,
-        default : true,
+        type: Boolean,
+        default: true,
     },
-    subCategory:{
-        type: Schema.Types.ObjectId,
-        ref:'SubCategory'
+    service_image: {
+        type: String,
+        required: false
 
-      }
-},{
-    versionKey  : false,
-    timestamps  : true,
+    },
+    subCategory: {
+        type: Schema.Types.ObjectId,
+        ref: 'SubCategory'
+
+    }
+}, {
+    versionKey: false,
+    timestamps: true,
 },
 
 );

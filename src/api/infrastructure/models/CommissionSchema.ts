@@ -1,26 +1,20 @@
 import { Schema, model } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
-import { Category } from '../../domain/category/CategoryEntity';
 
-const CategorySchema = new Schema<Category>(
+const CommissionSchema = new Schema<CommissionEntity>(
     {
       name: {
         type: String,
         required: true,
       },
-      description:{
-        type: String,
+      amount:{
+        type: Number,
         required:true,
       },
       status:{
         type: Boolean,
         required: true,
-
       },
-      category_image:{
-        type: String,
-        required: false,
-      }
     },
     {
       versionKey: false,
@@ -28,6 +22,6 @@ const CategorySchema = new Schema<Category>(
     }
   );
 
-  const CategoryModel = model('CategoryModel', CategorySchema);
+  const CommissionModel = model('CommissionModel', CommissionSchema);
 
-  export default CategoryModel;
+  export default CommissionModel;

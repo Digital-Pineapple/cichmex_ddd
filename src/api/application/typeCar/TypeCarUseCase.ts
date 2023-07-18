@@ -16,8 +16,8 @@ export class TypeCarUseCase {
         return await this.typeCarRepository.createTypeCar(body);
     }
 
-    public async updateTypeCar(_id: string, name: string): Promise<TypeCarEntity | null> {
-        return await this.typeCarRepository.updateOneTypeCar(_id, name);
+    public async updateTypeCar(_id: string, updated : TypeCarEntity): Promise<TypeCarEntity | null> {
+        return await this.typeCarRepository.updateOneTypeCar(_id, updated);
     }
 
     public async updateTypeCarService(_id: string, updated: IService): Promise<TypeCarEntity | null> {

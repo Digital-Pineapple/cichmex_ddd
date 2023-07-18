@@ -14,8 +14,8 @@ export class TypeCarRepository implements TypeCarConfig {
         const typeCar = new TypeCarModel(body);
         return await typeCar.save();
     }
-    async updateOneTypeCar(_id: string, name: string): Promise<TypeCarEntity | null> {
-        return await TypeCarModel.findByIdAndUpdate(_id, { name }, { new: true });
+    async updateOneTypeCar(_id: string, updated : TypeCarEntity): Promise<TypeCarEntity | null> {
+        return await TypeCarModel.findByIdAndUpdate(_id, updated, { new: true });
     }
     async updateOneServiceFromTypeCar(_id: string, updated: IService): Promise<TypeCarEntity | null> {
         return await TypeCarModel.findByIdAndUpdate(_id, updated, { new: true });

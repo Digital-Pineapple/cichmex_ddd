@@ -4,25 +4,25 @@ import { IService, TypeCarEntity } from '../../domain/typeCar/TypeCarEntity';
 
 const ServiceSchema = new Schema<IService>({
     name: {
-        type    : String,
+        type: String,
         required: true,
     },
     description: {
-        type    : String,
+        type: String,
         required: true,
     },
     price: {
-        type    : Number,
+        type: Number,
         required: true,
     },
     status: {
-        type    : Boolean,
-        default : true,
+        type: Boolean,
+        default: true,
     },
     service_id: {
-        type        : Schema.Types.ObjectId,
-        ref         : 'Service',
-        required    : true,
+        type: Schema.Types.ObjectId,
+        ref: 'Service',
+        required: true,
     }
 }, {
     versionKey: false,
@@ -31,15 +31,19 @@ const ServiceSchema = new Schema<IService>({
 
 
 const TypeCarSchema = new Schema<TypeCarEntity>({
-    name:{
-        type        : String,
-        required    : true,
+    name: {
+        type: String,
+        required: true,
     },
     status: {
-        type    : Boolean,
-        default : true,
+        type: Boolean,
+        default: true,
     },
-    services        : [ServiceSchema]
+    typeCar_image: {
+        type: String,
+        required: false
+    },
+    services: [ServiceSchema]
 }, {
     versionKey: false,
     timestamps: true,

@@ -19,7 +19,7 @@ categoryRouter
     .get('/', categoryController.getAllCategories)
     .get('/:id', categoryController.getCategory)
     .post('/', categoryController.createCategory)
-    .patch('/:id',categoryValidations.categoryPhotoValidation, categoryController.updateCategory)
+    .put('/:id',categoryValidations.categoryPhotoValidation, categoryController.updateCategory)
     .delete('/:id', categoryController.deleteCategory)
     .get('/search/search',  categoryController.searchCategory)
     
