@@ -64,7 +64,7 @@ const CustomerSchema = new mongoose_1.Schema({
     },
     type_customer: {
         type: String,
-        enum: ['0', '1', '2'],
+        enum: ['0', '1', '2', '3'],
         default: '0',
     },
     profile_image: {

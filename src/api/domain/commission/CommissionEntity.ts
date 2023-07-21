@@ -1,7 +1,8 @@
 interface CommissionEntity {
-    name: String,
-    amount: Number,
-    status: Boolean,
+    name     : String,
+    amount   : Number,
+    status   : Boolean,
+    discount : Number,
 
 
 }

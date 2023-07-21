@@ -5,5 +5,5 @@ export interface IPhoneRequest {
 
 export interface IFileKeys {
     field   :  string;
-    key     : string;
+    key     :  string;
 }

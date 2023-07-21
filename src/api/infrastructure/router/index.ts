@@ -9,6 +9,7 @@ import typeCustomer from './typeCustomer';
 import categoryRouter from './Category';
 import subCategoryRouter from './subCategory';
 import commissionRouter from './commission';
+import documentationRouter from './documentation';
 
 export const apiRouter = (): Router => {
 
@@ -23,6 +24,8 @@ export const apiRouter = (): Router => {
     apiRouter.use('/category', categoryRouter)
     apiRouter.use('/sub-category', subCategoryRouter)
     apiRouter.use('/commission', commissionRouter)
+    apiRouter.use('/documentation', documentationRouter)
+
 
 
     return apiRouter;
@@ -38,5 +41,6 @@ apiRouterx.use('/type-customer', typeCustomer)
 apiRouterx.use('/category', categoryRouter)
 apiRouterx.use('/sub-category', subCategoryRouter)
 apiRouterx.use('/commission',commissionRouter)
+apiRouterx.use('/documentation',documentationRouter)
 
 export default apiRouter

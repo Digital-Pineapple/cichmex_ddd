@@ -13,10 +13,10 @@ export class CommissionUseCase {
         return await this.commissionsRepository.findById(_id);
     }
 
-    public async createNewCommission(name: string, amount: number, status: boolean): Promise<CommissionEntity | ErrorHandler | null> {
+    public async createNewCommission(name: string, amount: number, status: boolean, discount: number ): Promise<CommissionEntity | ErrorHandler | null> {
         const commission = await this.commissionsRepository.findOneItem({name});
         if (commission) return new ErrorHandler('La comision ya ha sido registrada',400);
-        return await this.commissionsRepository.createOne({ name, amount, status });
+        return await this.commissionsRepository.createOne({ name, amount, status, discount });
     }
 
     public async updateOneCommission(_id: string,updated: CommissionEntity): Promise<CommissionEntity> {

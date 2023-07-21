@@ -12,6 +12,7 @@ const commissionUseCase      = new CommissionUseCase (commissionRepository);
 const commissionController   = new CommissionController(commissionUseCase);
 
 commissionRouter
+
     .get('/', commissionController.getAllCommissions)
     .get('/:id', commissionController.getCommission)
     .post('/', commissionController.createCommission)

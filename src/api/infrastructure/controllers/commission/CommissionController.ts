@@ -10,10 +10,10 @@ export class CommissionController extends ResponseData {
     constructor(private commissionUseCase: CommissionUseCase) {
         super();
         this.getAllCommissions = this.getAllCommissions.bind(this);
-        this.getCommission = this.getCommission.bind(this);
-        this.createCommission = this.createCommission.bind(this);
-        this.updateCommission = this.updateCommission.bind(this);
-        this.deleteCommission = this.deleteCommission.bind(this);
+        this.getCommission     = this.getCommission.bind(this);
+        this.createCommission  = this.createCommission.bind(this);
+        this.updateCommission  = this.updateCommission.bind(this);
+        this.deleteCommission  = this.deleteCommission.bind(this);
 
     }
 
@@ -37,9 +37,9 @@ export class CommissionController extends ResponseData {
     }
 
     public async createCommission(req: Request, res: Response, next: NextFunction) {
-        const { name, amount, status } = req.body;
+        const { name, amount, status, discount } = req.body;
         try {
-            const response = await this.commissionUseCase.createNewCommission(name, amount, status);
+            const response = await this.commissionUseCase.createNewCommission(name, amount, status, discount);
             this.invoke(response, 201, res, 'La comisión se creo con exito', next);
         } catch (error) {
             console.log(error);
@@ -50,11 +50,10 @@ export class CommissionController extends ResponseData {
 
     public async updateCommission(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { name, amount, status } = req.body;
+        const { name, amount, status, discount } = req.body;
 
         try {
-
-            const response = await this.commissionUseCase.updateOneCommission(id, { name, amount, status });
+            const response = await this.commissionUseCase.updateOneCommission(id, { name, amount, status, discount });
             this.invoke(response, 201, res, 'La comisión se actualizó con éxito', next);
         } catch (error) {
             console.log(error);

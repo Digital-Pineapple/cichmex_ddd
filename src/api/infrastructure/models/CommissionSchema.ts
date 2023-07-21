@@ -15,6 +15,11 @@ const CommissionSchema = new Schema<CommissionEntity>(
         type: Boolean,
         required: true,
       },
+      discount:{
+        type: Number,
+        required: true
+
+      }
     },
     {
       versionKey: false,
