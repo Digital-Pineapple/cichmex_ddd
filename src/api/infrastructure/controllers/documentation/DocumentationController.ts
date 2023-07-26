@@ -5,6 +5,7 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 import { DocumentationUseCase } from '../../../application/documentation/DocumentationUseCase';
 import { IFile } from '../../../domain/documentation/DocumentationsEntity';
+import { verify } from 'jsonwebtoken';
 
 export class DocumentationController extends ResponseData {
 
@@ -17,6 +18,7 @@ export class DocumentationController extends ResponseData {
         this.getDocumentationDetail = this.getDocumentationDetail.bind(this);
         this.updateDocumentation = this.updateDocumentation.bind(this);
         this.deleteDocumentation = this.deleteDocumentation.bind(this);
+        this.getAllDocumentationsByCustomer = this.getAllDocumentationsByCustomer.bind(this);
     
         
     }
@@ -44,16 +46,14 @@ export class DocumentationController extends ResponseData {
 
     public async createDocumentation(req: Request, res: Response, next: NextFunction) {
     
-        const { customer_id, name, status, message } = req.body;
+        const { customer_id, name, status, message, verify } = req.body;
     
         
         try {
             const pathObject = `${this.path}/${customer_id}/${req.file?.fieldname}`;
-            
             const {  key, success,url, } = await this.s3Service.uploadToS3AndGetUrl(pathObject, req.file, "application/pdf");
             if (!success) return new ErrorHandler('Hubo un error al subir el documento', 400)
-
-            const file = await this.documentationUseCase.createNewDocumentation(name,message,status,customer_id, url);
+            const file = await this.documentationUseCase.createNewDocumentation(name,message,status,customer_id, url,verify);
             this.invoke(file, 201, res, 'El documento se creó con éxito', next);
             console.log(file);
             
@@ -66,10 +66,13 @@ export class DocumentationController extends ResponseData {
     
     public async updateDocumentation(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { customer_id, ine, curp, prook_address, criminal_record } = req.body;
+        const { name, status, message, verify } = req.body;
 
         try {
-            const documentation = await this.documentationUseCase.updateOneDocumentation(id, { customer_id, ine, curp, prook_address, criminal_record });
+            const pathObject = `${this.path}/${id}/${req.file?.fieldname}`;
+            const {  key, success,url, } = await this.s3Service.uploadToS3AndGetUrl(pathObject, req.file, "application/pdf");
+            if (!success) return new ErrorHandler('Hubo un error al subir el documento', 400)
+            const documentation = await this.documentationUseCase.updateOneDocumentation(id, { name, status, message, verify, url });
             this.invoke(documentation, 200, res, 'La documentacion se actualizó con éxito', next);
         } catch (error) {
             console.log(error);
@@ -95,12 +98,18 @@ export class DocumentationController extends ResponseData {
 
     public async getAllDocumentationsByCustomer(req: Request, res: Response, next: NextFunction) {
         const { customer_id } = req.params;
+        
+        
         try {
+            console.log(customer_id);
+            
             const documentations = await this.documentationUseCase.getDocumentationByCustomer(customer_id);
+            console.log(documentations);
+            
             this.invoke(documentations, 200, res, '', next);
         } catch (error) {
             console.log(error);
-            next(new ErrorHandler('Hubo un error al consultar la documentacion', 500));
+            next(new ErrorHandler('Hubo un error al consultar la documentacion por customer', 500));
         }
     }
 

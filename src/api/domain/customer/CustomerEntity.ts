@@ -22,10 +22,6 @@ export interface CustomerEntity {
     status           :   Boolean;
     accountVerify    :   Boolean;
     facturapi_id    ?:   string;
-    ine             ?:   string;
-    curp            ?:   string;
-    prook_address   ?:   string;
-    criminal_record ?:   string;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;
 }

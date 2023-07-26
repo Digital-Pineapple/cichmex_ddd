@@ -6,4 +6,5 @@ export interface IFile {
     status: boolean;
     customer_id: CustomerEntity;
     url: string;
+    verify : boolean;
 }

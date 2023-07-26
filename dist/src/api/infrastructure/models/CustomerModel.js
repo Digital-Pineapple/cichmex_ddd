@@ -97,22 +97,6 @@ const CustomerSchema = new mongoose_1.Schema({
         type: String,
         required: false
     },
-    ine: {
-        type: String,
-        required: false,
-    },
-    curp: {
-        type: String,
-        required: false,
-    },
-    prook_address: {
-        type: String,
-        required: false,
-    },
-    criminal_record: {
-        type: String,
-        required: false,
-    },
 }, {
     timestamps: true,
     versionKey: false,

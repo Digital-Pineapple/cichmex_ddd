@@ -18,13 +18,17 @@ export class DocumentationUseCase {
     }
 
     public async getDocumentationByCustomer(customer_id: string): Promise<IFile | ErrorHandler | null> {
-        return await this.documentRepository.findOneItem({ customer_id });
+        console.log(customer_id);
+        
+        return await this.documentRepository.findByCustomer(customer_id);
     }
 
-    public async createNewDocumentation(name: string , message: string, status: boolean, customer_id: any,  url: any ): Promise<IFile | ErrorHandler | null> {
+    public async createNewDocumentation(name: string , message: string, status: boolean, customer_id: any,  url: any, verify: boolean ): Promise<IFile | ErrorHandler | null> {
         const customer = await this.documentRepository.findOneItem({ customer_id });
-        if (customer) return new ErrorHandler('Ya existe documentacion en este usuario', 400);
-        return await this.documentRepository.createOne({ name, url, status, message,customer_id });
+        const fileName = await this.documentRepository.findOneItem({ name });
+        
+        if (customer && fileName) return new ErrorHandler('Ya existe documentacion en este usuario', 400);
+        return await this.documentRepository.createOne({ name, url, status, message,customer_id, verify });
     }
     
 

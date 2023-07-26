@@ -22,6 +22,11 @@ const FileSchema = new Schema<IFile>(
             type: String,
             required: true,
         },
+        verify :{
+            type: Boolean,
+            required: true,
+
+        },
         customer_id: {
             type: Schema.Types.ObjectId,
             ref: 'Customer'
