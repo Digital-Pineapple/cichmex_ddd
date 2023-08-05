@@ -48,6 +48,7 @@ export class CustomerController extends ResponseData {
 
         try {
             const customer = await this.customerUseCase.getDetailCustomer(id);
+            
             customer.ine = await this.s3Service.getUrlObject(customer?.ine + ".pdf");
             customer.curp = await this.s3Service.getUrlObject(customer?.curp + ".pdf");
             customer.criminal_record = await this.s3Service.getUrlObject(customer?.criminal_record + ".pdf");

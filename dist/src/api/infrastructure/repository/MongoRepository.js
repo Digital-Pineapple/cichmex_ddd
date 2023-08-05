@@ -34,6 +34,11 @@ class MongoRepository {
             return yield this.MODEL.find({ customer_id: customer_id });
         });
     }
+    findByCustomerAndName(customer_id, name) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.find({ customer_id: customer_id, name: name });
+        });
+    }
     updateOne(_id, updated) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.MODEL.findByIdAndUpdate(_id, updated, { new: true });
