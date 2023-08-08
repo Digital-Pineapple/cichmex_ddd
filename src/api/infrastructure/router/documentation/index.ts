@@ -19,7 +19,7 @@ documentationRouter
 
     .get('/', documentationController.getAllDocumentations)
     .get('/:id', documentationController.getDocumentationDetail)
-    .get('/customer/customer', documentationController.getAllDocumentationsByCustomer)
+    .get('/customer/:id', documentationController.getAllDocumentationsByCustomer)
     .post('/',documentationValidations.DocumentationFileValidation, documentationController.createDocumentation)
     .post('/validate',documentationValidations.DocumentationFileValidation,documentationController.validateDocumentation)
     .put('/:id',documentationValidations.DocumentationFileValidation, documentationController.updateDocumentation)

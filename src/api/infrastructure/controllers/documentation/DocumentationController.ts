@@ -107,13 +107,13 @@ console.log(id,'cscscs');
     }
 
     public async getAllDocumentationsByCustomer(req: Request, res: Response, next: NextFunction) {
-        const {customer_id } = req.body;
-        console.log(customer_id);
+        const {id } = req.params;
+        console.log(id);
         
         
         
         try {
-            const documentations = await this.documentationUseCase.getDocumentationByCustomer(customer_id);
+            const documentations = await this.documentationUseCase.getDocumentationByCustomer(id);
             this.invoke(documentations, 200, res, '', next);
         } catch (error) {
 
