@@ -18,7 +18,6 @@ export class DocumentationUseCase {
     }
 
     public async getDocumentationByCustomer(customer_id: string): Promise<IFile | ErrorHandler | null> {
-        console.log(customer_id);
         
         return await this.documentRepository.findByCustomer(customer_id);
     }
