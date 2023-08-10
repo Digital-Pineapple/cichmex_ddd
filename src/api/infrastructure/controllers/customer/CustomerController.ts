@@ -18,6 +18,7 @@ export class CustomerController extends ResponseData {
         this.updateCustomer = this.updateCustomer.bind(this);
         this.deleteCustomer = this.deleteCustomer.bind(this);
         this.getAllCustomersByType = this.getAllCustomersByType.bind(this);
+        this.validateCustomer = this.validateCustomer.bind(this);
     }
 
     public async getAllCustomers(req: Request, res: Response, next: NextFunction) {
@@ -48,11 +49,6 @@ export class CustomerController extends ResponseData {
 
         try {
             const customer = await this.customerUseCase.getDetailCustomer(id);
-            
-            customer.ine = await this.s3Service.getUrlObject(customer?.ine + ".pdf");
-            customer.curp = await this.s3Service.getUrlObject(customer?.curp + ".pdf");
-            customer.criminal_record = await this.s3Service.getUrlObject(customer?.criminal_record + ".pdf");
-            customer.prook_address = await this.s3Service.getUrlObject(customer?.prook_address + ".pdf");
             
             this.invoke(customer, 200, res, '', next)
         } catch (error) {
@@ -117,6 +113,19 @@ export class CustomerController extends ResponseData {
         } catch (error) {
             console.log(error);
             next(new ErrorHandler('Hubo un error al consultar los usuarios', 500));
+        }
+    }
+
+    public async validateCustomer(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        const  { accountVerify } = req.body;
+
+        try {
+            const customer = await this.customerUseCase.validateOneCustomer(id,accountVerify );
+            this.invoke(customer, 200, res, 'El usuario se valido con exito', next);
+        } catch (error) {
+            console.log(error);
+            next(new ErrorHandler('Hubo un error al validar el usuario', 500));
         }
     }
 

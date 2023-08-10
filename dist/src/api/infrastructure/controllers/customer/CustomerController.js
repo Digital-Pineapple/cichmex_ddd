@@ -24,6 +24,7 @@ class CustomerController extends ResponseData_1.ResponseData {
         this.updateCustomer = this.updateCustomer.bind(this);
         this.deleteCustomer = this.deleteCustomer.bind(this);
         this.getAllCustomersByType = this.getAllCustomersByType.bind(this);
+        this.validateCustomer = this.validateCustomer.bind(this);
     }
     getAllCustomers(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -53,10 +54,6 @@ class CustomerController extends ResponseData_1.ResponseData {
             const { id } = req.params;
             try {
                 const customer = yield this.customerUseCase.getDetailCustomer(id);
-                customer.ine = yield this.s3Service.getUrlObject((customer === null || customer === void 0 ? void 0 : customer.ine) + ".pdf");
-                customer.curp = yield this.s3Service.getUrlObject((customer === null || customer === void 0 ? void 0 : customer.curp) + ".pdf");
-                customer.criminal_record = yield this.s3Service.getUrlObject((customer === null || customer === void 0 ? void 0 : customer.criminal_record) + ".pdf");
-                customer.prook_address = yield this.s3Service.getUrlObject((customer === null || customer === void 0 ? void 0 : customer.prook_address) + ".pdf");
                 this.invoke(customer, 200, res, '', next);
             }
             catch (error) {
@@ -126,6 +123,20 @@ class CustomerController extends ResponseData_1.ResponseData {
             catch (error) {
                 console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al consultar los usuarios', 500));
+            }
+        });
+    }
+    validateCustomer(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            const { accountVerify } = req.body;
+            try {
+                const customer = yield this.customerUseCase.validateOneCustomer(id, accountVerify);
+                this.invoke(customer, 200, res, 'El usuario se valido con exito', next);
+            }
+            catch (error) {
+                console.log(error);
+                next(new ErrorHandler_1.ErrorHandler('Hubo un error al validar el usuario', 500));
             }
         });
     }

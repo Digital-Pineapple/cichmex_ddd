@@ -50,7 +50,7 @@ console.log(id,'cscscs');
         const ok = await this.documentationUseCase.getDocumentByNameAndCustomer(customer_id, name);
         try {
             const pathObject = `${this.path}/${customer_id}/${name}`;
-            if (ok.length <= 0) {
+            if (ok?.length <= 0) {
 
                 const { success, url } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".pdf", req.file, "application/pdf");
                 if (!success) {
@@ -109,9 +109,6 @@ console.log(id,'cscscs');
     public async getAllDocumentationsByCustomer(req: Request, res: Response, next: NextFunction) {
         const {id } = req.params;
         console.log(id);
-        
-        
-        
         try {
             const documentations = await this.documentationUseCase.getDocumentationByCustomer(id);
             this.invoke(documentations, 200, res, '', next);
@@ -124,16 +121,14 @@ console.log(id,'cscscs');
         const { _id, message, verify } = req.body;
         console.log(_id, verify);
         if (_id !== undefined ) {
-            
-            
             try {
                 const documentation = await this.documentationUseCase.updateOneDocumentation(_id, { verify, message })
                 this.invoke(documentation, 200, res, "Se valido con éxito", next)
             } catch (error) {
-                next(new ErrorHandler(`Hubo un error xd: ${error}`, 500));
+                next(new ErrorHandler(`Hubo un error: ${error}`, 500));
             }
         }else{
-            next(new ErrorHandler(`Hubo un error wow`, 500));
+            next(new ErrorHandler(`Hubo un error `, 500));
         }
 
     }

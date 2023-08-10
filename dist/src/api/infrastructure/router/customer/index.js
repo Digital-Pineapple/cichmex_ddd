@@ -18,6 +18,7 @@ customerRouter
     .get('/', customerController.getAllCustomers)
     .get('/:id', customerController.getCustomerDetail)
     .post('/', customerController.createCustomer)
+    .post('/validate/:id', customerController.validateCustomer)
     .patch('/:id', customerController.updateCustomer)
     .delete('/:id', customerController.deleteCustomer);
 exports.default = customerRouter;

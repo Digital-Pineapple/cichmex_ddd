@@ -20,7 +20,7 @@ serviceRouter
     .get('/', servicesController.getAllServices)
     .get('/:id', servicesController.getService)
     .post('/', servicesController.createService)
-    .put('/:id', serviceValidations.servicePhotoValidation, servicesController.updateService )
+    .post('/:id', serviceValidations.servicePhotoValidation, servicesController.updateService )
     .delete('/:id', servicesController.deleteService)
     .get('/search/search', servicesController.searchService)
     

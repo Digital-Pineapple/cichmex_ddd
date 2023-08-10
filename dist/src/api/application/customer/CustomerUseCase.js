@@ -57,5 +57,10 @@ class CustomerUseCase {
             return yield this.customerRepository.updateOne(customer_id, { type: '1' });
         });
     }
+    validateOneCustomer(_id, accountVerify) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.customerRepository.updateOne(_id, { accountVerify });
+        });
+    }
 }
 exports.CustomerUseCase = CustomerUseCase;
