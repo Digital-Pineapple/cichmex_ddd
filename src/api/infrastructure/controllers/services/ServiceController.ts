@@ -8,14 +8,14 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 export class ServicesController extends ResponseData {
     protected path = '/services'
 
-    constructor(private servicesUseCase: ServicesUseCase , private readonly s3Service:S3Service) {
+    constructor(private servicesUseCase: ServicesUseCase, private readonly s3Service: S3Service) {
         super();
-        this.getAllServices     =   this.getAllServices.bind(this);
-        this.getService         =   this.getService.bind(this);
-        this.createService      =   this.createService.bind(this);
-        this.updateService      =   this.updateService.bind(this);
-        this.deleteService      =   this.deleteService.bind(this);
-        this.searchService    =   this.searchService.bind(this);
+        this.getAllServices = this.getAllServices.bind(this);
+        this.getService = this.getService.bind(this);
+        this.createService = this.createService.bind(this);
+        this.updateService = this.updateService.bind(this);
+        this.deleteService = this.deleteService.bind(this);
+        this.searchService = this.searchService.bind(this);
     }
 
     public async getAllServices(req: Request, res: Response, next: NextFunction) {
@@ -24,7 +24,7 @@ export class ServicesController extends ResponseData {
             await Promise.all(response.map(async (res) => {
                 const url = await this.s3Service.getUrlObject(res.service_image + ".jpg");
                 res.service_image = url;
-                
+
             }));
             this.invoke(response, 200, res, '', next);
         } catch (error) {
@@ -47,7 +47,7 @@ export class ServicesController extends ResponseData {
     public async createService(req: Request, res: Response, next: NextFunction) {
         const { name, description, status, subCategory } = req.body;
         try {
-            const response = await this.servicesUseCase.createNewService(name, description,status, subCategory);
+            const response = await this.servicesUseCase.createNewService(name, description, status, subCategory);
             this.invoke(response, 201, res, 'El servicio se creo con exito', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al crear el servicio', 500));
@@ -62,11 +62,11 @@ export class ServicesController extends ResponseData {
         try {
             const { key, success, url } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, `image/jpg`);
             if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-            const response = await this.servicesUseCase.updateOneService(id, { name, description, status, subCategory , service_image: pathObject  });
-        response.service_image= url;       
+            const response = await this.servicesUseCase.updateOneService(id, { name, description, status, subCategory, service_image: pathObject });
+            response.service_image = url;
             this.invoke(response, 201, res, 'El servicio se actualizó con exito', next);
         } catch (error) {
-            next(new ErrorHandler('Hubo un error al actualizar el servicio', 500));   
+            next(new ErrorHandler('Hubo un error al actualizar el servicio', 500));
         }
     }
 
@@ -76,20 +76,20 @@ export class ServicesController extends ResponseData {
             const response = await this.servicesUseCase.deleteOneService(id);
             this.invoke(response, 201, res, 'El servicio se elimino con exito', next);
         } catch (error) {
-            next(new ErrorHandler('Hubo un error eliminar el servicio', 500));   
+            next(new ErrorHandler('Hubo un error eliminar el servicio', 500));
         }
     }
     public async searchService(req: Request, res: Response, next: NextFunction) {
-        const {search } = req.query;
+        const { search } = req.query;
         console.log(req.query);
-        
+
         try {
             const response = await this.servicesUseCase.searchService(search);
             this.invoke(response, 201, res, 'Categoria encontrada', next);
         } catch (error) {
             console.log(error);
-            
-            next(new ErrorHandler('', 500));   
+
+            next(new ErrorHandler('', 500));
         }
     }
 

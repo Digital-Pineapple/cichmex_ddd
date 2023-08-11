@@ -5,10 +5,11 @@ import { TypeCarUseCase } from '../../../application/typeCar/TypeCarUseCase';
 import { TypeCarController } from '../../controllers/typeCar/TypeCarController';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { TypeCarValidations } from '../../../../shared/infrastructure/validation/TypeCar/TypeCarValidation';
+import TypeCarModel from '../../models/TypeCarModel';
 
 const typeCarRouter = Router();
 
-const typeCarRepository     = new TypeCarRepository();
+const typeCarRepository     = new TypeCarRepository(TypeCarModel);
 const typeCarUseCase        = new TypeCarUseCase(typeCarRepository);
 const s3Service             = new S3Service();
 const typeCarValidations    = new TypeCarValidations();
@@ -18,7 +19,7 @@ typeCarRouter
     .get('/', typeCarController.getAllTypeCars)
     .get('/:id', typeCarController.getTypeCar)
     .post('/', typeCarController.createTypeCar)
-    .put('/:id', typeCarValidations.typeCarPhotoValidation, typeCarController.updateTypeCar)
+    .post('/:id', typeCarValidations.typeCarPhotoValidation, typeCarController.updateTypeCar)
     .delete('/:id', typeCarController.deleteTypeCar)
 
 export default typeCarRouter;

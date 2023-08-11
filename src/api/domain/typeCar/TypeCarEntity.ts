@@ -13,7 +13,7 @@ export interface TypeCarEntity {
     name             :   string;
     services         ?:   IService[];
     status           ?:   boolean;
-    typeCar_image    :   any;
+    typeCar_image    ?:   string;
     createdAt       ?:   NativeDate;
     updatedAt       ?:   NativeDate;
 }

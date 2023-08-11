@@ -1,30 +1,34 @@
-import { TypeCarEntity, IService } from '../../../domain/typeCar/TypeCarEntity';
-import { TypeCarRepository as TypeCarConfig } from '../../../domain/typeCar/TypeCarRepository';
-import TypeCarModel from '../../models/TypeCarModel';
+import { Model } from 'mongoose';
+import { TypeCarRepository as TypeCarConfig} from '../../../domain/typeCar/TypeCarRepository';
+import { MongoRepository } from '../MongoRepository';
+import { TypeCarEntity } from '../../../domain/typeCar/TypeCarEntity';
 
-export class TypeCarRepository implements TypeCarConfig {
+
+
+export class TypeCarRepository extends MongoRepository implements TypeCarConfig {
+
+    constructor(protected ServiceModel: Model<any>) {
+        super(ServiceModel)
+    }
+
 
     async getAllTypeCars(): Promise<TypeCarEntity[] | null> {
-        return await TypeCarModel.find();
+        return await this.findAll();
     }
     async getOneTypeCar(_id: string): Promise<TypeCarEntity | null> {
-        return await TypeCarModel.findById(_id);
+        return await this.findById(_id);
     }
     async createTypeCar(body: object): Promise<TypeCarEntity | null> {
-        const typeCar = new TypeCarModel(body);
-        return await typeCar.save();
+        return await this.createOne(body);
     }
     async updateOneTypeCar(_id: string, updated : TypeCarEntity): Promise<TypeCarEntity | null> {
-        return await TypeCarModel.findByIdAndUpdate(_id, updated, { new: true });
+        return await this.updateOne(_id, updated);
     }
-    async updateOneServiceFromTypeCar(_id: string, updated: IService): Promise<TypeCarEntity | null> {
-        return await TypeCarModel.findByIdAndUpdate(_id, updated, { new: true });
-    }
+    
     async deleteOneTypeCar(_id: string): Promise<TypeCarEntity | null> {
-        return await TypeCarModel.findByIdAndUpdate(_id, { status: false }, { new: true });
+        return await this.findAndUpdateTypeCar(_id, { status: false });
     }
-    async deleteOneServiceFromTypeCar(_id: string): Promise<TypeCarEntity | null> {
-        return await TypeCarModel.findByIdAndUpdate(_id, { status: false }, { new: true });
+    async findAndUpdateTypeCar(_id: String, updated: object): Promise<TypeCarEntity | null> {
+        return await this.updateOne(_id, updated);
     }
-
 }
