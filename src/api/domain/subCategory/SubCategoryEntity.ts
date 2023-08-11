@@ -4,7 +4,7 @@ export interface SubCategory {
     name: string;
     description: string;
     status: boolean;
-    subCategory_image : string;
+    subCategory_image ?: string;
     category: Category;
 }
 

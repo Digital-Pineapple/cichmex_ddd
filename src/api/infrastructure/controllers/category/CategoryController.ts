@@ -22,6 +22,10 @@ export class CategoryController extends ResponseData {
     public async getAllCategories(req: Request, res: Response, next: NextFunction) {
         try {
             const response = await this.categoryUseCase.getCategories();
+            await Promise.all(response.map(async(res)=> {
+                const url = await this.s3Service.getUrlObject(res.category_image + ".jpg");
+                res.category_image = url
+            }))
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
@@ -32,6 +36,8 @@ export class CategoryController extends ResponseData {
         const { id } = req.params;
         try {
             const response = await this.categoryUseCase.getDetailCategory(id);
+            const url = await this.s3Service.getUrlObject(response?.category_image + ".jpg");
+            response.category_image = url
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
@@ -53,17 +59,19 @@ export class CategoryController extends ResponseData {
     public async updateCategory(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { name, description, status } = req.body;
-
         try {
+            if (req.file) {
+                const pathObject = `${this.path}/${id}/${name}`;
+                const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
+                if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
+                const response = await this.categoryUseCase.updateOneCategory(id, { name, description, status, category_image: pathObject });
+                response.category_image = url;
+                this.invoke(response, 201, res, 'La categoría se actualizó con éxito', next);     
+            } else {
+                const response = await this.categoryUseCase.updateOneCategory(id, { name, description, status });
+                this.invoke(response, 201, res, 'La categoría se actualizó con éxito', next);     
+            }
 
-            const pathObject = `${this.path}/${id}/${req.file?.fieldname}`;
-
-            const { message, key, url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject, req.file, "image/jpeg");
-            if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-            const response = await this.categoryUseCase.updateOneCategory(id, { name, description, status, category_image: key });
-            console.log(response)
-            response.category_image = url;
-            this.invoke(response, 201, res, 'La categoría se actualizó con éxito', next);
         } catch (error) {
             console.log(error);
             next(new ErrorHandler('Hubo un error al actualizar la categoría', 500));

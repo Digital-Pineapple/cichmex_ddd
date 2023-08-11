@@ -4,6 +4,6 @@ export interface ServicesEntity {
     name        :   string;
     description :   string;
     status      :   boolean; 
-    service_image : string;
+    service_image ?: string;
     subCategory :   SubCategory;
 }

@@ -57,16 +57,22 @@ export class ServicesController extends ResponseData {
     public async updateService(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { name, description, status, subCategory } = req.body;
-
-        const pathObject = `${this.path}/${id}/${name}`;
         try {
-            const { key, success, url } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, `image/jpg`);
-            if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-            const response = await this.servicesUseCase.updateOneService(id, { name, description, status, subCategory, service_image: pathObject });
-            response.service_image = url;
-            this.invoke(response, 201, res, 'El servicio se actualizó con exito', next);
+            if (req.file) {
+                const pathObject = `${this.path}/${id}/${name}`;
+                const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
+                if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
+                const response = await this.servicesUseCase.updateOneService(id, { name, status, description, subCategory, service_image: pathObject });
+                response.service_image = url;
+                this.invoke(response, 201, res, 'El servicio se actualizó con éxito', next);
+            } else {
+                const response = await this.servicesUseCase.updateOneService(id, { name, status, description, subCategory });
+                this.invoke(response, 201, res, 'El servicio se actualizó con éxito', next);
+            }
         } catch (error) {
-            next(new ErrorHandler('Hubo un error al actualizar el servicio', 500));
+            console.log(error);
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+
         }
     }
 
@@ -84,7 +90,7 @@ export class ServicesController extends ResponseData {
         console.log(req.query);
 
         try {
-            const response = await this.servicesUseCase.searchService(search);
+            const response = await this.servicesUseCase.getServices();
             this.invoke(response, 201, res, 'Categoria encontrada', next);
         } catch (error) {
             console.log(error);

@@ -12,7 +12,7 @@ export class SubCategoryUseCase {
         return await this.subCategoriesRepository.findAll();
     }
 
-    public async getDetailSubCategory(_id: string): Promise<SubCategory | ErrorHandler | null> {
+    public async getDetailSubCategory(_id: string): Promise<SubCategory | null> {
         return await this.subCategoriesRepository.findById(_id);
     }
 
@@ -22,14 +22,12 @@ export class SubCategoryUseCase {
         return await this.subCategoriesRepository.createOne({ name, description, status, category });
     }
 
-    public async updateOneSubCategory(_id: string,updated: SubCategory): Promise<SubCategory | ErrorHandler | null> {
+    public async updateOneSubCategory(_id: string,updated: SubCategory): Promise<SubCategory  | null> {
         return await this.subCategoriesRepository.updateOne(_id,updated);
     }
     public async deleteOneSubCategory(_id: string): Promise<SubCategory | null> {
         return this.subCategoriesRepository.updateOne(_id, {status: false})
     }
-    public async searchSubCategory(search: string | ParsedQs | string[] | ParsedQs[] | undefined): Promise<SubCategory | null> {
-        return this.subCategoriesRepository.search(search)
-    }
+    
 
 }

@@ -1,6 +1,6 @@
 export interface Category {
-    name: string;
-    description: string;
+    name?: string;
+description ?: string;
     status: boolean;
-    category_image : string;
+    category_image ?: string;
 }

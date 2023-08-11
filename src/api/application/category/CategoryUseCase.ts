@@ -11,7 +11,7 @@ export class CategoryUseCase {
         return await this.categoriesRepository.findAll();
     }
 
-    public async getDetailCategory(_id: string): Promise<Category | ErrorHandler | null> {
+    public async getDetailCategory(_id: string): Promise<Category  | null> {
         return await this.categoriesRepository.findById(_id);
     }
 
@@ -21,17 +21,12 @@ export class CategoryUseCase {
         return await this.categoriesRepository.createOne({ name, description, status });
     }
 
-    public async updateOneCategory(_id: string,updated: Category): Promise<Category> {
+    public async updateOneCategory(_id: string,updated: Category): Promise<Category | null> {
         return await this.categoriesRepository.updateOne(_id,updated);
     }
     public async deleteOneCategory(_id: string): Promise<Category | null> {
         return this.categoriesRepository.updateOne(_id, {status: false})
     }
-    public async searchCategory(search: string | ParsedQs | string[] | ParsedQs[] | undefined): Promise<Category | null> {
-        return this.categoriesRepository.search(search)
-    }
-    async updateCategoryPhoto(photo: string,category_id: string): Promise<Category> {
-        return await this.categoriesRepository.updateOne(category_id,{ category_image: photo });
-    }
+    
 
 }

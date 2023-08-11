@@ -18,7 +18,7 @@ subCategoryRouter
     .get('/', subCategoryController.getAllSubCategories)
     .get('/:id', subCategoryController.getSubCategory)
     .post('/', subCategoryController.createSubCategory)
-    .put('/:id', subCategoryValidations.subCategoryPhotoValidation, subCategoryController.updateSubCategory)
+    .post('/:id', subCategoryValidations.subCategoryPhotoValidation, subCategoryController.updateSubCategory)
     .delete('/:id', subCategoryController.deleteSubCategory)
     .get('/search/search', subCategoryController.searchSubCategory)
 
