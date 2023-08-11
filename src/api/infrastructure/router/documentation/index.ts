@@ -22,7 +22,7 @@ documentationRouter
     .get('/customer/:id', documentationController.getAllDocumentationsByCustomer)
     .post('/',documentationValidations.DocumentationFileValidation, documentationController.createDocumentation)
     .post('/validate',documentationValidations.DocumentationFileValidation,documentationController.validateDocumentation)
-    .put('/:id',documentationValidations.DocumentationFileValidation, documentationController.updateDocumentation)
+    .post('/:id',documentationValidations.DocumentationFileValidation, documentationController.updateDocumentation)
     .delete('/:id', documentationController.deleteDocumentation)
     
 

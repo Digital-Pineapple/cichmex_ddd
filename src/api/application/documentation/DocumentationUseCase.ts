@@ -13,7 +13,7 @@ export class DocumentationUseCase {
         return await this.documentRepository.findAll();
     }
 
-    public async getDetailDocumentation(_id: string): Promise<IFile | ErrorHandler | null> {
+    public async getDetailDocumentation(_id: string): Promise<IFile | null> {
         return await this.documentRepository.findById(_id);
     }
 
@@ -37,7 +37,7 @@ export class DocumentationUseCase {
     }
     
 
-    public async updateOneDocumentation(_id: string, updated: object): Promise<IFile | ErrorHandler | null> {
+    public async updateOneDocumentation(_id: string, updated: object): Promise<IFile | null> {
         return await this.documentRepository.updateOne(_id, updated);
     }
 

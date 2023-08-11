@@ -25,6 +25,10 @@ export class DocumentationController extends ResponseData {
     public async getAllDocumentations(req: Request, res: Response, next: NextFunction) {
         try {
             const response = await this.documentationUseCase.getDocumentations();
+            await Promise.all(response.map(async (res) => {
+                const url = await this.s3Service.getUrlObject(res.url + ".pdf");
+                res.url = url;
+            }));
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
@@ -33,10 +37,10 @@ export class DocumentationController extends ResponseData {
 
     public async getDocumentationDetail(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-console.log(id,'cscscs');
-
         try {
             const documentation = await this.documentationUseCase.getDetailDocumentation(id);
+            const url = await this.s3Service.getUrlObject(documentation?.url + ".pdf");
+            documentation.url = url;
             this.invoke(documentation, 200, res, '', next)
         } catch (error) {
             next(new ErrorHandler('Error al encontrar la documentacion', 404));
@@ -83,8 +87,9 @@ console.log(id,'cscscs');
             const pathObject = `${this.path}/${id}/${name}`;
             const { success, url, } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".pdf", req.file, "application/pdf");
             if (!success) return new ErrorHandler('Hubo un error al subir el documento', 400)
-            const documentation = await this.documentationUseCase.updateOneDocumentation(id, { name, status, message, verify, url });
-            this.invoke(documentation, 200, res, 'La documentacion se actualizó con éxito', next);
+            const documentation = await this.documentationUseCase.updateOneDocumentation(id, { name, status, message, verify, url: pathObject });
+               documentation.url = url
+               this.invoke(documentation, 200, res, 'La documentacion se actualizó con éxito', next);
         } catch (error) {
             console.log(error);
             next(new ErrorHandler('Hubo un error al actualizar la documentación', 500));
@@ -108,15 +113,19 @@ console.log(id,'cscscs');
 
     public async getAllDocumentationsByCustomer(req: Request, res: Response, next: NextFunction) {
         const {id } = req.params;
-        console.log(id);
         try {
-            const documentations = await this.documentationUseCase.getDocumentationByCustomer(id);
-            this.invoke(documentations, 200, res, '', next);
+            const response = await this.documentationUseCase.getDocumentationByCustomer(id);
+            await Promise.all(response.map(async (res) => {
+                const url = await this.s3Service.getUrlObject(res.url + ".pdf");
+                res.url = url;
+            }));
+            this.invoke(response, 200, res, '', next);
         } catch (error) {
 
             next(new ErrorHandler(`Hubo un error: ${error}`, 500));
         }
     }
+
     public async validateDocumentation(req: Request, res: Response, next: NextFunction) {
         const { _id, message, verify } = req.body;
         console.log(_id, verify);
