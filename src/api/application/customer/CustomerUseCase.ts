@@ -12,7 +12,7 @@ export class CustomerUseCase {
         return await this.customerRepository.findAll();
     }
 
-    public async getDetailCustomer(_id: string): Promise<CustomerEntity | ErrorHandler | null> {
+    public async getDetailCustomer(_id: string): Promise<CustomerEntity  | null> {
         return await this.customerRepository.findById(_id);
     }
 
@@ -28,7 +28,7 @@ export class CustomerUseCase {
         return await this.customerRepository.createOne({ fullname,email,password });
     }
 
-    public async updateOneCustomer(_id: string,updated: object): Promise<CustomerEntity | ErrorHandler | null> {
+    public async updateOneCustomer(_id: string,updated: CustomerEntity): Promise<CustomerEntity | null> {
         return await this.customerRepository.updateOne(_id,updated);
     }
 

@@ -76,13 +76,13 @@ export class AuthController extends ResponseData {
     }
 
     public async uploadProfilePhoto(req: Request, res: Response, next: NextFunction) {
-        const { user } = req;
+        const { id } = req.params;
+        
         try {
-            const pathObject = `${this.path}/${user._id}/${req.file?.fieldname}`;
-            const { message, key, url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject, req.file);
+            const pathObject = `${this.path}/${id}/${req.file?.fieldname}`;
+            const { url, success, message } = await this.s3Service.uploadToS3AndGetUrl(pathObject + '.jpg', req.file, 'image/jpeg');
             if(!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-            const response = await this.authUseCase.updateProfilePhoto(key, user._id);
-            console.log(response)
+            const response = await this.authUseCase.updateProfilePhoto(pathObject, id);
             response.profile_image = url;
             this.invoke(response, 200, res, message, next);
         } catch (error) {

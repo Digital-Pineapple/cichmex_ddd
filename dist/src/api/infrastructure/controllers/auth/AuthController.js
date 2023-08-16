@@ -86,14 +86,13 @@ class AuthController extends ResponseData_1.ResponseData {
     uploadProfilePhoto(req, res, next) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            const { user } = req;
+            const { id } = req.params;
             try {
-                const pathObject = `${this.path}/${user._id}/${(_a = req.file) === null || _a === void 0 ? void 0 : _a.fieldname}`;
-                const { message, key, url, success } = yield this.s3Service.uploadToS3AndGetUrl(pathObject, req.file);
+                const pathObject = `${this.path}/${id}/${(_a = req.file) === null || _a === void 0 ? void 0 : _a.fieldname}`;
+                const { url, success, message } = yield this.s3Service.uploadToS3AndGetUrl(pathObject + '.jpg', req.file, 'image/jpeg');
                 if (!success)
                     return new ErrorHandler_1.ErrorHandler('Hubo un error al subir la imagen', 400);
-                const response = yield this.authUseCase.updateProfilePhoto(key, user._id);
-                console.log(response);
+                const response = yield this.authUseCase.updateProfilePhoto(pathObject, id);
                 response.profile_image = url;
                 this.invoke(response, 200, res, message, next);
             }

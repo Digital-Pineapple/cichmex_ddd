@@ -8,7 +8,7 @@ import { CustomerUseCase } from '../../../application/customer/CustomerUseCase';
 
 export class CustomerController extends ResponseData {
 
-    protected path = '/customers';
+    protected path = '/customer';
 
     constructor(private customerUseCase: CustomerUseCase, private readonly s3Service: S3Service) {
         super();
@@ -24,16 +24,11 @@ export class CustomerController extends ResponseData {
     public async getAllCustomers(req: Request, res: Response, next: NextFunction) {
         try {
             const customers = await this.customerUseCase.getCustomers();
-            await Promise.all(customers?.map(async (customer: Customer) => {
-                const ine = await this.s3Service.getUrlObject(customer.ine + ".pdf");
-                customer.ine = ine;
-                const curp = await this.s3Service.getUrlObject(customer.curp + ".pdf");
-                customer.curp = curp;
-                const criminal_record = await this.s3Service.getUrlObject(customer.criminal_record + ".pdf");
-                customer.criminal_record = criminal_record;
-                const prook_address = await this.s3Service.getUrlObject(customer.prook_address + ".pdf");
-                customer.prook_address = prook_address;
-                customer.profile_image = await this.s3Service.getUrlObject(customer.profile_image);
+            await Promise.all(customers?.map(async (customer) => {
+                if (customer.google !== true) {
+                    const url = await this.s3Service.getUrlObject(customer.profile_image + ".jpg"  );
+                customer.profile_image = url;
+                }
             }));
 
             this.invoke(customers, 200, res, '', next);
@@ -46,10 +41,10 @@ export class CustomerController extends ResponseData {
 
     public async getCustomerDetail(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-
         try {
             const customer = await this.customerUseCase.getDetailCustomer(id);
-            
+            const image = await this.s3Service.getUrlObject(customer?.profile_image + ".jpg");
+            customer.profile_image = image;
             this.invoke(customer, 200, res, '', next)
         } catch (error) {
             next(new ErrorHandler('Error al encontrar el usuario', 404));
@@ -58,6 +53,7 @@ export class CustomerController extends ResponseData {
 
     public async createCustomer(req: Request, res: Response, next: NextFunction) {
         const { fullname, email, password } = req.body;
+        
         try {
             const customer = await this.customerUseCase.createNewCustomer(fullname, email, password);
             this.invoke(customer, 201, res, 'El usuario se creo con exito', next);
@@ -68,14 +64,26 @@ export class CustomerController extends ResponseData {
 
     public async updateCustomer(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { fullname } = req.body;
-
+        const { fullname, type_customer } = req.body;
         try {
-            const customer = await this.customerUseCase.updateOneCustomer(id, { fullname });
-            this.invoke(customer, 200, res, 'El usuario se actualizo con exito', next);
+            if (req.file) {
+                const pathObject = `${this.path}/${id}/${fullname}`;
+                
+                const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
+                if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
+                const response = await this.customerUseCase.updateOneCustomer(id, {fullname,type_customer, profile_image: pathObject });
+            console.log(response);
+            
+                response.profile_image = url;
+                this.invoke(response, 201, res, 'El usuario se actualizó con éxito jsjs', next);
+            } else {
+                const response = await this.customerUseCase.updateOneCustomer(id, { fullname, type_customer});
+                this.invoke(response, 201, res, 'El usuario se actualizó con éxitojaja', next);
+            }
         } catch (error) {
             console.log(error);
-            next(new ErrorHandler('Hubo un error al actualizar el usuario', 500));
+            next(new ErrorHandler('Hubo un error al editar la información', 500));
+
         }
     }
 

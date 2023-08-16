@@ -34,7 +34,7 @@ export class AuthValidations {
 
     readonly profilePhotoValidation = [
         validateAuthentication,
-        this.upload.single('photo'),
+        this.upload.single('profile_image'),
     ]
 
     readonly filesValidations = [

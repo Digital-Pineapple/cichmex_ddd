@@ -17,7 +17,7 @@ class CustomerController extends ResponseData_1.ResponseData {
         super();
         this.customerUseCase = customerUseCase;
         this.s3Service = s3Service;
-        this.path = '/customers';
+        this.path = '/customer';
         this.getAllCustomers = this.getAllCustomers.bind(this);
         this.createCustomer = this.createCustomer.bind(this);
         this.getCustomerDetail = this.getCustomerDetail.bind(this);
@@ -31,15 +31,10 @@ class CustomerController extends ResponseData_1.ResponseData {
             try {
                 const customers = yield this.customerUseCase.getCustomers();
                 yield Promise.all(customers === null || customers === void 0 ? void 0 : customers.map((customer) => __awaiter(this, void 0, void 0, function* () {
-                    const ine = yield this.s3Service.getUrlObject(customer.ine + ".pdf");
-                    customer.ine = ine;
-                    const curp = yield this.s3Service.getUrlObject(customer.curp + ".pdf");
-                    customer.curp = curp;
-                    const criminal_record = yield this.s3Service.getUrlObject(customer.criminal_record + ".pdf");
-                    customer.criminal_record = criminal_record;
-                    const prook_address = yield this.s3Service.getUrlObject(customer.prook_address + ".pdf");
-                    customer.prook_address = prook_address;
-                    customer.profile_image = yield this.s3Service.getUrlObject(customer.profile_image);
+                    if (customer.google !== true) {
+                        const url = yield this.s3Service.getUrlObject(customer.profile_image + ".jpg");
+                        customer.profile_image = url;
+                    }
                 })));
                 this.invoke(customers, 200, res, '', next);
             }
@@ -54,6 +49,8 @@ class CustomerController extends ResponseData_1.ResponseData {
             const { id } = req.params;
             try {
                 const customer = yield this.customerUseCase.getDetailCustomer(id);
+                const image = yield this.s3Service.getUrlObject((customer === null || customer === void 0 ? void 0 : customer.profile_image) + ".jpg");
+                customer.profile_image = image;
                 this.invoke(customer, 200, res, '', next);
             }
             catch (error) {
@@ -76,14 +73,26 @@ class CustomerController extends ResponseData_1.ResponseData {
     updateCustomer(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id } = req.params;
-            const { fullname } = req.body;
+            const { fullname, type_customer } = req.body;
             try {
-                const customer = yield this.customerUseCase.updateOneCustomer(id, { fullname });
-                this.invoke(customer, 200, res, 'El usuario se actualizo con exito', next);
+                if (req.file) {
+                    const pathObject = `${this.path}/${id}/${fullname}`;
+                    const { url, success } = yield this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
+                    if (!success)
+                        return new ErrorHandler_1.ErrorHandler('Hubo un error al subir la imagen', 400);
+                    const response = yield this.customerUseCase.updateOneCustomer(id, { fullname, type_customer, profile_image: pathObject });
+                    console.log(response);
+                    response.profile_image = url;
+                    this.invoke(response, 201, res, 'El usuario se actualizó con éxito jsjs', next);
+                }
+                else {
+                    const response = yield this.customerUseCase.updateOneCustomer(id, { fullname, type_customer });
+                    this.invoke(response, 201, res, 'El usuario se actualizó con éxitojaja', next);
+                }
             }
             catch (error) {
                 console.log(error);
-                next(new ErrorHandler_1.ErrorHandler('Hubo un error al actualizar el usuario', 500));
+                next(new ErrorHandler_1.ErrorHandler('Hubo un error al editar la información', 500));
             }
         });
     }

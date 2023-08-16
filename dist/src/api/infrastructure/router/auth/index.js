@@ -24,7 +24,7 @@ authRouter
     .post('/register', authValidations.registerValidation, authController.register)
     .post('/google', authValidations.googleLoginValidations, authController.loginWithGoogle)
     .post('/change-password', ValidateAuthentication_1.default, authController.changePassword)
-    .post('/upload/profile-photo', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
+    .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .get('/customer', ValidateAuthentication_1.default, authController.revalidateToken)
     .post('/verify-code', ValidateAuthentication_1.default, authController.verifyCode)
     .post('/phone-number', ValidateAuthentication_1.default, authController.savePhoneNumberAndSendCode)
