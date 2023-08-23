@@ -138,9 +138,8 @@ class CustomerController extends ResponseData_1.ResponseData {
     validateCustomer(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id } = req.params;
-            const { accountVerify } = req.body;
             try {
-                const customer = yield this.customerUseCase.validateOneCustomer(id, accountVerify);
+                const customer = yield this.customerUseCase.validateOneCustomer(id);
                 this.invoke(customer, 200, res, 'El usuario se valido con exito', next);
             }
             catch (error) {

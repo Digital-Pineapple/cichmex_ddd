@@ -25,7 +25,7 @@ export class DocumentationController extends ResponseData {
     public async getAllDocumentations(req: Request, res: Response, next: NextFunction) {
         try {
             const response = await this.documentationUseCase.getDocumentations();
-            await Promise.all(response.map(async (res) => {
+            await Promise.all(response?.map(async (res) => {
                 const url = await this.s3Service.getUrlObject(res.url + ".pdf");
                 res.url = url;
             }));
@@ -51,17 +51,17 @@ export class DocumentationController extends ResponseData {
 
         const { customer_id, name, status, message, verify } = req.body;
 
-        const ok = await this.documentationUseCase.getDocumentByNameAndCustomer(customer_id, name);
+        const ok = await this.documentationUseCase.getDocumentByNameAndCustomer(customer_id, name, status);
         try {
             const pathObject = `${this.path}/${customer_id}/${name}`;
             if (ok?.length <= 0) {
 
-                const { success, url } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".pdf", req.file, "application/pdf");
+                const { success,url, key } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".pdf", req.file, "application/pdf");
                 if (!success) {
                     return new ErrorHandler('Hubo un error al subir el documento', 400);
                 }
-
-                const file = await this.documentationUseCase.createNewDocumentation(name, message, status, customer_id, url, verify);
+                const file = await this.documentationUseCase.createNewDocumentation(name, message, status, customer_id,pathObject, verify);
+                file.url = url
                 this.invoke(file, 201, res, 'El documento se creó con éxito', next);
             } else {
                 console.log('aiuda');
@@ -113,14 +113,18 @@ export class DocumentationController extends ResponseData {
 
     public async getAllDocumentationsByCustomer(req: Request, res: Response, next: NextFunction) {
         const {id } = req.params;
+        console.log(id);
+        
         try {
-            const response = await this.documentationUseCase.getDocumentationByCustomer(id);
+             const response = await this.documentationUseCase.getDocumentationByCustomer(id);
             await Promise.all(response.map(async (res) => {
                 const url = await this.s3Service.getUrlObject(res.url + ".pdf");
                 res.url = url;
             }));
             this.invoke(response, 200, res, '', next);
         } catch (error) {
+            console.log(error);
+            
 
             next(new ErrorHandler(`Hubo un error: ${error}`, 500));
         }

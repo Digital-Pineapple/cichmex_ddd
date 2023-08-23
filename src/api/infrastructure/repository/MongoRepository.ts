@@ -19,10 +19,10 @@ export abstract class MongoRepository {
         return await this.MODEL.find({name});
     }
      public async findByCustomer(customer_id: string): Promise<any> {
-        return await this.MODEL.find({customer_id:customer_id});
+        return await this.MODEL.find({customer_id:customer_id, status: true});
     }
-    public async findByCustomerAndName(customer_id: string, name:string): Promise<any> {
-      return await this.MODEL.find({customer_id:customer_id, name:name});
+    public async findByCustomerAndName(customer_id: string, name:string, status:boolean): Promise<any> {
+      return await this.MODEL.find({customer_id:customer_id, name:name, status});
   }
     public async updateOne(_id: String, updated: object): Promise<any> {
         return await this.MODEL.findByIdAndUpdate(_id, updated, { new: true });

@@ -17,7 +17,7 @@ customerRouter
     .get('/', customerController.getAllCustomers)
     .get('/:id', customerController.getCustomerDetail)
     .post('/', customerController.createCustomer)
-    .post('/edit/:id',customerValidations.profilePhotoValidation, customerController.updateCustomer)
+    .post('/update/:id',customerValidations.profilePhotoValidation, customerController.updateCustomer)
     .post('/validate/:id', customerController.validateCustomer)
     .delete('/:id', customerController.deleteCustomer)
 

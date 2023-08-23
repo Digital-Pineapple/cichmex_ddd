@@ -40,9 +40,9 @@ export class CustomerUseCase {
         return await this.customerRepository.updateOne(customer_id,{ type: '1' })
 
     }
-    public async validateOneCustomer(_id: string,accountVerify: boolean): Promise<CustomerEntity | ErrorHandler | null> {
+    public async validateOneCustomer(_id: string): Promise<CustomerEntity | ErrorHandler | null> {
         
-        return await this.customerRepository.updateOne(_id,{ accountVerify });
+        return await this.customerRepository.updateOne(_id, { accountVerify: true });
     }
 
 }
