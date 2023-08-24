@@ -1,3 +1,5 @@
+
+import { Schema } from 'mongoose';
 export interface IPhone {
     code             :   number;
     prefix           :   string;
@@ -7,6 +9,7 @@ export interface IPhone {
     createdAt       ?:   NativeDate;
     updatedAt       ?:   NativeDate;
 }
+
 
 export interface CustomerEntity {
     _id              :   string;

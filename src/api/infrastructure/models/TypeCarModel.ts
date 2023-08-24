@@ -1,33 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { IService, TypeCarEntity } from '../../domain/typeCar/TypeCarEntity';
-
-
-const ServiceSchema = new Schema<IService>({
-    name: {
-        type: String,
-        required: true,
-    },
-    description: {
-        type: String,
-        required: true,
-    },
-    price: {
-        type: Number,
-        required: true,
-    },
-    status: {
-        type: Boolean,
-        default: true,
-    },
-    service_id: {
-        type: Schema.Types.ObjectId,
-        ref: 'Service',
-        required: true,
-    }
-}, {
-    versionKey: false,
-    timestamps: true,
-});
+import { TypeCarEntity } from '../../domain/typeCar/TypeCarEntity';
 
 
 const TypeCarSchema = new Schema<TypeCarEntity>({
@@ -43,7 +15,7 @@ const TypeCarSchema = new Schema<TypeCarEntity>({
         type: String,
         required: false
     },
-    services: [ServiceSchema]
+
 }, {
     versionKey: false,
     timestamps: true,
