@@ -11,6 +11,9 @@ export abstract class MongoRepository {
     public async findAll(populateConfig?: any): Promise<any> {
         return await this.MODEL.find({status: true}).populate(populateConfig);
     }
+    public async findAllAll(populateConfig?: any): Promise<any> {
+      return await this.MODEL.find().populate(populateConfig);
+  }
 
     public async findById(_id: String, populateConfig?: any): Promise<any> {
         return await this.MODEL.findById(_id);
@@ -21,6 +24,9 @@ export abstract class MongoRepository {
      public async findByCustomer(customer_id: string): Promise<any> {
         return await this.MODEL.find({customer_id:customer_id, status: true});
     }
+    public async findByids(_id: string): Promise<any> {
+      return await this.MODEL.find({_id});
+  }
     public async findByCustomerAndName(customer_id: string, name:string, status:boolean): Promise<any> {
       return await this.MODEL.find({customer_id:customer_id, name:name, status});
   }

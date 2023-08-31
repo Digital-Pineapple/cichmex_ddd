@@ -1,17 +1,19 @@
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
 import { ServicesEntity } from "../../domain/services/ServicesEntity";
 import { ServicesRepository } from "../../domain/services/ServicesRepository";
+import { ServicesCustomerRepository } from "../../domain/servicesCustomer/ServicesCustomerRepository";
 import { SubCategory } from "../../domain/subCategory/SubCategoryEntity";
 
 export class ServicesUseCase {
 
-    constructor(private readonly servicesRepository: ServicesRepository) { }
+    constructor(public servicesRepository: ServicesRepository, public servicesCustomerRepository: ServicesCustomerRepository) { }
 
     public async getServices(): Promise<ServicesEntity[] | null> {
         return this.servicesRepository.findAll();
     }
 
-    public async getDetailService(_id: string): Promise<ServicesEntity | null> {
+    public async getDetailService(_id: string): Promise<ServicesEntity|ErrorHandler | null> {
+
         return this.servicesRepository.findById(_id);
     }
 

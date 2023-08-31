@@ -19,6 +19,11 @@ class MongoRepository {
             return yield this.MODEL.find({ status: true }).populate(populateConfig);
         });
     }
+    findAllAll(populateConfig) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.find().populate(populateConfig);
+        });
+    }
     findById(_id, populateConfig) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.MODEL.findById(_id);
@@ -32,6 +37,11 @@ class MongoRepository {
     findByCustomer(customer_id) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.MODEL.find({ customer_id: customer_id, status: true });
+        });
+    }
+    findByids(_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.find({ _id });
         });
     }
     findByCustomerAndName(customer_id, name, status) {

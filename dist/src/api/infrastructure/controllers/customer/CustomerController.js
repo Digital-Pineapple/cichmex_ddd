@@ -140,6 +140,7 @@ class CustomerController extends ResponseData_1.ResponseData {
             const { id } = req.params;
             try {
                 const customer = yield this.customerUseCase.validateOneCustomer(id);
+                console.log(customer);
                 this.invoke(customer, 200, res, 'El usuario se valido con exito', next);
             }
             catch (error) {

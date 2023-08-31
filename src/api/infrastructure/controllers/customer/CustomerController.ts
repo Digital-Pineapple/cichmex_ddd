@@ -129,6 +129,7 @@ export class CustomerController extends ResponseData {
 
         try {
             const customer = await this.customerUseCase.validateOneCustomer(id);
+            console.log(customer);
             this.invoke(customer, 200, res, 'El usuario se valido con exito', next);
         } catch (error) {
             console.log(error);

@@ -1,0 +1,96 @@
+import { NextFunction, Request, Response, response } from 'express';
+import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
+import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
+
+import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
+
+import { ServiceCustomerUseCase } from '../../../application/servicesCustomer/ServiceCustomerUseCase';
+
+
+export class ServicesCustomerController extends ResponseData {
+
+    protected path = '/service_customer';
+
+    constructor(private serviceCustomerUseCase: ServiceCustomerUseCase, private readonly s3Service: S3Service) {
+        super();
+        this.getAllServicesCustomer = this.getAllServicesCustomer.bind(this);
+        this.getServiceCustomerDetail = this.getServiceCustomerDetail.bind(this);
+        this.createServiceCustomer = this.createServiceCustomer.bind(this);
+        this.updateServiceCustomer = this.updateServiceCustomer.bind(this);
+        this.deleteServiceCustomer = this.deleteServiceCustomer.bind(this);
+    }
+
+    public async getAllServicesCustomer(req: Request, res: Response, next: NextFunction) {
+        try {
+            const response = await this.serviceCustomerUseCase.getServicesCustomer();
+            this.invoke(response, 200, res, "", next);
+
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar los servicios', 500));
+        }
+    }
+
+    public async getServiceCustomerDetail(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        try {
+            const response = await this.serviceCustomerUseCase.getDetailServiceCustomer(id);
+            this.invoke(response, 200, res, '', next)
+        } catch (error) {
+            next(new ErrorHandler('Error al encontrar el servicio', 404));
+        }
+    }
+
+    public async createServiceCustomer(req: Request, res: Response, next: NextFunction) {
+        const { customer_id, services  } = req.body;
+        try { 
+        const serviceCustomer = await this.serviceCustomerUseCase.createNewServiceCustomer(customer_id,services);
+            this.invoke(serviceCustomer, 201, res, 'Se creo con exito', next);
+        } catch (error) {
+            console.log(error);
+            
+            next(new ErrorHandler('Hubo un error al crear su servicio', 500))
+        }
+    }
+
+    public async updateServiceCustomer(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        const { services } = req.body;
+        
+        //  const service_id = services.forEach(service => service._id );
+        
+        // const myservices = await this.serviceCustomerUseCase.getDetailServiceCustomer(id)
+
+        // const replace = myservices?.services.filter(function(item, index) {
+        //     return item._id === service_id;
+        // }) ?? [];
+        // console.log(replace);
+        console.log(services);
+        
+        
+        try {
+            const response = await this.serviceCustomerUseCase.updateOneServiceCustomer(id,services)
+            this.invoke(response, 201, res, 'La comisión se actualizó con éxito', next); 
+            
+        } catch (error) {
+            console.log(error);
+            next(new ErrorHandler('Hubo un error al editar la información', 500));
+
+        }
+    }
+
+
+    public async deleteServiceCustomer(req: Request, res: Response, next: NextFunction) {
+
+        const { id } = req.params;
+
+        try {
+            const response = await this.serviceCustomerUseCase.updateOneServiceCustomer(id, { status: false });
+            this.invoke(response, 200, res, 'Eliminado correctamente', next);
+        } catch (error) {
+            console.log(error);
+            next(new ErrorHandler('Hubo un error al eliminar', 500));
+        }
+
+    }
+
+}

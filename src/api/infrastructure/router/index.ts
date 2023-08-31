@@ -10,6 +10,7 @@ import categoryRouter from './Category';
 import subCategoryRouter from './subCategory';
 import commissionRouter from './commission';
 import documentationRouter from './documentation';
+import serviceCustomerRouter from './serviceCustomer';
 
 export const apiRouter = (): Router => {
 
@@ -25,6 +26,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/sub-category', subCategoryRouter)
     apiRouter.use('/commission', commissionRouter)
     apiRouter.use('/documentation', documentationRouter)
+    apiRouter.use('/service-customer', serviceCustomerRouter)
 
 
 
@@ -42,5 +44,6 @@ apiRouterx.use('/category', categoryRouter)
 apiRouterx.use('/sub-category', subCategoryRouter)
 apiRouterx.use('/commission',commissionRouter)
 apiRouterx.use('/documentation',documentationRouter)
+apiRouterx.use('service-customer', serviceCustomerRouter)
 
 export default apiRouter
