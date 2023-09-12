@@ -13,11 +13,11 @@ export class ServiceCustomerUseCase {
 
     public async getDetailServiceCustomer(_id: string): Promise<ServiceCustomer | null> {
 
-
         return await this.servicesCustomerRepository.findById(_id);
     }
 
-    public async getServiceCustomerByCustomer(customer_id: string): Promise<ServiceCustomer | ErrorHandler | null> {
+    public async getServiceCustomerByCustomer(customer_id: string): Promise<ServiceCustomer | ErrorHandler | null> {;
+
 
         return await this.servicesCustomerRepository.findByCustomer(customer_id);
     }
@@ -35,6 +35,7 @@ export class ServiceCustomerUseCase {
     public async updateOneServiceCustomer(_id: string, updated: object): Promise<ServiceCustomer | null> {
         const service = await this.servicesCustomerRepository.findById(_id);
         service.services = updated;
+        
         return await this.servicesCustomerRepository.updateOne(_id, service);
     }
 

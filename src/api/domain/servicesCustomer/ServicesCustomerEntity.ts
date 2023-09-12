@@ -13,7 +13,7 @@ export interface IServices {
 
 export interface ServiceCustomer {
 customer_id        :   CustomerEntity;
-services           :   IServices[];
+services           :   [IServices];
 status             :   boolean;
 createdAt         ?:   NativeDate;
 updatedAt         ?:   NativeDate;

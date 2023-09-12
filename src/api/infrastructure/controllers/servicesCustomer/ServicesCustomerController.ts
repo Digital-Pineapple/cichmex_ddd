@@ -18,6 +18,7 @@ export class ServicesCustomerController extends ResponseData {
         this.createServiceCustomer = this.createServiceCustomer.bind(this);
         this.updateServiceCustomer = this.updateServiceCustomer.bind(this);
         this.deleteServiceCustomer = this.deleteServiceCustomer.bind(this);
+        this.getServicesCustomerDetailByCustomer = this.getServicesCustomerDetailByCustomer.bind(this);
     }
 
     public async getAllServicesCustomer(req: Request, res: Response, next: NextFunction) {
@@ -39,6 +40,19 @@ export class ServicesCustomerController extends ResponseData {
             next(new ErrorHandler('Error al encontrar el servicio', 404));
         }
     }
+    public async getServicesCustomerDetailByCustomer(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        
+        try {
+            const response = await this.serviceCustomerUseCase.getServiceCustomerByCustomer(id);
+            
+            this.invoke(response, 200, res, '', next)
+        } catch (error) {
+            console.log(error);
+            
+            next(new ErrorHandler('Error al encontrar el servicio', 404));
+        }
+    }
 
     public async createServiceCustomer(req: Request, res: Response, next: NextFunction) {
         const { customer_id, services  } = req.body;
@@ -56,20 +70,13 @@ export class ServicesCustomerController extends ResponseData {
         const { id } = req.params;
         const { services } = req.body;
         
-        //  const service_id = services.forEach(service => service._id );
-        
-        // const myservices = await this.serviceCustomerUseCase.getDetailServiceCustomer(id)
-
-        // const replace = myservices?.services.filter(function(item, index) {
-        //     return item._id === service_id;
-        // }) ?? [];
-        // console.log(replace);
-        console.log(services);
-        
-        
         try {
+            
             const response = await this.serviceCustomerUseCase.updateOneServiceCustomer(id,services)
+            
             this.invoke(response, 201, res, 'La comisión se actualizó con éxito', next); 
+        
+            
             
         } catch (error) {
             console.log(error);
