@@ -22,7 +22,7 @@ export abstract class MongoRepository {
         return await this.MODEL.find({name});
     }
      public async findByCustomer(customer_id: string): Promise<any> {
-      console.log(customer_id, 'xsxsxs');
+      console.log(customer_id);
       
         return await this.MODEL.findOne({customer_id:customer_id, status: true});
     }

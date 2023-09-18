@@ -5,6 +5,7 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 
 import { ServiceCustomerUseCase } from '../../../application/servicesCustomer/ServiceCustomerUseCase';
+import { AnyArn } from 'aws-sdk/clients/groundstation';
 
 
 export class ServicesCustomerController extends ResponseData {
@@ -68,7 +69,8 @@ export class ServicesCustomerController extends ResponseData {
 
     public async updateServiceCustomer(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { services } = req.body;
+       
+       const services = req.body
         
         try {
             
