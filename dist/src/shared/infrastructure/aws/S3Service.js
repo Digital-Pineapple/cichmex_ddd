@@ -63,7 +63,6 @@ class S3Service {
     }
     getUrlObject(key) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(key);
             const params = {
                 Bucket: this.bucket,
                 Key: this.environment + key,

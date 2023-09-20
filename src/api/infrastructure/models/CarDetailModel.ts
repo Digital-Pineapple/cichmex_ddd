@@ -3,6 +3,10 @@ import { CarDetail } from '../../domain/carDetail/CarDetailEntity';
 
 const CarDetailSchema = new Schema<CarDetail>(
     {
+      customer_id :{
+        type: Schema.Types.ObjectId,
+            ref: 'Customer'
+      },
       brand: {
         type: String,
         required: true,
@@ -20,14 +24,15 @@ const CarDetailSchema = new Schema<CarDetail>(
         type: String,
         required: false,
       },
+      status: {
+        type: Boolean,
+        default:true,
+    },
       plate_number:{
         type:String,
         required:true,
       },
-      status: {
-        status:Boolean,
-        required: true,
-    }
+      
     },
     {
       versionKey: false,

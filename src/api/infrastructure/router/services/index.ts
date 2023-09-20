@@ -2,8 +2,7 @@ import { Router } from 'express';
 
 import { ServicesUseCase } from '../../../application/services/ServicesUseCase';
 import { ServicesController } from '../../controllers/services/ServiceController';
-import { ServiceRepository } from '../../repository/services/ServiceRepository';
-
+import { ServiceRepository } from '../../repository/services/ServiceRepository'; 
 import ServiceModel from '../../models/ServicesModel';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { ServiceValidations } from '../../../../shared/infrastructure/validation/Service/ServiceValidation';
@@ -11,7 +10,7 @@ import { ServiceValidations } from '../../../../shared/infrastructure/validation
 const serviceRouter = Router();
 
 const serviceRepository    = new ServiceRepository(ServiceModel);
-const servicesUseCase      = new ServicesUseCase(serviceRepository);
+const servicesUseCase      = new ServicesUseCase(serviceRepository, serviceRepository);
 const s3Service            = new S3Service();
 const serviceValidations   = new ServiceValidations();
 const servicesController   = new ServicesController(servicesUseCase, s3Service);

@@ -9,7 +9,7 @@ export abstract class MongoRepository {
     }
 
     public async findAll(populateConfig?: any): Promise<any> {
-        return await this.MODEL.find({status: true}).populate(populateConfig);
+        return await this.MODEL.find({status:true}).populate(populateConfig);
     }
     public async findAllAll(populateConfig?: any): Promise<any> {
       return await this.MODEL.find().populate(populateConfig);
@@ -21,11 +21,12 @@ export abstract class MongoRepository {
     public async findByName(name: string): Promise<any> {
         return await this.MODEL.find({name});
     }
-     public async findByCustomer(customer_id: string): Promise<any> {
-      console.log(customer_id);
-      
+     public async findByCustomer(customer_id: string): Promise<any> {      
         return await this.MODEL.findOne({customer_id:customer_id, status: true});
     }
+    public async findByPlateNumber(plate_number: string, customer_id:string): Promise<any> {      
+      return await this.MODEL.findOne({plate_number, customer_id, status: true});
+  }
     public async findByids(_id: string): Promise<any> {
       return await this.MODEL.find({_id});
   }

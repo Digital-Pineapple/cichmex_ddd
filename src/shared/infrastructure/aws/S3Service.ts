@@ -55,8 +55,6 @@ export class S3Service {
     }
 
     async getUrlObject(key: string) {
-        console.log(key);
-        
         const params = {
             Bucket  : this.bucket,
             Key     :  this.environment + key,

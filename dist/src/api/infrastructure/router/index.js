@@ -16,6 +16,7 @@ const subCategory_1 = __importDefault(require("./subCategory"));
 const commission_1 = __importDefault(require("./commission"));
 const documentation_1 = __importDefault(require("./documentation"));
 const serviceCustomer_1 = __importDefault(require("./serviceCustomer"));
+const carDetail_1 = __importDefault(require("./carDetail"));
 const apiRouter = () => {
     const apiRouter = (0, express_1.Router)();
     apiRouter.use('/auth', auth_1.default);
@@ -29,6 +30,7 @@ const apiRouter = () => {
     apiRouter.use('/commission', commission_1.default);
     apiRouter.use('/documentation', documentation_1.default);
     apiRouter.use('/service-customer', serviceCustomer_1.default);
+    apiRouter.use('/car_detail', carDetail_1.default);
     return apiRouter;
 };
 exports.apiRouter = apiRouter;
@@ -43,5 +45,6 @@ apiRouterx.use('/category', Category_1.default);
 apiRouterx.use('/sub-category', subCategory_1.default);
 apiRouterx.use('/commission', commission_1.default);
 apiRouterx.use('/documentation', documentation_1.default);
-apiRouterx.use('service-customer', serviceCustomer_1.default);
+apiRouterx.use('/service-customer', serviceCustomer_1.default);
+apiRouterx.use('/car-detail', carDetail_1.default);
 exports.default = exports.apiRouter;

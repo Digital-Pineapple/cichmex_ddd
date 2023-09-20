@@ -39,7 +39,6 @@ class CustomerController extends ResponseData_1.ResponseData {
                 this.invoke(customers, 200, res, '', next);
             }
             catch (error) {
-                console.log(error, 'si es');
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al consultar los usuarios', 500));
             }
         });
@@ -81,7 +80,6 @@ class CustomerController extends ResponseData_1.ResponseData {
                     if (!success)
                         return new ErrorHandler_1.ErrorHandler('Hubo un error al subir la imagen', 400);
                     const response = yield this.customerUseCase.updateOneCustomer(id, { fullname, type_customer, profile_image: pathObject });
-                    console.log(response);
                     response.profile_image = url;
                     this.invoke(response, 201, res, 'El usuario se actualizó con éxito jsjs', next);
                 }
@@ -91,7 +89,6 @@ class CustomerController extends ResponseData_1.ResponseData {
                 }
             }
             catch (error) {
-                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al editar la información', 500));
             }
         });
@@ -104,7 +101,6 @@ class CustomerController extends ResponseData_1.ResponseData {
                 this.invoke(customer, 200, res, 'El usuario ha sido eliminado', next);
             }
             catch (error) {
-                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al eliminar el usuario', 500));
             }
         });
@@ -117,7 +113,6 @@ class CustomerController extends ResponseData_1.ResponseData {
                 this.invoke(customer, 200, res, 'Felicidades ahora formas parte de nuestra familia', next);
             }
             catch (error) {
-                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al eliminar el usuario', 500));
             }
         });
@@ -130,7 +125,6 @@ class CustomerController extends ResponseData_1.ResponseData {
                 this.invoke(customers, 200, res, '', next);
             }
             catch (error) {
-                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al consultar los usuarios', 500));
             }
         });
@@ -140,11 +134,9 @@ class CustomerController extends ResponseData_1.ResponseData {
             const { id } = req.params;
             try {
                 const customer = yield this.customerUseCase.validateOneCustomer(id);
-                console.log(customer);
                 this.invoke(customer, 200, res, 'El usuario se valido con exito', next);
             }
             catch (error) {
-                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al validar el usuario', 500));
             }
         });

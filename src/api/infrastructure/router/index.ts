@@ -28,7 +28,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/commission', commissionRouter)
     apiRouter.use('/documentation', documentationRouter)
     apiRouter.use('/service-customer', serviceCustomerRouter)
-    apiRouter.use('car-detail', carDetailRouter)
+    apiRouter.use('/car_detail', carDetailRouter)
 
 
 
@@ -46,7 +46,7 @@ apiRouterx.use('/category', categoryRouter)
 apiRouterx.use('/sub-category', subCategoryRouter)
 apiRouterx.use('/commission',commissionRouter)
 apiRouterx.use('/documentation',documentationRouter)
-apiRouterx.use('service-customer', serviceCustomerRouter)
-apiRouterx.use('car-detail', carDetailRouter)
+apiRouterx.use('/service-customer', serviceCustomerRouter)
+apiRouterx.use('/car-detail', carDetailRouter)
 
 export default apiRouter

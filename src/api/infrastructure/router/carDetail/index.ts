@@ -12,14 +12,16 @@ const carDetailRouter = Router();
 const carDetailRepository     = new CategoryRepository(CarDetailModel);
 const carDetailUseCase        = new CarDetailUseCase(carDetailRepository);
 const s3Service          = new S3Service();
-const carDetailValidations    = new CarDetailValidations();
+const carDetailVAlidations = new CarDetailValidations()
 const carDetailController     = new CarDetailController(carDetailUseCase, s3Service);
 
 carDetailRouter
+
 .get('/', carDetailController.getAllCarDetails)
 .get('/:id', carDetailController.getCarDetail)
-.post('/', carDetailController.createCarDetail)
-.post('/:id',carDetailValidations.carDetailPhotoValidation, carDetailController.updateCarDetail)
+.post('/', carDetailVAlidations.carDetailPhotoValidation,carDetailController.createCarDetail )
+.post('/:id',carDetailVAlidations.carDetailPhotoValidation, carDetailController.updateCarDetail)
 .delete('/:id', carDetailController.deleteCarDetail)
+
 
 export default carDetailRouter;

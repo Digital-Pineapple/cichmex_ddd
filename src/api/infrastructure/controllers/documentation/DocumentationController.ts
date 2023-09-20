@@ -79,6 +79,7 @@ export class DocumentationController extends ResponseData {
 
 
     }
+    
     public async updateDocumentation(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { name, status, message, verify } = req.body;

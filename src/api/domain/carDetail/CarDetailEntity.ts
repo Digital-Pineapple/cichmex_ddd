@@ -1,4 +1,7 @@
+import { CustomerEntity } from "../customer/CustomerEntity";
+
 export interface CarDetail {
+    customer_id ?: CustomerEntity;
     brand?: string;
     model ?: string;
     version: string;

@@ -1,9 +1,7 @@
-import bcrypt from 'bcrypt';
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
-
 import { DocumentationRepository } from '../../domain/documentation/DocumentationRepository';
 import { IFile } from '../../domain/documentation/DocumentationsEntity';
-import { IFileKeys } from '../auth/interfaces';
+
 
 export class DocumentationUseCase {
 

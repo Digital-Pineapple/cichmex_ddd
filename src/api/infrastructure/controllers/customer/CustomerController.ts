@@ -33,7 +33,6 @@ export class CustomerController extends ResponseData {
 
             this.invoke(customers, 200, res, '', next);
         } catch (error) {
-            console.log(error, 'si es');
 
             next(new ErrorHandler('Hubo un error al consultar los usuarios', 500));
         }
@@ -72,7 +71,7 @@ export class CustomerController extends ResponseData {
                 const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
                 if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
                 const response = await this.customerUseCase.updateOneCustomer(id, {fullname,type_customer, profile_image: pathObject });
-            console.log(response);
+          
             
                 response.profile_image = url;
                 this.invoke(response, 201, res, 'El usuario se actualizó con éxito jsjs', next);
@@ -81,7 +80,6 @@ export class CustomerController extends ResponseData {
                 this.invoke(response, 201, res, 'El usuario se actualizó con éxitojaja', next);
             }
         } catch (error) {
-            console.log(error);
             next(new ErrorHandler('Hubo un error al editar la información', 500));
 
         }
@@ -96,7 +94,7 @@ export class CustomerController extends ResponseData {
             const customer = await this.customerUseCase.updateOneCustomer(id, { status: false });
             this.invoke(customer, 200, res, 'El usuario ha sido eliminado', next);
         } catch (error) {
-            console.log(error);
+    
             next(new ErrorHandler('Hubo un error al eliminar el usuario', 500));
         }
 
@@ -108,7 +106,7 @@ export class CustomerController extends ResponseData {
             const customer = await this.customerUseCase.becomeAPartner(user._id);
             this.invoke(customer, 200, res, 'Felicidades ahora formas parte de nuestra familia', next);
         } catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Hubo un error al eliminar el usuario', 500));
         }
     }
@@ -119,7 +117,7 @@ export class CustomerController extends ResponseData {
             const customers = await this.customerUseCase.getCustomersByType(type);
             this.invoke(customers, 200, res, '', next);
         } catch (error) {
-            console.log(error);
+          
             next(new ErrorHandler('Hubo un error al consultar los usuarios', 500));
         }
     }
@@ -129,10 +127,10 @@ export class CustomerController extends ResponseData {
 
         try {
             const customer = await this.customerUseCase.validateOneCustomer(id);
-            console.log(customer);
+        
             this.invoke(customer, 200, res, 'El usuario se valido con exito', next);
         } catch (error) {
-            console.log(error);
+            
             next(new ErrorHandler('Hubo un error al validar el usuario', 500));
         }
     }

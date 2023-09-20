@@ -4,6 +4,7 @@ import { ResponseData } from '../../../../shared/infrastructure/validation/Respo
 import { CarDetailUseCase } from '../../../application/carDetail/CarDetailUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 
+
 export class CarDetailController extends ResponseData {
     protected path = '/car-detail';
 
@@ -21,10 +22,11 @@ export class CarDetailController extends ResponseData {
     public async getAllCarDetails(req: Request, res: Response, next: NextFunction) {
         try {
             const response = await this.carDetailUseCase.getAllCarDetail();
-            await Promise.all(response.map(async(res)=> {
-                const url = await this.s3Service.getUrlObject(res.category_image + ".jpg");
-                res.category_image = url
-            }))
+                await Promise.all(response.map(async(res)=> {
+                    const url = await this.s3Service.getUrlObject(res.carDetail_image + ".jpg");
+                    res.carDetail_image = url
+                }))
+            
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
@@ -33,10 +35,13 @@ export class CarDetailController extends ResponseData {
 
     public async getCarDetail(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
+        
         try {
             const response = await this.carDetailUseCase.getDetailCarDetail(id);
             const url = await this.s3Service.getUrlObject(response?.carDetail_image + ".jpg");
-            response.carDetail_image = url
+           if (response) {
+               response.carDetail_image = url
+           }
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
@@ -44,33 +49,55 @@ export class CarDetailController extends ResponseData {
     }
 
     public async createCarDetail(req: Request, res: Response, next: NextFunction) {
-        const { name, description, status } = req.body;
+         const { brand,model,version,plate_number,customer_id,status } = req.body;
+        const ok = await this.carDetailUseCase.getDetailCarDetailByPlateNumber(plate_number, customer_id);
         try {
-            const response = await this.carDetailUseCase.createNewCarDetail(name, description, status);
-            this.invoke(response, 201, res, 'La categoria se creo con exito', next);
-        } catch (error) {
-            console.log(error);
-
-            next(new ErrorHandler('Hubo un error al crear la categoria', 500));
+            const pathObject = `${this.path}/${customer_id}/${plate_number}`;
+            if (ok === null) {
+                const { success,url} = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
+                if (!success) {
+                    return new ErrorHandler('Hubo un error', 400);
+                }
+                const response = await this.carDetailUseCase.createNewCarDetail(brand,model,version,plate_number,customer_id,pathObject,status);
+                if (response) {
+                    response.carDetail_image = url;
+                }
+                this.invoke(response, 201, res, 'Se creó con éxito', next);
+            } else {
+                next(new ErrorHandler('Ya existe', 500));
+            }
         }
+        catch (error) {
+            console.log(error);
+            next(new ErrorHandler('Hubo un error al crear el auto', 500));
+        }
+
+
+
     }
 
     public async updateCarDetail(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { values } = req.body;
+        const { brand,model,version,plate_number, customer_id } = req.body;
+
         try {
             if (req.file) {
-                const pathObject = `${this.path}/${id}/${name}`;
+                const pathObject = `${this.path}/${customer_id}/${plate_number}`;
                 const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
                 if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-                const response = await this.carDetailUseCase.updateOneCarDetail(id,  values );
-                response?.carDetail_image = url;
-                this.invoke(response, 201, res, 'La categoría se actualizó con éxito', next);     
+                const response = await this.carDetailUseCase.updateOneCarDetail(id,  {brand,model,version,plate_number,customer_id} );
+               if (response) {
+                response.carDetail_image = url;
+               } 
+                this.invoke(response, 201, res, 'Se actualizó con éxito', next);     
             } else {
-                const response = await this.carDetailUseCase.updateOneCarDetail(id, values);
-                this.invoke(response, 201, res, 'La categoría se actualizó con éxito', next);     
+                const response = await this.carDetailUseCase.updateOneCarDetail(id, {brand,model,version,plate_number,customer_id});
+                if (response) {
+                    const {url} = await this.s3Service.uploadToS3AndGetUrl(response.carDetail_image + ".jpg")
+                    response.carDetail_image = url
+                }
+                this.invoke(response, 201, res, 'Se actualizó con éxito', next);     
             }
-
         } catch (error) {
             console.log(error);
             next(new ErrorHandler('Hubo un error al actualizar la categoría', 500));
@@ -88,16 +115,16 @@ export class CarDetailController extends ResponseData {
     }
 
     public async uploadCarDetailPhoto(req: Request, res: Response, next: NextFunction) {
-        const { id } = req.params;
-        const { photoFile } = req.body;
+        const { customer_id, plate_number } = req.body;
 
         try {
-            const pathObject = `${this.path}/${id}/${req.body?.photoFile}`;
-            const { message, key, url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", photoFile);
+            const pathObject = `${this.path}/${customer_id}/${plate_number}`;
+            const { message, key, url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file);
             if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-            const response = await this.carDetailUseCase.updateOneCarDetail(key, id);
-            console.log(response)
-            response?.carDetail_image = url;
+            const response = await this.carDetailUseCase.updateOneCarDetail(key, customer_id);
+        if (response) {
+            response.carDetail_image = url;
+        }
             this.invoke(response, 200, res, message, next);
         } catch (error) {
             console.log(error)
