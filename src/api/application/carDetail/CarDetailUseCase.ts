@@ -25,11 +25,11 @@ export class CarDetailUseCase {
         return await this.carDetailRepository.findByPlateNumber(plate_number, customer_id);
     }
 
-    public async createNewCarDetail(brand: string, model:string, version:string,plate_number:string,customer_id:string, carDetail_image:any, status:Boolean): Promise<CarDetail | ErrorHandler | null> {
+    public async createNewCarDetail( plate_number:string,customer_id:string, carDetail_image:any, status:Boolean): Promise<CarDetail | ErrorHandler | null> {
         const carDetail = await this.carDetailRepository.findByPlateNumber (plate_number, customer_id);
         if (carDetail){ return new ErrorHandler('Auto Registrado',400);}
         else{
-        return await this.carDetailRepository.createOne({ brand, model, version, plate_number,customer_id,carDetail_image, status });}
+        return await this.carDetailRepository.createOne({ plate_number,customer_id,carDetail_image, status });}
     }
 
     public async updateOneCarDetail(_id: string,updated:object): Promise<CarDetail | null> {

@@ -22,7 +22,7 @@ export abstract class MongoRepository {
         return await this.MODEL.find({name});
     }
      public async findByCustomer(customer_id: string): Promise<any> {      
-        return await this.MODEL.findOne({customer_id:customer_id, status: true});
+        return await this.MODEL.find({customer_id:customer_id, status: true});
     }
     public async findByPlateNumber(plate_number: string, customer_id:string): Promise<any> {      
       return await this.MODEL.findOne({plate_number, customer_id, status: true});

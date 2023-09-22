@@ -36,7 +36,7 @@ class MongoRepository {
     }
     findByCustomer(customer_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findOne({ customer_id: customer_id, status: true });
+            return yield this.MODEL.find({ customer_id: customer_id, status: true });
         });
     }
     findByPlateNumber(plate_number, customer_id) {

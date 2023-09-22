@@ -19,6 +19,7 @@ carDetailRouter
 
 .get('/', carDetailController.getAllCarDetails)
 .get('/:id', carDetailController.getCarDetail)
+.get('/customer/:id', carDetailController.getCarDetailByCustomer)
 .post('/', carDetailVAlidations.carDetailPhotoValidation,carDetailController.createCarDetail )
 .post('/:id',carDetailVAlidations.carDetailPhotoValidation, carDetailController.updateCarDetail)
 .delete('/:id', carDetailController.deleteCarDetail)

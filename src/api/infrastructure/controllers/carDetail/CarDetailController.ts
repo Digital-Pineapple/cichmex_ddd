@@ -15,6 +15,7 @@ export class CarDetailController extends ResponseData {
         this.createCarDetail = this.createCarDetail.bind(this);
         this.updateCarDetail = this.updateCarDetail.bind(this);
         this.deleteCarDetail = this.deleteCarDetail.bind(this);
+        this.getCarDetailByCustomer = this.getCarDetailByCustomer.bind(this);
         this.uploadCarDetailPhoto = this.uploadCarDetailPhoto.bind(this);
 
     }
@@ -47,9 +48,26 @@ export class CarDetailController extends ResponseData {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
+    public async getCarDetailByCustomer(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        console.log(id);
+        
+        try {
+            const response = await this.carDetailUseCase.getDetailCarDetailByCustomer(id);
+            await Promise.all(response.map(async(res)=> {
+                const url = await this.s3Service.getUrlObject(res.carDetail_image + ".jpg");
+                res.carDetail_image = url
+            }))
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error);
+            
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
 
     public async createCarDetail(req: Request, res: Response, next: NextFunction) {
-         const { brand,model,version,plate_number,customer_id,status } = req.body;
+         const { plate_number,customer_id,status } = req.body;
         const ok = await this.carDetailUseCase.getDetailCarDetailByPlateNumber(plate_number, customer_id);
         try {
             const pathObject = `${this.path}/${customer_id}/${plate_number}`;
@@ -58,7 +76,7 @@ export class CarDetailController extends ResponseData {
                 if (!success) {
                     return new ErrorHandler('Hubo un error', 400);
                 }
-                const response = await this.carDetailUseCase.createNewCarDetail(brand,model,version,plate_number,customer_id,pathObject,status);
+                const response = await this.carDetailUseCase.createNewCarDetail( plate_number,customer_id,pathObject,status);
                 if (response) {
                     response.carDetail_image = url;
                 }
