@@ -57,6 +57,8 @@ export class ServicesCustomerController extends ResponseData {
 
     public async createServiceCustomer(req: Request, res: Response, next: NextFunction) {
         const { customer_id, services  } = req.body;
+        console.log(customer_id, services);
+        
         try { 
         const serviceCustomer = await this.serviceCustomerUseCase.createNewServiceCustomer(customer_id,services);
             this.invoke(serviceCustomer, 201, res, 'Se creo con exito', next);
@@ -73,8 +75,12 @@ export class ServicesCustomerController extends ResponseData {
        const services = req.body
         
         try {
+        
+            console.log(services);
             
             const response = await this.serviceCustomerUseCase.updateOneServiceCustomer(id,services)
+        
+           
             
             this.invoke(response, 201, res, 'La comisión se actualizó con éxito', next); 
         

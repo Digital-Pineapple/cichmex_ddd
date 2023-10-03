@@ -3,6 +3,7 @@ import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 import { CarDetailUseCase } from '../../../application/carDetail/CarDetailUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
+import { authPopulateConfing, nameCarPopulateConfing } from '../../../../shared/domain/PopulateInterfaces';
 
 
 export class CarDetailController extends ResponseData {
@@ -25,9 +26,11 @@ export class CarDetailController extends ResponseData {
             const response = await this.carDetailUseCase.getAllCarDetail();
                 await Promise.all(response.map(async(res)=> {
                     const url = await this.s3Service.getUrlObject(res.carDetail_image + ".jpg");
+                    
+                    
                     res.carDetail_image = url
+                   
                 }))
-            
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
@@ -50,13 +53,15 @@ export class CarDetailController extends ResponseData {
     }
     public async getCarDetailByCustomer(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        console.log(id);
-        
         try {
-            const response = await this.carDetailUseCase.getDetailCarDetailByCustomer(id);
+            const response = await this.carDetailUseCase.getDetailCarDetailByCustomer(id),;
             await Promise.all(response.map(async(res)=> {
                 const url = await this.s3Service.getUrlObject(res.carDetail_image + ".jpg");
+                const nameTypeCar = await this.carDetailUseCase.getDetailNameCar( res.typeCar_id );
+                console.log(nameTypeCar);
+                
                 res.carDetail_image = url
+
             }))
             this.invoke(response, 200, res, '', next);
         } catch (error) {
@@ -67,8 +72,10 @@ export class CarDetailController extends ResponseData {
     }
 
     public async createCarDetail(req: Request, res: Response, next: NextFunction) {
-         const { plate_number,customer_id,status } = req.body;
-        const ok = await this.carDetailUseCase.getDetailCarDetailByPlateNumber(plate_number, customer_id);
+         const { plate_number,customer_id,status, typeCar_id } = req.body;
+
+         
+        const ok = await this.carDetailUseCase.getDetailCarDetailByPlateNumber(plate_number, customer_id,);
         try {
             const pathObject = `${this.path}/${customer_id}/${plate_number}`;
             if (ok === null) {
@@ -76,10 +83,11 @@ export class CarDetailController extends ResponseData {
                 if (!success) {
                     return new ErrorHandler('Hubo un error', 400);
                 }
-                const response = await this.carDetailUseCase.createNewCarDetail( plate_number,customer_id,pathObject,status);
+                const response = await this.carDetailUseCase.createNewCarDetail( plate_number,customer_id,pathObject,status, typeCar_id);
                 if (response) {
                     response.carDetail_image = url;
                 }
+                
                 this.invoke(response, 201, res, 'Se creó con éxito', next);
             } else {
                 next(new ErrorHandler('Ya existe', 500));

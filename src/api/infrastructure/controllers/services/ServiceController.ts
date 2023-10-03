@@ -87,7 +87,6 @@ export class ServicesController extends ResponseData {
     }
     public async searchService(req: Request, res: Response, next: NextFunction) {
         const { search } = req.query;
-        console.log(req.query);
 
         try {
             const response = await this.servicesUseCase.getServices();

@@ -2,20 +2,27 @@ import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { CarDetailRepository } from '../../domain/carDetail/CarDetailRepository';
 import { CarDetail } from '../../domain/carDetail/CarDetailEntity';
 import { Boolean } from 'aws-sdk/clients/batch';
+import { TypeCarEntity } from '../../domain/typeCar/TypeCarEntity';
+import { TypeCarRepository } from '../../domain/typeCar/TypeCarRepository';
+import { nameCarPopulateConfing } from '../../../shared/domain/PopulateInterfaces';
 
 
 
 
 export class CarDetailUseCase {
 
-    constructor(private readonly carDetailRepository: CarDetailRepository) { }
+    constructor(private readonly carDetailRepository: CarDetailRepository,) { }
 
     public async getAllCarDetail(): Promise<CarDetail[] | ErrorHandler | null> {
         return await this.carDetailRepository.findAll();
     }
 
     public async getDetailCarDetail(_id: string): Promise<CarDetail  | null> {
+        
         return await this.carDetailRepository.findById(_id);
+    }
+    public async getDetailNameCar(_id: string): Promise<CarDetail  | null> {        
+        return await this.carDetailRepository.findNameById(_id);
     }
 
     public async getDetailCarDetailByCustomer(_id: string): Promise<CarDetail  | ErrorHandler| null> {
@@ -25,11 +32,11 @@ export class CarDetailUseCase {
         return await this.carDetailRepository.findByPlateNumber(plate_number, customer_id);
     }
 
-    public async createNewCarDetail( plate_number:string,customer_id:string, carDetail_image:any, status:Boolean): Promise<CarDetail | ErrorHandler | null> {
+    public async createNewCarDetail( plate_number:string,customer_id:string, carDetail_image:any, status:Boolean, typeCar_id: string): Promise<CarDetail | ErrorHandler | null> {
         const carDetail = await this.carDetailRepository.findByPlateNumber (plate_number, customer_id);
         if (carDetail){ return new ErrorHandler('Auto Registrado',400);}
         else{
-        return await this.carDetailRepository.createOne({ plate_number,customer_id,carDetail_image, status });}
+        return await this.carDetailRepository.createOne({ plate_number,customer_id, typeCar_id,carDetail_image, status,  });}
     }
 
     public async updateOneCarDetail(_id: string,updated:object): Promise<CarDetail | null> {

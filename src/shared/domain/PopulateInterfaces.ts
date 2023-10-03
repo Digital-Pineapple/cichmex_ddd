@@ -8,3 +8,8 @@ export const authPopulateConfing: IAuthPopulateConfig = {
     path: 'type_customer',
     select: 'name',
 }
+
+export const nameCarPopulateConfing: IAuthPopulateConfig = {
+path: 'typeCar_id',
+select: 'name',
+}

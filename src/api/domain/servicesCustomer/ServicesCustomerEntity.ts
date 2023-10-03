@@ -1,3 +1,4 @@
+import { ICarService } from "../carService/CarServiceEntity";
 import { CustomerEntity } from "../customer/CustomerEntity";
 import { SubCategory } from '../subCategory/SubCategoryEntity';
 
@@ -7,8 +8,8 @@ export interface IServices {
     description    :   string;
     status         :   boolean;
     service_image ?:   string;
-    price          :   number,
     SubCategory    :   SubCategory;
+    typeCarService ?:   [ICarService];
 }
 
 export interface ServiceCustomer {

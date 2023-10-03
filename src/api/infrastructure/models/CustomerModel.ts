@@ -4,6 +4,7 @@ import mongoosePaginate from 'mongoose-paginate-v2';
 
 import { CustomerEntity, IPhone } from '../../domain/customer/CustomerEntity';
 
+
 const VerifyPhoneNumberSchema = new Schema<IPhone> ({
     code: {
         type    : Number,
@@ -72,6 +73,8 @@ const CustomerSchema = new Schema<CustomerEntity> ({
     //     ref: 'TypeClient',
     //     required: false,
     // },
+   
+    
     status: {
         type    : Boolean,
         default : true,

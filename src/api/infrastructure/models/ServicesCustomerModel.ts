@@ -1,6 +1,31 @@
 import { Schema, model } from 'mongoose';
 import { ServiceCustomer, IServices } from '../../domain/servicesCustomer/ServicesCustomerEntity';
 
+const TypeCarServiceSchema = new Schema({
+    _id :{
+        type:String,
+        required: true,
+    },
+    name: {
+        type: String,
+        required: true,
+
+    },
+    status: {
+        type: Boolean,
+        required: true,
+    
+    },
+    typeCar_image: {
+        type: String,
+        required: false,
+    },
+    price: {
+        type: Number,
+        required: false,
+    },
+
+})
 
 const MyServicesCustomerSchema = new Schema<IServices>({
     _id :{
@@ -24,15 +49,13 @@ const MyServicesCustomerSchema = new Schema<IServices>({
         type: String,
         required: false,
     },
-    price: {
-        type: Number,
-        required: true,
-    },
+    
     SubCategory: {
         type: Schema.Types.ObjectId,
         ref: 'SubCategory'
-
-    }
+        
+    },
+    typeCarService: [TypeCarServiceSchema]
 })
 
 

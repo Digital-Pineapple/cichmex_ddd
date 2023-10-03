@@ -18,6 +18,9 @@ export abstract class MongoRepository {
     public async findById(_id: String, populateConfig?: any): Promise<any> {
         return await this.MODEL.findById(_id);
     }
+    public async findNameById(_id: String, populateConfig?: any): Promise<any> {
+      return await this.MODEL.findById(_id).populate(populateConfig).then((res)=> res?._id);
+  }
     public async findByName(name: string): Promise<any> {
         return await this.MODEL.find({name});
     }
@@ -46,6 +49,7 @@ export abstract class MongoRepository {
     public async findOneItem(query: Object, populateConfig?: any): Promise<any> {
         return await this.MODEL.findOne({...query, status: true}).populate(populateConfig);
     }
+
     public async search(search: string) : Promise<any> {
         const noSpecialCharacters = search.replace(
           /[`~!@#$%^&*()_|+\-=?;:'"<>\{\}\[\]\\\/]/gi,

@@ -7,6 +7,10 @@ const CarDetailSchema = new Schema<CarDetail>(
         type: Schema.Types.ObjectId,
             ref: 'Customer'
       },
+      typeCar_id: {
+        type: Schema.Types.ObjectId,
+        ref: 'typeCar_id'
+      },
       // brand: {
       //   type: String,
       //   required: true,

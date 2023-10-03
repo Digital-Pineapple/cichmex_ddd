@@ -33,10 +33,10 @@ export class ServiceCustomerUseCase {
     }
 
     public async updateOneServiceCustomer(_id: string, updated: object): Promise<ServiceCustomer | null> {
-        
+            
         const service = await this.servicesCustomerRepository.findById(_id);
         service.services = updated
-
+        
         return await this.servicesCustomerRepository.updateOne(_id, service);
     }
 
