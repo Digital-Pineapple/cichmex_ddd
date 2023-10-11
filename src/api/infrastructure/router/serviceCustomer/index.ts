@@ -21,6 +21,7 @@ serviceCustomerRouter
     .get('/:id', serviceCustomerController.getServiceCustomerDetail)
     .post('/', serviceCustomerController.createServiceCustomer)
     .post('/edit/:id',servicesCustomerVAlidations.servicePhotoValidation, serviceCustomerController.updateServiceCustomer)
+    .post('/edit/SC/:id', serviceCustomerController.updateTypeCarSC)
     .delete('/:id', serviceCustomerController.deleteServiceCustomer)
     
 

@@ -3,6 +3,10 @@ export interface IAuthPopulateConfig {
     select  : string;
 }
 
+export interface ICarServicePopulateConfig {
+    path    : string;
+    select  : string;
+}
 
 export const authPopulateConfing: IAuthPopulateConfig = {
     path: 'type_customer',
@@ -12,4 +16,9 @@ export const authPopulateConfing: IAuthPopulateConfig = {
 export const nameCarPopulateConfing: IAuthPopulateConfig = {
 path: 'typeCar_id',
 select: 'name',
+}
+
+export const typeCarPopulateConfing: ICarServicePopulateConfig= {
+    path: '_id',
+    select: 'name',
 }

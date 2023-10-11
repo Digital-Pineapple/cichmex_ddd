@@ -1,6 +1,11 @@
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
-import { ServicesCustomerRepository } from '../../domain/servicesCustomer/ServicesCustomerRepository';
+
 import { IServices, ServiceCustomer } from '../../domain/servicesCustomer/ServicesCustomerEntity';
+import { TypeCarEntity } from '../../domain/typeCar/TypeCarEntity';
+import { ICarService } from '../../domain/carService/CarServiceEntity';
+import { typeCarPopulateConfing, IAuthPopulateConfig } from '../../../shared/domain/PopulateInterfaces';
+import { ServicesCustomerRepository } from '../../infrastructure/repository/ServicesCustomer/ServicesCustomerRepository';
+
 
 export class ServiceCustomerUseCase {
 
@@ -32,12 +37,37 @@ export class ServiceCustomerUseCase {
         }
     }
 
-    public async updateOneServiceCustomer(_id: string, updated: object): Promise<ServiceCustomer | null> {
-            
-        const service = await this.servicesCustomerRepository.findById(_id);
-        service.services = updated
+    public async updateOneServiceCustomer(_id: string, updated:ServiceCustomer): Promise<ServiceCustomer | null> {
         
+        const service = await this.servicesCustomerRepository.findById(_id);
+        service.services= updated?.services
         return await this.servicesCustomerRepository.updateOne(_id, service);
     }
 
+
+    public async findTypeCarService(_id: string) : Promise<TypeCarEntity | null | any > {
+        try {
+
+            const response = await this.servicesCustomerRepository.findTypeCarById(_id);
+            console.log(response, 'findTypeCarService');
+
+        } catch (error) {
+           return console.log(error);
+             
+        }
+}
+
+    public async updateOneSCTypeCars (_id: string, service_id: string, updated: object): Promise <ServiceCustomer | null | ErrorHandler> {
+     const response = await this.servicesCustomerRepository.findById(_id); 
+        if(response){
+            const service = response.services.find((service: IServices)=> service._id == service_id);
+            service.typeCarService = updated;
+            return await this.servicesCustomerRepository.updateOne(_id, response);        
+
+    }
+    else{
+        return new ErrorHandler('No se encontro el servicio', 404);
+    }
+   
+    }
 }

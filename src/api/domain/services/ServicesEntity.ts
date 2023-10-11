@@ -5,5 +5,6 @@ export interface ServicesEntity {
     description    :   string;
     status         :   boolean; 
     service_image ?:   string;
+    directory      ?:   string;
     subCategory    :   SubCategory;
 }

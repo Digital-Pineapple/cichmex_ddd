@@ -19,6 +19,10 @@ const ServiceSchema = new Schema<ServicesEntity>({
         required: false
 
     },
+    directory: {
+        type: String,
+        required: false
+    },
     subCategory: {
         type: Schema.Types.ObjectId,
         ref: 'SubCategory'

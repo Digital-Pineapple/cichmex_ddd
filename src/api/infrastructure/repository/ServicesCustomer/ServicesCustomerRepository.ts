@@ -1,13 +1,14 @@
 import { Model } from 'mongoose';
-
 import { ServicesCustomerRepository as ServicesCustomerConfig } from '../../../domain/servicesCustomer/ServicesCustomerRepository';
 import { MongoRepository } from '../MongoRepository';
 import { ServiceCustomer } from '../../../domain/servicesCustomer/ServicesCustomerEntity';
+import { TypeCarEntity } from '../../../domain/typeCar/TypeCarEntity';
 
 export class ServicesCustomerRepository extends MongoRepository implements ServicesCustomerConfig {
 
     constructor(protected ServiceCustomerModel: Model<any>) {
         super(ServiceCustomerModel)
+       
     }
 
     async findOneServiceCustomer(query: Object): Promise<ServiceCustomer | null> {
@@ -30,5 +31,9 @@ export class ServicesCustomerRepository extends MongoRepository implements Servi
 
     async deleteOneServiceCustomer(_id: string): Promise<ServiceCustomer | null> {
         return await this.ServiceCustomerModel.findByIdAndUpdate(_id, { status: false }, { new: true });
+    }
+    
+    async findTypeCarById(_id: string): Promise<TypeCarEntity | null> {
+     return await this.ServiceCustomerModel.findById(_id);
     }
 }

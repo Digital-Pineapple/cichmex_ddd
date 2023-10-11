@@ -1,7 +1,9 @@
 import { Schema, model } from 'mongoose';
 import { ServiceCustomer, IServices } from '../../domain/servicesCustomer/ServicesCustomerEntity';
+import { ICarService } from '../../domain/carService/CarServiceEntity';
+import { TypeCarEntity } from '../../domain/typeCar/TypeCarEntity';
 
-const TypeCarServiceSchema = new Schema({
+const TypeCarServiceSchema = new Schema<ICarService>({
     _id :{
         type:String,
         required: true,

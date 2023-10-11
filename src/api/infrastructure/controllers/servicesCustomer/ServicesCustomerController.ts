@@ -19,6 +19,7 @@ export class ServicesCustomerController extends ResponseData {
         this.createServiceCustomer = this.createServiceCustomer.bind(this);
         this.updateServiceCustomer = this.updateServiceCustomer.bind(this);
         this.deleteServiceCustomer = this.deleteServiceCustomer.bind(this);
+        this.updateTypeCarSC = this.updateTypeCarSC.bind(this);
         this.getServicesCustomerDetailByCustomer = this.getServicesCustomerDetailByCustomer.bind(this);
     }
 
@@ -75,21 +76,27 @@ export class ServicesCustomerController extends ResponseData {
        const services = req.body
         
         try {
-        
-            console.log(services);
-            
+
             const response = await this.serviceCustomerUseCase.updateOneServiceCustomer(id,services)
-        
-           
-            
             this.invoke(response, 201, res, 'La comisión se actualizó con éxito', next); 
-        
-            
+    
             
         } catch (error) {
             console.log(error);
             next(new ErrorHandler('Hubo un error al editar la información', 500));
 
+        }
+    }
+    public async updateTypeCarSC(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        try {
+            const response  = await this.serviceCustomerUseCase.updateOneSCTypeCars(id, req.body.service_id, req.body.typeCarService);
+            this.invoke(response, 201, res, 'Actualizado con exito', next);
+            
+        } catch (error) {
+            console.log(error);
+            next(new ErrorHandler('Hubo un error type car service', 500));
+            
         }
     }
 
