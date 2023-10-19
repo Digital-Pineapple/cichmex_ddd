@@ -40,7 +40,8 @@ export class ServiceCustomerUseCase {
     public async updateOneServiceCustomer(_id: string, updated:ServiceCustomer): Promise<ServiceCustomer | null> {
         
         const service = await this.servicesCustomerRepository.findById(_id);
-        service.services= updated?.services
+        // service.services.map((service: IServices) => = {service._id == updated._id})
+        service.services= service.services.concat(updated);
         return await this.servicesCustomerRepository.updateOne(_id, service);
     }
 
