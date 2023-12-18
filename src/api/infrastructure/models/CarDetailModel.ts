@@ -11,19 +11,6 @@ const CarDetailSchema = new Schema<CarDetail>(
         type: Schema.Types.ObjectId,
         ref: 'typeCar_id'
       },
-      // brand: {
-      //   type: String,
-      //   required: true,
-      // },
-      // model:{
-      //   type: String,
-      //   required:true,
-      // },
-      // version:{
-      //   type: String,
-      //   required: true,
-
-      // },
       carDetail_image:{
         type: String,
         required: false,

@@ -23,6 +23,7 @@ serviceCustomerRouter
     .post('/edit/:id',servicesCustomerVAlidations.servicePhotoValidation, serviceCustomerController.updateServiceCustomer)
     .post('/edit/SC/:id', serviceCustomerController.updateTypeCarSC)
     .delete('/:id', serviceCustomerController.deleteServiceCustomer)
+    .delete('/SC/:id', serviceCustomerController.deleteOneSC)
     
 
 export default serviceCustomerRouter;

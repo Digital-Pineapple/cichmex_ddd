@@ -5,7 +5,6 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 
 import { ServiceCustomerUseCase } from '../../../application/servicesCustomer/ServiceCustomerUseCase';
-import { AnyArn } from 'aws-sdk/clients/groundstation';
 
 
 export class ServicesCustomerController extends ResponseData {
@@ -21,6 +20,7 @@ export class ServicesCustomerController extends ResponseData {
         this.deleteServiceCustomer = this.deleteServiceCustomer.bind(this);
         this.updateTypeCarSC = this.updateTypeCarSC.bind(this);
         this.getServicesCustomerDetailByCustomer = this.getServicesCustomerDetailByCustomer.bind(this);
+        this.deleteOneSC = this.deleteOneSC.bind(this);
     }
 
     public async getAllServicesCustomer(req: Request, res: Response, next: NextFunction) {
@@ -108,6 +108,20 @@ export class ServicesCustomerController extends ResponseData {
 
         try {
             const response = await this.serviceCustomerUseCase.updateOneServiceCustomer(id, { status: false} );
+            this.invoke(response, 200, res, 'Eliminado correctamente', next);
+        } catch (error) {
+            console.log(error);
+            next(new ErrorHandler('Hubo un error al eliminar', 500));
+        }
+
+    }
+    public async deleteOneSC(req: Request, res: Response, next: NextFunction) {
+
+        const { id } = req.params;
+        const service_id = req.body
+        
+        try {
+            const response = await this.serviceCustomerUseCase.deleteOneServiceCustomer(id, service_id);
             this.invoke(response, 200, res, 'Eliminado correctamente', next);
         } catch (error) {
             console.log(error);

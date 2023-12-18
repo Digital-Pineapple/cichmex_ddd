@@ -40,7 +40,7 @@ export class DocumentationController extends ResponseData {
         try {
             const documentation = await this.documentationUseCase.getDetailDocumentation(id);
             const url = await this.s3Service.getUrlObject(documentation?.url + ".pdf");
-            documentation.url = url;
+            documentatio.url = url;
             this.invoke(documentation, 200, res, '', next)
         } catch (error) {
             next(new ErrorHandler('Error al encontrar la documentacion', 404));
@@ -64,7 +64,6 @@ export class DocumentationController extends ResponseData {
                 file.url = url
                 this.invoke(file, 201, res, 'El documento se creó con éxito', next);
             } else {
-                console.log('aiuda');
 
                 next(new ErrorHandler('El documento ya existe', 500));
             }
