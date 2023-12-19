@@ -13,6 +13,7 @@ import documentationRouter from './documentation';
 import serviceCustomerRouter from './serviceCustomer';
 import carDetailRouter from './carDetail';
 import membershipRouter from './membership';
+import membershipBenefitRouter from './membershipBenefit';
 
 export const apiRouter = (): Router => {
 
@@ -31,6 +32,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/service-customer', serviceCustomerRouter)
     apiRouter.use('/car_detail', carDetailRouter)
     apiRouter.use('/memberships', membershipRouter)
+    apiRouter.use('/membership-benefits', membershipBenefitRouter )
 
 
 
@@ -51,5 +53,7 @@ apiRouterx.use('/documentation',documentationRouter)
 apiRouterx.use('/service-customer', serviceCustomerRouter)
 apiRouterx.use('/car-detail', carDetailRouter)
 apiRouterx.use('/memberships', membershipRouter)
+apiRouterx.use('/membership-benefit', membershipBenefitRouter)
+
 
 export default apiRouter

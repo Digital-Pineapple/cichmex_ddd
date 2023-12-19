@@ -23,7 +23,7 @@ export class MembershipUseCase {
     public async updateOneMembership(_id: string,updated: MembershipEntity): Promise<MembershipEntity> {
         return await this.membershipRepository.updateOne(_id,updated);
     }
-    public async deleteOneMembership(_id: string): Promise<CommissionEntity | null> {
+    public async deleteOneMembership(_id: string): Promise<MembershipEntity | null> {
         return this.membershipRepository.updateOne(_id, {status: false})
     }
 

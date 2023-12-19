@@ -36,6 +36,7 @@ export class MembershipsController extends ResponseData {
 
     public async createMembership(req: Request, res: Response, next: NextFunction) {
         const { name,price_standard, price_discount,service_quantity,status } = req.body;
+        
         try {
             const response = await this.membershipUseCase.createNewMembership( name,price_standard, price_discount,service_quantity,status);
             this.invoke(response, 201, res, 'Alta con exito', next);

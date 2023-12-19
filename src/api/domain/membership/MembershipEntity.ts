@@ -50,5 +50,4 @@ export interface MembershipBenefits {
         type:boolean,
         required:false,
     }
-
     }
