@@ -5,7 +5,7 @@ import { MongoRepository } from '../MongoRepository';
 import { MembershipBenefits } from '../../../domain/membership/MembershipEntity';
 
 
-export class MembershipBEnefitsRepository extends MongoRepository implements MembershipBenefitsConfig {
+export class MembershipBenefitsRepository extends MongoRepository implements MembershipBenefitsConfig {
     
 
     constructor(protected MembershipBenefitsModel: Model<any>) {

@@ -31,12 +31,16 @@ class MongoRepository {
     }
     findByIdPupulate(_id, populateConfig) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findById(_id).populate(populateConfig).then((res) => res === null || res === void 0 ? void 0 : res._id);
+            return yield this.MODEL.findById(_id)
+                .populate(populateConfig)
+                .then((res) => res === null || res === void 0 ? void 0 : res._id);
         });
     }
     findNameById(_id, populateConfig) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findById(_id).populate(populateConfig).then((res) => res === null || res === void 0 ? void 0 : res._id);
+            return yield this.MODEL.findById(_id)
+                .populate(populateConfig)
+                .then((res) => res === null || res === void 0 ? void 0 : res._id);
         });
     }
     findByName(name) {
@@ -51,7 +55,11 @@ class MongoRepository {
     }
     findByPlateNumber(plate_number, customer_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findOne({ plate_number, customer_id, status: true });
+            return yield this.MODEL.findOne({
+                plate_number,
+                customer_id,
+                status: true,
+            });
         });
     }
     findByids(_id) {
@@ -61,7 +69,11 @@ class MongoRepository {
     }
     findByCustomerAndName(customer_id, name, status) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.find({ customer_id: customer_id, name: name, status });
+            return yield this.MODEL.find({
+                customer_id: customer_id,
+                name: name,
+                status,
+            });
         });
     }
     updateOne(_id, updated) {
@@ -92,6 +104,75 @@ class MongoRepository {
                     },
                 ],
             });
+        });
+    }
+    getAllMembershipHistory() {
+        return __awaiter(this, void 0, void 0, function* () {
+            // const mongooseObjectId = new Types.ObjectId(id)
+            const result = yield this.MODEL.aggregate([
+                //(padre) ---MembershipBenefits
+                {
+                    $lookup: {
+                        from: "membershiohistorymodels",
+                        let: {
+                            id: "$_id",
+                        },
+                        pipeline: [
+                            //(hijo)--memberHistory
+                            {
+                                $match: {
+                                    $expr: {
+                                        $eq: ["$$id", "$membershipBenefit_id"],
+                                    },
+                                    status: true
+                                },
+                            },
+                        ],
+                        as: "MembershipHistoryList",
+                    },
+                },
+                {
+                    $match: {
+                        $and: [{ "MembershipHistoryList.status": true }],
+                    },
+                },
+            ]);
+            return result;
+        });
+    }
+    ;
+    getMembershipDetailHistory(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // const mongooseObjectId = new Types.ObjectId(id)
+            const result = yield this.MODEL.aggregate([
+                //(padre) ---MembershipBenefits
+                {
+                    $lookup: {
+                        from: "membershiohistorymodels",
+                        let: {
+                            id: "$_id",
+                        },
+                        pipeline: [
+                            //(hijo)--memberHistory
+                            {
+                                $match: {
+                                    $expr: {
+                                        $eq: ["$$id", "$membershipBenefit_id"],
+                                    },
+                                },
+                            },
+                        ],
+                        as: "MembershipHistoryList",
+                    },
+                },
+                {
+                    $match: {
+                        $and: [{ "MembershipHistoryList.status": true }],
+                    },
+                },
+            ]);
+            const info = result.filter(item => item._id == id);
+            return info;
         });
     }
     ;

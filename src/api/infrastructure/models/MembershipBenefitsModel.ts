@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 import { MembershipBenefits } from "../../domain/membership/MembershipEntity";
 
 const MembershipBenefitsSchema = new Schema<MembershipBenefits>(
@@ -31,6 +31,13 @@ const MembershipBenefitsSchema = new Schema<MembershipBenefits>(
       type: Boolean,
       required: true,
     },
+    // membership_history:{
+    //   type: [{
+    //     type:Object
+    //   }],
+    //   required:false,
+    //   default:[]
+    // }
   },
   {
     versionKey: false,
