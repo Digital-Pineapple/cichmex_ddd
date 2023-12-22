@@ -81,6 +81,11 @@ class MongoRepository {
             return yield this.MODEL.findByIdAndUpdate(_id, updated, { new: true });
         });
     }
+    softDelete(_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.findByIdAndUpdate(_id, { deleted: true }, { new: true });
+        });
+    }
     createOne(body) {
         return __awaiter(this, void 0, void 0, function* () {
             const newObject = new this.MODEL(body);
@@ -124,7 +129,6 @@ class MongoRepository {
                                     $expr: {
                                         $eq: ["$$id", "$membershipBenefit_id"],
                                     },
-                                    status: true
                                 },
                             },
                         ],
@@ -163,11 +167,6 @@ class MongoRepository {
                             },
                         ],
                         as: "MembershipHistoryList",
-                    },
-                },
-                {
-                    $match: {
-                        $and: [{ "MembershipHistoryList.status": true }],
                     },
                 },
             ]);

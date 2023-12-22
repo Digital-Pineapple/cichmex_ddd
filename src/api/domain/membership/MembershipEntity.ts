@@ -1,7 +1,9 @@
 import mongoose, {  Schema } from "mongoose";
 
+import MongooseDelete = require("mongoose-delete");
 
-export interface MembershipEntity {
+
+export interface MembershipEntity extends MongooseDelete.SoftDeleteDocument {
   name: string;
   price_standard: number;
   price_discount?: number;
@@ -19,7 +21,7 @@ export interface ServiceQuantity {
   };
 }
 
-export interface MembershipBenefits {
+export interface MembershipBenefits extends MongooseDelete.SoftDeleteDocument  {
 
   membership_id: {
     type: Schema.Types.ObjectId;
@@ -51,19 +53,12 @@ export interface MembershipBenefits {
   };
   // membership_history:{}[]
 }
-export interface MembershipHistory{
-  _id :{
-    _id:string
-  }
+export interface MembershipHistory extends MongooseDelete.SoftDeleteDocument {
 
     date_service:{
         type:Date;
         required:false   
     }
-    status:{
-        type:boolean;
-        required: true;
-    },
     membershipBenefit_id:{
       type: mongoose.ObjectId;
     }

@@ -1,5 +1,8 @@
 import mongoose, { Model, Document, Types } from "mongoose";
-import _ from "mongoose-paginate-v2";
+import _, { paginateSubDocs } from "mongoose-paginate-v2";
+import Tyoes from 'mongoose';
+
+
 export abstract class MongoRepository {
   protected MODEL: Model<Document>;
 
@@ -64,6 +67,11 @@ export abstract class MongoRepository {
     return await this.MODEL.findByIdAndUpdate(_id, updated, { new: true });
   }
 
+
+  public async softDelete(_id:any): Promise<any> {
+    return await this.MODEL.findByIdAndUpdate(_id,{ deleted:true},{ new: true })
+  }
+
   public async createOne(body: Object): Promise<any> {
     const newObject = new this.MODEL(body);
     await newObject.save();
@@ -108,7 +116,6 @@ export abstract class MongoRepository {
                   $expr: {
                     $eq: ["$$id", "$membershipBenefit_id"],
                   },
-                  status:true
                 },
               },
             ],
@@ -147,12 +154,6 @@ export abstract class MongoRepository {
               },
             ],
             as: "MembershipHistoryList",
-          },
-        },
-        {
-          $match: {
-            $and: [{ "MembershipHistoryList.status": true }],
-
           },
         },
       ]);

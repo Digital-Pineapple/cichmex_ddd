@@ -6,7 +6,6 @@ import { MembershipHistoryRepository } from '../../repository/membership/Members
 import { MembershipBenefitsUseCase } from '../../../application/membership/membershipBenefitsUseCase';
 import { MembershipHistoryUseCase } from '../../../application/membership/membershipHistoryUseCase';
 import { MembershipBenefitsController } from '../../controllers/memberships/membershipBenefitsController'
-import { AuthHeader } from '../../../../shared/infrastructure/middleware/AuthHeader';
 
 
 const membershipBenefitRouter = Router();

@@ -3,6 +3,7 @@ import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
 import { MembershipBenefitsUseCase } from "../../../application/membership/membershipBenefitsUseCase";
 import { MembershipHistoryUseCase } from "../../../application/membership/membershipHistoryUseCase";
+import mongoose from "mongoose";
 
 export class MembershipBenefitsController extends ResponseData {
   protected path = "/membership-benefits";
@@ -14,7 +15,7 @@ export class MembershipBenefitsController extends ResponseData {
     super();
     this.getAllMembershipsBenefits = this.getAllMembershipsBenefits.bind(this);
     this.createMembershipBenefit = this.createMembershipBenefit.bind(this);
-    this.updateMembershipBenefit = this.updateMembershipBenefit.bind(this);
+    // this.updateMembershipBenefit = this.updateMembershipBenefit.bind(this);
     this.deleteMembershipBenefit = this.deleteMembershipBenefit.bind(this);
     this.getMembershipHistory = this.getMembershipHistory.bind(this);
     this.getUpOneBenefit = this.getUpOneBenefit.bind(this);
@@ -77,11 +78,9 @@ export class MembershipBenefitsController extends ResponseData {
       const membershipBenfit_id = memBenefit?._id;
       // Crear historial de membresía
       const historyPromises = Array.from({ length: quantity }, async () => {
-        const status = true;
         const date_service = new Date();
         date_service.setFullYear(0, 0, 0);
         return this.memberHistoryUseCase.createOneHistoryMembership(
-          status,
           date_service,
           membershipBenfit_id
         );
@@ -97,42 +96,41 @@ export class MembershipBenefitsController extends ResponseData {
 
   }
 
-  public async updateMembershipBenefit(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
-    const { id } = req.params;
-    const {
-      membership_id,
-      service_id,
-      client_id,
-      quantity,
-      start_date,
-      end_date,
-      status,
-      // membership_history,
-    } = req.body;
-    try {
-      const response = await this.membershipBenefitsUseCase.updateOneMembershipBenefit(
-        id,
-        {
-          membership_id,
-          service_id,
-          client_id,
-          quantity,
-          start_date,
-          end_date,
-          status,
-          // membership_history,
-        }
-      );
-      this.invoke(response, 201, res, "Se actualizó con éxito", next);
-    } catch (error) {
-      console.log(error);
-      next(new ErrorHandler("Hubo un error al actualizar", 500));
-    }
-  }
+  // public async updateMembershipBenefit(
+  //   req: Request,
+  //   res: Response,
+  //   next: NextFunction
+  // ) {
+  //   const { id } = req.params;
+  //   const {
+  //     membership_id,
+  //     service_id,
+  //     client_id,
+  //     quantity,
+  //     start_date,
+  //     end_date,
+  //     status,
+  //     // membership_history,
+  //   } = req.body;
+  //   try {
+  //     const response = await this.membershipBenefitsUseCase.updateOneMembershipBenefit(
+  //       id,
+  //       {
+  //         membership_id,
+  //         service_id,
+  //         client_id,
+  //         quantity,
+  //         start_date,
+  //         end_date,
+  //         status,
+  //       }
+  //     );
+  //     this.invoke(response, 201, res, "Se actualizó con éxito", next);
+  //   } catch (error) {
+  //     console.log(error);
+  //     next(new ErrorHandler("Hubo un error al actualizar", 500));
+  //   }
+  // }
 
   public async deleteMembershipBenefit(
     req: Request,
@@ -166,4 +164,6 @@ export class MembershipBenefitsController extends ResponseData {
       
     }
   }
+  
+  
 }

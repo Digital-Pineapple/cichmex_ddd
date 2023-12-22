@@ -1,19 +1,18 @@
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, {model, Schema } from "mongoose";
 import { MembershipHistory } from "../../domain/membership/MembershipEntity";
 
-const MembershipHistorySchema = new Schema<MembershipHistory>(
-  {
-   date_service:{
-    type:Date,
-   },
-   status:{
-    type:Boolean,
-   },
-   membershipBenefit_id:{
-    type: mongoose.Types.ObjectId,
 
-   }
-   
+
+import MongooseDelete = require("mongoose-delete");
+
+const MembershipHistorySchema = new mongoose.Schema<MembershipHistory>(
+  {
+    date_service: {
+      type: Date,
+    },
+    membershipBenefit_id: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
   },
   {
     versionKey: false,
@@ -21,9 +20,13 @@ const MembershipHistorySchema = new Schema<MembershipHistory>(
   }
 );
 
-const MembershipHistoryModel = model(
-  "MembershioHistoryModel",
+// Aplica el plugin mongoose-delete al esquema
+MembershipHistorySchema.plugin(MongooseDelete, { deletedAt:true });
+
+const MembershipHistoryModel = model<Document & MembershipHistory>(
+  'MembershioHistoryModel',
   MembershipHistorySchema
 );
 
 export default MembershipHistoryModel;
+

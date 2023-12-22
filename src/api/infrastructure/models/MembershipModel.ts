@@ -1,6 +1,8 @@
 import { Schema, model } from 'mongoose';
 import { MembershipEntity } from '../../domain/membership/MembershipEntity';
 
+import MongooseDelete = require("mongoose-delete");
+
 const MembershipSchema = new Schema<MembershipEntity>(
     {
       
@@ -30,7 +32,7 @@ const MembershipSchema = new Schema<MembershipEntity>(
       timestamps: true,
     }
   );
-
+  MembershipSchema.plugin(MongooseDelete, { deletedAt:true });
   const MembershipModel = model('MembershipModel', MembershipSchema);
 
   export default MembershipModel;
