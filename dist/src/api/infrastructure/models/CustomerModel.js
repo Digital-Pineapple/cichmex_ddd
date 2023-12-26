@@ -76,11 +76,6 @@ const CustomerSchema = new mongoose_1.Schema({
         default: false
     },
     phone: VerifyPhoneNumberSchema,
-    // type_client_id: {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'TypeClient',
-    //     required: false,
-    // },
     status: {
         type: Boolean,
         default: true,

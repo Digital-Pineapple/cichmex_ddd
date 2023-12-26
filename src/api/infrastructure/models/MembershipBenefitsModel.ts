@@ -31,13 +31,6 @@ const MembershipBenefitsSchema = new Schema<MembershipBenefits>(
       type: Boolean,
       required: true,
     },
-    // membership_history:{
-    //   type: [{
-    //     type:Object
-    //   }],
-    //   required:false,
-    //   default:[]
-    // }
   },
   {
     versionKey: false,

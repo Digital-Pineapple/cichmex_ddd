@@ -16,7 +16,7 @@ class MongoRepository {
     }
     findAll(populateConfig) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.find({ status: true }).populate(populateConfig);
+            return yield this.MODEL.find({ deleted: false }).populate(populateConfig);
         });
     }
     findAllAll(populateConfig) {
@@ -81,9 +81,9 @@ class MongoRepository {
             return yield this.MODEL.findByIdAndUpdate(_id, updated, { new: true });
         });
     }
-    softDelete(_id) {
+    softDelete(_id, date_service) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findByIdAndUpdate(_id, { deleted: true }, { new: true });
+            return yield this.MODEL.findByIdAndUpdate(_id, { deleted: true, date_service }, { new: true });
         });
     }
     createOne(body) {
@@ -137,7 +137,7 @@ class MongoRepository {
                 },
                 {
                     $match: {
-                        $and: [{ "MembershipHistoryList.status": true }],
+                        $and: [{ "MembershipHistoryList.deleted": false }],
                     },
                 },
             ]);

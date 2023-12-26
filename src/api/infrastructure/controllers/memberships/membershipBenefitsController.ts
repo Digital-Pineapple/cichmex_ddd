@@ -3,14 +3,15 @@ import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
 import { MembershipBenefitsUseCase } from "../../../application/membership/membershipBenefitsUseCase";
 import { MembershipHistoryUseCase } from "../../../application/membership/membershipHistoryUseCase";
-import mongoose from "mongoose";
+
 
 export class MembershipBenefitsController extends ResponseData {
   protected path = "/membership-benefits";
 
   constructor(
     private membershipBenefitsUseCase: MembershipBenefitsUseCase,
-    private memberHistoryUseCase: MembershipHistoryUseCase
+    private memberHistoryUseCase: MembershipHistoryUseCase,
+  
   ) {
     super();
     this.getAllMembershipsBenefits = this.getAllMembershipsBenefits.bind(this);
@@ -88,7 +89,7 @@ export class MembershipBenefitsController extends ResponseData {
       await Promise.all(historyPromises);
       const idMembership = membershipBenfit_id.toString()
       const response =  await this.membershipBenefitsUseCase.getDetailMembershipBenefitHistory(idMembership)
-      this.invoke(response, 200, res, "Se dio de alta con éxito", next);
+      this.invoke(response, 201, res, "Ceradoo con éxito alta con éxito", next);
     } catch (error) {
       console.log(error);
       next(new ErrorHandler("Hubo un error al crear", 500))
@@ -154,8 +155,9 @@ export class MembershipBenefitsController extends ResponseData {
     next: NextFunction
   ){
     const { id } = req.params
+    const date_service = new Date();
     try {
-      const resp = this.memberHistoryUseCase.deleteHistoryMembership(id)
+      const resp = await this.memberHistoryUseCase.deleteHistoryMembership(id,  date_service)
       this.invoke(resp,200,res,'Servicio pagado con éxito',next)
     } catch (error) {
       console.log(error);

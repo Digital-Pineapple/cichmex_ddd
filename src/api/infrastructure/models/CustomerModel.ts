@@ -68,12 +68,6 @@ const CustomerSchema = new Schema<CustomerEntity> ({
         default : false
     },
     phone: VerifyPhoneNumberSchema,
-    // type_client_id: {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'TypeClient',
-    //     required: false,
-    // },
-   
     
     status: {
         type    : Boolean,

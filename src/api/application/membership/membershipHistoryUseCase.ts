@@ -10,8 +10,8 @@ export class MembershipHistoryUseCase {
         return await this.membershipHistoryRepository.createOne({date_service,membershipBenefit_id });
     }
     
-    public async deleteHistoryMembership(id:string): Promise<MembershipHistory> {
-        return await this.membershipHistoryRepository.softDelete(id)
+    public async deleteHistoryMembership(id:string, date_service: Date): Promise<MembershipHistory> {
+        return await this.membershipHistoryRepository.softDelete(id, date_service)
     }
    
   

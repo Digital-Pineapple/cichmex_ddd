@@ -11,7 +11,7 @@ export abstract class MongoRepository {
   }
 
   public async findAll(populateConfig?: any): Promise<any> {
-    return await this.MODEL.find({ status: true }).populate(populateConfig);
+    return await this.MODEL.find({ deleted: false }).populate(populateConfig);
   }
   public async findAllAll(populateConfig?: any): Promise<any> {
     return await this.MODEL.find().populate(populateConfig);
@@ -68,11 +68,11 @@ export abstract class MongoRepository {
   }
 
 
-  public async softDelete(_id:any): Promise<any> {
-    return await this.MODEL.findByIdAndUpdate(_id,{ deleted:true},{ new: true })
+  public async softDelete(_id:any,date_service:Date): Promise<any> {
+    return await this.MODEL.findByIdAndUpdate(_id,{ deleted:true, date_service},{ new: true })
   }
 
-  public async createOne(body: Object): Promise<any> {
+  public async createOne(body: object): Promise<any> {
     const newObject = new this.MODEL(body);
     await newObject.save();
     return newObject;
@@ -124,7 +124,7 @@ export abstract class MongoRepository {
         },
         {
           $match: {
-            $and: [{ "MembershipHistoryList.status": true }],
+            $and: [{ "MembershipHistoryList.deleted": false }],
 
           },
         },
