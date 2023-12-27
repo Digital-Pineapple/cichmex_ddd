@@ -17,7 +17,7 @@ class CustomerController extends ResponseData_1.ResponseData {
         super();
         this.customerUseCase = customerUseCase;
         this.s3Service = s3Service;
-        this.path = '/customer';
+        this.path = "/customer";
         this.getAllCustomers = this.getAllCustomers.bind(this);
         this.createCustomer = this.createCustomer.bind(this);
         this.getCustomerDetail = this.getCustomerDetail.bind(this);
@@ -36,10 +36,10 @@ class CustomerController extends ResponseData_1.ResponseData {
                         customer.profile_image = url;
                     }
                 })));
-                this.invoke(customers, 200, res, '', next);
+                this.invoke(customers, 200, res, "", next);
             }
             catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Hubo un error al consultar los usuarios', 500));
+                next(new ErrorHandler_1.ErrorHandler("Hubo un error al consultar los usuarios", 500));
             }
         });
     }
@@ -50,10 +50,10 @@ class CustomerController extends ResponseData_1.ResponseData {
                 const customer = yield this.customerUseCase.getDetailCustomer(id);
                 const image = yield this.s3Service.getUrlObject((customer === null || customer === void 0 ? void 0 : customer.profile_image) + ".jpg");
                 customer.profile_image = image;
-                this.invoke(customer, 200, res, '', next);
+                this.invoke(customer, 200, res, "", next);
             }
             catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Error al encontrar el usuario', 404));
+                next(new ErrorHandler_1.ErrorHandler("Error al encontrar el usuario", 404));
             }
         });
     }
@@ -62,10 +62,10 @@ class CustomerController extends ResponseData_1.ResponseData {
             const { fullname, email, password } = req.body;
             try {
                 const customer = yield this.customerUseCase.createNewCustomer(fullname, email, password);
-                this.invoke(customer, 201, res, 'El usuario se creo con exito', next);
+                this.invoke(customer, 201, res, "El usuario se creo con exito", next);
             }
             catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Hubo un error al crear el usuario', 500));
+                next(new ErrorHandler_1.ErrorHandler("Hubo un error al crear el usuario", 500));
             }
         });
     }
@@ -78,18 +78,25 @@ class CustomerController extends ResponseData_1.ResponseData {
                     const pathObject = `${this.path}/${id}/${fullname}`;
                     const { url, success } = yield this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
                     if (!success)
-                        return new ErrorHandler_1.ErrorHandler('Hubo un error al subir la imagen', 400);
-                    const response = yield this.customerUseCase.updateOneCustomer(id, { fullname, type_customer, profile_image: pathObject });
+                        return new ErrorHandler_1.ErrorHandler("Hubo un error al subir la imagen", 400);
+                    const response = yield this.customerUseCase.updateOneCustomer(id, {
+                        fullname,
+                        type_customer,
+                        profile_image: pathObject,
+                    });
                     response.profile_image = url;
-                    this.invoke(response, 201, res, 'El usuario se actualizó con éxito jsjs', next);
+                    this.invoke(response, 201, res, "El usuario se actualizó con éxito jsjs", next);
                 }
                 else {
-                    const response = yield this.customerUseCase.updateOneCustomer(id, { fullname, type_customer });
-                    this.invoke(response, 201, res, 'El usuario se actualizó con éxitojaja', next);
+                    const response = yield this.customerUseCase.updateOneCustomer(id, {
+                        fullname,
+                        type_customer,
+                    });
+                    this.invoke(response, 201, res, "El usuario se actualizó con éxitojaja", next);
                 }
             }
             catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Hubo un error al editar la información', 500));
+                next(new ErrorHandler_1.ErrorHandler("Hubo un error al editar la información", 500));
             }
         });
     }
@@ -97,11 +104,13 @@ class CustomerController extends ResponseData_1.ResponseData {
         return __awaiter(this, void 0, void 0, function* () {
             const { id } = req.params;
             try {
-                const customer = yield this.customerUseCase.updateOneCustomer(id, { status: false });
-                this.invoke(customer, 200, res, 'El usuario ha sido eliminado', next);
+                const customer = yield this.customerUseCase.updateOneCustomer(id, {
+                    status: false,
+                });
+                this.invoke(customer, 200, res, "El usuario ha sido eliminado", next);
             }
             catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Hubo un error al eliminar el usuario', 500));
+                next(new ErrorHandler_1.ErrorHandler("Hubo un error al eliminar el usuario", 500));
             }
         });
     }
@@ -110,10 +119,10 @@ class CustomerController extends ResponseData_1.ResponseData {
             const { user } = req;
             try {
                 const customer = yield this.customerUseCase.becomeAPartner(user._id);
-                this.invoke(customer, 200, res, 'Felicidades ahora formas parte de nuestra familia', next);
+                this.invoke(customer, 200, res, "Felicidades ahora formas parte de nuestra familia", next);
             }
             catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Hubo un error al eliminar el usuario', 500));
+                next(new ErrorHandler_1.ErrorHandler("Hubo un error al eliminar el usuario", 500));
             }
         });
     }
@@ -122,10 +131,10 @@ class CustomerController extends ResponseData_1.ResponseData {
             const { type } = req.params;
             try {
                 const customers = yield this.customerUseCase.getCustomersByType(type);
-                this.invoke(customers, 200, res, '', next);
+                this.invoke(customers, 200, res, "", next);
             }
             catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Hubo un error al consultar los usuarios', 500));
+                next(new ErrorHandler_1.ErrorHandler("Hubo un error al consultar los usuarios", 500));
             }
         });
     }
@@ -134,10 +143,10 @@ class CustomerController extends ResponseData_1.ResponseData {
             const { id } = req.params;
             try {
                 const customer = yield this.customerUseCase.validateOneCustomer(id);
-                this.invoke(customer, 200, res, 'El usuario se valido con exito', next);
+                this.invoke(customer, 200, res, "El usuario se valido con exito", next);
             }
             catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Hubo un error al validar el usuario', 500));
+                next(new ErrorHandler_1.ErrorHandler("Hubo un error al validar el usuario", 500));
             }
         });
     }

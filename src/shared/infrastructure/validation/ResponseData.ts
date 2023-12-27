@@ -1,11 +1,8 @@
 import { Response, NextFunction } from 'express';
-
 import { ErrorHandler } from '../../domain/ErrorHandler';
-import { ICustomerAuth } from '../../../api/application/authentication/AuthenticationService';
-
 export class ResponseData {
 
-    private successResponse(res: Response, code: number = 200, data: ErrorHandler | ICustomerAuth | null, message: string): void {
+    private successResponse(res: Response, code: number = 200, data: ErrorHandler | null, message: string): void {
         res.status(code).json({ data, ...(message && { message }) });
     }
 

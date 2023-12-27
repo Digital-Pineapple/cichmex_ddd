@@ -64,6 +64,8 @@ export abstract class MongoRepository {
     });
   }
   public async updateOne(_id: String, updated: object): Promise<any> {
+    console.log(updated, 'mongoRepository');
+    
     return await this.MODEL.findByIdAndUpdate(_id, updated, { new: true });
   }
 

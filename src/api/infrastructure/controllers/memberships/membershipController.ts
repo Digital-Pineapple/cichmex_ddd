@@ -2,6 +2,7 @@ import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 import { MembershipUseCase } from '../../../application/membership/membershipUseCase';
+import { stringify } from 'uuid';
 
 export class MembershipsController extends ResponseData {
     protected path = '/membership'

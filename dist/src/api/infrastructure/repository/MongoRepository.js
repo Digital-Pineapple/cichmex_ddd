@@ -78,6 +78,7 @@ class MongoRepository {
     }
     updateOne(_id, updated) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(updated, 'mongoRepository');
             return yield this.MODEL.findByIdAndUpdate(_id, updated, { new: true });
         });
     }

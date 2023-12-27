@@ -15,6 +15,7 @@ import carDetailRouter from './carDetail';
 import membershipRouter from './membership';
 import membershipBenefitRouter from './membershipBenefit';
 import branchOfficeRouter from './branchOffice';
+import productRouter from './product';
 
 export const apiRouter = (): Router => {
 
@@ -35,6 +36,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/memberships', membershipRouter)
     apiRouter.use('/membership-benefits', membershipBenefitRouter )
     apiRouter.use('/branch-offices', branchOfficeRouter )
+    apiRouter.use('/product', productRouter )
 
 
 
@@ -57,6 +59,7 @@ apiRouterx.use('/car-detail', carDetailRouter)
 apiRouterx.use('/memberships', membershipRouter)
 apiRouterx.use('/membership-benefit', membershipBenefitRouter)
 apiRouterx.use('/branch-offices', branchOfficeRouter)
+apiRouterx.use('/product', productRouter)
 
 
 export default apiRouter
