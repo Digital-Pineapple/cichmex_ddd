@@ -31,7 +31,7 @@ export class CustomerController extends ResponseData {
     try {
       const customers = await this.customerUseCase.getCustomers();
       await Promise.all(
-        customers?.map(async (customer) => {
+        customers?.map(async (customer:any) => {
           if (customer.google !== true) {
             const url = await this.s3Service.getUrlObject(
               customer.profile_image + ".jpg"

@@ -17,11 +17,11 @@ export class ProductUseCase {
   }
 
   public async createProduct(
-    name: string,price: number, description: string,sizes:[string],tag:string
+    name: string,price: number, description: string,sizes:[string],tag:string, slug :string
   ): Promise<ProductEntity | ErrorHandler | null> {
     const product = await this.productRepository.findOneItem({ name });
     if (product) return new ErrorHandler("Producto ya registrado", 400);
-    return await this.productRepository.createOne({ name,price,description,sizes,tag });
+    return await this.productRepository.createOne({ name,price,description,sizes,tag, slug });
   }
 
   public async updateProduct(

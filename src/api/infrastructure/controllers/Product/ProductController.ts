@@ -3,9 +3,7 @@ import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
 import { ProductUseCase } from "../../../application/product/productUseCase";
 import { S3Service } from "../../../../shared/infrastructure/aws/S3Service";
-import { ProductEntity } from '../../../domain/product/ProductEntity';
-import { Pay } from "twilio/lib/twiml/VoiceResponse";
-import { Promise } from 'mongoose';
+import { stringify } from 'uuid';
 
 export class ProductController extends ResponseData {
   protected path = "/product";
@@ -25,12 +23,29 @@ export class ProductController extends ResponseData {
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
     try {
       const response = await this.productUseCase.getProducts();
-
-      this.invoke(response, 200, res, "", next);
+  
+      const updatedResponse = await Promise.all(
+        response.map(async (item: any) => {
+          const images = item.images;
+          const updatedImages = await Promise.all(
+            images.map(async (image: any) => {
+              const url = await this.s3Service.getUrlObject(
+                image + ".jpg"
+              );
+              return url;
+            })
+          );
+          item.images = updatedImages;
+          return item;
+        })
+      );
+  
+      this.invoke(updatedResponse, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
+  
 
   public async getProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
@@ -51,11 +66,29 @@ export class ProductController extends ResponseData {
      } = req.body;
     
     try{
+      const createSlug = (slug: string): string => {
+        // Reemplazar caracteres especiales por espacios y convertir a minúsculas
+        let processedSlug = slug.replace(/[`~!@#$%^&*()_\-+=\[\]{};:'"\\|\/,.<>?\s]/g, ' ').toLowerCase();
+        
+        // Eliminar espacios al principio y al final
+        processedSlug = processedSlug.trim();
+      
+        // Reemplazar espacios internos con guiones
+        processedSlug = processedSlug.replace(/\s+/g, '_');
+      
+        return processedSlug;
+      };
+      
+      const slug =createSlug(name)
+      console.log(slug);
+      
+
     const response = await this.productUseCase.createProduct( name,
         price,
         description,
         sizes,
         tag,
+        slug
         )
    this.invoke(response, 201, res, 'Se creó con éxito', next);
    }
@@ -77,7 +110,7 @@ public async updateProduct(req: Request, res: Response, next: NextFunction) {
       const urls: string[] = [];
       await Promise.all(req.files.map(async (item: any, index: number) => {
         const pathObject: string = `${this.path}/${id}/${index}`;
-        const {key,url}=   await this.s3Service.uploadToS3AndGetUrl(
+        const {url}=   await this.s3Service.uploadToS3AndGetUrl(
           pathObject + ".jpg",
           item,
           "image/jpeg"
