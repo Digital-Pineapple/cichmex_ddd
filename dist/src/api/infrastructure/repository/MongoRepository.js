@@ -24,6 +24,18 @@ class MongoRepository {
             return yield this.MODEL.find().populate(populateConfig);
         });
     }
+    findStockByBranch(branch_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.find({ branch_id: branch_id });
+        });
+    }
+    findOneStockByBranch(branch_id, product_id, populateConfig) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield this.MODEL.findOne({ product_id, branch_id }).populate(populateConfig);
+            console.log(result);
+            return result;
+        });
+    }
     findById(_id, populateConfig) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.MODEL.findById(_id);
@@ -78,7 +90,6 @@ class MongoRepository {
     }
     updateOne(_id, updated) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(updated, 'mongoRepository');
             return yield this.MODEL.findByIdAndUpdate(_id, updated, { new: true });
         });
     }
@@ -96,7 +107,7 @@ class MongoRepository {
     }
     findOneItem(query, populateConfig) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findOne(Object.assign(Object.assign({}, query), { status: true })).populate(populateConfig);
+            return yield this.MODEL.findOne(Object.assign(Object.assign({}, query), { deleted: false })).populate(populateConfig);
         });
     }
     search(search) {

@@ -21,6 +21,7 @@ const membership_1 = __importDefault(require("./membership"));
 const membershipBenefit_1 = __importDefault(require("./membershipBenefit"));
 const branchOffice_1 = __importDefault(require("./branchOffice"));
 const product_1 = __importDefault(require("./product"));
+const StockBranch_1 = __importDefault(require("./StockBranch"));
 const apiRouter = () => {
     const apiRouter = (0, express_1.Router)();
     apiRouter.use('/auth', auth_1.default);
@@ -39,6 +40,7 @@ const apiRouter = () => {
     apiRouter.use('/membership-benefits', membershipBenefit_1.default);
     apiRouter.use('/branch-offices', branchOffice_1.default);
     apiRouter.use('/product', product_1.default);
+    apiRouter.use('/stock-branch', StockBranch_1.default);
     return apiRouter;
 };
 exports.apiRouter = apiRouter;
@@ -59,4 +61,5 @@ apiRouterx.use('/memberships', membership_1.default);
 apiRouterx.use('/membership-benefit', membershipBenefit_1.default);
 apiRouterx.use('/branch-offices', branchOffice_1.default);
 apiRouterx.use('/product', product_1.default);
+apiRouterx.use('/stock-branch', StockBranch_1.default);
 exports.default = exports.apiRouter;

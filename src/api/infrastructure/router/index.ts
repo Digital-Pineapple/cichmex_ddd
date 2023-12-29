@@ -16,6 +16,7 @@ import membershipRouter from './membership';
 import membershipBenefitRouter from './membershipBenefit';
 import branchOfficeRouter from './branchOffice';
 import productRouter from './product';
+import stockBranchRouter from './StockBranch';
 
 export const apiRouter = (): Router => {
 
@@ -37,6 +38,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/membership-benefits', membershipBenefitRouter )
     apiRouter.use('/branch-offices', branchOfficeRouter )
     apiRouter.use('/product', productRouter )
+    apiRouter.use('/stock-branch', stockBranchRouter )
 
 
 
@@ -60,6 +62,7 @@ apiRouterx.use('/memberships', membershipRouter)
 apiRouterx.use('/membership-benefit', membershipBenefitRouter)
 apiRouterx.use('/branch-offices', branchOfficeRouter)
 apiRouterx.use('/product', productRouter)
+apiRouterx.use('/stock-branch', stockBranchRouter )
 
 
 export default apiRouter

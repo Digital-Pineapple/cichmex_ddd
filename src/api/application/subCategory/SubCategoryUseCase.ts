@@ -16,7 +16,7 @@ export class SubCategoryUseCase {
         return await this.subCategoriesRepository.findById(_id);
     }
 
-    public async createNewSubCategory(name: string, description: string, status: boolean, category:category): Promise<SubCategory | ErrorHandler | null> {
+    public async createNewSubCategory(name: string, description: string, status: boolean, category:any): Promise<SubCategory | ErrorHandler | null> {
         const subCategory = await this.subCategoriesRepository.findOneItem({name});
         if (subCategory) return new ErrorHandler('La categoria ya ha sido registrado',400);
         return await this.subCategoriesRepository.createOne({ name, description, status, category });

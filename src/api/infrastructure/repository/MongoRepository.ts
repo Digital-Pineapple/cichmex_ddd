@@ -16,6 +16,14 @@ export abstract class MongoRepository {
   public async findAllAll(populateConfig?: any): Promise<any> {
     return await this.MODEL.find().populate(populateConfig);
   }
+  public async findStockByBranch(branch_id:any): Promise<any> {
+    return await this.MODEL.find({branch_id:branch_id})
+  }
+  public async findOneStockByBranch(branch_id:String,product_id : String, populateConfig?:any ): Promise<any> {
+    const result =  await this.MODEL.findOne({product_id, branch_id }).populate(populateConfig)
+    console.log(result);
+    return result
+  }
 
   public async findById(_id: String, populateConfig?: any): Promise<any> {
     return await this.MODEL.findById(_id);
@@ -64,7 +72,6 @@ export abstract class MongoRepository {
     });
   }
   public async updateOne(_id: String, updated: object): Promise<any> {
-    console.log(updated, 'mongoRepository');
     
     return await this.MODEL.findByIdAndUpdate(_id, updated, { new: true });
   }
@@ -81,7 +88,7 @@ export abstract class MongoRepository {
   }
 
   public async findOneItem(query: Object, populateConfig?: any): Promise<any> {
-    return await this.MODEL.findOne({ ...query, status: true }).populate(
+    return await this.MODEL.findOne({ ...query, deleted: false }).populate(
       populateConfig
     );
   }
