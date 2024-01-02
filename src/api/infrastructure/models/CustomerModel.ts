@@ -3,7 +3,7 @@ import { Schema, model } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
 import { CustomerEntity, IPhone } from '../../domain/customer/CustomerEntity';
-
+import MongooseDelete = require("mongoose-delete");
 
 const VerifyPhoneNumberSchema = new Schema<IPhone> ({
     code: {
@@ -99,6 +99,7 @@ CustomerSchema.method('toJSON', function () {
 });
 
 CustomerSchema.plugin(mongoosePaginate);
+CustomerSchema.plugin(MongooseDelete,{overrideMethods:true})
 const CustomerModel = model('Customer', CustomerSchema);
 
 export default CustomerModel;

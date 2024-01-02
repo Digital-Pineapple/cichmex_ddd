@@ -21,7 +21,7 @@ const MembershipHistorySchema = new mongoose.Schema<MembershipHistory>(
 );
 
 // Aplica el plugin mongoose-delete al esquema
-MembershipHistorySchema.plugin(MongooseDelete, { deletedAt:true });
+MembershipHistorySchema.plugin(MongooseDelete, { overrideMethods:true});
 
 const MembershipHistoryModel = model<Document & MembershipHistory>(
   'MembershioHistoryModel',

@@ -1,5 +1,5 @@
 
-import { Schema } from 'mongoose';
+import MongooseDelete = require("mongoose-delete");
 export interface IPhone {
     code             :   number;
     prefix           :   string;
@@ -11,7 +11,7 @@ export interface IPhone {
 }
 
 
-export interface CustomerEntity {
+export interface CustomerEntity extends MongooseDelete.SoftDeleteInterface {
     _id              :   string;
     fullname         :   string;
     privacity        :   boolean;

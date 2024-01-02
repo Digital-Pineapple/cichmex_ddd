@@ -11,7 +11,7 @@ export class StockBranchUseCase {
     public async getStockInBranch(_id:string): Promise<StockBranchEntity[] | ErrorHandler | null> {
         return await this.stockBranchRepository.findStockByBranch(_id);
     }
-    public async getOneStockInBranch(branch_id: string , product_id: string, populateConfig:any ) : Promise <StockBranchEntity | ErrorHandler| null> { 
+    public async getOneStockInBranch(branch_id: string , product_id: string, populateConfig?:any ) : Promise <StockBranchEntity > { 
           return await this.stockBranchRepository.findOneStockByBranch(branch_id,product_id, populateConfig)    
     }  
 

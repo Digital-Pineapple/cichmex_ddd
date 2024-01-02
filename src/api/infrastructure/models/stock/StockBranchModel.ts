@@ -1,5 +1,5 @@
 import mongoose, {model, Schema } from "mongoose";
-import { StockBranchEntity } from '../../domain/stockBranch/StockBranchEntity';
+import { StockBranchEntity, IProductInput, IProductOutput, IProductReturn } from '../../../domain/stockBranch/StockBranchEntity';
 
 
 import MongooseDelete = require("mongoose-delete");
@@ -16,8 +16,9 @@ import MongooseDelete = require("mongoose-delete");
       },
       stock:{
           type:Number,
-          required:true,
+          required:false,
       },
+      
     },
      
     {
@@ -29,7 +30,7 @@ import MongooseDelete = require("mongoose-delete");
   BranchOfficeSchema.plugin(MongooseDelete, { overrideMethods :true });
 
 const StockBranchModel = model<Document & StockBranchEntity>(
-  'StockInBranch',
+  'StockInBranches',
   BranchOfficeSchema
 );
 
