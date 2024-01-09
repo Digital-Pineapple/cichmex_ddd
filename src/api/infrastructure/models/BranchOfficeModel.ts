@@ -15,9 +15,17 @@ const IlocationSchema = new mongoose.Schema<ILocation>(
         type: String,
         required:false,
       },
-      location_map:{
+      lat:{
         type:String,
         required:false
+      },
+      lgt:{
+        type:String,
+        required:false,
+      },
+      direction:{
+        type:String,
+        required:true,
       }
    
      

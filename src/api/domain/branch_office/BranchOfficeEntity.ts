@@ -16,9 +16,11 @@ export interface BranchOfficeEntity extends MongooseDelete.SoftDeleteDocument {
 }
 
 export interface ILocation extends MongooseDelete.SoftDeleteDocument{
-  location_map: string;
+  lat: string;
+  lgt:string;
   state?: string;
   municipality?: string;
+  direction ?: string;
   createdAt       ?:   NativeDate;
   updatedAt       ?:   NativeDate;
 }
