@@ -20,7 +20,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     }
     signIn(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            let customer = yield this.authRepository.findOneItem({ email });
+            const customer = yield this.authRepository.findOneItem({ email });
             if (!customer)
                 return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son validos', 400);
             const validatePassword = this.decryptPassword(password, customer.password);

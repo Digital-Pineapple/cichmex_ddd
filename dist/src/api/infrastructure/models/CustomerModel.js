@@ -77,10 +77,6 @@ const CustomerSchema = new mongoose_1.Schema({
         default: false
     },
     phone: VerifyPhoneNumberSchema,
-    status: {
-        type: Boolean,
-        default: true,
-    },
     accountVerify: {
         type: Boolean,
         default: false,

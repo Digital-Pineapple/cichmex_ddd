@@ -36,6 +36,7 @@ class AuthController extends ResponseData_1.ResponseData {
             const { email, password } = req.body;
             try {
                 const response = yield this.authUseCase.signIn(email, password);
+                console.log(response);
                 if (!(response instanceof ErrorHandler_1.ErrorHandler))
                     response.user.profile_image = yield this.s3Service.getUrlObject(response.user.profile_image);
                 this.invoke(response, 200, res, '', next);

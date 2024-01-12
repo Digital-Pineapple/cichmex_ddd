@@ -16,7 +16,10 @@ export class AuthUseCase extends Authentication {
     }
 
     async signIn(email: string,password: string): Promise<ErrorHandler | IAuth> {
-        let customer = await this.authRepository.findOneItem({ email }, );
+        const customer = await this.authRepository.findOneItem({ email });
+        
+        
+
 
         if (!customer) return new ErrorHandler('El usuario o contraseña no son validos',400);
 

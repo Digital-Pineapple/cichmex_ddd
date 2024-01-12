@@ -68,11 +68,6 @@ const CustomerSchema = new Schema<CustomerEntity> ({
         default : false
     },
     phone: VerifyPhoneNumberSchema,
-    
-    status: {
-        type    : Boolean,
-        default : true,
-    },
     accountVerify: {
         type    : Boolean,
         default : false,

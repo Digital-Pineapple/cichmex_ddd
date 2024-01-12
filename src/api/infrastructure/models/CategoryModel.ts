@@ -1,21 +1,14 @@
 import { Schema, model } from 'mongoose';
-import mongoosePaginate from 'mongoose-paginate-v2';
 import { Category } from '../../domain/category/CategoryEntity';
+import MongooseDelete = require("mongoose-delete");
+
+
 
 const CategorySchema = new Schema<Category>(
     {
       name: {
         type: String,
         required: true,
-      },
-      description:{
-        type: String,
-        required:true,
-      },
-      status:{
-        type: Boolean,
-        required: true,
-
       },
       category_image:{
         type: String,
@@ -27,7 +20,8 @@ const CategorySchema = new Schema<Category>(
       timestamps: true,
     }
   );
+  CategorySchema.plugin(MongooseDelete,{overrideMethods:true})
 
-  const CategoryModel = model('CategoryModel', CategorySchema);
+  const CategoryModel = model<Document & Category>('Categories', CategorySchema);
 
   export default CategoryModel;

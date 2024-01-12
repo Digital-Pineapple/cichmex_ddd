@@ -1,6 +1,6 @@
 import { Schema,model } from 'mongoose';
 import { UserEntity } from '../../domain/user/UserEntity';
-
+import MongooseDelete = require("mongoose-delete");
 
 const UserSchema = new Schema<UserEntity>({
     fullname: {
@@ -16,15 +16,11 @@ const UserSchema = new Schema<UserEntity>({
         type: String,
         required: true,
     },
-    status: {
-        type: Boolean,
-        default: true,
-    },
 },{
     timestamps: true,
     versionKey: false,
 });
-
+UserSchema.plugin(MongooseDelete, {overrideMethods:true})
 UserSchema.method('toJSON', function () {
     const { password, ...user } = this.toObject();
     return user;

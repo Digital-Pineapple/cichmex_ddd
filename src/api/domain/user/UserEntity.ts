@@ -1,10 +1,11 @@
-export interface UserEntity {
+
+import MongooseDelete = require("mongoose-delete");
+export interface UserEntity extends MongooseDelete.SoftDeleteInterface {
     _id             :   string;
     fullname        :   string;
     email           :   string;
     password        :   string;
     profile_image   : string;
-    status          :   boolean;
     createdAt       :   NativeDate;
     updatedAt       :   NativeDate;
 }

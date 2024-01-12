@@ -34,8 +34,11 @@ export class AuthController extends ResponseData {
 
     public async login(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { email, password } = req.body;
+        
         try {
             const response = await this.authUseCase.signIn(email, password);
+            console.log(response);
+            
             if(!(response instanceof ErrorHandler)) response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image);
             this.invoke(response, 200, res, '', next);
         } catch (error) {

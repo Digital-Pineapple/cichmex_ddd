@@ -22,6 +22,8 @@ export class CategoryController extends ResponseData {
     public async getAllCategories(req: Request, res: Response, next: NextFunction) {
         try {
             const response = await this.categoryUseCase.getCategories();
+            console.log(response, 'categorias');
+            
             await Promise.all(response.map(async(res)=> {
                 const url = await this.s3Service.getUrlObject(res.category_image + ".jpg");
                 res.category_image = url
@@ -45,9 +47,11 @@ export class CategoryController extends ResponseData {
     }
 
     public async createCategory(req: Request, res: Response, next: NextFunction) {
-        const { name, description, status } = req.body;
+        const { name } = req.body;
+        
+       
         try {
-            const response = await this.categoryUseCase.createNewCategory(name, description, status);
+            const response = await this.categoryUseCase.createNewCategory(name);
             this.invoke(response, 201, res, 'La categoria se creo con exito', next);
         } catch (error) {
             console.log(error);
@@ -58,19 +62,19 @@ export class CategoryController extends ResponseData {
 
     public async updateCategory(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { name, description, status } = req.body;
+        const { name } = req.body;
         try {
             if (req.file) {
                 const pathObject = `${this.path}/${id}/${name}`;
                 const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
                 if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-                const response = await this.categoryUseCase.updateOneCategory(id, { name, description, status, category_image: pathObject });
+                const response = await this.categoryUseCase.updateOneCategory(id, { name, category_image: pathObject });
             console.log(response);
             
                 response.category_image = url;
                 this.invoke(response, 201, res, 'La categoría se actualizó con éxito', next);     
             } else {
-                const response = await this.categoryUseCase.updateOneCategory(id, { name, description, status });
+                const response = await this.categoryUseCase.updateOneCategory(id, { name});
                 this.invoke(response, 201, res, 'La categoría se actualizó con éxito', next);     
             }
 
