@@ -11,15 +11,19 @@ export class SubCategoryUseCase {
     public async getSubCategories(): Promise<SubCategory[] | ErrorHandler | null> {
         return await this.subCategoriesRepository.findAll();
     }
+    public async getSubCtegoriesByCategoryId(category_id: string): Promise< SubCategory[] | null > {
+        return this.subCategoriesRepository.findSubCategoriesByCategory(category_id)
+    }
+    
 
     public async getDetailSubCategory(_id: string): Promise<SubCategory | null> {
         return await this.subCategoriesRepository.findById(_id);
     }
 
-    public async createNewSubCategory(name: string, description: string, status: boolean, category:any): Promise<SubCategory | ErrorHandler | null> {
+    public async createNewSubCategory(name: string, description: string, category_id:any): Promise<SubCategory | ErrorHandler | null> {
         const subCategory = await this.subCategoriesRepository.findOneItem({name});
         if (subCategory) return new ErrorHandler('La categoria ya ha sido registrado',400);
-        return await this.subCategoriesRepository.createOne({ name, description, status, category });
+        return await this.subCategoriesRepository.createOne({ name, description, category_id });
     }
 
     public async updateOneSubCategory(_id: string,updated: SubCategory): Promise<SubCategory  | null> {
@@ -29,5 +33,6 @@ export class SubCategoryUseCase {
         return this.subCategoriesRepository.updateOne(_id, {status: false})
     }
     
+
 
 }

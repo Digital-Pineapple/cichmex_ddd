@@ -1,6 +1,7 @@
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { CategoriesRepository } from '../../domain/category/CategoriesRepository';
-import { Category } from '../../domain/category/CategoryEntity';
+import { Category } from '../../domain/category/CategoryEntity'
+import { SubCategoriesPopulateConfig } from '../../../shared/domain/PopulateInterfaces';
 
 
 export class CategoryUseCase {
@@ -13,6 +14,9 @@ export class CategoryUseCase {
 
     public async getDetailCategory(_id: string): Promise<Category  | null> {
         return await this.categoriesRepository.findById(_id);
+    }
+    public async getSubCategoriesByCategory(_id: string): Promise<Category[] | null> {
+        return this.categoriesRepository.findAll(_id)
     }
 
     public async createNewCategory(name: string): Promise<Category | ErrorHandler | null> {

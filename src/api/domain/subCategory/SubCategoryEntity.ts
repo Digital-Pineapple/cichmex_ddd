@@ -1,10 +1,12 @@
+import mongoose from "mongoose";
 import { Category } from "../category/CategoryEntity";
 
-export interface SubCategory {
+import MongooseDelete = require("mongoose-delete");
+
+export interface SubCategory extends MongooseDelete.SoftDeleteDocument {
     name: string;
     description: string;
-    status: boolean;
     subCategory_image ?: string;
-    category: Category;
+    category_id: mongoose.Types.ObjectId;
 }
 

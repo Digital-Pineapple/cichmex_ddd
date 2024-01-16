@@ -16,6 +16,7 @@ export class CategoryController extends ResponseData {
         this.deleteCategory = this.deleteCategory.bind(this);
         this.searchCategory = this.searchCategory.bind(this);
         this.uploadCategoryPhoto = this.uploadCategoryPhoto.bind(this);
+      
 
     }
 
@@ -33,6 +34,9 @@ export class CategoryController extends ResponseData {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
+
+   
+
 
     public async getCategory(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
@@ -98,7 +102,7 @@ export class CategoryController extends ResponseData {
         console.log(req.query);
 
         try {
-            const response = await this.categoryUseCase.searchCategory(search);
+            const response = await this.categoryUseCase.getCategories();
             this.invoke(response, 201, res, 'Categoria encontrada', next);
         } catch (error) {
             console.log(error);
@@ -115,7 +119,7 @@ export class CategoryController extends ResponseData {
             const pathObject = `${this.path}/${id}/${req.body?.photoFile}`;
             const { message, key, url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", photoFile);
             if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-            const response = await this.categoryUseCase.updateCategoryPhoto(key, id);
+            const response = await this.categoryUseCase.updateOneCategory(key, {});
             console.log(response)
             response.category_image = url;
             this.invoke(response, 200, res, message, next);

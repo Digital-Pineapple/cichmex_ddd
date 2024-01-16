@@ -29,6 +29,11 @@ class MongoRepository {
             return yield this.MODEL.find({ branch_id: branch_id });
         });
     }
+    findSubCategoriesByCategory(category_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.find({ category_id: category_id, deleted: false });
+        });
+    }
     findOneStockByBranch(branch_id, product_id, populateConfig) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield this.MODEL.findOne({ product_id, branch_id }).populate(populateConfig);

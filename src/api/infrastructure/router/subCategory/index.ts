@@ -17,6 +17,7 @@ const subCategoryController = new SubCategoryController(subCategoryUseCase, s3Se
 subCategoryRouter
     .get('/', subCategoryController.getAllSubCategories)
     .get('/:id', subCategoryController.getSubCategory)
+    .get('/subCategory/:id', subCategoryController.findSubCategoriesByCategory)
     .post('/', subCategoryController.createSubCategory)
     .post('/:id', subCategoryValidations.subCategoryPhotoValidation, subCategoryController.updateSubCategory)
     .delete('/:id', subCategoryController.deleteSubCategory)

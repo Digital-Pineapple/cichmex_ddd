@@ -1,4 +1,6 @@
 import ProductModel from '../../api/infrastructure/models/ProductModel';
+import CategoryModel from '../../api/infrastructure/models/CategoryModel';
+import SubCategoryModel from '../../api/infrastructure/models/SubCategoryModel';
 export interface IAuthPopulateConfig {
     path    : string;
     select  : string;
@@ -35,4 +37,10 @@ export const stockBranchPopulateConfig : IStockPopulateConfig ={
     path: 'product_id',
     select: ["name", "price","description" ],
     model: ProductModel
+}
+
+export const SubCategoriesPopulateConfig : IStockPopulateConfig ={
+    path: '_id',
+    select: ["name", "subCategory_image", "_id", ],
+    model: SubCategoryModel
 }

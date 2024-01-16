@@ -12,11 +12,14 @@ export class SubCategoryController extends ResponseData {
     constructor(private subCategoryUseCase:SubCategoryUseCase, private readonly s3Service:S3Service  ) {
         super();
         this.getAllSubCategories    =   this.getAllSubCategories.bind(this);
+        
         this.getSubCategory         =   this.getSubCategory.bind(this);
         this.createSubCategory      =   this.createSubCategory.bind(this);
         this.updateSubCategory      =   this.updateSubCategory.bind(this);
         this.deleteSubCategory      =   this.deleteSubCategory.bind(this);
         this.searchSubCategory    =   this.searchSubCategory.bind(this);
+        this.findSubCategoriesByCategory  = this.findSubCategoriesByCategory.bind(this);
+    
     }
 
     public async getAllSubCategories(req: Request, res: Response, next: NextFunction) {
@@ -27,11 +30,12 @@ export class SubCategoryController extends ResponseData {
                 res.subCategory_image = url;
             }));
             this.invoke(response, 200, res, '', next);
+            
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
-
+  
     public async getSubCategory(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         try {
@@ -45,9 +49,10 @@ export class SubCategoryController extends ResponseData {
     }
 
     public async createSubCategory(req: Request, res: Response, next: NextFunction) {
-        const { name, description, status, category } = req.body;
+        const { name, description, category_id } = req.body;
+        
         try {
-            const response = await this.subCategoryUseCase.createNewSubCategory(name, description,status, category);
+            const response = await this.subCategoryUseCase.createNewSubCategory(name, description, category_id);
             this.invoke(response, 201, res, 'La subcategoria se creo con exito', next);
         } catch (error) {
             console.log(error);
@@ -101,7 +106,18 @@ export class SubCategoryController extends ResponseData {
             next(new ErrorHandler('No se encontro la Subcategoria', 500));   
         }
     }
+    public async findSubCategoriesByCategory (req: Request, res: Response, next: NextFunction) {
+        const {id} = req.params;
+        try {
+            
+            const response = await this.subCategoryUseCase.getSubCtegoriesByCategoryId(id)
+            this.invoke(response, 201, res, 'Subcategoria encontrada', next);
+        } catch (error) {
+            console.log(error);
+            
+            next(new ErrorHandler('No se encontro la Subcategoria', 500));   
+        }
+    }
 
 
-}
-
+    }
