@@ -14,7 +14,7 @@ export interface IGoogle {
 }
 
 export interface IAuth {
-    user    : CustomerEntity | UserEntity;
+    user    :  UserEntity;
     token?  : string;
 }
 
@@ -23,7 +23,7 @@ export class Authentication {
     private googleKey   = process.env.GOOGLE_CLIENT_ID;
     private client      = new OAuth2Client(this.googleKey);
 
-    protected async generateJWT(user: CustomerEntity | UserEntity): Promise<IAuth> {
+    protected async generateJWT(user: CustomerEntity ): Promise<IAuth> {
         return new Promise((resolve, reject) => {
             const payload: string | object | Buffer = { user };
 

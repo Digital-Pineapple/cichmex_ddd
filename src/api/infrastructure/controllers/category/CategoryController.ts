@@ -73,8 +73,6 @@ export class CategoryController extends ResponseData {
                 const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
                 if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
                 const response = await this.categoryUseCase.updateOneCategory(id, { name, category_image: pathObject });
-            console.log(response);
-            
                 response.category_image = url;
                 this.invoke(response, 201, res, 'La categoría se actualizó con éxito', next);     
             } else {
@@ -99,7 +97,6 @@ export class CategoryController extends ResponseData {
     }
     public async searchCategory(req: Request, res: Response, next: NextFunction) {
         const { search } = req.query;
-        console.log(req.query);
 
         try {
             const response = await this.categoryUseCase.getCategories();
