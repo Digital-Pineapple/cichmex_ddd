@@ -14,21 +14,23 @@ const ErrorHandler_1 = require("../../../../shared/domain/ErrorHandler");
 const ResponseData_1 = require("../../../../shared/infrastructure/validation/ResponseData");
 const Utils_1 = require("../../../../shared/infrastructure/validation/Utils");
 class AuthController extends ResponseData_1.ResponseData {
-    constructor(authUseCase, s3Service, twilioService) {
+    constructor(authUseCase, typeUserUseCase, s3Service, twilioService) {
         super();
         this.authUseCase = authUseCase;
+        this.typeUserUseCase = typeUserUseCase;
         this.s3Service = s3Service;
         this.twilioService = twilioService;
-        this.path = '/customers';
+        this.path = '/users';
         this.login = this.login.bind(this);
         this.register = this.register.bind(this);
+        this.registerAdmin = this.registerAdmin.bind(this);
         this.loginWithGoogle = this.loginWithGoogle.bind(this);
         this.changePassword = this.changePassword.bind(this);
         this.uploadProfilePhoto = this.uploadProfilePhoto.bind(this);
         this.revalidateToken = this.revalidateToken.bind(this);
         this.verifyCode = this.verifyCode.bind(this);
         this.savePhoneNumberAndSendCode = this.savePhoneNumberAndSendCode.bind(this);
-        this.updateCustomer = this.updateCustomer.bind(this);
+        // this.updateCustomer             =   this.updateCustomer.bind(this);
         this.uploadFiles = this.uploadFiles.bind(this);
     }
     login(req, res, next) {
@@ -48,9 +50,28 @@ class AuthController extends ResponseData_1.ResponseData {
     }
     register(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { email, password, fullname, type_customer, phone } = req.body;
+            const { email, password, fullname, phone } = req.body;
             try {
-                const response = yield this.authUseCase.signUp({ fullname, email, password, type_customer, phone });
+                const responsedefault = yield this.typeUserUseCase.getTypeUsers();
+                const def = responsedefault === null || responsedefault === void 0 ? void 0 : responsedefault.filter(item => item.name === 'Customer');
+                const TypeUser_id = def === null || def === void 0 ? void 0 : def.map(item => item._id);
+                const response = yield this.authUseCase.signUp({ fullname, email, password, phone, type_user: TypeUser_id });
+                this.invoke(response, 200, res, '', next);
+            }
+            catch (error) {
+                console.log(error);
+                next(new ErrorHandler_1.ErrorHandler('Hubo un error al iniciar sesión', 500));
+            }
+        });
+    }
+    registerAdmin(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { email, password, fullname, phone } = req.body;
+            try {
+                const responsedefault = yield this.typeUserUseCase.getTypeUsers();
+                const def = responsedefault === null || responsedefault === void 0 ? void 0 : responsedefault.filter(item => item.name === 'Admin');
+                const TypeUser_id = def === null || def === void 0 ? void 0 : def.map(item => item._id);
+                const response = yield this.authUseCase.signUp({ fullname, email, password, phone, type_user: TypeUser_id });
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {
@@ -103,27 +124,24 @@ class AuthController extends ResponseData_1.ResponseData {
             }
         });
     }
-    updateCustomer(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { user } = req;
-            const { email, fullname } = req.body;
-            try {
-                const response = yield this.authUseCase.updateCustomer(user._id, email, fullname);
-                response.profile_image = yield this.s3Service.getUrlObject(response === null || response === void 0 ? void 0 : response.profile_image);
-                this.invoke(response, 200, res, 'El usuario se actualizo con exito', next);
-            }
-            catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Hubo un error al actualizar la información', 500));
-            }
-        });
-    }
+    // public async updateCustomer(req: Request, res: Response, next: NextFunction) {
+    //     const { user } = req;
+    //     const { email, fullname } = req.body;
+    //     try {
+    //         const response = await this.authUseCase.updateCustomer(user._id, email, fullname);
+    //         response.profile_image = await this.s3Service.getUrlObject(response?.profile_image);
+    //         this.invoke(response, 200, res, 'El usuario se actualizo con exito', next);
+    //     } catch (error) {
+    //         next(new ErrorHandler('Hubo un error al actualizar la información', 500));
+    //     }
+    // }
     revalidateToken(req, res, next) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
             const { user } = req;
             try {
-                const customer = yield this.authUseCase.findUser(user.email);
-                const response = yield this.authUseCase.generateToken(customer);
+                const find = yield this.authUseCase.findUser(user.email);
+                const response = yield this.authUseCase.generateToken(user);
                 if (!response.user.profile_image) {
                     response.user.profile_image = yield this.s3Service.getUrlObject((_a = response.user) === null || _a === void 0 ? void 0 : _a.profile_image);
                 }

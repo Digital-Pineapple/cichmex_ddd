@@ -25,7 +25,7 @@ authAdminRouter
     .post('/change-password', validateAuthentication, authController.changePassword)
     .post('/upload/profile-photo', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .get('/user', validateAuthentication, authController.revalidateToken)
-    .patch('/update-user', validateAuthentication, authController.updateCustomer)
+    // .patch('/update-user', validateAuthentication, authController.updateCustomer)
 
 export default authAdminRouter;
 

@@ -1,10 +1,7 @@
 import Jwt from 'jsonwebtoken';
 import Bcrypt from 'bcrypt';
 import Generator from 'generate-password';
-
 import { OAuth2Client } from 'google-auth-library';
-
-import { CustomerEntity } from '../../domain/customer/CustomerEntity';
 import { UserEntity } from '../../domain/user/UserEntity';
 
 export interface IGoogle {
@@ -23,7 +20,7 @@ export class Authentication {
     private googleKey   = process.env.GOOGLE_CLIENT_ID;
     private client      = new OAuth2Client(this.googleKey);
 
-    protected async generateJWT(user: CustomerEntity ): Promise<IAuth> {
+    protected async generateJWT(user: UserEntity ): Promise<IAuth> {
         return new Promise((resolve, reject) => {
             const payload: string | object | Buffer = { user };
 

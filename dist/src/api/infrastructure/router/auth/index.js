@@ -6,29 +6,34 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const ValidateAuthentication_1 = __importDefault(require("../../../../shared/infrastructure/validation/ValidateAuthentication"));
 const AuthUseCase_1 = require("../../../application/auth/AuthUseCase");
+const TypeUserUseCase_1 = require("../../../application/typeUser/TypeUserUseCase");
 const AuthController_1 = require("../../controllers/auth/AuthController");
 const AuthRepository_1 = require("../../repository/auth/AuthRepository");
-const CustomerModel_1 = __importDefault(require("../../models/CustomerModel"));
 const S3Service_1 = require("../../../../shared/infrastructure/aws/S3Service");
 const TwilioService_1 = require("../../../../shared/infrastructure/twilio/TwilioService");
 const AuthValidatons_1 = require("../../../../shared/infrastructure/validation/Auth/AuthValidatons");
+const TypeUsersRepository_1 = require("../../repository/typeUser/TypeUsersRepository");
+const TypeUserModel_1 = __importDefault(require("../../models/TypeUserModel"));
 const authRouter = (0, express_1.Router)();
-const authRepository = new AuthRepository_1.AuthRepository(CustomerModel_1.default);
+const authRepository = new AuthRepository_1.AuthRepository(TypeUserModel_1.default);
+const typeUserRepository = new TypeUsersRepository_1.TypeUsersRepository(TypeUserModel_1.default);
 const authUseCase = new AuthUseCase_1.AuthUseCase(authRepository);
+const typeUserUseCase = new TypeUserUseCase_1.TypeUserUseCase(typeUserRepository);
 const s3Service = new S3Service_1.S3Service();
 const twilioService = new TwilioService_1.TwilioService();
 const authValidations = new AuthValidatons_1.AuthValidations();
-const authController = new AuthController_1.AuthController(authUseCase, s3Service, twilioService);
+const authController = new AuthController_1.AuthController(authUseCase, typeUserUseCase, s3Service, twilioService);
 authRouter
     .post('/login', authValidations.loginValidation, authController.login)
     .post('/register', authValidations.registerValidation, authController.register)
+    .post('/registerAdmin/seed', authValidations.registerValidation, authController.registerAdmin)
     .post('/google', authValidations.googleLoginValidations, authController.loginWithGoogle)
     .post('/change-password', ValidateAuthentication_1.default, authController.changePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .get('/customer', ValidateAuthentication_1.default, authController.revalidateToken)
     .post('/verify-code', ValidateAuthentication_1.default, authController.verifyCode)
     .post('/phone-number', ValidateAuthentication_1.default, authController.savePhoneNumberAndSendCode)
-    .patch('/update-customer', ValidateAuthentication_1.default, authController.updateCustomer)
+    // .patch('/update-customer', validateAuthentication, authController.updateCustomer)
     .post('/upload-files', authValidations.filesValidations, authController.uploadFiles);
 // 
 exports.default = authRouter;

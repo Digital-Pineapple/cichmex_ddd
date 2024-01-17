@@ -37,13 +37,12 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     }
     signUp(body) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(body);
-            let customer = yield this.authRepository.findOneItem({ email: body.email });
-            if (customer)
+            let user = yield this.authRepository.findOneItem({ email: body.email });
+            if (user)
                 return new ErrorHandler_1.ErrorHandler('El usuario ya ha sido registrado', 400);
             const password = yield this.encryptPassword(body.password);
-            customer = yield this.authRepository.createOne(Object.assign(Object.assign({}, body), { password }));
-            return yield this.generateJWT(customer);
+            user = yield this.authRepository.createOne(Object.assign(Object.assign({}, body), { password }));
+            return yield this.generateJWT(user);
         });
     }
     signInWithGoogle(idToken, type_customer) {
@@ -78,9 +77,9 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             return yield this.authRepository.updateOne(customer_id, { email, fullname });
         });
     }
-    generateToken(customer) {
+    generateToken(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.generateJWT(customer);
+            return yield this.generateJWT(user);
         });
     }
     registerPhoneNumber(customer, phone_data, code) {

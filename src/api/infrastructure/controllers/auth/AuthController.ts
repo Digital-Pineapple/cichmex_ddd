@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { CustomerEntity } from '../../../domain/customer/CustomerEntity';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 
 import { AuthUseCase } from '../../../application/auth/AuthUseCase';
@@ -14,21 +13,27 @@ import { generateRandomCode } from '../../../../shared/infrastructure/validation
 
 
 import { IPhoneRequest } from '../../../application/auth/interfaces';
+import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
 
 export class AuthController extends ResponseData {
-    protected path = '/customers';
+    protected path = '/users';
 
-    constructor(private readonly authUseCase: AuthUseCase, private readonly s3Service: S3Service, private readonly twilioService: TwilioService) {
+    constructor(private readonly authUseCase: AuthUseCase,
+        private readonly typeUserUseCase : TypeUserUseCase,
+         private readonly s3Service: S3Service,
+          private readonly twilioService: TwilioService
+          ) {
         super();
         this.login                      =   this.login.bind(this);
         this.register                   =   this.register.bind(this);
+        this.registerAdmin              =   this.registerAdmin.bind(this);
         this.loginWithGoogle            =   this.loginWithGoogle.bind(this);
         this.changePassword             =   this.changePassword.bind(this);
         this.uploadProfilePhoto         =   this.uploadProfilePhoto.bind(this);
         this.revalidateToken            =   this.revalidateToken.bind(this);
         this.verifyCode                 =   this.verifyCode.bind(this);
         this.savePhoneNumberAndSendCode =   this.savePhoneNumberAndSendCode.bind(this);
-        this.updateCustomer             =   this.updateCustomer.bind(this);
+        // this.updateCustomer             =   this.updateCustomer.bind(this);
         this.uploadFiles                =   this.uploadFiles.bind(this);
     }
 
@@ -47,9 +52,26 @@ export class AuthController extends ResponseData {
     }
 
     public async register(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
-        const { email, password, fullname, type_customer, phone } = req.body;
+        const { email, password, fullname, phone } = req.body;
         try {
-            const response = await this.authUseCase.signUp({ fullname, email, password, type_customer, phone });
+            const responsedefault = await this.typeUserUseCase.getTypeUsers()
+            const def = responsedefault?.filter(item => item.name === 'Customer')
+            const TypeUser_id = def?.map(item => item._id)
+            const response = await this.authUseCase.signUp({ fullname, email, password, phone, type_user:TypeUser_id });
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error)
+            next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
+        }
+    }
+    public async registerAdmin(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
+        const { email, password, fullname, phone } = req.body;
+        
+        try {
+            const responsedefault = await this.typeUserUseCase.getTypeUsers()
+            const def = responsedefault?.filter(item => item.name === 'Admin')
+            const TypeUser_id = def?.map(item => item._id)
+            const response = await this.authUseCase.signUp({ fullname, email, password, phone, type_user:TypeUser_id });
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             console.log(error)
@@ -94,23 +116,23 @@ export class AuthController extends ResponseData {
         }
     }
 
-    public async updateCustomer(req: Request, res: Response, next: NextFunction) {
-        const { user } = req;
-        const { email, fullname } = req.body;
-        try {
-            const response = await this.authUseCase.updateCustomer(user._id, email, fullname);
-            response.profile_image = await this.s3Service.getUrlObject(response?.profile_image);
-            this.invoke(response, 200, res, 'El usuario se actualizo con exito', next);
-        } catch (error) {
-            next(new ErrorHandler('Hubo un error al actualizar la información', 500));
-        }
-    }
+    // public async updateCustomer(req: Request, res: Response, next: NextFunction) {
+    //     const { user } = req;
+    //     const { email, fullname } = req.body;
+    //     try {
+    //         const response = await this.authUseCase.updateCustomer(user._id, email, fullname);
+    //         response.profile_image = await this.s3Service.getUrlObject(response?.profile_image);
+    //         this.invoke(response, 200, res, 'El usuario se actualizo con exito', next);
+    //     } catch (error) {
+    //         next(new ErrorHandler('Hubo un error al actualizar la información', 500));
+    //     }
+    // }
 
     public async revalidateToken(req: Request, res: Response, next: NextFunction) {
         const { user } = req;
         try {
-            const customer = await this.authUseCase.findUser(user.email);
-            const response = await this.authUseCase.generateToken(customer);
+            const find = await this.authUseCase.findUser(user.email);
+            const response = await this.authUseCase.generateToken(user);
             if (!response.user.profile_image) {
                 response.user.profile_image = await this.s3Service.getUrlObject(response.user?.profile_image);
             }

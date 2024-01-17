@@ -3,7 +3,6 @@ import { Authentication } from '../authentication/AuthenticationService';
 import { AuthRepository } from '../../domain/auth/AuthRepository';
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 
-import { CustomerEntity } from '../../domain/customer/CustomerEntity';
 import { IAuth } from '../authentication/AuthenticationService';
 
 import { MomentService } from '../../../shared/infrastructure/moment/MomentService';
@@ -35,14 +34,13 @@ export class AuthUseCase extends Authentication {
   
 
     async signUp(body: any): Promise<IAuth | ErrorHandler | null> {
-        console.log(body);
         
-        let customer = await this.authRepository.findOneItem({ email: body.email });
-        if (customer) return new ErrorHandler('El usuario ya ha sido registrado',400);
-
+        let user = await this.authRepository.findOneItem({ email: body.email });
+        if (user) return new ErrorHandler('El usuario ya ha sido registrado',400);
+        
         const password = await this.encryptPassword(body.password);
-        customer = await this.authRepository.createOne({ ...body, password });
-        return await this.generateJWT(customer);
+        user = await this.authRepository.createOne({ ...body, password });
+        return await this.generateJWT(user);
     }
 
     async signInWithGoogle(idToken: string, type_customer: string): Promise<IAuth> {
@@ -59,7 +57,7 @@ export class AuthUseCase extends Authentication {
         return await this.generateJWT(customer);
     }
 
-    async changePassword(password: string,newPassword: string,user: CustomerEntity | UserEntity): Promise<ErrorHandler | IAuth | null> {
+    async changePassword(password: string,newPassword: string,user: UserEntity): Promise<ErrorHandler | IAuth | null> {
         let customer = await this.authRepository.findById(user._id);
         const currentPassword = this.decryptPassword(password,customer.password);
         if (!currentPassword) return new ErrorHandler('Error la contraseña actual no es valida',400);
@@ -67,19 +65,19 @@ export class AuthUseCase extends Authentication {
         return await this.authRepository.updateOne(customer._id,{ password: newPass });
     }
 
-    async updateProfilePhoto(photo: string,customer_id: string): Promise<CustomerEntity> {
+    async updateProfilePhoto(photo: string,customer_id: string): Promise<UserEntity> {
         return await this.authRepository.updateOne(customer_id,{ profile_image: photo });
     }
 
-    async updateCustomer(customer_id: string,email: string,fullname: string): Promise<CustomerEntity> {
+    async updateCustomer(customer_id: string,email: string,fullname: string): Promise<UserEntity> {
         return await this.authRepository.updateOne(customer_id,{ email,fullname });
     }
 
-    async generateToken(customer: CustomerEntity | UserEntity) {
-        return await this.generateJWT(customer)
+    async generateToken(user: UserEntity) {
+        return await this.generateJWT(user)
     }
 
-    async registerPhoneNumber(customer: CustomerEntity | UserEntity,phone_data: IPhoneRequest,code: number) {
+    async registerPhoneNumber(customer: UserEntity | UserEntity,phone_data: IPhoneRequest,code: number) {
         const { phone_number,prefix } = phone_data;
 
         const phoneData = await this.authRepository.validatePhoneNumber(phone_number,customer._id);

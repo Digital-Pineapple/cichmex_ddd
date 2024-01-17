@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthRepository = void 0;
 const MongoRepository_1 = require("../MongoRepository");
-const TypeCustomerModel_1 = __importDefault(require("../../models/TypeCustomerModel"));
+const TypeUserModel_1 = __importDefault(require("../../models/TypeUserModel"));
 class AuthRepository extends MongoRepository_1.MongoRepository {
     constructor(CustomerModel) {
         super(CustomerModel);
@@ -22,7 +22,7 @@ class AuthRepository extends MongoRepository_1.MongoRepository {
     }
     validateTypeCustomer(_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield TypeCustomerModel_1.default.findById(_id);
+            return yield TypeUserModel_1.default.findById(_id);
         });
     }
     verifyCode(_id) {

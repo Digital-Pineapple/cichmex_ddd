@@ -5,7 +5,6 @@ import authAdminRouter from './authAdmin';
 import customerRouter from './customer/';
 import serviceRouter from './services';
 import typeCarRouter from './typeCar';
-import typeCustomer from './typeCustomer';
 import categoryRouter from './Category';
 import subCategoryRouter from './subCategory';
 import commissionRouter from './commission';
@@ -17,17 +16,18 @@ import membershipBenefitRouter from './membershipBenefit';
 import branchOfficeRouter from './branchOffice';
 import productRouter from './product';
 import stockBranchRouter from './StockBranch';
+import typeUserRouter from './typeUser';
 
 export const apiRouter = (): Router => {
 
     const apiRouter = Router();
 
     apiRouter.use('/auth', authRouter);
-    apiRouter.use('/auth/admin', authAdminRouter);
+    // apiRouter.use('/auth/admin', authAdminRouter);
     apiRouter.use('/customer', customerRouter);
     apiRouter.use('/services', serviceRouter);
     apiRouter.use('/type-car', typeCarRouter)
-    apiRouter.use('/type-customer', typeCustomer)
+    apiRouter.use('/type-user', typeUserRouter)
     apiRouter.use('/category', categoryRouter)
     apiRouter.use('/sub-category', subCategoryRouter)
     apiRouter.use('/commission', commissionRouter)
@@ -51,7 +51,7 @@ apiRouterx.use('/auth/admin', authAdminRouter);
 apiRouterx.use('/customer', customerRouter);
 apiRouterx.use('/services', serviceRouter);
 apiRouterx.use('/type-car', typeCarRouter)
-apiRouterx.use('/type-customer', typeCustomer)
+apiRouterx.use('/type-user', typeUserRouter)
 apiRouterx.use('/category', categoryRouter)
 apiRouterx.use('/sub-category', subCategoryRouter)
 apiRouterx.use('/commission',commissionRouter)
