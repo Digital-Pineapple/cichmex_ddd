@@ -44,7 +44,6 @@ export class Authentication {
     
             const payload = ticket.getPayload();
             console.log(payload);
-            
             resolve({ fullname: payload?.name, email: payload?.email, picture: payload?.picture });
         })
         

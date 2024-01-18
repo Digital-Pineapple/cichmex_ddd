@@ -24,7 +24,7 @@ export const apiRouter = (): Router => {
 
     apiRouter.use('/auth', authRouter);
     // apiRouter.use('/auth/admin', authAdminRouter);
-    apiRouter.use('/customer', customerRouter);
+    // apiRouter.use('/customer', customerRouter);
     apiRouter.use('/services', serviceRouter);
     apiRouter.use('/type-car', typeCarRouter)
     apiRouter.use('/type-user', typeUserRouter)
@@ -47,8 +47,8 @@ export const apiRouter = (): Router => {
 const apiRouterx = Router();
 
 apiRouterx.use('/auth', authRouter);
-apiRouterx.use('/auth/admin', authAdminRouter);
-apiRouterx.use('/customer', customerRouter);
+// apiRouterx.use('/auth/admin', authAdminRouter);
+// apiRouterx.use('/customer', customerRouter);
 apiRouterx.use('/services', serviceRouter);
 apiRouterx.use('/type-car', typeCarRouter)
 apiRouterx.use('/type-user', typeUserRouter)

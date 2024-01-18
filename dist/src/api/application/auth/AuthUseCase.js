@@ -13,6 +13,7 @@ exports.AuthUseCase = void 0;
 const AuthenticationService_1 = require("../authentication/AuthenticationService");
 const ErrorHandler_1 = require("../../../shared/domain/ErrorHandler");
 const MomentService_1 = require("../../../shared/infrastructure/moment/MomentService");
+const PopulateInterfaces_1 = require("../../../shared/domain/PopulateInterfaces");
 class AuthUseCase extends AuthenticationService_1.Authentication {
     constructor(authRepository) {
         super();
@@ -20,13 +21,13 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     }
     signIn(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            const customer = yield this.authRepository.findOneItem({ email });
-            if (!customer)
+            const user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.UserPopulateConfig);
+            if (!user)
                 return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son validos', 400);
-            const validatePassword = this.decryptPassword(password, customer.password);
+            const validatePassword = this.decryptPassword(password, user.password);
             if (!validatePassword)
                 return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son validos', 400);
-            return yield this.generateJWT(customer);
+            return yield this.generateJWT(user);
         });
     }
     findUser(email) {

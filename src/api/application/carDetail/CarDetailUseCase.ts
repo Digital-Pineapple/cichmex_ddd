@@ -2,11 +2,6 @@ import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { CarDetailRepository } from '../../domain/carDetail/CarDetailRepository';
 import { CarDetail } from '../../domain/carDetail/CarDetailEntity';
 import { Boolean } from 'aws-sdk/clients/batch';
-import { TypeCarEntity } from '../../domain/typeCar/TypeCarEntity';
-import { TypeCarRepository } from '../../domain/typeCar/TypeCarRepository';
-import { nameCarPopulateConfing } from '../../../shared/domain/PopulateInterfaces';
-
-
 
 
 export class CarDetailUseCase {

@@ -15,6 +15,7 @@ import { generateRandomCode } from '../../../../shared/infrastructure/validation
 import { IPhoneRequest } from '../../../application/auth/interfaces';
 import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
 
+
 export class AuthController extends ResponseData {
     protected path = '/users';
 
@@ -37,14 +38,17 @@ export class AuthController extends ResponseData {
         this.uploadFiles                =   this.uploadFiles.bind(this);
     }
 
-    public async login(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
+    public async login(req: Request, res: Response, next: NextFunction): Promise< IAuth| ErrorHandler | void> {
         const { email, password } = req.body;
-        
+
         try {
             const response = await this.authUseCase.signIn(email, password);
-            console.log(response);
+
+            if(!(response instanceof ErrorHandler) && response.user.profile_image === undefined){response.user.profile_image ? 
+                response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image):
+                'No hay imagen de perfil'
+            }
             
-            if(!(response instanceof ErrorHandler)) response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image);
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
@@ -66,7 +70,7 @@ export class AuthController extends ResponseData {
     }
     public async registerAdmin(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { email, password, fullname, phone } = req.body;
-        
+
         try {
             const responsedefault = await this.typeUserUseCase.getTypeUsers()
             const def = responsedefault?.filter(item => item.name === 'Admin')
@@ -102,7 +106,7 @@ export class AuthController extends ResponseData {
 
     public async uploadProfilePhoto(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        
+
         try {
             const pathObject = `${this.path}/${id}/${req.file?.fieldname}`;
             const { url, success, message } = await this.s3Service.uploadToS3AndGetUrl(pathObject + '.jpg', req.file, 'image/jpeg');
@@ -136,7 +140,7 @@ export class AuthController extends ResponseData {
             if (!response.user.profile_image) {
                 response.user.profile_image = await this.s3Service.getUrlObject(response.user?.profile_image);
             }
-            
+
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al generar el token', 500));

@@ -105,6 +105,7 @@ class MongoRepository {
     }
     createOne(body) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(body, 'Mongo');
             const newObject = new this.MODEL(body);
             yield newObject.save();
             return newObject;

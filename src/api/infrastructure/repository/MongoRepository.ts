@@ -87,7 +87,8 @@ export abstract class MongoRepository {
   }
 
   public async createOne(body: object): Promise<any> {
-
+    console.log(body ,'Mongo');
+    
     const newObject = new this.MODEL(body);
     await newObject.save();
     return newObject;

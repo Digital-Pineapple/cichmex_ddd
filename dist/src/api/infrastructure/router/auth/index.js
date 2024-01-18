@@ -14,10 +14,11 @@ const TwilioService_1 = require("../../../../shared/infrastructure/twilio/Twilio
 const AuthValidatons_1 = require("../../../../shared/infrastructure/validation/Auth/AuthValidatons");
 const TypeUsersRepository_1 = require("../../repository/typeUser/TypeUsersRepository");
 const TypeUserModel_1 = __importDefault(require("../../models/TypeUserModel"));
+const UserModel_1 = __importDefault(require("../../models/UserModel"));
 const authRouter = (0, express_1.Router)();
-const authRepository = new AuthRepository_1.AuthRepository(TypeUserModel_1.default);
-const typeUserRepository = new TypeUsersRepository_1.TypeUsersRepository(TypeUserModel_1.default);
+const authRepository = new AuthRepository_1.AuthRepository(UserModel_1.default);
 const authUseCase = new AuthUseCase_1.AuthUseCase(authRepository);
+const typeUserRepository = new TypeUsersRepository_1.TypeUsersRepository(TypeUserModel_1.default);
 const typeUserUseCase = new TypeUserUseCase_1.TypeUserUseCase(typeUserRepository);
 const s3Service = new S3Service_1.S3Service();
 const twilioService = new TwilioService_1.TwilioService();
@@ -30,7 +31,6 @@ authRouter
     .post('/google', authValidations.googleLoginValidations, authController.loginWithGoogle)
     .post('/change-password', ValidateAuthentication_1.default, authController.changePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
-    .get('/customer', ValidateAuthentication_1.default, authController.revalidateToken)
     .post('/verify-code', ValidateAuthentication_1.default, authController.verifyCode)
     .post('/phone-number', ValidateAuthentication_1.default, authController.savePhoneNumberAndSendCode)
     // .patch('/update-customer', validateAuthentication, authController.updateCustomer)

@@ -11,13 +11,16 @@ import { TwilioService } from '../../../../shared/infrastructure/twilio/TwilioSe
 import { AuthValidations } from '../../../../shared/infrastructure/validation/Auth/AuthValidatons';
 import { TypeUsersRepository } from '../../repository/typeUser/TypeUsersRepository';
 import TypeUserModel from '../../models/TypeUserModel';
+import UserModel from '../../models/UserModel';
 
 const authRouter = Router();
 
-const authRepository     = new AuthRepository(TypeUserModel);
-const typeUserRepository = new TypeUsersRepository(TypeUserModel)
+const authRepository     = new AuthRepository(UserModel);
 const authUseCase        = new AuthUseCase(authRepository);
+
+const typeUserRepository = new TypeUsersRepository(TypeUserModel)
 const typeUserUseCase    = new TypeUserUseCase(typeUserRepository)
+
 const s3Service          = new S3Service();
 const twilioService      = new TwilioService();
 const authValidations    = new AuthValidations();
@@ -30,7 +33,6 @@ authRouter
     .post('/google', authValidations.googleLoginValidations, authController.loginWithGoogle)
     .post('/change-password', validateAuthentication, authController.changePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
-    .get('/customer', validateAuthentication, authController.revalidateToken)
     .post('/verify-code', validateAuthentication, authController.verifyCode)
     .post('/phone-number', validateAuthentication, authController.savePhoneNumberAndSendCode)
     // .patch('/update-customer', validateAuthentication, authController.updateCustomer)

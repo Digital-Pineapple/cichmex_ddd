@@ -8,31 +8,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthRepository = void 0;
 const MongoRepository_1 = require("../MongoRepository");
-const TypeUserModel_1 = __importDefault(require("../../models/TypeUserModel"));
 class AuthRepository extends MongoRepository_1.MongoRepository {
-    constructor(CustomerModel) {
-        super(CustomerModel);
-        this.CustomerModel = CustomerModel;
-    }
-    validateTypeCustomer(_id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield TypeUserModel_1.default.findById(_id);
-        });
+    constructor(UserModel) {
+        super(UserModel);
+        this.UserModel = UserModel;
     }
     verifyCode(_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.CustomerModel.findByIdAndUpdate(_id, { 'phone.verified': true }, { new: true });
+            return yield this.UserModel.findByIdAndUpdate(_id, { 'phone.verified': true }, { new: true });
         });
     }
     validatePhoneNumber(phone, customer_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.CustomerModel.findOne({ 'phone.phone_number': phone, _id: { $ne: customer_id } });
+            return yield this.UserModel.findOne({ 'phone.phone_number': phone, _id: { $ne: customer_id } });
         });
     }
 }

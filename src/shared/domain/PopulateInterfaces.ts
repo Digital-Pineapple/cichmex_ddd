@@ -4,7 +4,10 @@ import SubCategoryModel from '../../api/infrastructure/models/SubCategoryModel';
 export interface IAuthPopulateConfig {
     path    : string;
     select  : string;
-
+}
+export interface IUserPopulateConfig {
+    path    : string;
+    select  : string[];
 }
 
 export interface ICarServicePopulateConfig {
@@ -14,8 +17,7 @@ export interface ICarServicePopulateConfig {
 export interface IStockPopulateConfig {
     path : string;
     select : string[];
-    model : any
-    
+    model : any  
 }
 
 export const authPopulateConfing: IAuthPopulateConfig = {
@@ -43,4 +45,8 @@ export const SubCategoriesPopulateConfig : IStockPopulateConfig ={
     path: '_id',
     select: ["name", "subCategory_image", "_id", ],
     model: SubCategoryModel
+}
+export const UserPopulateConfig : IUserPopulateConfig ={
+    path: 'type_user',
+    select: ["name", "type" ],
 }

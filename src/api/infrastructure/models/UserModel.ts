@@ -53,7 +53,10 @@ const UserSchema = new Schema<UserEntity>({
         required:false,
     },
     type_user:{
-        type: Schema.Types.ObjectId , ref: 'typeuser'
+        type: Schema.Types.ObjectId ,
+        ref:'TypeUser' ,
+        required:false
+       
     },
     profile_image:{
         type:String,

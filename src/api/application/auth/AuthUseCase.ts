@@ -8,6 +8,7 @@ import { IAuth } from '../authentication/AuthenticationService';
 import { MomentService } from '../../../shared/infrastructure/moment/MomentService';
 import { IFileKeys,IPhoneRequest } from './interfaces';
 import { UserEntity } from '../../domain/user/UserEntity';
+import {UserPopulateConfig } from '../../../shared/domain/PopulateInterfaces'
 export class AuthUseCase extends Authentication {
 
     constructor(private readonly authRepository: AuthRepository) {
@@ -15,37 +16,38 @@ export class AuthUseCase extends Authentication {
     }
 
     async signIn(email: string,password: string): Promise<ErrorHandler | IAuth> {
-        const customer = await this.authRepository.findOneItem({ email });
-        
-        
-
-
-        if (!customer) return new ErrorHandler('El usuario o contraseña no son validos',400);
-
-        const validatePassword = this.decryptPassword(password,customer.password)
+        const user = await this.authRepository.findOneItem({ email }, UserPopulateConfig );
+        if (!user) return new ErrorHandler('El usuario o contraseña no son validos',400);
+        const validatePassword = this.decryptPassword(password,user.password)
         if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos',400);
-
-        return await this.generateJWT(customer);
+        return await this.generateJWT(user);
     }
+
     async findUser(email: string): Promise<ErrorHandler | IAuth> {
-        let customer = await this.authRepository.findOneItem({ email }, );
+        let customer = await this.authRepository.findOneItem({ email }, UserPopulateConfig );
         return await (customer);
     }
   
 
     async signUp(body: any): Promise<IAuth | ErrorHandler | null> {
         
-        let user = await this.authRepository.findOneItem({ email: body.email });
+        
+        let user = await this.authRepository.findOneItem({ email: body.email }, UserPopulateConfig);
+
+        
         if (user) return new ErrorHandler('El usuario ya ha sido registrado',400);
         
         const password = await this.encryptPassword(body.password);
+    
+        
         user = await this.authRepository.createOne({ ...body, password });
+        
         return await this.generateJWT(user);
     }
 
     async signInWithGoogle(idToken: string, type_customer: string): Promise<IAuth> {
         let { fullname,email,picture } = await this.validateGoogleToken(idToken);
-        let customer = await this.authRepository.findOneItem({ email });
+        let customer = await this.authRepository.findOneItem({ email }, UserPopulateConfig);
 
         if (customer) return await this.generateJWT(customer);
 
