@@ -34,8 +34,10 @@ export class AuthController extends ResponseData {
         this.revalidateToken            =   this.revalidateToken.bind(this);
         this.verifyCode                 =   this.verifyCode.bind(this);
         this.savePhoneNumberAndSendCode =   this.savePhoneNumberAndSendCode.bind(this);
+        this.registerByPhone            =   this.registerByPhone.bind(this);
+        this.savePhone                  =  this.savePhone.bind(this);
         // this.updateCustomer             =   this.updateCustomer.bind(this);
-        this.uploadFiles                =   this.uploadFiles.bind(this);
+        // this.uploadFiles                =   this.uploadFiles.bind(this);
     }
 
     public async login(req: Request, res: Response, next: NextFunction): Promise< IAuth| ErrorHandler | void> {
@@ -68,6 +70,19 @@ export class AuthController extends ResponseData {
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }
     }
+
+    public async registerByPhone(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
+        const { phone } = req.body;
+        try {
+            const response = this.authUseCase.registerPhoneNumber
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error)
+            next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
+        }
+    }
+
+
     public async registerAdmin(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { email, password, fullname, phone } = req.body;
 
@@ -84,9 +99,9 @@ export class AuthController extends ResponseData {
     }
 
     public async loginWithGoogle(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
-        const { idToken, type_customer } = req.body;
+        const { idToken } = req.body;
         try {
-            const response = await this.authUseCase.signInWithGoogle(idToken, type_customer);
+            const response = await this.authUseCase.signInWithGoogle(idToken);
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
@@ -133,13 +148,14 @@ export class AuthController extends ResponseData {
     // }
 
     public async revalidateToken(req: Request, res: Response, next: NextFunction) {
+        
         const { user } = req;
         try {
             const find = await this.authUseCase.findUser(user.email);
             const response = await this.authUseCase.generateToken(user);
-            if (!response.user.profile_image) {
-                response.user.profile_image = await this.s3Service.getUrlObject(response.user?.profile_image);
-            }
+            // if (!response.user.profile_image) {
+            //     response.user.profile_image = await this.s3Service.getUrlObject(response.user?.profile_image);
+            // }
 
             this.invoke(response, 200, res, '', next);
         } catch (error) {
@@ -150,12 +166,32 @@ export class AuthController extends ResponseData {
     public async savePhoneNumberAndSendCode(req: Request, res: Response, next: NextFunction) {
         const { user } = req;
         const { prefix, phone_number } : IPhoneRequest = req.body;
+        console.log(user);
+        
         try {
             const code = generateRandomCode();
             //await this.twilioService.sendSMS(`Verifica tu número de teléfono con el siguiente codigo - ${code}`);
             const response = await this.authUseCase.registerPhoneNumber(user, { prefix, phone_number }, +code);
             this.invoke(response, 200, res, 'El telefono se registro correctamente', next);
         } catch (error) {
+            next(new ErrorHandler('Hubo un error al guardar el telefono', 500));
+        }
+    }
+    public async savePhone(req: Request, res: Response, next: NextFunction) {
+        const { phone_number, prefix} : IPhoneRequest = req.body;
+        
+        try {
+
+            const code = generateRandomCode();
+            const vcode = parseInt(code)
+
+            // await this.twilioService.sendSMS(`Codigo de verificacion CarWash autolavado y más- ${code}`);
+            const response = await this.authUseCase.findPhone(phone_number)
+            
+            this.invoke(response, 200, res, 'El telefono se registro correctamente', next);
+        } catch (error) {
+            console.log(error);
+            
             next(new ErrorHandler('Hubo un error al guardar el telefono', 500));
         }
     }
@@ -171,22 +207,22 @@ export class AuthController extends ResponseData {
         }
     }
 
-    public async uploadFiles({ files, user}: Request, res: Response, next: NextFunction) {
-        const documents = [ files?.ine, files?.curp, files?.prook_address, files?.criminal_record ];
-        let keys: any = [];
-        try {
-            if(!files?.ine || !files?.curp || !files?.prook_address || !files?.criminal_record) return next(new ErrorHandler('los archivos son requeridos', 400));
+    // public async uploadFiles({ files, user}: Request, res: Response, next: NextFunction) {
+    //     const documents = [ files?.ine, files?.curp, files?.prook_address, files?.criminal_record ];
+    //     let keys: any = [];
+    //     try {
+    //         if(!files?.ine || !files?.curp || !files?.prook_address || !files?.criminal_record) return next(new ErrorHandler('los archivos son requeridos', 400));
 
-            await Promise.all(documents?.map(async (file) => {
-                const pathObject = `${this.path}/${user._id}/${file[0].fieldname}`;
-                keys.push({ field: file[0].fieldname, key: pathObject })
-                await this.s3Service.uploadToS3(pathObject+ ".pdf", file[0], "application/pdf")
-            }));
-            const response = await this.authUseCase.uploadCustomerFiles(user._id, keys);
-            this.invoke(response, 200, res, 'Los archivos se subieron correctamente', next);
-        } catch (error) {
-            next(new ErrorHandler('Hubo un error al subir los archivos', 500));
-        }
-    }
+    //         await Promise.all(documents?.map(async (file) => {
+    //             const pathObject = `${this.path}/${user._id}/${file[0].fieldname}`;
+    //             keys.push({ field: file[0].fieldname, key: pathObject })
+    //             await this.s3Service.uploadToS3(pathObject+ ".pdf", file[0], "application/pdf")
+    //         }));
+    //         const response = await this.authUseCase.uploadCustomerFiles(user._id, keys);
+    //         this.invoke(response, 200, res, 'Los archivos se subieron correctamente', next);
+    //     } catch (error) {
+    //         next(new ErrorHandler('Hubo un error al subir los archivos', 500));
+    //     }
+    // }
 
 }

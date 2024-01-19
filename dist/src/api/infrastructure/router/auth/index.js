@@ -25,6 +25,7 @@ const twilioService = new TwilioService_1.TwilioService();
 const authValidations = new AuthValidatons_1.AuthValidations();
 const authController = new AuthController_1.AuthController(authUseCase, typeUserUseCase, s3Service, twilioService);
 authRouter
+    .get('/user', ValidateAuthentication_1.default, authController.revalidateToken)
     .post('/login', authValidations.loginValidation, authController.login)
     .post('/register', authValidations.registerValidation, authController.register)
     .post('/registerAdmin/seed', authValidations.registerValidation, authController.registerAdmin)
@@ -33,7 +34,8 @@ authRouter
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', ValidateAuthentication_1.default, authController.verifyCode)
     .post('/phone-number', ValidateAuthentication_1.default, authController.savePhoneNumberAndSendCode)
-    // .patch('/update-customer', validateAuthentication, authController.updateCustomer)
-    .post('/upload-files', authValidations.filesValidations, authController.uploadFiles);
+    .post('/verify-phone', authController.savePhone);
+// .patch('/update-customer', validateAuthentication, authController.updateCustomer)
+// .post('/upload-files', authValidations.filesValidations, authController.uploadFiles)
 // 
 exports.default = authRouter;

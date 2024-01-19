@@ -30,8 +30,10 @@ class AuthController extends ResponseData_1.ResponseData {
         this.revalidateToken = this.revalidateToken.bind(this);
         this.verifyCode = this.verifyCode.bind(this);
         this.savePhoneNumberAndSendCode = this.savePhoneNumberAndSendCode.bind(this);
+        this.registerByPhone = this.registerByPhone.bind(this);
+        this.savePhone = this.savePhone.bind(this);
         // this.updateCustomer             =   this.updateCustomer.bind(this);
-        this.uploadFiles = this.uploadFiles.bind(this);
+        // this.uploadFiles                =   this.uploadFiles.bind(this);
     }
     login(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -66,6 +68,19 @@ class AuthController extends ResponseData_1.ResponseData {
             }
         });
     }
+    registerByPhone(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { phone } = req.body;
+            try {
+                const response = this.authUseCase.registerPhoneNumber;
+                this.invoke(response, 200, res, '', next);
+            }
+            catch (error) {
+                console.log(error);
+                next(new ErrorHandler_1.ErrorHandler('Hubo un error al iniciar sesión', 500));
+            }
+        });
+    }
     registerAdmin(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { email, password, fullname, phone } = req.body;
@@ -84,9 +99,9 @@ class AuthController extends ResponseData_1.ResponseData {
     }
     loginWithGoogle(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { idToken, type_customer } = req.body;
+            const { idToken } = req.body;
             try {
-                const response = yield this.authUseCase.signInWithGoogle(idToken, type_customer);
+                const response = yield this.authUseCase.signInWithGoogle(idToken);
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {
@@ -138,15 +153,14 @@ class AuthController extends ResponseData_1.ResponseData {
     //     }
     // }
     revalidateToken(req, res, next) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             const { user } = req;
             try {
                 const find = yield this.authUseCase.findUser(user.email);
                 const response = yield this.authUseCase.generateToken(user);
-                if (!response.user.profile_image) {
-                    response.user.profile_image = yield this.s3Service.getUrlObject((_a = response.user) === null || _a === void 0 ? void 0 : _a.profile_image);
-                }
+                // if (!response.user.profile_image) {
+                //     response.user.profile_image = await this.s3Service.getUrlObject(response.user?.profile_image);
+                // }
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {
@@ -158,6 +172,7 @@ class AuthController extends ResponseData_1.ResponseData {
         return __awaiter(this, void 0, void 0, function* () {
             const { user } = req;
             const { prefix, phone_number } = req.body;
+            console.log(user);
             try {
                 const code = (0, Utils_1.generateRandomCode)();
                 //await this.twilioService.sendSMS(`Verifica tu número de teléfono con el siguiente codigo - ${code}`);
@@ -165,6 +180,22 @@ class AuthController extends ResponseData_1.ResponseData {
                 this.invoke(response, 200, res, 'El telefono se registro correctamente', next);
             }
             catch (error) {
+                next(new ErrorHandler_1.ErrorHandler('Hubo un error al guardar el telefono', 500));
+            }
+        });
+    }
+    savePhone(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { phone_number, prefix } = req.body;
+            try {
+                const code = (0, Utils_1.generateRandomCode)();
+                const vcode = parseInt(code);
+                // await this.twilioService.sendSMS(`Codigo de verificacion CarWash autolavado y más- ${code}`);
+                const response = yield this.authUseCase.findPhone(phone_number);
+                this.invoke(response, 200, res, 'El telefono se registro correctamente', next);
+            }
+            catch (error) {
+                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al guardar el telefono', 500));
             }
         });
@@ -179,26 +210,6 @@ class AuthController extends ResponseData_1.ResponseData {
             }
             catch (error) {
                 next(new ErrorHandler_1.ErrorHandler('El codigo no se ha enviado', 500));
-            }
-        });
-    }
-    uploadFiles({ files, user }, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const documents = [files === null || files === void 0 ? void 0 : files.ine, files === null || files === void 0 ? void 0 : files.curp, files === null || files === void 0 ? void 0 : files.prook_address, files === null || files === void 0 ? void 0 : files.criminal_record];
-            let keys = [];
-            try {
-                if (!(files === null || files === void 0 ? void 0 : files.ine) || !(files === null || files === void 0 ? void 0 : files.curp) || !(files === null || files === void 0 ? void 0 : files.prook_address) || !(files === null || files === void 0 ? void 0 : files.criminal_record))
-                    return next(new ErrorHandler_1.ErrorHandler('los archivos son requeridos', 400));
-                yield Promise.all(documents === null || documents === void 0 ? void 0 : documents.map((file) => __awaiter(this, void 0, void 0, function* () {
-                    const pathObject = `${this.path}/${user._id}/${file[0].fieldname}`;
-                    keys.push({ field: file[0].fieldname, key: pathObject });
-                    yield this.s3Service.uploadToS3(pathObject + ".pdf", file[0], "application/pdf");
-                })));
-                const response = yield this.authUseCase.uploadCustomerFiles(user._id, keys);
-                this.invoke(response, 200, res, 'Los archivos se subieron correctamente', next);
-            }
-            catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Hubo un error al subir los archivos', 500));
             }
         });
     }

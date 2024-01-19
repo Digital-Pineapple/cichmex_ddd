@@ -23,8 +23,6 @@ export class CategoryController extends ResponseData {
     public async getAllCategories(req: Request, res: Response, next: NextFunction) {
         try {
             const response = await this.categoryUseCase.getCategories();
-            console.log(response, 'categorias');
-            
             await Promise.all(response.map(async(res)=> {
                 const url = await this.s3Service.getUrlObject(res.category_image + ".jpg");
                 res.category_image = url

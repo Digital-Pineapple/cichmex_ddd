@@ -6,8 +6,8 @@ export interface IPhone {
     code             :   number;
     prefix           :   string;
     phone_number     :   number;
-    expiration_date  :   NativeDate;
-    verified         :   boolean;
+    expiration_date  ?:   NativeDate;
+    verified         ?:   boolean;
     createdAt       ?:   NativeDate;
     updatedAt       ?:   NativeDate;
 }
@@ -15,7 +15,7 @@ export interface UserEntity extends MongooseDelete.SoftDeleteInterface {
     _id              :   string;
     fullname        ?:   string;
     privacity       ?:   boolean;
-    email            :   string;
+    email           ?:   string;
     password        ?:   string;
     stripe_user     ?:   string;
     type_user       ?:   TypeUserEntity

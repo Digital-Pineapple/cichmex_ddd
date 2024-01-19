@@ -32,13 +32,20 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     }
     findUser(email) {
         return __awaiter(this, void 0, void 0, function* () {
-            let customer = yield this.authRepository.findOneItem({ email });
+            let customer = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.UserPopulateConfig);
             return yield (customer);
+        });
+    }
+    findPhone(phone) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const phoneString = phone.toString();
+            let phone_number = yield this.authRepository.findOneItem({ phone: { phone_number: phoneString } }, PopulateInterfaces_1.UserPopulateConfig);
+            return yield (phone_number);
         });
     }
     signUp(body) {
         return __awaiter(this, void 0, void 0, function* () {
-            let user = yield this.authRepository.findOneItem({ email: body.email });
+            let user = yield this.authRepository.findOneItem({ email: body.email }, PopulateInterfaces_1.UserPopulateConfig);
             if (user)
                 return new ErrorHandler_1.ErrorHandler('El usuario ya ha sido registrado', 400);
             const password = yield this.encryptPassword(body.password);
@@ -46,16 +53,25 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             return yield this.generateJWT(user);
         });
     }
-    signInWithGoogle(idToken, type_customer) {
+    signUpByPhone(body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let user = yield this.authRepository.findOneItem({ phone: body.phone }, PopulateInterfaces_1.UserPopulateConfig);
+            if (user)
+                return new ErrorHandler_1.ErrorHandler('El usuario ya ha sido registrado', 400);
+            user = yield this.authRepository.createOne({});
+            return yield this.generateJWT(user);
+        });
+    }
+    signInWithGoogle(idToken) {
         return __awaiter(this, void 0, void 0, function* () {
             let { fullname, email, picture } = yield this.validateGoogleToken(idToken);
-            let customer = yield this.authRepository.findOneItem({ email });
-            if (customer)
-                return yield this.generateJWT(customer);
+            let user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.UserPopulateConfig);
+            if (user)
+                return yield this.generateJWT(user);
             let password = this.generateRandomPassword();
             password = this.encryptPassword(password);
-            customer = yield this.authRepository.createOne({ fullname, email, profile_image: picture, password, google: true, type_customer });
-            return yield this.generateJWT(customer);
+            user = yield this.authRepository.createOne({ fullname, email, profile_image: picture, password, google: true });
+            return yield this.generateJWT(user);
         });
     }
     changePassword(password, newPassword, user) {
@@ -83,14 +99,14 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             return yield this.generateJWT(user);
         });
     }
-    registerPhoneNumber(customer, phone_data, code) {
+    registerPhoneNumber(user, phone, code) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { phone_number, prefix } = phone_data;
-            const phoneData = yield this.authRepository.validatePhoneNumber(phone_number, customer._id);
+            const { phone_number, prefix } = phone;
+            const phoneData = yield this.authRepository.validatePhoneNumber(phone_number, user._id);
             if (phoneData)
                 return new ErrorHandler_1.ErrorHandler('El telefono ya ha sido registrado', 400);
             const data = { phone: { code, prefix, phone_number, expiration_date: new MomentService_1.MomentService().addMinutesToDate(5) } };
-            return yield this.authRepository.updateOne(customer._id, data);
+            return yield this.authRepository.updateOne(user._id, data);
         });
     }
     verifyPhoneNumber(_id, currentCode) {
@@ -115,6 +131,12 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
                 customer[field] = key;
             }));
             return yield customer.save();
+        });
+    }
+    registerPhone(phone) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.authRepository.findAll();
+            return response;
         });
     }
 }

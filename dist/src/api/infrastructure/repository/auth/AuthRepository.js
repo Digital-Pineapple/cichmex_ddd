@@ -26,5 +26,10 @@ class AuthRepository extends MongoRepository_1.MongoRepository {
             return yield this.UserModel.findOne({ 'phone.phone_number': phone, _id: { $ne: customer_id } });
         });
     }
+    verifyCodeRegister(_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.UserModel.findByIdAndUpdate(_id, { 'phone.verified': true }, { new: true });
+        });
+    }
 }
 exports.AuthRepository = AuthRepository;

@@ -7,7 +7,7 @@ import { IAuth } from '../authentication/AuthenticationService';
 
 import { MomentService } from '../../../shared/infrastructure/moment/MomentService';
 import { IFileKeys,IPhoneRequest } from './interfaces';
-import { UserEntity } from '../../domain/user/UserEntity';
+import { IPhone, UserEntity } from '../../domain/user/UserEntity';
 import {UserPopulateConfig } from '../../../shared/domain/PopulateInterfaces'
 export class AuthUseCase extends Authentication {
 
@@ -27,6 +27,12 @@ export class AuthUseCase extends Authentication {
         let customer = await this.authRepository.findOneItem({ email }, UserPopulateConfig );
         return await (customer);
     }
+
+    async findPhone(phone: number): Promise<ErrorHandler | UserEntity> {
+       const phoneString = phone.toString()
+        let phone_number = await this.authRepository.findOneItem({ phone:{phone_number:phoneString} }, UserPopulateConfig );
+        return await (phone_number);
+    }
   
 
     async signUp(body: any): Promise<IAuth | ErrorHandler | null> {
@@ -45,18 +51,28 @@ export class AuthUseCase extends Authentication {
         return await this.generateJWT(user);
     }
 
-    async signInWithGoogle(idToken: string, type_customer: string): Promise<IAuth> {
+    async signUpByPhone(body: any): Promise<IAuth | ErrorHandler | null> {
+        
+        
+        let user = await this.authRepository.findOneItem({ phone: body.phone }, UserPopulateConfig);
+
+        if (user) return new ErrorHandler('El usuario ya ha sido registrado',400);
+        
+        user = await this.authRepository.createOne({});
+        
+        return await this.generateJWT(user);
+    }
+
+    async signInWithGoogle(idToken: string): Promise<IAuth | ErrorHandler | null> {
         let { fullname,email,picture } = await this.validateGoogleToken(idToken);
-        let customer = await this.authRepository.findOneItem({ email }, UserPopulateConfig);
-
-        if (customer) return await this.generateJWT(customer);
-
+        let user = await this.authRepository.findOneItem({ email }, UserPopulateConfig);
+        if (user) return await this.generateJWT(user);
         let password = this.generateRandomPassword();
         password = this.encryptPassword(password);
 
-        customer = await this.authRepository.createOne({ fullname,email,profile_image: picture,password,google: true, type_customer });
+        user = await this.authRepository.createOne({ fullname,email,profile_image: picture,password,google: true });
 
-        return await this.generateJWT(customer);
+        return await this.generateJWT(user);
     }
 
     async changePassword(password: string,newPassword: string,user: UserEntity): Promise<ErrorHandler | IAuth | null> {
@@ -79,15 +95,16 @@ export class AuthUseCase extends Authentication {
         return await this.generateJWT(user)
     }
 
-    async registerPhoneNumber(customer: UserEntity | UserEntity,phone_data: IPhoneRequest,code: number) {
-        const { phone_number,prefix } = phone_data;
+    async registerPhoneNumber(user: UserEntity | UserEntity,phone: IPhoneRequest,code: number) {
+        const { phone_number,prefix } = phone;
 
-        const phoneData = await this.authRepository.validatePhoneNumber(phone_number,customer._id);
+        const phoneData = await this.authRepository.validatePhoneNumber(phone_number,user._id);
         if (phoneData) return new ErrorHandler('El telefono ya ha sido registrado',400);
 
         const data = { phone: { code,prefix,phone_number,expiration_date: new MomentService().addMinutesToDate(5) } }
-        return await this.authRepository.updateOne(customer._id,data, );
+        return await this.authRepository.updateOne(user._id,data, );
     }
+
 
     async verifyPhoneNumber(_id: string,currentCode: number) {
         const customer = await this.authRepository.findById(_id, );
@@ -108,6 +125,12 @@ export class AuthUseCase extends Authentication {
             customer[field] = key
         })
         return await customer.save();
+
+    }
+
+    async registerPhone(phone:IPhoneRequest) {
+        const  response = await this.authRepository.findAll()
+        return response
 
     }
 
