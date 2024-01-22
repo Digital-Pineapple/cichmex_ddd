@@ -71,6 +71,7 @@ const UserSchema = new Schema<UserEntity>({
         required:false
     },
     phone :VerifyPhoneNumberSchema,
+    
     accountVerify: {
         type    : Boolean,
         default : false,
