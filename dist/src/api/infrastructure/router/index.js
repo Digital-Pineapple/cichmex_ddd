@@ -20,9 +20,11 @@ const branchOffice_1 = __importDefault(require("./branchOffice"));
 const product_1 = __importDefault(require("./product"));
 const StockBranch_1 = __importDefault(require("./StockBranch"));
 const typeUser_1 = __importDefault(require("./typeUser"));
+const user_1 = __importDefault(require("./user"));
 const apiRouter = () => {
     const apiRouter = (0, express_1.Router)();
     apiRouter.use('/auth', auth_1.default);
+    apiRouter.use('/user', user_1.default);
     // apiRouter.use('/auth/admin', authAdminRouter);
     // apiRouter.use('/customer', customerRouter);
     apiRouter.use('/services', services_1.default);

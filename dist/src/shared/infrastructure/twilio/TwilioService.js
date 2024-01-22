@@ -17,22 +17,22 @@ class TwilioService {
         this.accountSid = process.env.TWILIO_ACCOUNT_SID;
         this.authToken = process.env.TWILIO_AUTH_TOKEN;
         this.twilioNumber = process.env.TWILIO_PHONE_NUMBER;
-        this.myNumber = process.env.MY_NUMBER;
         this.twilio = new twilio_1.Twilio(this.accountSid, this.authToken);
     }
-    sendSMS(body) {
+    sendSMS(phone, body) {
         return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                this.twilio.messages.create({
+            try {
+                const message = yield this.twilio.messages.create({
                     from: this.twilioNumber,
-                    to: this.myNumber || '',
+                    to: phone,
                     body,
-                }).then((message) => {
-                    resolve(message);
-                }).catch((error) => {
-                    reject(new ErrorHandler_1.ErrorHandler('Hubo un error al enviar el mensaje - intenta mas tarde', 400));
                 });
-            });
+                return message;
+            }
+            catch (error) {
+                console.error(error);
+                throw new ErrorHandler_1.ErrorHandler('Hubo un error al enviar el mensaje - intenta más tarde', 400);
+            }
         });
     }
 }

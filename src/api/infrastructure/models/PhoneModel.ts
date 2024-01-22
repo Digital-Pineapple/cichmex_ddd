@@ -4,7 +4,7 @@ import MongooseDelete = require("mongoose-delete");
 
 const PhoneSchema = new Schema<IPhone>  ({
     code: {
-        type    : Number,
+        type    : String,
         required: false,
     },
     prefix: {
@@ -33,6 +33,6 @@ const PhoneSchema = new Schema<IPhone>  ({
 
 PhoneSchema.plugin(MongooseDelete, {overrideMethods:true})
 
-const PhoneModel = model('PhoneNumber', PhoneSchema);
+const PhoneModel = model('Phone', PhoneSchema);
 
 export default PhoneModel;

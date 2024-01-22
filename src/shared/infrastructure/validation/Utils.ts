@@ -1,7 +1,7 @@
 import Generator from 'generate-password';
 
 export const generateRandomCode = () => Generator.generate({
-    length      : 4,
+    length      : 6,
     numbers     : true,
     lowercase   : false,
     uppercase   : false

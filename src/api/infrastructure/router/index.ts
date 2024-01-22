@@ -17,12 +17,14 @@ import branchOfficeRouter from './branchOffice';
 import productRouter from './product';
 import stockBranchRouter from './StockBranch';
 import typeUserRouter from './typeUser';
+import userRouter from './user';
 
 export const apiRouter = (): Router => {
 
     const apiRouter = Router();
 
     apiRouter.use('/auth', authRouter);
+    apiRouter.use('/user', userRouter);
     // apiRouter.use('/auth/admin', authAdminRouter);
     // apiRouter.use('/customer', customerRouter);
     apiRouter.use('/services', serviceRouter);

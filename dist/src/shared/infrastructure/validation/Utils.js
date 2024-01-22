@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateRandomCode = void 0;
 const generate_password_1 = __importDefault(require("generate-password"));
 const generateRandomCode = () => generate_password_1.default.generate({
-    length: 4,
+    length: 6,
     numbers: true,
     lowercase: false,
     uppercase: false

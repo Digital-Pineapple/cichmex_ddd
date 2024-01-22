@@ -10,11 +10,11 @@ export abstract class MongoRepository {
     this.MODEL = MODEL;
   }
 
-  public async findAll(populateConfig?: any): Promise<any> {
-    return await this.MODEL.find({ deleted: false }).populate(populateConfig);
+  public async findAll(populateOne?: any, populateTwo?:any): Promise<any> {
+    return await this.MODEL.find({ deleted: false }).populate(populateOne).populate(populateTwo);
   }
-  public async findAllAll(populateConfig?: any): Promise<any> {
-    return await this.MODEL.find().populate(populateConfig);
+  public async findAllAll(id: string,populateOne?: any, populateTwo?:any): Promise<any> {
+    return await this.MODEL.findById(id,{delted:false}).populate(populateOne).populate(populateTwo);
   }
   public async findStockByBranch(branch_id:any): Promise<any> {
     return await this.MODEL.find({branch_id:branch_id})
@@ -87,8 +87,7 @@ export abstract class MongoRepository {
   }
 
   public async createOne(body: object): Promise<any> {
-    console.log(body ,'Mongo');
-    
+        
     const newObject = new this.MODEL(body);
     await newObject.save();
     return newObject;

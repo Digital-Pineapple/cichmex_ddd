@@ -14,14 +14,14 @@ class MongoRepository {
     constructor(MODEL) {
         this.MODEL = MODEL;
     }
-    findAll(populateConfig) {
+    findAll(populateOne, populateTwo) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.find({ deleted: false }).populate(populateConfig);
+            return yield this.MODEL.find({ deleted: false }).populate(populateOne).populate(populateTwo);
         });
     }
-    findAllAll(populateConfig) {
+    findAllAll(id, populateOne, populateTwo) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.find().populate(populateConfig);
+            return yield this.MODEL.findById(id, { delted: false }).populate(populateOne).populate(populateTwo);
         });
     }
     findStockByBranch(branch_id) {
@@ -105,7 +105,6 @@ class MongoRepository {
     }
     createOne(body) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(body, 'Mongo');
             const newObject = new this.MODEL(body);
             yield newObject.save();
             return newObject;
@@ -136,7 +135,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiohistorymodels", // (hijo)--memberHistory
+                        from: "membershiohistorymodels",
                         let: {
                             id: "$_id",
                         },
@@ -170,7 +169,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiohistorymodels", // (hijo)--memberHistory
+                        from: "membershiohistorymodels",
                         let: {
                             id: "$_id",
                         },

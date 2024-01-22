@@ -46,7 +46,13 @@ export const SubCategoriesPopulateConfig : IStockPopulateConfig ={
     select: ["name", "subCategory_image", "_id", ],
     model: SubCategoryModel
 }
-export const UserPopulateConfig : IUserPopulateConfig ={
+export const TypeUserPopulateConfig : IUserPopulateConfig ={
     path: 'type_user',
     select: ["name", "type" ],
+  
+}
+export const PhonePopulateConfig : IUserPopulateConfig ={
+    path: 'phone_id',
+    select: ["phone_number", "prefix", "verified" ],
+  
 }

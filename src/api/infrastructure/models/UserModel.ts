@@ -1,28 +1,28 @@
-import { Mongoose, Schema,model } from 'mongoose';
+import { Mongoose, Schema, model } from 'mongoose';
 import { IPhone, UserEntity } from '../../domain/user/UserEntity';
 import MongooseDelete = require("mongoose-delete");
 
-const VerifyPhoneNumberSchema = new Schema<IPhone> ({
+const VerifyPhoneNumberSchema = new Schema<IPhone>({
     code: {
-        type    : Number,
+        type: String,
         required: false,
     },
     prefix: {
-        type    : String,
+        type: String,
         required: false,
     },
     phone_number: {
-        type    : Number,
+        type: Number,
         required: false,
     },
     expiration_date: {
-        type    : Date,
+        type: Date,
         required: false,
     },
     verified: {
-        type    : Boolean,
+        type: Boolean,
         required: true,
-        default : false
+        default: false
     },
 },
     {
@@ -44,51 +44,56 @@ const UserSchema = new Schema<UserEntity>({
         type: String,
         required: true,
     },
-    privacity :{
-        type:String,
-        required:false,
+    privacity: {
+        type: String,
+        required: false,
     },
-    stripe_user:{
-        type:String,
-        required:false,
+    stripe_user: {
+        type: String,
+        required: false,
     },
-    type_user:{
-        type: Schema.Types.ObjectId ,
-        ref:'TypeUser' ,
-        required:false
-       
+    type_user: {
+        type: Schema.Types.ObjectId,
+        ref: 'TypeUser',
+        required: true
+
     },
-    profile_image:{
-        type:String,
-        required:false,
+    profile_image: {
+        type: String,
+        required: false,
     },
-    google:{
+    google: {
         type: Boolean,
-        required:false,
+        required: false,
     },
-    facebook:{
+    facebook: {
         type: Boolean,
-        required:false
+        required: false
     },
-    phone :VerifyPhoneNumberSchema,
-    
+    phone_id: {
+        type: Schema.Types.ObjectId, 
+        ref: 'Phone',
+        required: true
+    },
+
+
     accountVerify: {
-        type    : Boolean,
-        default : false,
+        type: Boolean,
+        default: false,
     },
     // email_verified: {
     //     type: Boolean,
     //     default: true
     // },
     facturapi_id: {
-        type    : String,
+        type: String,
         required: false
     },
-},{
+}, {
     timestamps: true,
     versionKey: false,
 });
-UserSchema.plugin(MongooseDelete, {overrideMethods:true})
+UserSchema.plugin(MongooseDelete, { overrideMethods: true })
 UserSchema.method('toJSON', function () {
     const { password, ...user } = this.toObject();
     return user;
