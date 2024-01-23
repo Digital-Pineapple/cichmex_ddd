@@ -61,19 +61,26 @@ export class UserController extends ResponseData {
 
     public async sendCode(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
         const { prefix, phone_number }  = req.body;
+        
         try {
-            const code = generateRandomCode()
-            const phoneC = prefix + phone_number
-            const phoneString = phoneC.toString()
-            const response = await this.phoneUserUseCase.createUserPhone({prefix:prefix,phone_number:phone_number, code})
-            if (!(response instanceof ErrorHandler)) {
-        //    const info = await this.twilioService.sendSMS(phoneString,`Verifica tu número de teléfono con el siguiente codigo - ${code}`)
-           return this.invoke(response,400,res,'',next)
-           } 
-        } catch (error) {
-            console.log(error)
-            next(new ErrorHandler('Hubo un error al enviar código de verificacion', 500));
-        }
+            const code = generateRandomCode();
+            let data : any = {}
+            const existingPhone = await this.phoneUserUseCase.findPhone(phone_number);
+            if (existingPhone) {
+              data = existingPhone
+            } else {
+              const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number, prefix });
+              // const info = await this.twilioService.sendSMS(phoneString, `Verifica tu número de teléfono con el siguiente código - ${code}`);
+              data = newPhone
+            }
+          console.log(data);
+          
+            this.invoke(data, 200, res, 'tELEFONO OK', next);
+          } catch (error) {
+            console.error('Error:', error);
+            this.invoke(error, 500, res, 'Error interno del servidor', next);
+          }
+         
     }
     public async resendCode(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
         const { id }  = req.params;

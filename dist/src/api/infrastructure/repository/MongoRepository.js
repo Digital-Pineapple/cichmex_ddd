@@ -65,6 +65,11 @@ class MongoRepository {
             return yield this.MODEL.find({ name });
         });
     }
+    findByPhoneNumber(phone_number) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.find({ phone_number: phone_number, deleted: false });
+        });
+    }
     findByCustomer(customer_id) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.MODEL.find({ customer_id: customer_id, status: true });

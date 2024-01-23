@@ -3,7 +3,7 @@ import MongooseDelete = require("mongoose-delete");
 import mongoose from "mongoose";
 import { TypeUserEntity } from "../typeUser/TypeUserEntity";
 export interface IPhone {
-    code             :   string;
+    code             ?:   string;
     prefix           :   string;
     phone_number     :   number;
     expiration_date  ?:   NativeDate;

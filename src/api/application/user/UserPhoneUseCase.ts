@@ -15,11 +15,10 @@ export class UserPhoneUseCase extends Authentication {
   public async getOnePhone(id: string): Promise<IPhone | ErrorHandler | null> {
      return await this.phoneRepository.findById(id)
   }
-
-
-  public async createUserPhone(phone: IPhone): Promise<IPhone | ErrorHandler | null> {
-    const noRepeat = await this.phoneRepository.findOneItem({ phone_number: phone.phone_number })
-    if (noRepeat !== null) return new ErrorHandler("Telefono ya registrado", 400);
+  public async findPhone(phone_number: string): Promise<IPhone | ErrorHandler | null> {
+    return await this.phoneRepository.findByPhoneNumber(phone_number)
+ }
+  public async createUserPhone(phone: IPhone): Promise<IPhone | ErrorHandler | null> { 
     return await this.phoneRepository.createOne(phone)
     
   }
@@ -31,8 +30,6 @@ export class UserPhoneUseCase extends Authentication {
   }
   public async deletePhone(id: string): Promise<IPhone | ErrorHandler | null> {
     return await this.phoneRepository.updateOne(id, { deleted: true})
-    
-
   }
  
 
