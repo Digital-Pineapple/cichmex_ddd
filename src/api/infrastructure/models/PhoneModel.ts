@@ -14,6 +14,7 @@ const PhoneSchema = new Schema<IPhone>  ({
     phone_number: {
         type    : Number,
         required: false,
+        unique: true,
     },
     expiration_date: {
         type    : Date,

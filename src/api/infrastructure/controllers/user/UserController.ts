@@ -61,21 +61,12 @@ export class UserController extends ResponseData {
 
     public async sendCode(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
         const { prefix, phone_number }  = req.body;
+        console.log(req.body);
         
         try {
             const code = generateRandomCode();
-            let data : any = {}
-            const existingPhone = await this.phoneUserUseCase.findPhone(phone_number);
-            if (existingPhone) {
-              data = existingPhone
-            } else {
-              const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number, prefix });
-              // const info = await this.twilioService.sendSMS(phoneString, `Verifica tu número de teléfono con el siguiente código - ${code}`);
-              data = newPhone
-            }
-          console.log(data);
-          
-            this.invoke(data, 200, res, 'tELEFONO OK', next);
+            const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number:phone_number, prefix }, phone_number); 
+            this.invoke(newPhone, 200, res, '', next);
           } catch (error) {
             console.error('Error:', error);
             this.invoke(error, 500, res, 'Error interno del servidor', next);
