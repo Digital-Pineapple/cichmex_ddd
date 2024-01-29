@@ -28,6 +28,7 @@ const userController = new UserController(userPhoneserUseCase, userUseCase, type
 
 userRouter
     .get('/phones', userController.allPhones)
+    .get('/phone/:id', userController.onePhone)
     .get('/', userController.allUsers)
     .get('/:id', userController.getUser)
     .post('/send-code', userController.sendCode)

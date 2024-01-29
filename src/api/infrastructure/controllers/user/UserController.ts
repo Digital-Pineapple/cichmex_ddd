@@ -21,6 +21,7 @@ export class UserController extends ResponseData {
           ) {
         super();
         this.allPhones           = this.allPhones.bind(this);
+        this.onePhone            = this.onePhone.bind(this);
         this.allUsers           = this.allUsers.bind(this);
         this.getUser            = this.getUser.bind(this);
         this.sendCode            =   this.sendCode.bind(this);
@@ -35,6 +36,15 @@ export class UserController extends ResponseData {
     public async allPhones(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
         try {
             const response = await this.phoneUserUseCase.allPhones()
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+    public async onePhone(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
+       const { id } = req.params
+        try {
+            const response = await this.phoneUserUseCase.getOnePhone(id)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
@@ -60,11 +70,13 @@ export class UserController extends ResponseData {
     }
 
     public async sendCode(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
-        const { prefix, phone_number }  = req.body;
-        console.log(req.body);
+        const {phone_number, prefix}  = req.body;
         
         try {
             const code = generateRandomCode();
+            // const phoneC = prefix + phone_number
+            // const phoneString = phoneC.toString()
+            // const info =  await this.twilioService.sendSMS(phoneString,`CarWash autolavado y más. Código de verificación - ${code}`)
             const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number:phone_number, prefix }, phone_number); 
             this.invoke(newPhone, 200, res, '', next);
           } catch (error) {
@@ -82,7 +94,7 @@ export class UserController extends ResponseData {
             const phoneC = response?.prefix + response?.phone_number
             const phoneString = phoneC.toString()
             const updated = await this.phoneUserUseCase.updateUserPhone(id, {code: newcode})
-            // const info =  await this.twilioService.sendSMS(phoneString,`CarWash autolavado y más. Código de verificación - ${newcode}`)
+            const info =  await this.twilioService.sendSMS(phoneString,`CarWash autolavado y más. Código de verificación - ${newcode}`)
            return this.invoke(updated,400,res,'',next)
            }
         } catch (error) {
@@ -106,7 +118,7 @@ export class UserController extends ResponseData {
             }
         } catch (error) {
             console.log(error)
-            next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
+            next(new ErrorHandler('Hubo un error ', 500));
         }
     }
 

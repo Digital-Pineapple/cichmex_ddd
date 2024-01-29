@@ -19,8 +19,6 @@ export class UserPhoneUseCase extends Authentication {
     return await this.phoneRepository.findByPhoneNumber(phone_number)
  }
   public async createUserPhone(phone: IPhone, phoneNumber: string): Promise<IPhone | ErrorHandler | null> {
-    console.log(phone);
-     
     const noRepeat = await this.phoneRepository.findByPhoneNumber(phoneNumber)
     if (noRepeat.length > 0 ) return new ErrorHandler('El telefono ya ha sido registrado',400);
     else{
