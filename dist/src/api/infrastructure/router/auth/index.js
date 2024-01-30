@@ -33,7 +33,6 @@ authRouter
     .post('/change-password', ValidateAuthentication_1.default, authController.changePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', ValidateAuthentication_1.default, authController.verifyCode)
-    .post('/phone-number', ValidateAuthentication_1.default, authController.savePhoneNumberAndSendCode)
     .post('/verify-phone', authController.savePhone);
 // .patch('/update-customer', validateAuthentication, authController.updateCustomer)
 // .post('/upload-files', authValidations.filesValidations, authController.uploadFiles)

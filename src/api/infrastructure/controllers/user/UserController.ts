@@ -28,7 +28,8 @@ export class UserController extends ResponseData {
         this.resendCode         = this.resendCode.bind(this);
         this.verifyPhone         = this.verifyPhone.bind(this);
         this.deletePhone        = this.deletePhone.bind(this);   
-        this.signUpByPhone    = this.signUpByPhone.bind(this);                    
+        this.signUpByPhone    = this.signUpByPhone.bind(this); 
+        this.deleteUser      = this.deleteUser.bind(this);                   
           
     }
 
@@ -145,6 +146,15 @@ export class UserController extends ResponseData {
         } catch (error) {
             console.log(error)
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
+        }
+    }
+    public async deleteUser(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
+        const { id } = req.params
+        try {
+            const response = await this.userUseCase.deleteUser(id)
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler(`Error: ${error}`, 500));
         }
     }
 

@@ -15,33 +15,31 @@ import UserModel from '../../models/UserModel';
 
 const authRouter = Router();
 
-const authRepository     = new AuthRepository(UserModel);
-const authUseCase        = new AuthUseCase(authRepository);
+const authRepository = new AuthRepository(UserModel);
+const authUseCase = new AuthUseCase(authRepository);
 
 const typeUserRepository = new TypeUsersRepository(TypeUserModel)
-const typeUserUseCase    = new TypeUserUseCase(typeUserRepository)
+const typeUserUseCase = new TypeUserUseCase(typeUserRepository)
 
-const s3Service          = new S3Service();
-const twilioService      = new TwilioService();
-const authValidations    = new AuthValidations();
-const authController     = new AuthController(authUseCase, typeUserUseCase, s3Service, twilioService);
+const s3Service = new S3Service();
+const twilioService = new TwilioService();
+const authValidations = new AuthValidations();
+const authController = new AuthController(authUseCase, typeUserUseCase, s3Service, twilioService);
 
 authRouter
 
-.get('/user', validateAuthentication, authController.revalidateToken)
-
-.post('/login', authValidations.loginValidation, authController.login)
+    .get('/user', validateAuthentication, authController.revalidateToken)
+    .post('/login', authValidations.loginValidation, authController.login)
     .post('/register', authValidations.registerValidation, authController.register)
     .post('/registerAdmin/seed', authValidations.registerValidation, authController.registerAdmin)
     .post('/google', authValidations.googleLoginValidations, authController.loginWithGoogle)
     .post('/change-password', validateAuthentication, authController.changePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', validateAuthentication, authController.verifyCode)
-    .post('/phone-number', validateAuthentication, authController.savePhoneNumberAndSendCode)
     .post('/verify-phone', authController.savePhone)
-    // .patch('/update-customer', validateAuthentication, authController.updateCustomer)
-    // .post('/upload-files', authValidations.filesValidations, authController.uploadFiles)
-    // 
+// .patch('/update-customer', validateAuthentication, authController.updateCustomer)
+// .post('/upload-files', authValidations.filesValidations, authController.uploadFiles)
+// 
 
 export default authRouter;
 

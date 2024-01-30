@@ -36,5 +36,6 @@ userRouter
     .post ('/verify-phone/:id', userController.verifyPhone)
     .post ('/registerbyPhone', userController.signUpByPhone)
     .delete('/phone-delete/:id', userController.deletePhone)
+    .delete('/delete-user/:id', userController.deleteUser)
 
 export default userRouter;

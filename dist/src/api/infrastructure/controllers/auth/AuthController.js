@@ -29,7 +29,6 @@ class AuthController extends ResponseData_1.ResponseData {
         this.uploadProfilePhoto = this.uploadProfilePhoto.bind(this);
         this.revalidateToken = this.revalidateToken.bind(this);
         this.verifyCode = this.verifyCode.bind(this);
-        this.savePhoneNumberAndSendCode = this.savePhoneNumberAndSendCode.bind(this);
         this.registerByPhone = this.registerByPhone.bind(this);
         this.savePhone = this.savePhone.bind(this);
         // this.updateCustomer             =   this.updateCustomer.bind(this);
@@ -165,22 +164,6 @@ class AuthController extends ResponseData_1.ResponseData {
             }
             catch (error) {
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al generar el token', 500));
-            }
-        });
-    }
-    savePhoneNumberAndSendCode(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { user } = req;
-            const { prefix, phone_number } = req.body;
-            console.log(user);
-            try {
-                const code = (0, Utils_1.generateRandomCode)();
-                //await this.twilioService.sendSMS(`Verifica tu número de teléfono con el siguiente codigo - ${code}`);
-                const response = yield this.authUseCase.registerPhoneNumber(user, { prefix, phone_number }, +code);
-                this.invoke(response, 200, res, 'El telefono se registro correctamente', next);
-            }
-            catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Hubo un error al guardar el telefono', 500));
             }
         });
     }

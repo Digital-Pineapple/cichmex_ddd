@@ -1,6 +1,8 @@
 import { Schema, model } from 'mongoose';
 import { ServicesEntity } from '../../domain/services/ServicesEntity';
 
+import MongooseDelete = require('mongoose-delete')
+
 const ServiceSchema = new Schema<ServicesEntity>({
     name: {
         type: String,
@@ -10,18 +12,10 @@ const ServiceSchema = new Schema<ServicesEntity>({
         type: String,
         required: true,
     },
-    status: {
-        type: Boolean,
-        default: true,
-    },
-    service_image: {
+    image: {
         type: String,
         required: false
 
-    },
-    directory: {
-        type: String,
-        required: false
     },
     subCategory: {
         type: Schema.Types.ObjectId,
@@ -34,7 +28,8 @@ const ServiceSchema = new Schema<ServicesEntity>({
 },
 
 );
+ServiceSchema.plugin(MongooseDelete,{overrideMethods:true})
 
-const ServiceModel = model('Service', ServiceSchema);
+const ServiceModel = model('Services', ServiceSchema);
 
 export default ServiceModel;

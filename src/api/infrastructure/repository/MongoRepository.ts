@@ -10,21 +10,21 @@ export abstract class MongoRepository {
     this.MODEL = MODEL;
   }
 
-  public async findAll(populateOne?: any, populateTwo?:any): Promise<any> {
+  public async findAll(populateOne?: any, populateTwo?: any): Promise<any> {
     return await this.MODEL.find({ deleted: false }).populate(populateOne).populate(populateTwo);
   }
-  public async findAllAll(id: string,populateOne?: any, populateTwo?:any): Promise<any> {
-    return await this.MODEL.findById(id,{delted:false}).populate(populateOne).populate(populateTwo);
+  public async findAllAll(id: string, populateOne?: any, populateTwo?: any): Promise<any> {
+    return await this.MODEL.findById(id, { delted: false }).populate(populateOne).populate(populateTwo);
   }
-  public async findStockByBranch(branch_id:any): Promise<any> {
-    return await this.MODEL.find({branch_id:branch_id})
+  public async findStockByBranch(branch_id: any): Promise<any> {
+    return await this.MODEL.find({ branch_id: branch_id })
   }
-  public async findSubCategoriesByCategory(category_id:any): Promise<any> {
-    return await this.MODEL.find({category_id:category_id, deleted:false})
+  public async findSubCategoriesByCategory(category_id: any): Promise<any> {
+    return await this.MODEL.find({ category_id: category_id, deleted: false })
   }
 
-  public async findOneStockByBranch(branch_id:String,product_id : String, populateConfig?:any ): Promise<any> {
-    const result =  await this.MODEL.findOne({product_id, branch_id }).populate(populateConfig)
+  public async findOneStockByBranch(branch_id: String, product_id: String, populateConfig?: any): Promise<any> {
+    const result = await this.MODEL.findOne({ product_id, branch_id }).populate(populateConfig)
     console.log(result);
     return result
   }
@@ -32,7 +32,7 @@ export abstract class MongoRepository {
   public async findById(_id: String, populateConfig?: any): Promise<any> {
     return await this.MODEL.findById(_id);
   }
-  
+
   public async findByIdPupulate(
     _id: String,
     populateConfig?: any
@@ -47,10 +47,10 @@ export abstract class MongoRepository {
       .then((res) => res?._id);
   }
   public async findByName(name: string): Promise<any> {
-    return await this.MODEL.find({ name  });
+    return await this.MODEL.find({ name });
   }
   public async findByPhoneNumber(phone_number: string): Promise<any> {
-    return await this.MODEL.find({ phone_number: phone_number, deleted:false});
+    return await this.MODEL.find({ phone_number: phone_number, deleted: false });
   }
   public async findByCustomer(customer_id: string): Promise<any> {
     return await this.MODEL.find({ customer_id: customer_id, status: true });
@@ -80,26 +80,26 @@ export abstract class MongoRepository {
     });
   }
   public async updateOne(_id: String, updated: object): Promise<any> {
-    
+
     return await this.MODEL.findByIdAndUpdate(_id, updated, { new: true });
   }
 
 
-  public async softDelete(_id:any,date_service:Date): Promise<any> {
-    return await this.MODEL.findByIdAndUpdate(_id,{ deleted:true, date_service},{ new: true })
+  public async softDelete(_id: any, date_service: Date): Promise<any> {
+    return await this.MODEL.findByIdAndUpdate(_id, { deleted: true, date_service }, { new: true })
   }
 
   public async createOne(body: object): Promise<any> {
-        
+
     const newObject = new this.MODEL(body);
     await newObject.save();
     return newObject;
-    
+
   }
 
-  public async findOneItem(query: Object, populateConfig?: any): Promise<any> {
+  public async findOneItem(query: Object, populateConfig1?: any, populateConfig2?:any): Promise<any> {
     return await this.MODEL.findOne({ ...query, deleted: false }).populate(
-      populateConfig
+      populateConfig1
     );
   }
 
@@ -120,65 +120,65 @@ export abstract class MongoRepository {
 
   public async getAllMembershipHistory(): Promise<any> {
     // const mongooseObjectId = new Types.ObjectId(id)
-     const result = await this.MODEL.aggregate([
-        //(padre) ---MembershipBenefits
-        {
-          $lookup: {
-            from: "membershiohistorymodels", // (hijo)--memberHistory
-            let: {
-              id: "$_id",
-            },
-            pipeline: [
-              //(hijo)--memberHistory
-              {
-                $match: {
-                  $expr: {
-                    $eq: ["$$id", "$membershipBenefit_id"],
-                  },
+    const result = await this.MODEL.aggregate([
+      //(padre) ---MembershipBenefits
+      {
+        $lookup: {
+          from: "membershiohistorymodels", // (hijo)--memberHistory
+          let: {
+            id: "$_id",
+          },
+          pipeline: [
+            //(hijo)--memberHistory
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$$id", "$membershipBenefit_id"],
                 },
               },
-            ],
-            as: "MembershipHistoryList",
-          },
+            },
+          ],
+          as: "MembershipHistoryList",
         },
-        {
-          $match: {
-            $and: [{ "MembershipHistoryList.deleted": false }],
+      },
+      {
+        $match: {
+          $and: [{ "MembershipHistoryList.deleted": false }],
 
-          },
         },
-      ]);
-      return result
-    };
-  
+      },
+    ]);
+    return result
+  };
+
 
   public async getMembershipDetailHistory(id: string): Promise<any> {
     // const mongooseObjectId = new Types.ObjectId(id)
-     const result = await this.MODEL.aggregate([
-        //(padre) ---MembershipBenefits
-        {
-          $lookup: {
-            from: "membershiohistorymodels", // (hijo)--memberHistory
-            let: {
-              id: "$_id",
-            },
-            pipeline: [
-              //(hijo)--memberHistory
-              {
-                $match: {
-                  $expr: {
-                    $eq: ["$$id", "$membershipBenefit_id"],
-                  },
+    const result = await this.MODEL.aggregate([
+      //(padre) ---MembershipBenefits
+      {
+        $lookup: {
+          from: "membershiohistorymodels", // (hijo)--memberHistory
+          let: {
+            id: "$_id",
+          },
+          pipeline: [
+            //(hijo)--memberHistory
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$$id", "$membershipBenefit_id"],
                 },
               },
-            ],
-            as: "MembershipHistoryList",
-          },
+            },
+          ],
+          as: "MembershipHistoryList",
         },
-      ]);
-      const info = result.filter(item => item._id == id ); 
-      return info;
-    };
-  
+      },
+    ]);
+    const info = result.filter(item => item._id == id);
+    return info;
+  };
+
 }
 

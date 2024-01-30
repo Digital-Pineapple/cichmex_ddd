@@ -23,8 +23,8 @@ export class ServicesController extends ResponseData {
             
             const response = await this.servicesUseCase.getServices();
             await Promise.all(response.map(async (res) => {
-                const url = await this.s3Service.getUrlObject(res.service_image + ".jpg");
-                res.service_image = url;
+                const url = await this.s3Service.getUrlObject(res.image + ".jpg");
+                res.image = url;
             }));
             
             this.invoke(response, 200, res, '', next);
@@ -37,8 +37,8 @@ export class ServicesController extends ResponseData {
         const { id } = req.params;
         try {
             const response = await this.servicesUseCase.getDetailService(id);
-            const url = await this.s3Service.getUrlObject(response?.service_image + ".jpg");
-            response.service_image = url;
+            const url = await this.s3Service.getUrlObject(response?.image + ".jpg");
+            response.image = url;
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
@@ -46,9 +46,9 @@ export class ServicesController extends ResponseData {
     }
 
     public async createService(req: Request, res: Response, next: NextFunction) {
-        const { name, description, status, subCategory } = req.body;
+        const { name, description, subCategory } = req.body;
         try {
-            const response = await this.servicesUseCase.createNewService(name, description, status, subCategory);
+            const response = await this.servicesUseCase.createNewService(name, description, subCategory);
             this.invoke(response, 201, res, 'El servicio se creo con exito', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al crear el servicio', 500));
