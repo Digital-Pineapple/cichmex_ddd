@@ -28,7 +28,7 @@ export class ServicesUseCase {
     }
 
     public async deleteOneService(_id: string): Promise<ServicesEntity | null> {
-        return this.servicesRepository.deleteOneService(_id)
+        return this.servicesRepository.updateOne(_id,{deleted:true})
     }
     
 }

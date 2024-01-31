@@ -12,7 +12,7 @@ export class UserUseCase extends Authentication {
   public async allUsers(): Promise<UserEntity[] | ErrorHandler | null> {
     return await this.userRepository.findAll(TypeUserPopulateConfig,PhonePopulateConfig)
   }
-  public async getOneUser(id: string): Promise<UserEntity | ErrorHandler | null> {
+  public async getOneUser(id: string): Promise<UserEntity | ErrorHandler | null > {
      return await this.userRepository.findAllAll(id, TypeUserPopulateConfig,PhonePopulateConfig)
   }
 

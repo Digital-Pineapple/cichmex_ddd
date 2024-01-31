@@ -17,7 +17,7 @@ export class SubCategoryController extends ResponseData {
         this.createSubCategory      =   this.createSubCategory.bind(this);
         this.updateSubCategory      =   this.updateSubCategory.bind(this);
         this.deleteSubCategory      =   this.deleteSubCategory.bind(this);
-        this.searchSubCategory    =   this.searchSubCategory.bind(this);
+        // this.searchSubCategory    =   this.searchSubCategory.bind(this);
         this.findSubCategoriesByCategory  = this.findSubCategoriesByCategory.bind(this);
     
     }
@@ -49,10 +49,10 @@ export class SubCategoryController extends ResponseData {
     }
 
     public async createSubCategory(req: Request, res: Response, next: NextFunction) {
-        const { name, description, category_id } = req.body;
+        const { name, category_id } = req.body;
         
         try {
-            const response = await this.subCategoryUseCase.createNewSubCategory(name, description, category_id);
+            const response = await this.subCategoryUseCase.createNewSubCategory(name, category_id);
             this.invoke(response, 201, res, 'La subcategoria se creo con exito', next);
         } catch (error) {
             console.log(error);
@@ -63,19 +63,20 @@ export class SubCategoryController extends ResponseData {
 
     public async updateSubCategory(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { name, description, status, category } = req.body;
-        console.log(category);
+        const { name, category_id } = req.body;
         
         try {
             if (req.file) {
                 const pathObject = `${this.path}/${id}/${name}`;
-                const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
+                const { url, success,key } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
                 if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-                const response = await this.subCategoryUseCase.updateOneSubCategory(id, {name, description, status, category, subCategory_image : pathObject });
-                response.subCategory_image = url;
+                const response = await this.subCategoryUseCase.updateOneSubCategory(id,{subCategory_image:pathObject,name,category_id})
+            if (!(response instanceof ErrorHandler)) { 
+                response.subCategory_image  = url;
                 this.invoke(response, 201, res, 'La subcategoría se actualizó con éxito', next);
+            }
             }else{
-                const response = await this.subCategoryUseCase.updateOneSubCategory(id, {name, description, status, category });
+                const response = await this.subCategoryUseCase.updateOneSubCategory(id, {name, category_id });
             this.invoke(response, 201, res, 'La subcategoría se actualizó con éxito', next);
             }
         } catch (error) {
@@ -93,19 +94,19 @@ export class SubCategoryController extends ResponseData {
             next(new ErrorHandler('Hubo un error eliminar la subcategoria', 500));   
         }
     }
-    public async searchSubCategory(req: Request, res: Response, next: NextFunction) {
-        const {search} = req.query;
-        console.log(req.query);
+    // public async searchSubCategory(req: Request, res: Response, next: NextFunction) {
+    //     const {search} = req.query;
+    //     console.log(req.query);
         
-        try {
-            const response = await this.subCategoryUseCase.searchSubCategory(search);
-            this.invoke(response, 201, res, 'Subcategoria encontrada', next);
-        } catch (error) {
-            console.log(error);
+    //     try {
+    //         const response = await this.subCategoryUseCase.searchSubCategory(search);
+    //         this.invoke(response, 201, res, 'Subcategoria encontrada', next);
+    //     } catch (error) {
+    //         console.log(error);
             
-            next(new ErrorHandler('No se encontro la Subcategoria', 500));   
-        }
-    }
+    //         next(new ErrorHandler('No se encontro la Subcategoria', 500));   
+    //     }
+    // }
     public async findSubCategoriesByCategory (req: Request, res: Response, next: NextFunction) {
         const {id} = req.params;
         try {

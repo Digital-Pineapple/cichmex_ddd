@@ -10,10 +10,6 @@ const SubCategorySchema = new Schema<SubCategory>(
         type: String,
         required: true,
       },
-      description:{ 
-      type: String,
-      required: true,
-      },
       subCategory_image:{
         type: String,
         required: false,

@@ -20,13 +20,13 @@ export class SubCategoryUseCase {
         return await this.subCategoriesRepository.findById(_id);
     }
 
-    public async createNewSubCategory(name: string, description: string, category_id:any): Promise<SubCategory | ErrorHandler | null> {
+    public async createNewSubCategory(name: string, category_id:any): Promise<SubCategory | ErrorHandler | null> {
         const subCategory = await this.subCategoriesRepository.findOneItem({name});
         if (subCategory) return new ErrorHandler('La categoria ya ha sido registrado',400);
-        return await this.subCategoriesRepository.createOne({ name, description, category_id });
+        return await this.subCategoriesRepository.createOne({ name, category_id });
     }
 
-    public async updateOneSubCategory(_id: string,updated: SubCategory): Promise<SubCategory  | null> {
+    public async updateOneSubCategory(_id: string,updated: SubCategory): Promise<SubCategory> {
         return await this.subCategoriesRepository.updateOne(_id,updated);
     }
     public async deleteOneSubCategory(_id: string): Promise<SubCategory | null> {

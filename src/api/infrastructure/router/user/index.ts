@@ -12,6 +12,8 @@ import { UserRepository } from '../../repository/user/UserRepository';
 import { TypeUsersRepository } from '../../repository/typeUser/TypeUsersRepository';
 import TypeUserModel from '../../models/TypeUserModel';
 import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
+import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
+import { UserValidations } from '../../../../shared/infrastructure/validation/User/UserValidation';
 
 const userRouter = Router();
 
@@ -22,9 +24,11 @@ const typeUserRepository = new TypeUsersRepository(TypeUserModel)
 const userPhoneserUseCase = new UserPhoneUseCase(userPhoneRepository);
 const userUseCase = new UserUseCase(userRepository);
 const typeUserUseCase = new TypeUserUseCase(typeUserRepository)
+const s3Service = new S3Service()
+const userValidations = new UserValidations()
 
 const twilioService = new TwilioService();
-const userController = new UserController(userPhoneserUseCase, userUseCase, typeUserUseCase, twilioService)
+const userController = new UserController(userPhoneserUseCase, userUseCase, typeUserUseCase, twilioService, s3Service)
 
 userRouter
     .get('/phones', userController.allPhones)
@@ -33,6 +37,7 @@ userRouter
     .get('/:id', userController.getUser)
     .post('/send-code', userController.sendCode)
     .post ('/resend-code/:id', userController.resendCode)
+    .post ('/update/:id', userValidations.ImageValidation, userController.updateUser)
     .post ('/verify-phone/:id', userController.verifyPhone)
     .post ('/registerbyPhone', userController.signUpByPhone)
     .delete('/phone-delete/:id', userController.deletePhone)

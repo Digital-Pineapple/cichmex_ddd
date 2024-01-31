@@ -21,7 +21,7 @@ subCategoryRouter
     .post('/', subCategoryController.createSubCategory)
     .post('/:id', subCategoryValidations.subCategoryPhotoValidation, subCategoryController.updateSubCategory)
     .delete('/:id', subCategoryController.deleteSubCategory)
-    .get('/search/search', subCategoryController.searchSubCategory)
+    // .get('/search/search', subCategoryController.searchSubCategory)
 
 
 export default subCategoryRouter;

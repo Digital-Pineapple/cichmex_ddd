@@ -65,8 +65,7 @@ export class AuthController extends ResponseData {
             const response = await this.authUseCase.signUp({ fullname, email, password, phone, type_user:TypeUser_id });
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-            console.log(error)
-            next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
+            next(new ErrorHandler(`Error:${error}`, 500));
         }
     }
 
