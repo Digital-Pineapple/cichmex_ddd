@@ -23,11 +23,13 @@ export class CategoryController extends ResponseData {
     public async getAllCategories(req: Request, res: Response, next: NextFunction) {
         try {
             const response = await this.categoryUseCase.getCategories();
-            await Promise.all(response.map(async(res)=> {
-                const url = await this.s3Service.getUrlObject(res.category_image + ".jpg");
-                res.category_image = url
-            }))
-            this.invoke(response, 200, res, '', next);
+            if (!(response instanceof ErrorHandler) && response !==null) {     
+                await Promise.all(response.map(async(res)=> {
+                    const url = await this.s3Service.getUrlObject(res.category_image + ".jpg");
+                    res.category_image = url
+                }))
+                this.invoke(response, 200, res, '', next);
+            }
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }

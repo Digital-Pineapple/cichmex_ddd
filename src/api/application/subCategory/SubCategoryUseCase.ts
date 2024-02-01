@@ -30,7 +30,7 @@ export class SubCategoryUseCase {
         return await this.subCategoriesRepository.updateOne(_id,updated);
     }
     public async deleteOneSubCategory(_id: string): Promise<SubCategory | null> {
-        return this.subCategoriesRepository.updateOne(_id, {status: false})
+        return this.subCategoriesRepository.updateOne(_id, {deleted: true})
     }
     
 

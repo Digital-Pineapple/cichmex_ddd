@@ -64,26 +64,25 @@ export class SubCategoryController extends ResponseData {
     public async updateSubCategory(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { name, category_id } = req.body;
-        
         try {
             if (req.file) {
                 const pathObject = `${this.path}/${id}/${name}`;
-                const { url, success,key } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
+                const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
                 if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-                const response = await this.subCategoryUseCase.updateOneSubCategory(id,{subCategory_image:pathObject,name,category_id})
-            if (!(response instanceof ErrorHandler)) { 
-                response.subCategory_image  = url;
-                this.invoke(response, 201, res, 'La subcategoría se actualizó con éxito', next);
+                const response = await this.subCategoryUseCase.updateOneSubCategory(id, { name, subCategory_image: pathObject, category_id });
+                response.subCategory_image = url;
+                this.invoke(response, 201, res, 'La categoría se actualizó con éxito', next);     
+            } else {
+                const response = await this.subCategoryUseCase.updateOneSubCategory(id,{name, category_id})
+                this.invoke(response, 201, res, 'La categoría se actualizó con éxito', next);     
             }
-            }else{
-                const response = await this.subCategoryUseCase.updateOneSubCategory(id, {name, category_id });
-            this.invoke(response, 201, res, 'La subcategoría se actualizó con éxito', next);
-            }
+
         } catch (error) {
             console.log(error);
-            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+            next(new ErrorHandler('Hubo un error al actualizar la categoría', 500));
         }
     }
+
 
     public async deleteSubCategory(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
