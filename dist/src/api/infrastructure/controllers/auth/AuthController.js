@@ -29,10 +29,7 @@ class AuthController extends ResponseData_1.ResponseData {
         this.uploadProfilePhoto = this.uploadProfilePhoto.bind(this);
         this.revalidateToken = this.revalidateToken.bind(this);
         this.verifyCode = this.verifyCode.bind(this);
-        this.registerByPhone = this.registerByPhone.bind(this);
         this.savePhone = this.savePhone.bind(this);
-        // this.updateCustomer             =   this.updateCustomer.bind(this);
-        // this.uploadFiles                =   this.uploadFiles.bind(this);
     }
     login(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -63,19 +60,6 @@ class AuthController extends ResponseData_1.ResponseData {
             }
             catch (error) {
                 next(new ErrorHandler_1.ErrorHandler(`Error:${error}`, 500));
-            }
-        });
-    }
-    registerByPhone(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { phone } = req.body;
-            try {
-                const response = this.authUseCase.registerPhoneNumber;
-                this.invoke(response, 200, res, '', next);
-            }
-            catch (error) {
-                console.log(error);
-                next(new ErrorHandler_1.ErrorHandler('Hubo un error al iniciar sesión', 500));
             }
         });
     }

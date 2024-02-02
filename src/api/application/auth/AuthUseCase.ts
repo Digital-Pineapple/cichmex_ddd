@@ -74,6 +74,17 @@ export class AuthUseCase extends Authentication {
 
         return await this.generateJWT(user);
     }
+    async signUpWithGoogle(idToken: string): Promise<IAuth | ErrorHandler | null> {
+        let { fullname,email,picture,  } = await this.validateGoogleToken(idToken);
+        let user = await this.authRepository.findOneItem({ email }, UserPopulateConfig);
+        if (user) return await this.generateJWT(user);
+        let password = this.generateRandomPassword();
+        password = this.encryptPassword(password);
+
+        user = await this.authRepository.createOne({ fullname,email,profile_image: picture,password,google: true });
+
+        return await this.generateJWT(user);
+    }
 
     async changePassword(password: string,newPassword: string,user: UserEntity): Promise<ErrorHandler | IAuth | null> {
         let customer = await this.authRepository.findById(user._id);

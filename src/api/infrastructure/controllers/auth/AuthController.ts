@@ -33,10 +33,7 @@ export class AuthController extends ResponseData {
         this.uploadProfilePhoto         =   this.uploadProfilePhoto.bind(this);
         this.revalidateToken            =   this.revalidateToken.bind(this);
         this.verifyCode                 =   this.verifyCode.bind(this);
-        this.registerByPhone            =   this.registerByPhone.bind(this);
         this.savePhone                  =  this.savePhone.bind(this);
-        // this.updateCustomer             =   this.updateCustomer.bind(this);
-        // this.uploadFiles                =   this.uploadFiles.bind(this);
     }
 
     public async login(req: Request, res: Response, next: NextFunction): Promise< IAuth| ErrorHandler | void> {
@@ -66,17 +63,6 @@ export class AuthController extends ResponseData {
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler(`Error:${error}`, 500));
-        }
-    }
-
-    public async registerByPhone(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
-        const { phone } = req.body;
-        try {
-            const response = this.authUseCase.registerPhoneNumber
-            this.invoke(response, 200, res, '', next);
-        } catch (error) {
-            console.log(error)
-            next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }
     }
 
