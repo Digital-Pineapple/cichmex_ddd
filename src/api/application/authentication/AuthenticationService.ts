@@ -43,7 +43,7 @@ export class Authentication {
             if(!ticket) reject('El token de google no es valido');
     
             const payload = ticket.getPayload();
-            console.log(payload);
+            console.log(payload, 'payload google');
             resolve({ fullname: payload?.name, email: payload?.email, picture: payload?.picture });
         })
         

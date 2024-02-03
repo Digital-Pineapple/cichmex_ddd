@@ -78,11 +78,11 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
         return __awaiter(this, void 0, void 0, function* () {
             let { fullname, email, picture, } = yield this.validateGoogleToken(idToken);
             let user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.UserPopulateConfig);
-            if (user)
-                return yield this.generateJWT(user);
-            let password = this.generateRandomPassword();
-            password = this.encryptPassword(password);
-            user = yield this.authRepository.createOne({ fullname, email, profile_image: picture, password, google: true });
+            console.log(fullname, email, picture);
+            // if (user) return await this.generateJWT(user);
+            // let password = this.generateRandomPassword();
+            // password = this.encryptPassword(password);
+            // user = await this.authRepository.createOne({ fullname,email,profile_image: picture,password,google: true });
             return yield this.generateJWT(user);
         });
     }

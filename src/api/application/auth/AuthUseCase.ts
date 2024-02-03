@@ -77,11 +77,13 @@ export class AuthUseCase extends Authentication {
     async signUpWithGoogle(idToken: string): Promise<IAuth | ErrorHandler | null> {
         let { fullname,email,picture,  } = await this.validateGoogleToken(idToken);
         let user = await this.authRepository.findOneItem({ email }, UserPopulateConfig);
-        if (user) return await this.generateJWT(user);
-        let password = this.generateRandomPassword();
-        password = this.encryptPassword(password);
+        console.log(fullname,email,picture,);
+        
+        // if (user) return await this.generateJWT(user);
+        // let password = this.generateRandomPassword();
+        // password = this.encryptPassword(password);
 
-        user = await this.authRepository.createOne({ fullname,email,profile_image: picture,password,google: true });
+        // user = await this.authRepository.createOne({ fullname,email,profile_image: picture,password,google: true });
 
         return await this.generateJWT(user);
     }

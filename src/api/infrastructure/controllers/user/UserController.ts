@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response, response } from 'express';
 
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { TwilioService } from '../../../../shared/infrastructure/twilio/TwilioService';
@@ -10,6 +10,7 @@ import { IPhone, UserEntity } from '../../../domain/user/UserEntity';
 import { UserUseCase } from '../../../application/user/UserUseCase';
 import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
+import { sendMail } from '../../../../shared/infrastructure/nodemailer/emailer';
 
 
 export class UserController extends ResponseData {
@@ -159,8 +160,8 @@ export class UserController extends ResponseData {
             const def = responsedefault?.filter(item => item.name === 'Customer')
             const TypeUser_id = def?.map(item => item._id)
             const response = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser_id })
+            await sendMail(email, fullname)
             this.invoke(response, 200, res, '', next);
-
 
         } catch (error) {
             console.log(error)

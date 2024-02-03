@@ -1,5 +1,4 @@
 import ProductModel from '../../api/infrastructure/models/ProductModel';
-import CategoryModel from '../../api/infrastructure/models/CategoryModel';
 import SubCategoryModel from '../../api/infrastructure/models/SubCategoryModel';
 export interface IAuthPopulateConfig {
     path    : string;
@@ -54,5 +53,10 @@ export const TypeUserPopulateConfig : IUserPopulateConfig ={
 export const PhonePopulateConfig : IUserPopulateConfig ={
     path: 'phone_id',
     select: ["phone_number", "prefix", "verified" ],
+  
+}
+export const UserPopulateConfig : IUserPopulateConfig ={
+    path: 'typeUser',
+    select: ['name' ],
   
 }
