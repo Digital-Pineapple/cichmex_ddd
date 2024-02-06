@@ -1,4 +1,4 @@
-import { Authentication, IAuth } from '../authentication/AuthenticationService';
+import { Authentication, IAuth, IGoogleResponse } from '../authentication/AuthenticationService';
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { IPhone, UserEntity } from '../../domain/user/UserEntity';
 import { UserRepository } from '../../domain/user/UserRepository';
@@ -12,12 +12,25 @@ export class UserUseCase extends Authentication {
   public async allUsers(): Promise<UserEntity[] | ErrorHandler | null> {
     return await this.userRepository.findAll(TypeUserPopulateConfig,PhonePopulateConfig)
   }
+  public async getUser(id: string): Promise<UserEntity | ErrorHandler | null > {
+    return await this.userRepository.findAllAll(id)
+ }
   public async getOneUser(id: string): Promise<UserEntity | ErrorHandler | null > {
      return await this.userRepository.findAllAll(id, TypeUserPopulateConfig,PhonePopulateConfig)
   }
+  public async getUserEmail(id: string): Promise<IGoogleResponse | ErrorHandler | null > {
+  const user = await this.userRepository.findOneItem({_id:id})
+    const user2: IGoogleResponse = {user_id : user?._id, verified : user?.email_verified, email:user?.email}
+    return user2
+ }
 
   public async updateUser(id: string, updated:object): Promise<UserEntity | ErrorHandler | null> {
     return await this.userRepository.updateOne(id,updated)
+  }
+  public async updateRegisterUser(id: string, updated:object): Promise<IAuth | ErrorHandler | null> {
+     let user = await this.userRepository.updateOne(id,updated)
+     console.log(user);
+     return await this.generateJWT(user);
   }
 
   public async deleteUser(id: string): Promise<UserEntity | ErrorHandler | null> {

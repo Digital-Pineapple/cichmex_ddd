@@ -30,7 +30,7 @@ export abstract class MongoRepository {
   }
 
   public async findById(_id: String, populateConfig?: any): Promise<any> {
-    return await this.MODEL.findById(_id);
+    return await this.MODEL.findById(_id, {deleted:false});
   }
 
   public async findByIdPupulate(
@@ -97,10 +97,9 @@ export abstract class MongoRepository {
 
   }
 
-  public async findOneItem(query: Object, populateConfig1?: any, populateConfig2?:any): Promise<any> {
+  public async findOneItem(query: Object, populateConfig1?: any, populateConfig2?:any): Promise<any> {    
     return await this.MODEL.findOne({ ...query, deleted: false }).populate(
-      populateConfig1
-    );
+      populateConfig1).populate(populateConfig2);
   }
 
   public async search(search: string): Promise<any> {

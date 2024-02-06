@@ -11,6 +11,8 @@ import { UserUseCase } from '../../../application/user/UserUseCase';
 import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { sendMail } from '../../../../shared/infrastructure/nodemailer/emailer';
+import { IGoogleResponse } from '../../../application/authentication/AuthenticationService';
+import { IncomingClientScope } from 'twilio/lib/jwt/ClientCapability';
 
 
 export class UserController extends ResponseData {
@@ -27,9 +29,11 @@ export class UserController extends ResponseData {
         this.onePhone = this.onePhone.bind(this);
         this.allUsers = this.allUsers.bind(this);
         this.getUser = this.getUser.bind(this);
+        this.getVerifyEmail = this.getVerifyEmail.bind(this)
         this.sendCode = this.sendCode.bind(this);
         this.resendCode = this.resendCode.bind(this);
         this.verifyPhone = this.verifyPhone.bind(this);
+        this.verifyEmail = this.verifyEmail.bind(this);
         this.deletePhone = this.deletePhone.bind(this);
         this.signUpByPhone = this.signUpByPhone.bind(this);
         this.updateUser = this.updateUser.bind(this);
@@ -58,28 +62,28 @@ export class UserController extends ResponseData {
 
     public async allUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-          const response = await this.userUseCase.allUsers();
-          if (response instanceof ErrorHandler) {
-            this.invoke(response, 500, res, 'Hubo un error al consultar la información', next);
-            return;
-          }
-      
-          if (response) {
-            await Promise.all(
-              response.map(async (customer: any) => {
-                if (!customer.google) {
-                  const url = await this.s3Service.getUrlObject(customer.profile_image + ".jpg");
-                  customer.profile_image = url;
-                }
-              })
-            );
-          }
-      
-          this.invoke(response, 200, res, '', next);
+            const response = await this.userUseCase.allUsers();
+            if (response instanceof ErrorHandler) {
+                this.invoke(response, 500, res, 'Hubo un error al consultar la información', next);
+                return;
+            }
+
+            if (response) {
+                await Promise.all(
+                    response.map(async (customer: any) => {
+                        if (!customer.google) {
+                            const url = await this.s3Service.getUrlObject(customer.profile_image + ".jpg");
+                            customer.profile_image = url;
+                        }
+                    })
+                );
+            }
+
+            this.invoke(response, 200, res, '', next);
         } catch (error) {
-          next(new ErrorHandler('Hubo un error al consultar la información', 500));
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
-      }
+    }
     public async getUser(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
         const { id } = req.params
         try {
@@ -95,8 +99,8 @@ export class UserController extends ResponseData {
 
         try {
             const code = generateRandomCode();
-            // const phoneC = prefix + phone_number
-            // const phoneString = phoneC.toString()
+            const phoneC = prefix + phone_number
+            const phoneString = phoneC.toString()
             // const info =  await this.twilioService.sendSMS(phoneString,`CarWash autolavado y más. Código de verificación - ${code}`)
             const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
             this.invoke(newPhone, 200, res, '', next);
@@ -143,6 +147,28 @@ export class UserController extends ResponseData {
         }
     }
 
+    public async verifyEmail(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
+        const { id } = req.params
+        const { code } = req.body;
+        
+        try {
+            const infoUser = await this.userUseCase.getUser(id)
+            if (!(infoUser instanceof ErrorHandler)) {
+                if (infoUser?.accountVerify === code) {
+                    const response = this.userUseCase.updateRegisterUser(id,{email_verified:true, google: true})
+                    console.log(response,'userController');
+                    
+                    this.invoke(response, 200, res, '', next)
+                } else {
+                    next(new ErrorHandler('El codigo no coincide', 400))
+                }
+            }
+        } catch (error) {
+            console.log(error)
+            next(new ErrorHandler('Hubo un error ', 500));
+        }
+    }
+
     public async deletePhone(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
         const { id } = req.params
         try {
@@ -152,6 +178,18 @@ export class UserController extends ResponseData {
             next(new ErrorHandler('Hubo un error al eliminar', 500));
         }
     }
+
+    public async getVerifyEmail(req: Request, res: Response, next: NextFunction): Promise<IGoogleResponse | ErrorHandler | void> {
+        const { id } = req.params
+        
+        try {
+            const response = await this.userUseCase.getUserEmail(id)
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al eliminar', 500));
+        }
+    }
+
     public async signUpByPhone(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
         const { fullname, email, password, phone_id } = req.body
         try {
@@ -183,7 +221,7 @@ export class UserController extends ResponseData {
         try {
             if (req.file) {
                 const pathObject = `${this.path}/${id}/${fullname}`;
-                const response = await this.userUseCase.updateUser(id,{ fullname, type_customer, profile_image: pathObject })
+                const response = await this.userUseCase.updateUser(id, { fullname, type_customer, profile_image: pathObject })
                 if (!(response instanceof ErrorHandler)) {
                     const { url, success } = await this.s3Service.uploadToS3AndGetUrl(
                         pathObject + ".jpg",

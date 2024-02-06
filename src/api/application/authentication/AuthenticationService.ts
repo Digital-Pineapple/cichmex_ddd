@@ -9,11 +9,26 @@ export interface IGoogle {
     email       : string | undefined;
     picture     : string | undefined;
 }
+export interface IGoogleRegister {
+    fullname    : string | undefined;
+    email       : string | undefined;
+    code        ?: string | undefined;
+}
+export interface IGoogleResponse {
+    user_id    : string ;
+    verified      : boolean ;
+    email : string;
+}
 
+export interface IdUserAndVerified {
+    user_id    :  string | undefined;
+    verified   : string |undefined;
+}
 export interface IAuth {
     user    :  UserEntity;
     token?  : string;
 }
+
 
 export class Authentication {
 
@@ -34,16 +49,16 @@ export class Authentication {
         });
     }
 
-    protected async validateGoogleToken(token: string): Promise<IGoogle> {        
+    protected async validateGoogleToken(token: string): Promise<IGoogle> {   
+             
         return new Promise(async (resolve, reject) => {
             const ticket = await this.client.verifyIdToken({
                 idToken : token,
                 audience: this.googleKey,
             });
             if(!ticket) reject('El token de google no es valido');
-    
+            
             const payload = ticket.getPayload();
-            console.log(payload, 'payload google');
             resolve({ fullname: payload?.name, email: payload?.email, picture: payload?.picture });
         })
         

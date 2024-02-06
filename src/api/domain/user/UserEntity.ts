@@ -16,6 +16,7 @@ export interface UserEntity extends MongooseDelete.SoftDeleteInterface {
     fullname        ?:   string;
     privacity       ?:   boolean;
     email           ?:   string;
+    email_verified  ?:   boolean;
     password        ?:   string;
     stripe_user     ?:   string;
     type_user       ?:   TypeUserEntity
@@ -23,7 +24,7 @@ export interface UserEntity extends MongooseDelete.SoftDeleteInterface {
     google          ?:   Boolean;
     facebook        ?:   Boolean;
     phone_id         ?:  IPhone;
-    accountVerify    :   Boolean;
+    accountVerify    ?:   string;
     facturapi_id    ?:   string;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;

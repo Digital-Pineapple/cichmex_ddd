@@ -37,12 +37,11 @@ const UserSchema = new Schema<UserEntity>({
     },
     email: {
         type: String,
-        unique: true,
         required: true,
     },
     password: {
         type: String,
-        required: true,
+        required: false,
     },
     privacity: {
         type: String,
@@ -63,7 +62,7 @@ const UserSchema = new Schema<UserEntity>({
         required: false,
     },
     google: {
-        type: Boolean,
+        type: Boolean  ,
         required: false,
     },
     facebook: {
@@ -73,18 +72,17 @@ const UserSchema = new Schema<UserEntity>({
     phone_id: {
         type: Schema.Types.ObjectId, 
         ref: 'Phone',
-        required: true
+        required: false
     },
-
-
+    email_verified :{
+        type:Boolean,
+        required:false,
+        default: false
+    },
     accountVerify: {
-        type: Boolean,
-        default: false,
+        type: String,
+        required: false
     },
-    // email_verified: {
-    //     type: Boolean,
-    //     default: true
-    // },
     facturapi_id: {
         type: String,
         required: false

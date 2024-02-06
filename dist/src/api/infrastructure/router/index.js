@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.apiRouter = void 0;
 const express_1 = require("express");
 const auth_1 = __importDefault(require("./auth/"));
+const authAdmin_1 = __importDefault(require("./authAdmin"));
 const services_1 = __importDefault(require("./services"));
 const typeCar_1 = __importDefault(require("./typeCar"));
 const Category_1 = __importDefault(require("./Category"));
@@ -25,7 +26,7 @@ const apiRouter = () => {
     const apiRouter = (0, express_1.Router)();
     apiRouter.use('/auth', auth_1.default);
     apiRouter.use('/user', user_1.default);
-    // apiRouter.use('/auth/admin', authAdminRouter);
+    apiRouter.use('/auth/admin', authAdmin_1.default);
     // apiRouter.use('/customer', customerRouter);
     apiRouter.use('/services', services_1.default);
     apiRouter.use('/type-car', typeCar_1.default);

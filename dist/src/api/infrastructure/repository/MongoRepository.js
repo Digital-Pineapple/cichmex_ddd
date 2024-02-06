@@ -43,7 +43,7 @@ class MongoRepository {
     }
     findById(_id, populateConfig) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findById(_id);
+            return yield this.MODEL.findById(_id, { deleted: false });
         });
     }
     findByIdPupulate(_id, populateConfig) {
@@ -117,7 +117,7 @@ class MongoRepository {
     }
     findOneItem(query, populateConfig1, populateConfig2) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findOne(Object.assign(Object.assign({}, query), { deleted: false })).populate(populateConfig1);
+            return yield this.MODEL.findOne(Object.assign(Object.assign({}, query), { deleted: false })).populate(populateConfig1).populate(populateConfig2);
         });
     }
     search(search) {

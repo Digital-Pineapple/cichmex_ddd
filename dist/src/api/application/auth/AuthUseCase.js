@@ -14,6 +14,7 @@ const AuthenticationService_1 = require("../authentication/AuthenticationService
 const ErrorHandler_1 = require("../../../shared/domain/ErrorHandler");
 const MomentService_1 = require("../../../shared/infrastructure/moment/MomentService");
 const PopulateInterfaces_1 = require("../../../shared/domain/PopulateInterfaces");
+const emailer_1 = require("../../../shared/infrastructure/nodemailer/emailer");
 class AuthUseCase extends AuthenticationService_1.Authentication {
     constructor(authRepository) {
         super();
@@ -21,7 +22,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     }
     signIn(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.UserPopulateConfig);
+            const user = yield this.authRepository.findOneItem({ email });
             if (!user)
                 return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son validos', 400);
             const validatePassword = this.decryptPassword(password, user.password);
@@ -32,7 +33,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     }
     findUser(email) {
         return __awaiter(this, void 0, void 0, function* () {
-            let customer = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.UserPopulateConfig);
+            let customer = yield this.authRepository.findOneItem({ email });
             return yield (customer);
         });
     }
@@ -45,12 +46,39 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     }
     signUp(body) {
         return __awaiter(this, void 0, void 0, function* () {
-            let user = yield this.authRepository.findOneItem({ email: body.email }, PopulateInterfaces_1.UserPopulateConfig);
-            if (user)
-                return new ErrorHandler_1.ErrorHandler('El usuario ya ha sido registrado', 400);
-            const password = yield this.encryptPassword(body.password);
-            user = yield this.authRepository.createOne(Object.assign(Object.assign({}, body), { password }));
-            return yield this.generateJWT(user);
+            try {
+                const user = yield this.authRepository.findOneItem({ email: body.email });
+                if (user) {
+                    if (user.email_verified === false) {
+                        const userResponse = { user_id: user._id, verified: user.email_verified, email: user.email };
+                        return userResponse;
+                    }
+                    else {
+                        return new ErrorHandler_1.ErrorHandler('Este correo ya se encuentra verificado', 409);
+                    }
+                }
+                else {
+                    const newUser = yield this.authRepository.createOne(Object.assign({}, body));
+                    const newUserResponse = { user_id: newUser._id, verified: newUser.email_verified, email: newUser.email };
+                    return newUserResponse;
+                }
+            }
+            catch (error) {
+                throw new ErrorHandler_1.ErrorHandler('Error en el proceso de registro', 500);
+            }
+        });
+    }
+    signUpPlatform(body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const newUser = yield this.authRepository.createOne(Object.assign({}, body));
+                yield (0, emailer_1.sendVerifyMail)(newUser.email, newUser.fullname, newUser.accountVerify);
+                const newUserResponse = { user_id: newUser._id, verified: newUser.email_verified, email: newUser.email };
+                return newUserResponse;
+            }
+            catch (error) {
+                return new ErrorHandler_1.ErrorHandler('Error en el proceso de registro', 500); //  500 (Internal Server Error)
+            }
         });
     }
     signUpByPhone(body) {
@@ -64,26 +92,31 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     }
     signInWithGoogle(idToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            let { fullname, email, picture } = yield this.validateGoogleToken(idToken);
-            let user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.UserPopulateConfig);
-            if (user)
-                return yield this.generateJWT(user);
-            let password = this.generateRandomPassword();
-            password = this.encryptPassword(password);
-            user = yield this.authRepository.createOne({ fullname, email, profile_image: picture, password, google: true });
-            return yield this.generateJWT(user);
+            let { email, fullname, picture } = yield this.validateGoogleToken(idToken);
+            let user = yield this.authRepository.findOneItem({ email });
+            if (user.email_verified === true) {
+                user = yield this.generateJWT(user);
+            }
+            if (user.email_verified === false) {
+                const user2 = { user_id: user === null || user === void 0 ? void 0 : user._id, verified: user === null || user === void 0 ? void 0 : user.email_verified, email: user === null || user === void 0 ? void 0 : user.email };
+                user = user2;
+            }
+            if (!user)
+                return new ErrorHandler_1.ErrorHandler('No existe usuario', 409);
+            return user;
         });
     }
     signUpWithGoogle(idToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            let { fullname, email, picture, } = yield this.validateGoogleToken(idToken);
-            let user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.UserPopulateConfig);
-            console.log(fullname, email, picture);
-            // if (user) return await this.generateJWT(user);
-            // let password = this.generateRandomPassword();
-            // password = this.encryptPassword(password);
-            // user = await this.authRepository.createOne({ fullname,email,profile_image: picture,password,google: true });
-            return yield this.generateJWT(user);
+            let { email, fullname, picture } = yield this.validateGoogleToken(idToken);
+            let user = yield this.authRepository.findOneItem({ email: email, deleted: true });
+            if (user === null || user === void 0 ? void 0 : user.email) {
+                return new ErrorHandler_1.ErrorHandler('El usuario ya exite favor de iniciar sesión', 401);
+            }
+            if (!user) {
+                user = { email, fullname, picture };
+            }
+            return user;
         });
     }
     changePassword(password, newPassword, user) {

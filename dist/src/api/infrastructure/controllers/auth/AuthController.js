@@ -22,9 +22,11 @@ class AuthController extends ResponseData_1.ResponseData {
         this.twilioService = twilioService;
         this.path = '/users';
         this.login = this.login.bind(this);
+        this.loginAdmin = this.loginAdmin.bind(this);
         this.register = this.register.bind(this);
         this.registerAdmin = this.registerAdmin.bind(this);
         this.loginWithGoogle = this.loginWithGoogle.bind(this);
+        this.registerByGoogle = this.registerByGoogle.bind(this);
         this.changePassword = this.changePassword.bind(this);
         this.uploadProfilePhoto = this.uploadProfilePhoto.bind(this);
         this.revalidateToken = this.revalidateToken.bind(this);
@@ -34,6 +36,24 @@ class AuthController extends ResponseData_1.ResponseData {
     login(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { email, password } = req.body;
+            try {
+                const response = yield this.authUseCase.signIn(email, password);
+                if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image === undefined) {
+                    response.user.profile_image ?
+                        response.user.profile_image = yield this.s3Service.getUrlObject(response.user.profile_image) :
+                        'No hay imagen de perfil';
+                }
+                this.invoke(response, 200, res, '', next);
+            }
+            catch (error) {
+                next(new ErrorHandler_1.ErrorHandler('Hubo un error al iniciar sesión', 500));
+            }
+        });
+    }
+    loginAdmin(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { email, password } = req.body;
+            console.log(req.body, 'controller auth');
             try {
                 const response = yield this.authUseCase.signIn(email, password);
                 if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image === undefined) {
@@ -87,7 +107,29 @@ class AuthController extends ResponseData_1.ResponseData {
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Hubo un error al iniciar sesión', 500));
+                next(new ErrorHandler_1.ErrorHandler('Usuario no registrado', 500));
+            }
+        });
+    }
+    registerByGoogle(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { idToken } = req.body;
+            try {
+                const response = yield this.authUseCase.signUpWithGoogle(idToken);
+                if (!(response instanceof ErrorHandler_1.ErrorHandler)) {
+                    const responsedefault = yield this.typeUserUseCase.getTypeUsers();
+                    const def = responsedefault === null || responsedefault === void 0 ? void 0 : responsedefault.filter(item => item.name === 'Customer');
+                    const TypeUser_id = def === null || def === void 0 ? void 0 : def.map(item => item._id);
+                    const code = (0, Utils_1.generateRandomCode)();
+                    const resp = yield this.authUseCase.signUpPlatform({ email: response === null || response === void 0 ? void 0 : response.email, fullname: response === null || response === void 0 ? void 0 : response.fullname, accountVerify: code, type_user: TypeUser_id, google: true });
+                    this.invoke(resp, 200, res, '', next);
+                }
+                else {
+                    this.invoke(response, 200, res, '', next);
+                }
+            }
+            catch (error) {
+                next(new ErrorHandler_1.ErrorHandler('Hubo un error al registrar', 500));
             }
         });
     }
@@ -140,9 +182,6 @@ class AuthController extends ResponseData_1.ResponseData {
             try {
                 const find = yield this.authUseCase.findUser(user.email);
                 const response = yield this.authUseCase.generateToken(user);
-                // if (!response.user.profile_image) {
-                //     response.user.profile_image = await this.s3Service.getUrlObject(response.user?.profile_image);
-                // }
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {

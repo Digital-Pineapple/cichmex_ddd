@@ -46,7 +46,6 @@ class Authentication {
                 if (!ticket)
                     reject('El token de google no es valido');
                 const payload = ticket.getPayload();
-                console.log(payload, 'payload google');
                 resolve({ fullname: payload === null || payload === void 0 ? void 0 : payload.name, email: payload === null || payload === void 0 ? void 0 : payload.email, picture: payload === null || payload === void 0 ? void 0 : payload.picture });
             }));
         });

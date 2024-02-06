@@ -27,9 +27,11 @@ const authController = new AuthController_1.AuthController(authUseCase, typeUser
 authRouter
     .get('/user', ValidateAuthentication_1.default, authController.revalidateToken)
     .post('/login', authValidations.loginValidation, authController.login)
+    .post('/login/admin', authValidations.loginValidation, authController.loginAdmin)
     .post('/register', authValidations.registerValidation, authController.register)
     .post('/registerAdmin/seed', authValidations.registerValidation, authController.registerAdmin)
     .post('/google', authValidations.googleLoginValidations, authController.loginWithGoogle)
+    .post('/registerByGoogle', authValidations.googleLoginValidations, authController.registerByGoogle)
     .post('/change-password', ValidateAuthentication_1.default, authController.changePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', ValidateAuthentication_1.default, authController.verifyCode)
