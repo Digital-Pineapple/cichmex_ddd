@@ -20,7 +20,7 @@ export class AuthUseCase extends Authentication {
     async signIn(email: string, password: string): Promise<ErrorHandler | IAuth> {
 
         const user = await this.authRepository.findOneItem({ email });
-        if (!user) return new ErrorHandler('El usuario o contraseña no son validos', 400);
+        if (!user) return new ErrorHandler('No exite este usuario', 400);
         const validatePassword = this.decryptPassword(password, user.password)
         if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);
         return await this.generateJWT(user);

@@ -53,7 +53,7 @@ export class UserController extends ResponseData {
     public async onePhone(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
         const { id } = req.params
         try {
-            const response = await this.phoneUserUseCase.getOnePhone(id)
+            const response = await this.phoneUserUseCase.getPhone(id)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
