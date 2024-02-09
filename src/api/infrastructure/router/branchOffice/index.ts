@@ -3,19 +3,21 @@ import { BranchOfficeUseCase } from '../../../application/branchOffice/BranchOff
 import { BranchOfficeController } from '../../controllers/branchOffice/BranchOfficeController';
 import { BranchOfficeRepository } from '../../repository/branch_office/BranchOfficeRepository';
 import BranchOfficeModel from '../../models/BranchOfficeModel';
+import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 
 const branchOfficeRouter = Router();
 
 const branchOfficeRepository     = new BranchOfficeRepository(BranchOfficeModel);
 const branchOfficeUseCase  = new BranchOfficeUseCase(branchOfficeRepository)
-const branchOfficeController     = new BranchOfficeController(branchOfficeUseCase);
+const s3Service        = new S3Service()
+const branchOfficeController     = new BranchOfficeController(branchOfficeUseCase, s3Service);
 
 branchOfficeRouter
 
 .get('/',branchOfficeController.getAllBranchOffices)
 .get('/:id', branchOfficeController.getBranchOfficeDetail)
 .post('/', branchOfficeController.createBranchOffice)
-.patch('/:id', branchOfficeController.updateBranchOffice)
+.patch('/:id',  branchOfficeController.updateBranchOffice)
 .delete('/:id',branchOfficeController.deleteBranchOffice)
 
 export default branchOfficeRouter;

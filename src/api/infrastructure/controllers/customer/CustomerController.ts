@@ -105,7 +105,7 @@ export class CustomerController extends ResponseData {
           response,
           201,
           res,
-          "El usuario se actualizó con éxito jsjs",
+          "El usuario se actualizó con éxito",
           next
         );
       } else {

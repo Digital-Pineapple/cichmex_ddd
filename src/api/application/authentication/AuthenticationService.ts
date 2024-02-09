@@ -18,7 +18,15 @@ export interface IGoogleResponse {
     user_id    : string ;
     verified      : boolean ;
     email : string;
+
 }
+export interface IGoogleResponseLogin {
+    user_id    : string ;
+    verified      : boolean ;
+    email : string;
+    profile_image :string |undefined;
+}
+
 
 export interface IdUserAndVerified {
     user_id    :  string | undefined;

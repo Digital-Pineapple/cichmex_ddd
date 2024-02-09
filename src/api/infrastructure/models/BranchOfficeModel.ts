@@ -37,7 +37,7 @@ const IlocationSchema = new mongoose.Schema<ILocation>(
   );
   const BranchOfficeSchema = new mongoose.Schema<BranchOfficeEntity>(
     {
-       customer_id: {
+       user_id: {
         type: mongoose.Types.ObjectId,
         required:true,
       },
@@ -51,7 +51,23 @@ const IlocationSchema = new mongoose.Schema<ILocation>(
       },
       activated:{
           type:Boolean,
-          required:true,
+          default:false
+      },
+      phone_number:{
+        type:String,
+        required:false,
+      },
+      image:{
+        type : String,
+        required:false,
+      },
+      opening_time:{
+        type:String,
+        required:false,
+      },
+      closing_time:{
+        type:String,
+        required:false
       },
       location:IlocationSchema
      

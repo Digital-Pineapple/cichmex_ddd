@@ -40,7 +40,7 @@ export class DocumentationController extends ResponseData {
         try {
             const documentation = await this.documentationUseCase.getDetailDocumentation(id);
             const url = await this.s3Service.getUrlObject(documentation?.url + ".pdf");
-            documentatio.url = url;
+            documentation.url = url;
             this.invoke(documentation, 200, res, '', next)
         } catch (error) {
             next(new ErrorHandler('Error al encontrar la documentacion', 404));

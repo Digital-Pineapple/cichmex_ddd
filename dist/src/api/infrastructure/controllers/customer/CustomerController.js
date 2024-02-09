@@ -85,7 +85,7 @@ class CustomerController extends ResponseData_1.ResponseData {
                         profile_image: pathObject,
                     });
                     response.profile_image = url;
-                    this.invoke(response, 201, res, "El usuario se actualizó con éxito jsjs", next);
+                    this.invoke(response, 201, res, "El usuario se actualizó con éxito", next);
                 }
                 else {
                     const response = yield this.customerUseCase.updateOneCustomer(id, {

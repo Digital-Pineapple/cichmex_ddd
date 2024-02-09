@@ -1,6 +1,6 @@
 import nodemaler from 'nodemailer'
 import fs from 'fs'
-const dirname = `D:/CarWashAPI/carwash_ddd/src/shared/infrastructure/nodemailer`
+const dirname = `/home/pc/Documentos/CarWashApi/carwash_ddd/src/shared/infrastructure/nodemailer`
 const htmlContent = fs.readFileSync(dirname + '/WelcomeEmail.html', 'utf-8');
 
  export const createTrans = () =>{

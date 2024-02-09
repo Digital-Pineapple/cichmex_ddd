@@ -95,10 +95,11 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             let { email, fullname, picture } = yield this.validateGoogleToken(idToken);
             let user = yield this.authRepository.findOneItem({ email });
             if (user.email_verified === true) {
+                user.profile_image = picture;
                 user = yield this.generateJWT(user);
             }
             if (user.email_verified === false) {
-                const user2 = { user_id: user === null || user === void 0 ? void 0 : user._id, verified: user === null || user === void 0 ? void 0 : user.email_verified, email: user === null || user === void 0 ? void 0 : user.email };
+                const user2 = { user_id: user === null || user === void 0 ? void 0 : user._id, verified: user === null || user === void 0 ? void 0 : user.email_verified, email: user === null || user === void 0 ? void 0 : user.email, profile_image: picture };
                 user = user2;
             }
             if (!user)

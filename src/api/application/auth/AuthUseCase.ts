@@ -1,4 +1,4 @@
-import { Authentication, IGoogle, IGoogleRegister, IGoogleResponse, IdUserAndVerified } from '../authentication/AuthenticationService';
+import { Authentication, IGoogle, IGoogleRegister, IGoogleResponse, IGoogleResponseLogin, IdUserAndVerified } from '../authentication/AuthenticationService';
 
 import { AuthRepository } from '../../domain/auth/AuthRepository';
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
@@ -7,9 +7,9 @@ import { IAuth } from '../authentication/AuthenticationService';
 
 import { MomentService } from '../../../shared/infrastructure/moment/MomentService';
 import { IFileKeys, IPhoneRequest } from './interfaces';
-import { IPhone, UserEntity } from '../../domain/user/UserEntity';
+import { UserEntity } from '../../domain/user/UserEntity';
 import { UserPopulateConfig } from '../../../shared/domain/PopulateInterfaces'
-import { sendMail, sendVerifyMail } from '../../../shared/infrastructure/nodemailer/emailer';
+import {  sendVerifyMail } from '../../../shared/infrastructure/nodemailer/emailer';
 
 export class AuthUseCase extends Authentication {
 
@@ -83,18 +83,20 @@ export class AuthUseCase extends Authentication {
         return await this.generateJWT(user);
     }
 
-    async signInWithGoogle(idToken: string): Promise<IGoogleResponse | IAuth | ErrorHandler | null> {
+    async signInWithGoogle(idToken: string): Promise<IGoogleResponseLogin | IAuth | ErrorHandler | null> {
         let { email, fullname, picture } = await this.validateGoogleToken(idToken);
+        
         let user = await this.authRepository.findOneItem({ email });
         if (user.email_verified === true) {
+            user.profile_image = picture
             user = await this.generateJWT(user);
         }
         if (user.email_verified === false) {
-            const user2: IGoogleResponse = { user_id: user?._id, verified: user?.email_verified, email: user?.email }
+            const user2: IGoogleResponseLogin = { user_id: user?._id, verified: user?.email_verified, email: user?.email, profile_image: picture }
             user = user2
         }
         if (!user) return new ErrorHandler('No existe usuario', 409)
-
+        
         return user
     }
 
