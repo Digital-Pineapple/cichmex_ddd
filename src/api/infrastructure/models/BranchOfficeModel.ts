@@ -57,8 +57,8 @@ const IlocationSchema = new mongoose.Schema<ILocation>(
         type:String,
         required:false,
       },
-      image:{
-        type : String,
+      images:{
+        type : Array,
         required:false,
       },
       opening_time:{

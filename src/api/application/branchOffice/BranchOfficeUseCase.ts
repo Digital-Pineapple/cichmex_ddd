@@ -23,13 +23,17 @@ export class BranchOfficeUseCase {
 
   public async createBranchOffice(
     body:any
-  ): Promise<BranchOfficeEntity | ErrorHandler | null> {
+  ): Promise<BranchOfficeEntity | ErrorHandler > {
+    const noRepeat = await this.branchOfficeRepository.findOneItem({name:body.name})
+    if (noRepeat) {
+      return new ErrorHandler('Esta sucursal ya existe',401)
+    }
     return await this.branchOfficeRepository.createOne({...body});
   }
 
   public async updateBranchOffice(
     _id: string,
-    updated: object
+    updated: any
   ): Promise<BranchOfficeEntity | ILocation| null> {
     return await this.branchOfficeRepository.updateOne(_id, updated);
   }

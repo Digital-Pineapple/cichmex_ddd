@@ -11,6 +11,7 @@ export class ProductValidations {
     private upload  = multer(multerConfig);
 
     readonly productValidation = [
+        validateAuthentication,
         this.upload.array('images',3)
     ]
 

@@ -1,6 +1,5 @@
 import mongoose, { Model, Document, Types } from "mongoose";
 import _, { paginateSubDocs } from "mongoose-paginate-v2";
-import Tyoes from 'mongoose';
 
 
 export abstract class MongoRepository {

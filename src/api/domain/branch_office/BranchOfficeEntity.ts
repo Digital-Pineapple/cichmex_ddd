@@ -9,7 +9,7 @@ export interface BranchOfficeEntity extends MongooseDelete.SoftDeleteDocument {
   description?: string;
   activated?: boolean;
   phone_number?: number;
-  image ?: string[];
+  images ?: string[];
   opening_time?: string;
   closing_time?: string;
   location ?: ILocation;
@@ -29,5 +29,5 @@ export interface ILocation extends MongooseDelete.SoftDeleteDocument{
 }
 
 export interface BranchOfficeEntityICR extends MongooseDelete.SoftDeleteDocument {
-  image ?: string;
+  images?: string[];
 }

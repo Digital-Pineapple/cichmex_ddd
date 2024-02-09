@@ -13,7 +13,7 @@ export class UserValidations {
 
     readonly ImageValidation = [
         validateAuthentication,
-        this.upload.single('image'),
+        this.upload.array('images',3),
     ]
 
 }
