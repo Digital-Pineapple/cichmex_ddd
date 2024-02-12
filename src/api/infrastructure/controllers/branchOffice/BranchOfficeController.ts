@@ -56,13 +56,13 @@ export class BranchOfficeController extends ResponseData {
         try {
             // Obtener la información de las sucursales
             const response = await this.branchOfficeUseCase.getInfoBranchOffices();
-            console.log(response,'dasd');
+          
             
             this.invoke(response, 200, res, "", next);
             
 
         } catch (error) {
-            console.log(error);
+
 
         }
     }
@@ -162,7 +162,7 @@ export class BranchOfficeController extends ResponseData {
 
 
         } catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
 
@@ -188,8 +188,8 @@ export class BranchOfficeController extends ResponseData {
 
 
         } catch (error) {
-            console.log(error);
-            console.log("tu objeto location es: " + location);
+     
+         
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
 
@@ -294,7 +294,7 @@ export class BranchOfficeController extends ResponseData {
             }
 
         } catch (error) {
-            console.log(error);
+           
 
             next(new ErrorHandler('Error', 500));
         }

@@ -48,7 +48,7 @@ export class StockBranchController extends ResponseData {
           const response = await this.stockBranchUseCase.getOneStockInBranch(branch_id,product_id, stockBranchPopulateConfig)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-            console.log(error);
+           
             
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
@@ -62,7 +62,7 @@ export class StockBranchController extends ResponseData {
                 const response = await this.stockBranchUseCase.createStockBranch({branch_id, product_id})
                 const newQuantity = stock
                 const entry = await this.stockInputUseCase.createInput({stock_id:response?._id,quantity:stock, newQuantity:newQuantity,})
-                console.log(entry, 'controlador');
+               
                 const allData = await this.stockBranchUseCase.updateStockBranch(available_id,{stock:entry.newQuantity})
                this.invoke(allData, 201, res, 'Se creó con éxito', next); 
             }else{
@@ -70,7 +70,7 @@ export class StockBranchController extends ResponseData {
             }
         }
         catch (error) {
-            console.log(error);
+          
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
 
@@ -85,7 +85,7 @@ export class StockBranchController extends ResponseData {
                 this.invoke(response, 201, res, 'Se actualizó con éxito', next);     
             
         } catch (error) {
-            console.log(error);
+          
             next(new ErrorHandler('Hubo un error al actualizar', 500));
         }
     }
@@ -104,7 +104,7 @@ export class StockBranchController extends ResponseData {
                 this.invoke(allData, 201, res, 'Se actualizó con éxito', next);     
             
         } catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Hubo un error al actualizar', 500));
         }
     }
@@ -124,7 +124,7 @@ export class StockBranchController extends ResponseData {
                 this.invoke(allData, 201, res, 'Se actualizó con éxito', next);     
             
         } catch (error) {
-            console.log(error);
+            
             next(new ErrorHandler('Hubo un error al actualizar', 500));
         }
     }
@@ -135,7 +135,7 @@ export class StockBranchController extends ResponseData {
         
         try {
             const response = await this.stockBranchUseCase.getOneStockInBranch(branch_id,product_id, stockBranchPopulateConfig)
-            console.log(response, 'controller2');
+          
             
             const num1 = response.stock
             const num2 = parseInt(stock)
@@ -147,7 +147,7 @@ export class StockBranchController extends ResponseData {
                 this.invoke(allData, 201, res, 'Se actualizó con éxito', next);     
             
         } catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Hubo un error al actualizar', 500));
         }
     }

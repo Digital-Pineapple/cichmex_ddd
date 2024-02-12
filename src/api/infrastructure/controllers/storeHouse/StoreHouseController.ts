@@ -51,7 +51,7 @@ export class StoreHouseController extends ResponseData {
             this.invoke(response, 200, res, '', next);
         }
         catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
 
@@ -63,7 +63,7 @@ export class StoreHouseController extends ResponseData {
            this.invoke(response, 200, res, '', next);
        }
        catch (error) {
-           console.log(error);
+          
            next(new ErrorHandler('Hubo un error al eliminar', 500));
        }
 

@@ -66,7 +66,7 @@ export class PaymentController extends ResponseData {
                 next(new ErrorHandler(`Error: ${message}`, 500)); // Enviar error al siguiente middleware
             }
         } catch (error) {
-            console.log(error);
+         
             next(new ErrorHandler('Error', 500)); // Enviar error al siguiente middleware
         }
     }
@@ -112,8 +112,7 @@ export class PaymentController extends ResponseData {
                                         await Promise.all(historyPromises);
                                     }
                                 } catch (error) {
-                                    console.log(error, 'error al crear beneficios');
-
+                                    next(new ErrorHandler(`Error: ${error}`, 500));
                                 }
 
                             }));
@@ -129,7 +128,7 @@ export class PaymentController extends ResponseData {
             }
             
         } catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Error', 500)); //
         }
 
@@ -166,7 +165,7 @@ export class PaymentController extends ResponseData {
             }
             
         } catch (error) {
-            console.log(error);
+        
             next(new ErrorHandler('Error', 500)); //
         }
 
@@ -215,7 +214,7 @@ export class PaymentController extends ResponseData {
                                         await Promise.all(historyPromises);
                                     }
                                 } catch (error) {
-                                    console.log(error, 'error al crear beneficios');
+                                    next(new ErrorHandler(`Error${error}`, 500));
 
                                 }
 

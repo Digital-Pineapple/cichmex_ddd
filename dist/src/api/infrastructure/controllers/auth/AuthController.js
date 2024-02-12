@@ -68,7 +68,6 @@ class AuthController extends ResponseData_1.ResponseData {
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {
-                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al iniciar sesión', 500));
             }
         });
@@ -131,7 +130,6 @@ class AuthController extends ResponseData_1.ResponseData {
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {
-                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al iniciar sesión', 500));
             }
         });
@@ -210,7 +208,6 @@ class AuthController extends ResponseData_1.ResponseData {
                 this.invoke(response, 200, res, message, next);
             }
             catch (error) {
-                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al subir la foto', 500));
             }
         });
@@ -241,7 +238,6 @@ class AuthController extends ResponseData_1.ResponseData {
                 this.invoke(response, 200, res, 'El telefono se registro correctamente', next);
             }
             catch (error) {
-                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al guardar el telefono', 500));
             }
         });

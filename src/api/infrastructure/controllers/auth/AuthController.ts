@@ -78,7 +78,7 @@ export class AuthController extends ResponseData {
 
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-            console.log(error);
+
             
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }
@@ -141,7 +141,7 @@ export class AuthController extends ResponseData {
             const response = await this.authUseCase.signUp({ fullname, email, password, phone, type_user: TypeUser_id });
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-            console.log(error)
+          
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }
     }
@@ -215,7 +215,7 @@ export class AuthController extends ResponseData {
             response.profile_image = url;
             this.invoke(response, 200, res, message, next);
         } catch (error) {
-            console.log(error)
+           
             next(new ErrorHandler('Hubo un error al subir la foto', 500));
         }
     }
@@ -250,7 +250,7 @@ export class AuthController extends ResponseData {
 
             this.invoke(response, 200, res, 'El telefono se registro correctamente', next);
         } catch (error) {
-            console.log(error);
+          
 
             next(new ErrorHandler('Hubo un error al guardar el telefono', 500));
         }

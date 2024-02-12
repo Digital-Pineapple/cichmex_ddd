@@ -51,7 +51,7 @@ export class MPService {
 
             return { response, success: true, message: 'Pago realizado correctamente' };
         } catch (error) {
-           console.log(error);
+       
            
             return { success: false, message: `Error: ${error}` };
         }
@@ -121,7 +121,7 @@ export class MPService {
 
             return { response, success: true, message: 'Pago realizado correctamente' };
         } catch (error) {
-           console.log(error);
+          
            
             return { success: false, message: `Error: ${error}` };
         }
@@ -156,7 +156,7 @@ export class MPService {
 
             return { response, success: true, message: 'Pago realizado correctamente' };
         } catch (error) {
-           console.log(error);
+
            
             return { success: false, message: `Error: ${error}` };
         }

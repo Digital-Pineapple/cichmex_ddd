@@ -42,7 +42,7 @@ export class CommissionController extends ResponseData {
             const response = await this.commissionUseCase.createNewCommission(name, amount, status, discount);
             this.invoke(response, 201, res, 'La comisión se creo con exito', next);
         } catch (error) {
-            console.log(error);
+         
 
             next(new ErrorHandler('Hubo un error al crear la comisión', 500));
         }
@@ -56,7 +56,7 @@ export class CommissionController extends ResponseData {
             const response = await this.commissionUseCase.updateOneCommission(id, { name, amount, status, discount });
             this.invoke(response, 201, res, 'La comisión se actualizó con éxito', next);
         } catch (error) {
-            console.log(error);
+          
             next(new ErrorHandler('Hubo un error al actualizar la comisión', 500));
         }
     }

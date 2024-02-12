@@ -64,9 +64,8 @@ export class ServiceCustomerUseCase {
       const response = await this.servicesCustomerRepository.findTypeCarById(
         _id
       );
-      console.log(response, "findTypeCarService");
     } catch (error) {
-      return console.log(error);
+      return (error);
     }
   }
 
@@ -92,10 +91,6 @@ export class ServiceCustomerUseCase {
   ): Promise<ServiceCustomer | null> {
     
     const service = await this.servicesCustomerRepository.findById(_id);
-    // service.services = service.services.filter(
-    //   (service: IServices) => service?._id !== service_id
-    // );
-    console.log(service.services.filter((service:IServices) => service._id === service_id) );
     
     return await this.servicesCustomerRepository.updateOne(_id, service);
   }

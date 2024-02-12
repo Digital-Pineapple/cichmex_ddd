@@ -55,7 +55,7 @@ export class TypeCarController extends ResponseData {
             const response = await this.typeCarUseCase.createNewTypeCar(name);
             this.invoke(response, 200, res, '', next)
         } catch (error) {
-            console.log(error)
+          
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
@@ -78,7 +78,7 @@ export class TypeCarController extends ResponseData {
             this.invoke(response, 201, res, 'El tipo de auto se actualizó con éxito', next);
             }
         } catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }

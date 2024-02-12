@@ -29,7 +29,7 @@ export class UserUseCase extends Authentication {
     return await this.userRepository.updateOne(id,{...updated})
   }
   public async updateStore(id: string, updated:object): Promise<UserEntity | ErrorHandler | null> {
-   console.log(updated);
+  
    
     return await this.userRepository.updateOne(id,{updated})
   }

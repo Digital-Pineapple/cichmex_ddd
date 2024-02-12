@@ -7,7 +7,7 @@ export const AuthHeader = async (req:Request,res:Response, next:NextFunction)=>{
  try {
     const token = req.headers.authorization?.split(' ').pop() //Todo:1231112
     const tokenData = await verifyToken(token)
-    console.log(tokenData);
+  
     
  } catch (error) {
     

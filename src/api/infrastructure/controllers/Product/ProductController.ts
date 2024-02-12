@@ -153,7 +153,7 @@ export class ProductController extends ResponseData {
       this.invoke(response2, 201, res, 'Producto creado con éxito', next);
 
     } catch (error) {
-      console.log(error);
+  
       
       next(new ErrorHandler('Hubo un error al crear el producto', 500));
     }
@@ -224,26 +224,26 @@ export class ProductController extends ResponseData {
   }
   public async searchProduct(req: Request, res: Response, next: NextFunction){
     const{search}= req.body
-    console.log(req.body,'controller');
+   
     
     try{
       const response = await this.productUseCase.searchProduct(search)
       this.invoke(response, 201, res, 'Busqueda exitosa', next);
     }catch(error){
-      console.log(error);
+    
       next(new ErrorHandler("Hubo un error al buscar", 500));
     }
 
   }
   public async getProductsByCategory(req: Request, res: Response, next: NextFunction){
     const { category } = req.body
-    // console.log(typeof category);    
+       
     try{
       const categoria = await this.categoryUseCase.getDetailCategoryByName(category);      
       const response = await this.productUseCase.searchProductsByCategory(categoria._id);
       this.invoke(response, 201, res, '', next);
     }catch(error){
-      console.log(error);
+     
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
     }
 

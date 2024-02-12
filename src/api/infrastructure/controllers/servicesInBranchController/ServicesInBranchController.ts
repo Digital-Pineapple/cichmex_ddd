@@ -45,7 +45,7 @@ export class ServicesInBranchController extends ResponseData {
             const response = await this.servicesInBranchUseCase.getServicesInBranchByUser(id)
             this.invoke(response, 200, res, '', next)
         } catch (error) {
-            console.log(error);
+          
 
             next(new ErrorHandler('Error al encontrar el servicio', 404));
         }
@@ -57,7 +57,7 @@ export class ServicesInBranchController extends ResponseData {
             const response = await this.servicesInBranchUseCase.getServicesInBranchByBranch(id)
             this.invoke(response, 200, res, '', next)
         } catch (error) {
-            console.log(error);
+          
 
             next(new ErrorHandler('Error al encontrar el servicio', 404));
         }
@@ -71,8 +71,7 @@ export class ServicesInBranchController extends ResponseData {
             .createServiceInBranch({  service_id, typeCar_id, price, description, branch_id })
             this.invoke(response, 201, res, 'Se creo con exito', next);
         } catch (error) {
-            console.log(error);
-
+          
             next(new ErrorHandler('Hubo un error al crear su servicio', 500))
         }
     }
@@ -88,7 +87,7 @@ export class ServicesInBranchController extends ResponseData {
             this.invoke(response, 201, res, 'Actualizado con éxito', next);
 
         } catch (error) {
-            console.log(error);
+          
             next(new ErrorHandler('Error al editar ', 500));
 
         }
@@ -102,7 +101,7 @@ export class ServicesInBranchController extends ResponseData {
             const response = await this.servicesInBranchUseCase.deleteServiceInBranch(id)
             this.invoke(response, 200, res, 'Eliminado correctamente', next);
         } catch (error) {
-            console.log(error);
+          
             next(new ErrorHandler('Hubo un error al eliminar', 500));
         }
 

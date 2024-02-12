@@ -50,7 +50,7 @@ export class ServicesCustomerController extends ResponseData {
             
             this.invoke(response, 200, res, '', next)
         } catch (error) {
-            console.log(error);
+           
             
             next(new ErrorHandler('Error al encontrar el servicio', 404));
         }
@@ -58,13 +58,13 @@ export class ServicesCustomerController extends ResponseData {
 
     public async createServiceCustomer(req: Request, res: Response, next: NextFunction) {
         const { customer_id, services  } = req.body;
-        console.log(customer_id, services);
+      
         
         try { 
         const serviceCustomer = await this.serviceCustomerUseCase.createNewServiceCustomer(customer_id,services);
             this.invoke(serviceCustomer, 201, res, 'Se creo con exito', next);
         } catch (error) {
-            console.log(error);
+           
             
             next(new ErrorHandler('Hubo un error al crear su servicio', 500))
         }
@@ -83,7 +83,7 @@ export class ServicesCustomerController extends ResponseData {
     
             
         } catch (error) {
-            console.log(error);
+            
             next(new ErrorHandler('Hubo un error al editar la información', 500));
 
         }
@@ -95,7 +95,7 @@ export class ServicesCustomerController extends ResponseData {
             this.invoke(response, 201, res, 'Actualizado con exito', next);
             
         } catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Hubo un error type car service', 500));
             
         }
@@ -110,7 +110,7 @@ export class ServicesCustomerController extends ResponseData {
     //         const response = await this.serviceCustomerUseCase.updateOneServiceCustomer(id, {deleted: false} );
     //         this.invoke(response, 200, res, 'Eliminado correctamente', next);
     //     } catch (error) {
-    //         console.log(error);
+    //        
     //         next(new ErrorHandler('Hubo un error al eliminar', 500));
     //     }
 
@@ -124,7 +124,7 @@ export class ServicesCustomerController extends ResponseData {
             const response = await this.serviceCustomerUseCase.deleteOneServiceCustomer(id, service_id);
             this.invoke(response, 200, res, 'Eliminado correctamente', next);
         } catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Hubo un error al eliminar', 500));
         }
 

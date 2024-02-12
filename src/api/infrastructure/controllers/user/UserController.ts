@@ -139,14 +139,14 @@ export class UserController extends ResponseData {
                 return this.invoke(updated, 400, res, '', next)
             }
         } catch (error) {
-            console.log(error)
+           
             next(new ErrorHandler('Hubo un error al enviar código de verificacion', 500));
         }
     }
     public async verifyPhone(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
         const { id } = req.params
         const { code } = req.body;
-        console.log(req);
+      
 
         try {
             const infoPhone = await this.phoneUserUseCase.getOnePhone(id)
@@ -160,7 +160,7 @@ export class UserController extends ResponseData {
                 }
             }
         } catch (error) {
-            console.log(error)
+          
             next(new ErrorHandler('Hubo un error ', 500));
         }
     }
@@ -174,7 +174,7 @@ export class UserController extends ResponseData {
             if (!(infoUser instanceof ErrorHandler)) {
                 if (infoUser?.accountVerify === code) {
                     const response = this.userUseCase.updateRegisterUser(id, { email_verified: true, google: true })
-                    console.log(response, 'userController');
+                    
 
                     this.invoke(response, 200, res, '', next)
                 } else {
@@ -182,7 +182,7 @@ export class UserController extends ResponseData {
                 }
             }
         } catch (error) {
-            console.log(error)
+          
             next(new ErrorHandler('Hubo un error ', 500));
         }
     }
@@ -204,7 +204,7 @@ export class UserController extends ResponseData {
             const response = await this.phoneUserUseCase.deletePhysicalPhone(id)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-            console.log(error);
+           
 
             next(new ErrorHandler('Hubo un error al eliminar', 500));
         }
@@ -235,7 +235,7 @@ export class UserController extends ResponseData {
             this.invoke(response, 200, res, '', next);
 
         } catch (error) {
-            console.log(error)
+          
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }
     }
@@ -252,7 +252,7 @@ export class UserController extends ResponseData {
             this.invoke(response, 200, res, '', next);
 
         } catch (error) {
-            console.log(error)
+           
             next(new ErrorHandler('Hubo un error ', 500));
         }
     }
@@ -276,7 +276,7 @@ export class UserController extends ResponseData {
 
 
         } catch (error) {
-            console.log(error)
+          
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }
     }
@@ -305,7 +305,7 @@ export class UserController extends ResponseData {
 
 
         } catch (error) {
-            console.log(error)
+           
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }
     }
@@ -368,7 +368,7 @@ export class UserController extends ResponseData {
         
         try {
             const response = await this.userUseCase.updateUser(id,{store:store})
-            console.log(response);
+           
             
             this.invoke(
                 response,
