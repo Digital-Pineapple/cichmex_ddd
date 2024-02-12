@@ -28,6 +28,7 @@ export const validateAuthentication = (req: Request, res: Response, next: NextFu
 export const checkTypeUserAuth = (type_user: string | string[]) => async (req: Request, res: Response, next: NextFunction) => {
     try {
         const token = req.headers.authorization?.split(' ').pop();
+        
         if (!token) {
             throw new ErrorHandler('Token es requerido', 401);
         }

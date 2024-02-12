@@ -37,7 +37,9 @@ export class ServicesInBranchUseCase {
 
   ): Promise<ServicesInBranchEntity | ErrorHandler | null> {
     const response = await this.servicesInBranchRepository.
-    findOneItem({user_id:body.user_id,service_id:body.service_id, })
+    findOneItem({user_id:body.user_id,typeCar_id:body.typeCar_id, })
+    console.log(response);
+    
     if (response) {
       return new ErrorHandler("Servicio existente en sucursal", 400);
     } else {

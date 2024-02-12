@@ -10,7 +10,7 @@ export abstract class MongoRepository {
   }
 
   public async findAll(populateOne?: any, populateTwo?: any): Promise<any> {
-    return await this.MODEL.find({deleted:false}).populate(populateOne).populate(populateTwo);
+    return await this.MODEL.find({ deleted: false }).populate(populateOne).populate(populateTwo);
   }
   public async findAllAll(id: string, populateOne?: any, populateTwo?: any): Promise<any> {
     return await this.MODEL.findById(id, { delted: false }).populate(populateOne).populate(populateTwo);
@@ -28,7 +28,7 @@ export abstract class MongoRepository {
   }
 
   public async findById(_id: String, populateConfig?: any): Promise<any> {
-    return await this.MODEL.findById(_id, {deleted:false});
+    return await this.MODEL.findById(_id, { deleted: false });
   }
 
   public async findByIdPupulate(
@@ -37,7 +37,7 @@ export abstract class MongoRepository {
   ): Promise<any> {
     return await this.MODEL.findById(_id)
       .populate(populateConfig)
-    
+
   }
 
   public async findNameById(_id: String, populateConfig?: any): Promise<any> {
@@ -52,10 +52,10 @@ export abstract class MongoRepository {
     return await this.MODEL.find({ phone_number: phone_number, deleted: false });
   }
   public async findByUser(_id: string): Promise<any> {
-    return await this.MODEL.find({ user_id:_id, deleted: false });
+    return await this.MODEL.find({ user_id: _id, deleted: false });
   }
   public async findByUserAndVerify(_id: string): Promise<any> {
-    return await this.MODEL.find({ user_id:_id, deleted: false, verify:true });
+    return await this.MODEL.find({ user_id: _id, deleted: false, verify: true });
   }
   public async findByPlateNumber(
     plate_number: string,
@@ -77,7 +77,7 @@ export abstract class MongoRepository {
     return await this.MODEL.find({
       customer_id: customer_id,
       name: name,
-      deleted:false
+      deleted: false
     });
   }
   public async updateOne(_id: String, updated: object): Promise<any> {
@@ -90,7 +90,7 @@ export abstract class MongoRepository {
   }
 
   public async PhysicalDelete(_id: any): Promise<any> {
-    return await this.MODEL.deleteOne({_id:_id})
+    return await this.MODEL.deleteOne({ _id: _id })
   }
 
   public async createOne(body: object): Promise<any> {
@@ -101,13 +101,13 @@ export abstract class MongoRepository {
 
   }
 
-  public async findOneItem(query: Object, populateConfig1?: any, populateConfig2?:any, populateConfig3?:any): Promise<any> {    
-    
+  public async findOneItem(query: Object, populateConfig1?: any, populateConfig2?: any, populateConfig3?: any): Promise<any> {
+
     return await this.MODEL.findOne({ ...query, deleted: false }).populate(
       populateConfig1).populate(populateConfig2).populate(populateConfig3);
   }
-  public async findAllItems(query: Object, populateConfig1?: any, populateConfig2?:any, populateConfig3?:any): Promise<any> {    
-    
+  public async findAllItems(query: Object, populateConfig1?: any, populateConfig2?: any, populateConfig3?: any): Promise<any> {
+
     return await this.MODEL.find({ ...query }).populate(
       populateConfig1).populate(populateConfig2).populate(populateConfig3);
   }
@@ -118,10 +118,9 @@ export abstract class MongoRepository {
       ""
     );
     return await this.MODEL.find({
-      status: true,
       $or: [
         {
-          name: { $regex: ".*" + noSpecialCharacters + ".*", $options: "i" },
+          slug: { $regex: ".*" + noSpecialCharacters + ".*", $options: "i" },
         },
       ],
     });
@@ -196,31 +195,13 @@ export abstract class MongoRepository {
   };
   public async getMembershipDetailHistoryUser(id: string): Promise<any> {
     const result = await this.MODEL.aggregate([
-        {
-            $match: {
-                client_id: id // Filtra por el ID del cliente
-            }
-        },
-        // {
-        //     $lookup: {
-        //         from: "services", // Colección de servicios
-        //         localField: "service_id", // Campo local en la colección actual
-        //         foreignField: "_id", // Campo en la colección de servicios
-        //         as: "Service" // Alias para el resultado del join
-        //     }
-        // },
-        {
-            $lookup: {
-                from: "membershiphistories", // Colección de historias de membresía
-                localField: "_id", // Campo local en la colección actual
-                foreignField: "membershipBenefit_id", // Campo en la colección de historias de membresía
-                as: "MembershipHistoryList" // Alias para el resultado del join
-            }
-        }
+      { $match: { client_id: id } },
+      { $lookup: { from: "membershiphistories", localField: "_id", foreignField: "membershipBenefit_id", as: "MembershipHistoryList" } },
+      { $lookup: { from: "services", localField: "service_id", foreignField: "_id", as: "NameService" } }
     ]);
 
     return result;
-};
+  };
 
 
 }

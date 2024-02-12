@@ -51,7 +51,7 @@ exports.apiRouter = apiRouter;
 const apiRouterx = (0, express_1.Router)();
 apiRouterx.use('/auth', auth_1.default);
 apiRouterx.use('/services', services_1.default);
-apiRouterx.use('services-branch', servicesInBranch_1.default);
+apiRouterx.use('/services-branch', servicesInBranch_1.default);
 apiRouterx.use('/type-car', typeCar_1.default);
 apiRouterx.use('/type-user', typeUser_1.default);
 apiRouterx.use('/category', Category_1.default);

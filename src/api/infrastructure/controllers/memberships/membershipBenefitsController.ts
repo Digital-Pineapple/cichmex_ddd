@@ -3,7 +3,9 @@ import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
 import { MembershipBenefitsUseCase } from "../../../application/membership/membershipBenefitsUseCase";
 import { MembershipHistoryUseCase } from "../../../application/membership/membershipHistoryUseCase";
-
+import { QrValidatedResponse } from "../../../domain/membership/MembershipEntity";
+import moment from "moment";
+const { ObjectId } = require('mongodb');
 
 export class MembershipBenefitsController extends ResponseData {
   protected path = "/membership-benefits";
@@ -23,6 +25,8 @@ export class MembershipBenefitsController extends ResponseData {
     this.getHistory = this.getHistory.bind(this);
     this.consumeBenefit = this.consumeBenefit.bind(this);
     this.getAllMembershipsBenefitsByUser = this.getAllMembershipsBenefitsByUser.bind(this);
+    this.QrVerify = this.QrVerify.bind(this);
+    this.MembershipSales = this.MembershipSales.bind(this);
   }
 
   public async getMembershipHistory(
@@ -59,8 +63,10 @@ export class MembershipBenefitsController extends ResponseData {
     next: NextFunction
   ) {
     const {id} = req.params
+    
+    const _id = new ObjectId(id)
     try {
-      const response = await this.membershipBenefitsUseCase.getMembershipBenefitsUser(id);
+      const response = await this.membershipBenefitsUseCase.getMembershipBenefitsUser(_id);
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       console.log(error);
@@ -83,13 +89,16 @@ export class MembershipBenefitsController extends ResponseData {
       end_date,
       status,
     } = req.body;
+    const membership =new ObjectId(membership_id);
+    const service =new ObjectId(service_id);
+    const user =new ObjectId(client_id);
 
     try {
       // Crear beneficio de membresía
       const memBenefit = await this.membershipBenefitsUseCase.createNewMembershipBenefit(
-        membership_id,
-        service_id,
-        client_id,
+        {membership_id: membership},
+       { service_id : service},
+        {client_id: user},
         quantity,
         start_date,
         end_date,
@@ -170,11 +179,12 @@ export class MembershipBenefitsController extends ResponseData {
     next: NextFunction
   ){
     const {id} = req.params
+    
     const { membershipBenefit_id, typeCar_id,car_color,plate_number, branch_office_id } = req.body
     try {
       const validateActivated = await this.membershipBenefitsUseCase.verifiedActiveBenefits(membershipBenefit_id, typeCar_id)
       if (!(validateActivated instanceof ErrorHandler)) {
-        const date_service = new Date()
+        const date_service = moment().format(); 
         const response = await this.memberHistoryUseCase.consumeBenefit(id,membershipBenefit_id, date_service, typeCar_id,car_color,plate_number, branch_office_id)
         this.invoke(response,200,res,'Servicio pagado con éxito',next)
       }
@@ -183,13 +193,54 @@ export class MembershipBenefitsController extends ResponseData {
       }
     } catch (error) {
       console.log(error);
-      next(new ErrorHandler("Hubo un error ", 500));
+      next(new ErrorHandler("Servicio ya consumido", 500));
       
       
     }
   }
 
-  
-  
+  public async QrVerify(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ){
+    const{id} = req.params
+    const {  membershipBenefit_id } = req.body
+    const idH = id 
+const trimmedId = idH.trim(); 
+
+   try {
+    const response= await this.membershipBenefitsUseCase.getDetailMembershipBenefit(membershipBenefit_id)
+    const memhistory = await this.memberHistoryUseCase.getOneHistoryMembership(trimmedId)
+    if (memhistory?.deleted === true) {
+      next(new ErrorHandler('El beneficio se encuentra canjeado',500))
+    }else{
+
+      this.invoke(response,200,res,'',next)
+    }
+    
+   } catch (error) {
+    console.log(error);
+    
+    next(new ErrorHandler("Hubo un error ", 500));
+   }
   
 }
+
+public async MembershipSales(
+  req: Request,
+  res: Response,
+  next: NextFunction
+){
+  const { date_service, branch_office_id } = req.body
+  
+ try {
+  const response= await this.memberHistoryUseCase.getSalesDay(date_service,branch_office_id)
+    this.invoke(response,200,res,'',next)
+  
+ } catch (error) {
+  next(new ErrorHandler("Hubo un error ", 500));
+ }
+}
+}
+

@@ -54,7 +54,7 @@ const apiRouterx = Router();
 
 apiRouterx.use('/auth', authRouter);
 apiRouterx.use('/services', serviceRouter);
-apiRouterx.use('services-branch', servicesInBranchRouter)
+apiRouterx.use('/services-branch', servicesInBranchRouter)
 apiRouterx.use('/type-car', typeCarRouter)
 apiRouterx.use('/type-user', typeUserRouter)
 apiRouterx.use('/category', categoryRouter)

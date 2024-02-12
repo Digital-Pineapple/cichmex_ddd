@@ -5,17 +5,19 @@ import MongooseDelete = require("mongoose-delete");
 const MembershipBenefitsSchema = new Schema<MembershipBenefits>(
   {
     membership_id: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref:'Memberships'
     },
     service_id: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref:'services'
+      ref:'Services'
     },
     client_id: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref:'Users'
     },
     quantity: {
       type: Number,
