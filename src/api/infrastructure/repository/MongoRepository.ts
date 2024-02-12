@@ -10,7 +10,7 @@ export abstract class MongoRepository {
   }
 
   public async findAll(populateOne?: any, populateTwo?: any): Promise<any> {
-    return await this.MODEL.find({ status: true }).populate(populateOne).populate(populateTwo);
+    return await this.MODEL.find({ status: true }).populate(populateOne).populate(populateTwo).sort({createdAt: -1});
   }
   public async findAllAll(id: string, populateOne?: any, populateTwo?: any,populateThree?:any): Promise<any> {
     return await this.MODEL.findById(id, { delted: false }).populate(populateOne).populate(populateTwo).populate(populateThree);
@@ -28,7 +28,7 @@ export abstract class MongoRepository {
   }
 
   public async findById(_id: String, populateConfig?: any, populateConfig2?:any): Promise<any> {
-    return await this.MODEL.findById(_id, {  status: true }).populate(populateConfig).populate(populateConfig2);
+    return await this.MODEL.findById( {_id,  status: true }).populate(populateConfig).populate(populateConfig2);
   }
 
   public async findByIdPupulate(

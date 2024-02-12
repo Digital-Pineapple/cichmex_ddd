@@ -3,7 +3,7 @@ import { UserEntity } from "../user/UserEntity";
 
 export interface storeHouseEntity  {
   _id: string;
-  user_id: UserEntity ;
+  user_id?: UserEntity ;
   name?: string;
   phone_number?: number;
   images ?: string[];

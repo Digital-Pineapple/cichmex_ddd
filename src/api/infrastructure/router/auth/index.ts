@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import validateAuthentication from '../../../../shared/infrastructure/validation/ValidateAuthentication';
+import validateAuthentication, { validateTokenRestorePassword } from '../../../../shared/infrastructure/validation/ValidateAuthentication';
 import { AuthUseCase } from '../../../application/auth/AuthUseCase';
 import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
 import { AuthController } from '../../controllers/auth/AuthController';
@@ -42,7 +42,10 @@ authRouter
     .post('/google', authValidations.googleLoginValidations, authController.loginWithGoogle)
     .post('/google-Partner', authValidations.googleLoginValidations, authController.loginWithGooglePartner)
     .post('/registerByGoogle', authValidations.googleLoginValidations, authController.registerByGoogle)
+    .post('/send-email-restore', authController.restorePasswordByEmail)
+    .post('/verifyCodeRP', authController.verifyCodeByEmail)
     .post('/change-password/:id', validateAuthentication, authController.changePassword)
+    .post('/restore-password', validateTokenRestorePassword, authController.restorePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', validateAuthentication, authController.verifyCode)
     .post('/verify-phone', authController.savePhone)

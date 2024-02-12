@@ -11,6 +11,7 @@ export class CategoryController extends ResponseData {
         super();
         this.getAllCategories = this.getAllCategories.bind(this);
         this.getCategory = this.getCategory.bind(this);
+        this.getAllCategoriesAndSC = this.getAllCategoriesAndSC.bind(this);
         this.createCategory = this.createCategory.bind(this);
         this.updateCategory = this.updateCategory.bind(this);
         this.deleteCategory = this.deleteCategory.bind(this);
@@ -35,6 +36,24 @@ export class CategoryController extends ResponseData {
         }
     }
 
+    public async getAllCategoriesAndSC(req: Request, res: Response, next: NextFunction) {
+        try {
+            const response = await this.categoryUseCase.getCategoriesAndSubcategories();
+            if (!(response instanceof ErrorHandler) && response !==null) {     
+                await Promise.all(response.map(async(res)=> {
+                    const url = await this.s3Service.getUrlObject(res.category_image + ".jpg");
+                    res.category_image = url
+                }))
+                this.invoke(response, 200, res, '', next);
+            }
+        } catch (error) {
+            console.log(error);
+            
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+
+
    
 
 
@@ -51,12 +70,17 @@ export class CategoryController extends ResponseData {
     }
 
     public async createCategory(req: Request, res: Response, next: NextFunction) {
-        const { name } = req.body;
-        
+        const { name, } = req.body;
        
         try {
-            const response = await this.categoryUseCase.createNewCategory(name);
+            const response1 = await this.categoryUseCase.createNewCategory(name);
+            if (req.file) {
+                const pathObject = `${this.path}/${response1?._id}/${name}}`;
+                const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
+                if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
+                const response = await this.categoryUseCase.updateOneCategory(response1?._id, { category_image: pathObject });
             this.invoke(response, 201, res, 'La categoria se creo con exito', next);
+        }
         } catch (error) {
             
 
@@ -67,7 +91,6 @@ export class CategoryController extends ResponseData {
     public async updateCategory(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { name } = req.body;
-      
         
         try {
             if (req.file) {

@@ -15,6 +15,7 @@ import { generateRandomCode } from '../../../../shared/infrastructure/validation
 import { IPhoneRequest } from '../../../application/auth/interfaces';
 import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
 import { MPService } from '../../../../shared/infrastructure/mercadopago/MPService';
+import { sendCodeMail } from '../../../../shared/infrastructure/nodemailer/emailer';
 
 
 export class AuthController extends ResponseData {
@@ -27,20 +28,23 @@ export class AuthController extends ResponseData {
         private readonly mpService : MPService
     ) {
         super();
-        this.login = this.login.bind(this);
-        this.loginAdmin = this.loginAdmin.bind(this);
-        this.loginPartner = this.loginPartner.bind(this);
-        this.register = this.register.bind(this);
-        this.registerAndPay = this.registerAndPay.bind(this);
-        this.registerAdmin = this.registerAdmin.bind(this);
-        this.loginWithGoogle = this.loginWithGoogle.bind(this);
+        this.login                  = this.login.bind(this);
+        this.loginAdmin             = this.loginAdmin.bind(this);
+        this.loginPartner           = this.loginPartner.bind(this);
+        this.register               = this.register.bind(this);
+        this.registerAndPay         = this.registerAndPay.bind(this);
+        this.registerAdmin          = this.registerAdmin.bind(this);
+        this.loginWithGoogle        = this.loginWithGoogle.bind(this);
         this.loginWithGooglePartner = this.loginWithGooglePartner.bind(this);
-        this.registerByGoogle = this.registerByGoogle.bind(this);
-        this.changePassword = this.changePassword.bind(this);
-        this.uploadProfilePhoto = this.uploadProfilePhoto.bind(this);
-        this.revalidateToken = this.revalidateToken.bind(this);
-        this.verifyCode = this.verifyCode.bind(this);
-        this.savePhone = this.savePhone.bind(this);
+        this.registerByGoogle       = this.registerByGoogle.bind(this);
+        this.changePassword         = this.changePassword.bind(this);
+        this.uploadProfilePhoto     = this.uploadProfilePhoto.bind(this);
+        this.revalidateToken        = this.revalidateToken.bind(this);
+        this.verifyCode             = this.verifyCode.bind(this);
+        this.savePhone              = this.savePhone.bind(this);
+        this.restorePasswordByEmail = this.restorePasswordByEmail.bind(this)
+        this.verifyCodeByEmail      = this.verifyCodeByEmail.bind(this);
+        this.restorePassword        = this.restorePassword.bind(this);
         
     }
 
@@ -190,6 +194,69 @@ export class AuthController extends ResponseData {
             next(new ErrorHandler('Hubo un error al registrar', 500));
         }
     }
+
+    public async restorePasswordByEmail(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
+
+        const { email } = req.body;
+
+        try {
+            const response = await this.authUseCase.findUser(email)
+
+            const newCode = parseInt(generateRandomCode())
+            const NoAttempts  = 2
+            console.log(response.verify_code);
+            
+            if (response.verify_code ) {
+                
+                const {attemps}:any=(response.verify_code);  
+                if (attemps >= 1 ) {
+                    const newAttemps = attemps -1
+                    try {
+                        await this.authUseCase.updateCodeUser(response._id,newCode, newAttemps)
+                        const {success, message} = await sendCodeMail(response.email, response.fullname, newCode)
+                        this.invoke(success, 200, res, `${message}`, next)
+                    } catch (error) {
+                        console.log(error);
+                        
+                    }
+                }
+                if (attemps === 0) {
+                    next(new ErrorHandler('Has alcanzado el limite de intentos', 500));
+                }
+
+            }else{
+                try {
+                     await this.authUseCase.updateCodeUser(response._id, newCode, NoAttempts)
+                     const {success, message} = await sendCodeMail(response.email, response.fullname, newCode)
+                        this.invoke(success, 201, res, `${message}`, next)
+                } catch (error) {
+                    console.log(error);
+                    
+                }
+            }    
+
+        } catch (error) {
+           next(new ErrorHandler(`No existe el usuario: ${email}`, 500));
+        }
+    }
+
+    public async verifyCodeByEmail(req: Request, res: Response, next: NextFunction) {
+        const { code, email } = req.body;
+        
+        try {
+            const response = await this.authUseCase.ValidateCodeEmail(email,code)
+            this.invoke(response,200,res,'Código valido', next)
+        } catch (error) {
+            next(new ErrorHandler(`No existe el usuario: ${email}`, 500));
+        }
+       
+
+
+    }
+
+
+
+
     
 
 
@@ -264,6 +331,20 @@ export class AuthController extends ResponseData {
             this.invoke(response, 200, res, 'El código de verificación se envió correctamente', next);
         } catch (error) {
             next(new ErrorHandler('El codigo no se ha enviado', 500));
+        }
+    }
+
+    public async restorePassword(req: Request, res: Response, next: NextFunction) {
+        const { user } = req;
+        const { password } = req.body;
+        const id = user.toString()
+        
+        try {
+            const response = await this.authUseCase.restorePassword(id, password)
+            this.invoke(response, 200, res, 'Cambio la contraseña exitosamente', next);
+        } catch (error) {
+            
+            next(new ErrorHandler('Cambio de contraseña éxitoso', 500));
         }
     }
 

@@ -12,6 +12,10 @@ export class CategoryUseCase {
         return await this.categoriesRepository.findAll();
     }
 
+    public async getCategoriesAndSubcategories(): Promise<Category[] | ErrorHandler | null> {
+        return await this.categoriesRepository.findCategoriesAndSubCategories();
+    }
+
     public async getDetailCategory(_id: string): Promise<Category  | null> {
         return await this.categoriesRepository.findById(_id);
     }

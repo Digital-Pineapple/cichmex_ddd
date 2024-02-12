@@ -25,7 +25,7 @@ export class PaymentUseCase {
     }
 
     public async updateOnePayment(_id: string, updated: PaymentEntity): Promise<PaymentEntity> {
-        return this.paymentRepository.updateOne(_id, updated);
+        return this.paymentRepository.updateOne(_id, {...updated});
     }
     public async deleteOnePayment(_id: string): Promise<PaymentEntity | null> {
         return this.paymentRepository.updateOne(_id, {status: false})

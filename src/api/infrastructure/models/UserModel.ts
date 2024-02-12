@@ -64,6 +64,10 @@ const UserSchema = new Schema<UserEntity>({
         required: false,
         ref:'BranchOffices'
     },
+    verify_code:{
+        type: Object,
+        requred:false,
+    },
     status:{
         type:Boolean,
         required:false,
