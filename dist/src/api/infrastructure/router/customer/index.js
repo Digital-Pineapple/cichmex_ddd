@@ -7,17 +7,17 @@ const express_1 = require("express");
 const CustomerUseCase_1 = require("../../../application/customer/CustomerUseCase");
 const CustomerController_1 = require("../../controllers/customer/CustomerController");
 const CustomerRepository_1 = require("../../repository/customer/CustomerRepository");
-const CustomerModel_1 = __importDefault(require("../../models/CustomerModel"));
 const S3Service_1 = require("../../../../shared/infrastructure/aws/S3Service");
 const AuthValidatons_1 = require("../../../../shared/infrastructure/validation/Auth/AuthValidatons");
+const UserModel_1 = __importDefault(require("../../models/UserModel"));
 const customerRouter = (0, express_1.Router)();
-const customerRepository = new CustomerRepository_1.CustomerRepository(CustomerModel_1.default);
+const customerRepository = new CustomerRepository_1.CustomerRepository(UserModel_1.default);
 const customerUserCase = new CustomerUseCase_1.CustomerUseCase(customerRepository);
 const s3Service = new S3Service_1.S3Service();
 const customerValidations = new AuthValidatons_1.AuthValidations();
 const customerController = new CustomerController_1.CustomerController(customerUserCase, s3Service);
 customerRouter
-    .get('/', customerController.getAllCustomers)
+    .get('/', customerValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), customerController.getAllCustomers)
     .get('/:id', customerController.getCustomerDetail)
     .post('/', customerController.createCustomer)
     .post('/update/:id', customerValidations.profilePhotoValidation, customerController.updateCustomer)

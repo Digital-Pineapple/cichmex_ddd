@@ -3,6 +3,7 @@ import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 import { BranchOfficeUseCase } from '../../../application/branchOffice/BranchOfficeUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
+import { ILocation } from '../../../domain/branch_office/BranchOfficeEntity';
 
 export class BranchOfficeController extends ResponseData {
     protected path = '/branch_office';
@@ -76,21 +77,24 @@ export class BranchOfficeController extends ResponseData {
                     if (!(response instanceof ErrorHandler)) {
                         response.images = urls;
                     }
+                    
                     this.invoke(
                         response,
                         201,
                         res,
-                        "El usuario se actualizó con éxito",
+                        "Registro exitoso",
                         next)
                 }))
             }
 
             const response = await this.branchOfficeUseCase.createBranchOffice({ user_id, name, description, location, opening_time, closing_time, })
+            
+            
             this.invoke(
                 response,
                 201,
                 res,
-                "El usuario se actualizó con éxito",
+                "Se registró con éxito",
                 next
             );
 

@@ -31,9 +31,9 @@ const twilioService = new TwilioService();
 const userController = new UserController(userPhoneserUseCase, userUseCase, typeUserUseCase, twilioService, s3Service)
 
 userRouter
+    .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), userController.allUsers)
     .get('/phones', userController.allPhones)
     .get('/phone/:id', userController.onePhone)
-    .get('/', userController.allUsers)
     .get('/:id', userController.getUser)
     .get('/getVerifyEmail/:id', userController.getVerifyEmail)
     .post('/send-code', userController.sendCode)

@@ -27,7 +27,7 @@ class Authentication {
             return new Promise((resolve, reject) => {
                 const payload = { user };
                 jsonwebtoken_1.default.sign(payload, process.env.SECRET_JWT_KEY || '', {
-                    expiresIn: '7d',
+                    expiresIn: '24h',
                 }, (error, token) => {
                     if (error)
                         return reject('Error to generate JWT');
@@ -58,6 +58,14 @@ class Authentication {
         return bcrypt_1.default.compareSync(password, encryptedPassword);
     }
     generateRandomPassword() {
+        return generate_password_1.default.generate({
+            length: 16,
+            numbers: true,
+            symbols: true,
+            strict: true,
+        });
+    }
+    validateToken() {
         return generate_password_1.default.generate({
             length: 16,
             numbers: true,

@@ -58,7 +58,8 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
                     }
                 }
                 else {
-                    const newUser = yield this.authRepository.createOne(Object.assign({}, body));
+                    const newPassword = yield this.encryptPassword(body.password);
+                    const newUser = yield this.authRepository.createOne(Object.assign(Object.assign({}, body), { password: newPassword }));
                     const newUserResponse = { user_id: newUser._id, verified: newUser.email_verified, email: newUser.email };
                     return newUserResponse;
                 }

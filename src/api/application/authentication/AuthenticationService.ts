@@ -45,10 +45,10 @@ export class Authentication {
 
     protected async generateJWT(user: UserEntity ): Promise<IAuth> {
         return new Promise((resolve, reject) => {
-            const payload: string | object | Buffer = { user };
+            const payload: string | object | Buffer = {user};
 
             Jwt.sign(payload, process.env.SECRET_JWT_KEY || '', {
-                expiresIn: '7d',
+                expiresIn: '24h',
             }, (error, token) => {
                 if (error)  return reject('Error to generate JWT');
                 resolve({ token, user });
@@ -82,6 +82,14 @@ export class Authentication {
     }
 
     protected generateRandomPassword() {
+        return Generator.generate({
+            length  : 16,
+            numbers : true,
+            symbols : true,
+            strict  : true,
+        })
+    }
+    protected validateToken() {
         return Generator.generate({
             length  : 16,
             numbers : true,

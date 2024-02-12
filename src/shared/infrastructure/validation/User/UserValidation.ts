@@ -4,7 +4,7 @@ import { body } from 'express-validator';
 
 import { RequestValidator } from '../RequestValidator';
 import { multerConfig } from '../../middleware/MulterConfig';
-import validateAuthentication from '../ValidateAuthentication';
+import validateAuthentication, { checkTypeUserAuth } from '../ValidateAuthentication';
 
 export class UserValidations {
 
@@ -15,5 +15,10 @@ export class UserValidations {
         validateAuthentication,
         this.upload.single('profile_image'),
     ]
+
+    readonly authTypeUserValidation = (type_user: string | string[]) => [
+        checkTypeUserAuth(Array.isArray(type_user) ? type_user : [type_user])
+    ];
+
 
 }

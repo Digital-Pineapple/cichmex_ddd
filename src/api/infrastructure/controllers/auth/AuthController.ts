@@ -44,6 +44,8 @@ export class AuthController extends ResponseData {
         const { email, password } = req.body;
         try {
             const response = await this.authUseCase.signIn(email, password);
+   
+            
 
             if (!(response instanceof ErrorHandler) && response.user.profile_image === undefined) {
                 response.user.profile_image ?
@@ -59,7 +61,6 @@ export class AuthController extends ResponseData {
 
     public async loginAdmin(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { email, password } = req.body;
-        console.log(req.body, 'controller auth');
         try {
             const response = await this.authUseCase.signIn(email, password)
 
@@ -108,6 +109,7 @@ export class AuthController extends ResponseData {
         const { idToken } = req.body;
         try {
             const response = await this.authUseCase.signInWithGoogle(idToken);
+            
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Usuario no registrado', 500));

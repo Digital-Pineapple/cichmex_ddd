@@ -19,9 +19,12 @@ export class AuthUseCase extends Authentication {
 
     async signIn(email: string, password: string): Promise<ErrorHandler | IAuth> {
 
+
         const user = await this.authRepository.findOneItem({ email });
         if (!user) return new ErrorHandler('No exite este usuario', 400);
         const validatePassword = this.decryptPassword(password, user.password)
+        
+
         if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);
         return await this.generateJWT(user);
     }
@@ -50,7 +53,8 @@ export class AuthUseCase extends Authentication {
                     return new ErrorHandler('Este correo ya se encuentra verificado', 409);
                 }
             } else {
-                const newUser = await this.authRepository.createOne({ ...body });
+                 const newPassword = await this.encryptPassword(body.password)
+                const newUser = await this.authRepository.createOne({ ...body,password:newPassword });
                 const newUserResponse = { user_id: newUser._id, verified: newUser.email_verified, email: newUser.email };
                 return newUserResponse;
             }

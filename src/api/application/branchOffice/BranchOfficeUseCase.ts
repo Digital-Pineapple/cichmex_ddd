@@ -6,7 +6,7 @@ import { body } from 'express-validator';
 export class BranchOfficeUseCase {
   constructor(
     private readonly branchOfficeRepository: BranchOfficeRepository
-  ) {}
+  ) { }
 
   public async getAllBranchOffices(): Promise<
     BranchOfficeEntity[] | ErrorHandler | null
@@ -19,22 +19,28 @@ export class BranchOfficeUseCase {
   ): Promise<BranchOfficeEntity | null> {
     return await this.branchOfficeRepository.findById(_id);
   }
- 
+
 
   public async createBranchOffice(
-    body:any
-  ): Promise<BranchOfficeEntity | ErrorHandler > {
-    const noRepeat = await this.branchOfficeRepository.findOneItem({name:body.name})
-    if (noRepeat) {
-      return new ErrorHandler('Esta sucursal ya existe',401)
+    body: any
+  ): Promise<BranchOfficeEntity | ErrorHandler> {
+    const newBranch = {
+      ...body,
+      location: JSON.parse(body.location)
     }
-    return await this.branchOfficeRepository.createOne({...body});
+
+    const noRepeat = await this.branchOfficeRepository.findOneItem({ name: body.name })
+    if (noRepeat) {
+      return new ErrorHandler('Esta sucursal ya existe', 401)
+    }
+
+    return await this.branchOfficeRepository.createOne({ ...newBranch });
   }
 
   public async updateBranchOffice(
     _id: string,
     updated: any
-  ): Promise<BranchOfficeEntity | ILocation| null> {
+  ): Promise<BranchOfficeEntity | ILocation | null> {
     return await this.branchOfficeRepository.updateOne(_id, updated);
   }
   public async deleteOneBranchOffice(

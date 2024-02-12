@@ -53,7 +53,6 @@ class AuthController extends ResponseData_1.ResponseData {
     loginAdmin(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { email, password } = req.body;
-            console.log(req.body, 'controller auth');
             try {
                 const response = yield this.authUseCase.signIn(email, password);
                 if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image === undefined) {

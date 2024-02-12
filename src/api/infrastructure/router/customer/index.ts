@@ -2,12 +2,12 @@ import { Router } from 'express';
 import { CustomerUseCase } from '../../../application/customer/CustomerUseCase';
 import { CustomerController } from '../../controllers/customer/CustomerController';
 import { CustomerRepository } from '../../repository/customer/CustomerRepository';
-import CustomerModel from '../../models/CustomerModel';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import {AuthValidations} from '../../../../shared/infrastructure/validation/Auth/AuthValidatons'
+import UserModel from '../../models/UserModel';
 const customerRouter = Router();
 
-const customerRepository = new CustomerRepository(CustomerModel);
+const customerRepository = new CustomerRepository(UserModel);
 const customerUserCase   = new CustomerUseCase(customerRepository);
 const s3Service          = new S3Service();
 const customerValidations = new AuthValidations();
