@@ -26,6 +26,9 @@ import StockStoreHouseModel from '../../models/stockStoreHouse/StockStoreHouseMo
 import { StockStoreHouseRepository } from '../../repository/stockStoreHouse/StockStoreHouseRepository';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
+import { ShoppingCartRepository } from '../../repository/shoppingCart/ShoppingCartRepository';
+import ShoppingCartModel from '../../models/ShoppingCartModel';
+import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 
 const paymentRouter = Router();
 
@@ -35,6 +38,7 @@ const membershipRepository = new MembershipRepository(MembershipModel)
 const membershipHistoryRepository = new MembershipHistoryRepository(MembershipHistoryModel)
 const stockStoreHouseRepository    = new StockStoreHouseRepository(StockStoreHouseModel);
 const stockSHOutputRepository = new StockSHOutputRepository(StockSHoutputModel)
+const shoppingCartRepository = new ShoppingCartRepository(ShoppingCartModel)
 
 
 const membershipHistoryUseCase = new MembershipHistoryUseCase(membershipHistoryRepository)
@@ -45,11 +49,12 @@ const membershipBenefitsUseCase= new MembershipBenefitsUseCase(membershipBenefit
 const membershipUseCase = new MembershipUseCase(membershipRepository)
 const stockStoreHouseUseCase      = new StockStoreHouseUseCase(stockStoreHouseRepository);
 const stockSHoutputUseCase = new StockSHoutputUseCase(stockSHOutputRepository)
+const shoppingCartUseCase = new ShoppingCartUseCase(shoppingCartRepository)
 
 const paymentUseCase = new PaymentUseCase(paymentRepository);
 const mpService = new MPService()
 const s3Service = new S3Service()
-const paymentController = new PaymentController(paymentUseCase, productOrderUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase, stockStoreHouseUseCase, stockSHoutputUseCase, s3Service );
+const paymentController = new PaymentController(paymentUseCase, productOrderUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase, stockStoreHouseUseCase, stockSHoutputUseCase, shoppingCartUseCase, s3Service );
 const paymentValidation = new PaymentValidations();
 const userValidations = new UserValidations()
 
