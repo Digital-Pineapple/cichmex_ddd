@@ -22,6 +22,7 @@ import servicesInBranchRouter from './servicesInBranch';
 import paymentRouter from './payments';
 import shoppingCartRouter from './shoppingCart.ts';
 import stockStoreHouseRouter from './stockStoreHouse';
+import storeHouseRouter from './storeHouse';
 
 export const apiRouter = (): Router => {
 
@@ -47,6 +48,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/payments', paymentRouter)
     apiRouter.use('/shopping-cart', shoppingCartRouter)
     apiRouter.use('/stock-StoreHouse', stockStoreHouseRouter)
+    apiRouter.use('/storehouse', storeHouseRouter)
 
 
 
@@ -73,6 +75,8 @@ apiRouterx.use('/stock-branch', stockBranchRouter)
 apiRouterx.use('/payments', paymentRouter)
 apiRouterx.use('/shopping-cart', shoppingCartRouter)
 apiRouterx.use('/stock-StoreHouse', stockStoreHouseRouter )
+apiRouterx.use('/storehouse', storeHouseRouter)
+
 
 
 export default apiRouter

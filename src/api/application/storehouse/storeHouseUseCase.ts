@@ -14,6 +14,7 @@ export class StoreHouseUseCase {
     }
 
     public async getDetailStoreHouse(_id: string): Promise<storeHouseEntity | null> {
+        
         return await this.StoreHouseRepository.findById(_id);
     }
 

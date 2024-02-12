@@ -30,6 +30,7 @@ export class AuthController extends ResponseData {
         this.login = this.login.bind(this);
         this.loginAdmin = this.loginAdmin.bind(this);
         this.register = this.register.bind(this);
+        this.registerAndPay = this.registerAndPay.bind(this);
         this.registerAdmin = this.registerAdmin.bind(this);
         this.loginWithGoogle = this.loginWithGoogle.bind(this);
         this.registerByGoogle = this.registerByGoogle.bind(this);
@@ -84,6 +85,19 @@ export class AuthController extends ResponseData {
             const def = responsedefault?.filter(item => item.name === 'Customer')
             const TypeUser_id = def?.map(item => item._id)
             const response = await this.authUseCase.signUp({ fullname, email, password, phone, type_user: TypeUser_id });
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler(`Error:${error}`, 500));
+        }
+    }
+
+    public async registerAndPay(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
+        const { email, password, fullname } = req.body;
+        try {
+            const responsedefault = await this.typeUserUseCase.getTypeUsers()
+            const def = responsedefault?.filter(item => item.name === 'Customer')
+            const TypeUser_id = def?.map(item => item._id)
+            const response = await this.authUseCase.signUp2({ fullname, email, password, type_user: TypeUser_id });
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler(`Error:${error}`, 500));

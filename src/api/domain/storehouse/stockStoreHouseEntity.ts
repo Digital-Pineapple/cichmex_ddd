@@ -3,14 +3,17 @@ import MongooseDelete = require("mongoose-delete");
 import { ProductEntity } from "../product/ProductEntity";
 import { BranchOfficeEntity } from "../branch_office/BranchOfficeEntity";
 import { UserEntity } from "../user/UserEntity";
+import { storeHouseEntity } from "./storeHouseEntity";
 
 export interface StockStoreHouseEntity extends MongooseDelete.SoftDeleteInterface {
   _id: string;
+  StoreHouse_id : storeHouseEntity;
   product_id: ProductEntity;
   stock: number;
   inputs?: SHProductInput[];
   outputs?: SHProductOutput[];
   returns?:SHProductReturn[];
+  status?: boolean;
   createdAt: NativeDate;
   updatedAt: NativeDate;
 }

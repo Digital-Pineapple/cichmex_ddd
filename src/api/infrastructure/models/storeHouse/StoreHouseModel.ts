@@ -2,8 +2,6 @@ import mongoose, { model, Schema } from "mongoose";
 import { SHLocation, storeHouseEntity } from '../../../domain/storehouse/storeHouseEntity';
 
 
-import MongooseDelete = require("mongoose-delete");
-
 
 const SHlocationSchema = new mongoose.Schema<SHLocation>(
     {
@@ -33,7 +31,9 @@ const SHlocationSchema = new mongoose.Schema<SHLocation>(
     },
     {
         versionKey: false,
+        timestamps: true
     }
+
 );
 const StoreHouseSchema = new mongoose.Schema<storeHouseEntity>(
     {
@@ -45,14 +45,6 @@ const StoreHouseSchema = new mongoose.Schema<storeHouseEntity>(
         name: {
             type: String,
             required: true,
-        },
-        description: {
-            type: String,
-            required: false,
-        },
-        activated: {
-            type: Boolean,
-            default: false
         },
         phone_number: {
             type: String,
@@ -80,7 +72,6 @@ const StoreHouseSchema = new mongoose.Schema<storeHouseEntity>(
 
 );
 
-StoreHouseSchema.plugin(MongooseDelete, { overrideMethods: 'all' });
 
 export const StoreHouseModel = model<storeHouseEntity>(
     'StoreHouses',

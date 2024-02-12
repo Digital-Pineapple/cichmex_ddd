@@ -13,8 +13,8 @@ export class MPService {
     }
 
 
-    async createLinkMP(item: any, user_id:any) {   
-        const path = 'https://carwashymas.com/auth'
+    async   createLinkMP(item: any, user_id:any) {   
+        const path = `${process.env.PATH_MP}`
         
         
         try {
@@ -34,12 +34,12 @@ export class MPService {
                     },
                     back_urls: {
                         "success":  `${path}/PagoExitoso`,
-                        "failure": "https:/carwashymas.com/auth/inicio",
-                        "pending": "https://carwashymas.com/auth/inicio"
+                        "failure": `${path}/inicio`,
+                        "pending": `${path}/inicio`
                     },
                 
                     auto_return: "approved",
-                    notification_url:`${process.env.URL_NOTIFICATION_TEST}/api/payments/success`,
+                    notification_url:`${process.env.URL_NOTIFICATION}/api/payments/success`,
                 }
             });
 

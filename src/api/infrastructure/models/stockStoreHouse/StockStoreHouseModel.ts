@@ -7,6 +7,11 @@ import MongooseDelete = require("mongoose-delete");
   const StockStoreHouseSchema = new Schema<StockStoreHouseEntity>(
     {
 
+      StoreHouse_id:{
+        type: mongoose.Types.ObjectId,
+        ref:'StoreHouses',
+        required: true,
+      },
       product_id: {
         type: mongoose.Types.ObjectId, ref: "products",
         required:true,
@@ -15,6 +20,12 @@ import MongooseDelete = require("mongoose-delete");
           type:Number,
           required:false,
       },
+      status:{
+        type:Boolean,
+        default:true,
+        required:false
+      },
+
       
     },
      

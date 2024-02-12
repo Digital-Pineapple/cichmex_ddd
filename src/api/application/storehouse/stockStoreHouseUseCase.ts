@@ -8,11 +8,11 @@ export class StockStoreHouseUseCase {
 
     constructor(private readonly stockStoreHouseRepository: StockStoreHouseRepository) { }
 
-    public async getStock(): Promise<StockStoreHouseEntity[] | ErrorHandler | null> {
-        return await this.stockStoreHouseRepository.findAll();
+    public async getStock(id:any): Promise<StockStoreHouseEntity[] | ErrorHandler | null> {
+        return await this.stockStoreHouseRepository.findStockByStoreHouse(id);
     }
-    public async getProductStock(product_id: string, populateConfig?:any ) : Promise <StockStoreHouseEntity > { 
-          return await this.stockStoreHouseRepository.findById(product_id,populateConfig) 
+    public async getProductStock(product_id: string,StoreHouse_id?:any, populateConfig?:any,   ) : Promise <StockStoreHouseEntity > { 
+          return await this.stockStoreHouseRepository.findOneItem({product_id: product_id, StoreHouse_id:StoreHouse_id, status:true}) 
     }  
 
     public async getDetailStock(_id: string): Promise<StockStoreHouseEntity | null> {
@@ -22,12 +22,14 @@ export class StockStoreHouseUseCase {
     public async createStock(body:object): Promise<StockStoreHouseEntity | null> {
         return this.stockStoreHouseRepository.createOne({...body})
     }
-    public async updateStock(_id: string,updated: object): Promise<StockStoreHouseEntity  | null> {
+    public async updateStock(_id: any,updated: object): Promise<StockStoreHouseEntity  | null> {
         return await this.stockStoreHouseRepository.updateOne(_id,updated);
     }
     public async deleteStock(_id: string): Promise<StockStoreHouseEntity | null> {
         return this.stockStoreHouseRepository.updateOne(_id, {deleted: false})
     }
+   
+    
     
 
 

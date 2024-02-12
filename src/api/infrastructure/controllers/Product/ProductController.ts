@@ -71,7 +71,7 @@ export class ProductController extends ResponseData {
   }
 
   public async createProduct(req: Request, res: Response, next: NextFunction) {
-    const { name, price, description, size, tag } = req.body;
+    const { name, price, description, size, tag, subCategory } = req.body;  
 
     const createSlug = (slug: string): string => {
       let processedSlug = slug
@@ -100,7 +100,8 @@ export class ProductController extends ResponseData {
           description,
           size,
           tag,
-          slug
+          slug, 
+          subCategory
         );
         if (!(response instanceof ErrorHandler)) {
 
@@ -134,7 +135,7 @@ export class ProductController extends ResponseData {
           description,
           size,
           tag,
-          slug
+          slug, subCategory
         );
         response2 = response
       }
@@ -142,6 +143,8 @@ export class ProductController extends ResponseData {
       this.invoke(response2, 201, res, 'Producto creado con éxito', next);
 
     } catch (error) {
+      console.log(error);
+      
       next(new ErrorHandler('Hubo un error al crear el producto', 500));
     }
   }
