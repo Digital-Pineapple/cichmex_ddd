@@ -198,9 +198,7 @@ export class PaymentController extends ResponseData {
             try {
                 const payment = await payment1.create({
                     requestOptions: { idempotencyKey: response1.uuid,  },
-                    body: {
-                        statement_descriptor:
-                    }
+                    body: body1
                 });
                 
 
