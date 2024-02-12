@@ -45,6 +45,7 @@ userRouter
     .post ('/registerbyPhone', userController.signUpByPhone)
     .post ('/registerPartnerbyPhone', userController.signUpPartnerByPhone)
     .post('/loginByPhone', userController.loginPhone)
+    .post('/collection-point/update/:id',userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']),userController.updateCollectionPoint)
     .delete('/phone-delete/:id',userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), userController.deletePhone)
     .delete('/phone-delete-1/:id',userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), userController.physicalDeletePhone)
     .delete('/delete-user/:id',userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), userController.deleteUser)

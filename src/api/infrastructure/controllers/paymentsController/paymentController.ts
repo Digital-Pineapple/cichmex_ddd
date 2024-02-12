@@ -14,7 +14,7 @@ export class PaymentController extends ResponseData {
     constructor(private paymentUseCase: PaymentUseCase,
         private readonly mpService: MPService,
         private readonly membershipBenefitUseCAse: MembershipBenefitsUseCase,
-        private readonly membershipUseCase : MembershipUseCase,
+        private readonly membershipUseCase: MembershipUseCase,
         private readonly membershipHistoryUseCase: MembershipHistoryUseCase,
     ) {
         super();
@@ -61,16 +61,16 @@ export class PaymentController extends ResponseData {
             next(new ErrorHandler('Error', 500)); // Enviar error al siguiente middleware
         }
     }
-    
+
 
     public async createTicket(req: Request, res: Response, next: NextFunction) {
         try {
             const info = await this.mpService.reciveWebHook(req);
-            
+
             if (info !== undefined && info.status === 'approved') {
                 const response = await this.paymentUseCase.createNewPayment({ MP_info: info });
                 if (!(response instanceof ErrorHandler)) {
-                    
+
                     const id_client = response?.MP_info.additional_info.payer.first_name;
                     const idMembership = response?.MP_info.additional_info.items[0].id;
                     const membership_info = await this.membershipUseCase.getInfoMembership(idMembership);
@@ -81,31 +81,31 @@ export class PaymentController extends ResponseData {
                         let mem_id = membership_info?.id
                         if (services !== undefined) {
                             await Promise.all(services.map(async (item) => {
-                                try {        
+                                try {
                                     const ok = await this.membershipBenefitUseCAse.createNewMembershipBenefit(
-                                           mem_id,
-                                           item.service_id._id,
-                                          id_client,
-                                           item.quantity,
+                                        mem_id,
+                                        item.service_id._id,
+                                        id_client,
+                                        item.quantity,
                                         start_date1,
-                                           end_date1
-                                      );
-                                      if (!(ok instanceof ErrorHandler)) {
-                                         let m_id = ok?._id
-                                        let quantity =  parseInt(ok?.quantity)
-                                        
-                                          const historyPromises = Array.from({length: quantity}, async () => {
+                                        end_date1
+                                    );
+                                    if (!(ok instanceof ErrorHandler)) {
+                                        let m_id = ok?._id
+                                        let quantity = parseInt(ok?.quantity)
+
+                                        const historyPromises = Array.from({ length: quantity }, async () => {
                                             return this.membershipHistoryUseCase.createOneHistoryMembership(
-                                              m_id
+                                                m_id
                                             );
-                                          });
-                                          await Promise.all(historyPromises);
-                                      }
+                                        });
+                                        await Promise.all(historyPromises);
+                                    }
                                 } catch (error) {
-                                    console.log(error,'error al crear beneficios');
-                                    
+                                    console.log(error, 'error al crear beneficios');
+
                                 }
-                            
+
                             }));
                         }
                     }
@@ -117,8 +117,8 @@ export class PaymentController extends ResponseData {
             next(new ErrorHandler('Error', 500));
         }
     }
-    
-    
+
+
 
     public async deletePayment(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;

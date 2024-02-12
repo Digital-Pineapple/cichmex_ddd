@@ -23,7 +23,7 @@ export class ProductController extends ResponseData {
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
     try {
       const response = await this.productUseCase.getProducts();
-  
+
       const updatedResponse = await Promise.all(
         response.map(async (item: any) => {
           const images = item.images;
@@ -39,18 +39,31 @@ export class ProductController extends ResponseData {
           return item;
         })
       );
-  
+
       this.invoke(updatedResponse, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
-  
+
 
   public async getProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
+
     try {
       const response = await this.productUseCase.getProduct(id);
+      if (!(response instanceof ErrorHandler)) {
+        const updatedImages = await Promise.all(
+          response.images.map(async (image: any) => {
+            const url = await this.s3Service.getUrlObject(
+              image + ".jpg"
+            );
+            return url;
+          })
+        );
+        response.images = updatedImages;
+      }
+
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
@@ -58,100 +71,129 @@ export class ProductController extends ResponseData {
   }
 
   public async createProduct(req: Request, res: Response, next: NextFunction) {
-    const {  name,
-        price,
-        description,
-        sizes,
-        tag,
-     } = req.body;
-    
-    try{
-      const createSlug = (slug: string): string => {
-        // Reemplazar caracteres especiales por espacios y convertir a minúsculas
-        let processedSlug = slug.replace(/[`~!@#$%^&*()_\-+=\[\]{};:'"\\|\/,.<>?\s]/g, ' ').toLowerCase();
-        
-        // Eliminar espacios al principio y al final
-        processedSlug = processedSlug.trim();
-      
-        // Reemplazar espacios internos con guiones
-        processedSlug = processedSlug.replace(/\s+/g, '_');
-      
-        return processedSlug;
-      };
-      
-      const slug =createSlug(name)
-      console.log(slug);
-      
+    const { name, price, description, size, tag } = req.body;
 
-    const response = await this.productUseCase.createProduct( name,
-        price,
-        description,
-        sizes,
-        tag,
-        slug
-        )
-   this.invoke(response, 201, res, 'Se creó con éxito', next);
-   }
-   catch (error) {
-       console.log(error);
-       next(new ErrorHandler('Hubo un error al crear', 500));
-   }
+    const createSlug = (slug: string): string => {
+      let processedSlug = slug
+        .replace(/[`~!@#$%^&*()_\-+=\[\]{};:'"\\|\/,.<>?\s]/g, ' ') // Caracteres especiales
+        .toLowerCase() // Minúsculas
+        .trim() // Espacios al principio y al final
+        .replace(/\s+/g, '_'); // Reemplazo de espacios con guiones bajos
 
-}
+      return processedSlug;
+    };
 
 
-public async updateProduct(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const { name, price, description, slug, sizes, tag } = req.body;
-  console.log(req);
-  
-  console.log(req.files);
-  
-  
-  try {
-    if (req.files && req.files.length > 0) {
-      const paths: string[] = [];
-      const urls: string[] = [];
-      await Promise.all(req.files.map(async (item: any, index: number) => {
-        const pathObject: string = `${this.path}/${id}/${index}`;
-        const {url}=   await this.s3Service.uploadToS3AndGetUrl(
-          pathObject + ".jpg",
-          item,
-          "image/jpeg"
+    try {
+      const slug = createSlug(name);
+
+      let response2: any = []
+
+
+      if (req.files && req.files.length > 0) {
+        const paths: string[] = [];
+        const urls: string[] = [];
+
+        let response = await this.productUseCase.createProduct(
+          name,
+          price,
+          description,
+          size,
+          tag,
+          slug
         );
-        paths.push(pathObject);
-        urls.push(url)
-      }));
+        if (!(response instanceof ErrorHandler)) {
 
-      const response = await this.productUseCase.updateProduct(id, {
-        slug,
-        name,
-        price,
-        description,
-        sizes,
-        tag,
-        images: paths,
-      });
-      response.images = urls
-      this.invoke(response, 201, res, 'Se actualizó con éxito', next);
-    } else {
-      // Si no hay nuevos archivos, simplemente actualiza el producto sin cambios en las imágenes
-      const response = await this.productUseCase.updateProduct(id, {
-        name,
-        price,
-        description,
-        slug,
-        sizes,
-        tag,
-      });
+          await Promise.all(
+            req.files.map(async (item: any, index: number) => {
+              const pathObject = `${this.path}/${response?._id}/${index}`;
+              const { url } = await this.s3Service.uploadToS3AndGetUrl(
+                pathObject + '.jpg',
+                item,
+                'image/jpg'
+              );
+              paths.push(pathObject);
+              urls.push(url);
+            })
+          );
+          response = await this.productUseCase.updateProduct(response?._id, {
+            images: paths,
+          });
+          response.images = urls;
+          response2 = response
+        }
+        else {
+          response2 = response
+        }
 
-      this.invoke(response, 201, res, 'Se actualizó con éxito', next);
+      } else {
+
+        let response = await this.productUseCase.createProduct(
+          name,
+          price,
+          description,
+          size,
+          tag,
+          slug
+        );
+        response2 = response
+      }
+
+      this.invoke(response2, 201, res, 'Producto creado con éxito', next);
+
+    } catch (error) {
+      next(new ErrorHandler('Hubo un error al crear el producto', 500));
     }
-  } catch (error) {
-    console.error(error);
-    next(new ErrorHandler('Hubo un error al actualizar', 500));
   }
-}
+
+
+  public async updateProduct(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const { name, price, description, slug, sizes, images } = req.body;
+
+    try {
+
+      if (req.files && req.files.length > 0) {
+        const paths: string[] = [];
+        const urls: string[] = [];
+        await Promise.all(req.files.map(async (item: any, index: number) => {
+          const pathObject: string = `${this.path}/${id}/${index}`;
+          const { url } = await this.s3Service.uploadToS3AndGetUrl(
+            pathObject + ".jpg",
+            item,
+            "image/jpg"
+          );
+          paths.push(pathObject);
+          urls.push(url)
+        }));
+
+        const response = await this.productUseCase.updateProduct(id, {
+          slug,
+          name,
+          price,
+          description,
+          sizes,
+          images: paths,
+        });
+        response.images = urls
+
+        this.invoke(response, 201, res, 'Se actualizó con éxito', next);
+      } else {
+        const response = await this.productUseCase.updateProduct(id, {
+          name,
+          price,
+          description,
+          slug,
+          sizes,
+        });
+
+        this.invoke(response, 201, res, 'Se actualizó con éxito', next);
+
+      }
+    } catch (error) {
+      next(new ErrorHandler('Hubo un error al actualizar', 500));
+    }
+  }
 
 
   public async deleteProduct(req: Request, res: Response, next: NextFunction) {

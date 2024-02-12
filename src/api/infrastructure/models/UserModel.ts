@@ -87,6 +87,11 @@ const UserSchema = new Schema<UserEntity>({
         type: String,
         required: false
     },
+    store:{
+        type: Schema.Types.ObjectId,
+        required: false,
+        ref:'BranchOffices'
+    },
 }, {
     timestamps: true,
     versionKey: false,

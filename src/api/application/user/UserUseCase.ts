@@ -2,7 +2,7 @@ import { Authentication, IAuth, IGoogleResponse } from '../authentication/Authen
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { IPhone, UserEntity } from '../../domain/user/UserEntity';
 import { UserRepository } from '../../domain/user/UserRepository';
-import { TypeUserPopulateConfig, PhonePopulateConfig } from '../../../shared/domain/PopulateInterfaces';
+import { TypeUserPopulateConfig, PhonePopulateConfig, PopulatePointStore } from '../../../shared/domain/PopulateInterfaces';
 export class UserUseCase extends Authentication {
 
   constructor(private readonly userRepository: UserRepository) {
@@ -16,7 +16,7 @@ export class UserUseCase extends Authentication {
     return await this.userRepository.findAllAll(id)
  }
   public async getOneUser(id: string): Promise<UserEntity | ErrorHandler | null > {
-     return await this.userRepository.findAllAll(id, TypeUserPopulateConfig,PhonePopulateConfig)
+     return await this.userRepository.findAllAll(id, TypeUserPopulateConfig,PhonePopulateConfig, PopulatePointStore)
   }
   public async getUserEmail(id: string): Promise<IGoogleResponse | ErrorHandler | null > {
   const user = await this.userRepository.findOneItem({_id:id})
@@ -28,6 +28,12 @@ export class UserUseCase extends Authentication {
    
     return await this.userRepository.updateOne(id,{...updated})
   }
+  public async updateStore(id: string, updated:object): Promise<UserEntity | ErrorHandler | null> {
+   console.log(updated);
+   
+    return await this.userRepository.updateOne(id,{updated})
+  }
+
   public async updateRegisterUser(id: string, updated:object): Promise<IAuth | ErrorHandler | null> {
      let user = await this.userRepository.updateOne(id,updated)
      return await this.generateJWT(user);
@@ -54,7 +60,7 @@ export class UserUseCase extends Authentication {
   }
 
   async signInByPhone(phone_id: string, password: string): Promise<ErrorHandler | IAuth> {
-    const user = await this.userRepository.findOneItem({phone_id}, TypeUserPopulateConfig, PhonePopulateConfig)
+    const user = await this.userRepository.findOneItem({phone_id}, TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore)
     if (!user) return new ErrorHandler('No exite este usuario', 400);
     const validatePassword = this.decryptPassword(password, user.password)
     if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);

@@ -20,8 +20,8 @@ productRouter
 
   .get("/", productController.getAllProducts)
   .get("/:id", userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), productController.getProduct)
-  .post("/", userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.createProduct)
-  .patch("/:id", productvalidations.productValidation, productController.updateProduct)
+  .post("/", productvalidations.productValidation, userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.createProduct)
+  .post("/:id", productvalidations.productValidation,userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.updateProduct)
   .delete("/:id", userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.deleteProduct);
 
 export default productRouter;
