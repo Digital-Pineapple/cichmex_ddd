@@ -1,8 +1,4 @@
 import multer from 'multer';
-
-import { body } from 'express-validator';
-
-import { RequestValidator } from '../RequestValidator';
 import { multerConfig } from '../../middleware/MulterConfig';
 import validateAuthentication, { checkTypeUserAuth } from '../ValidateAuthentication';
 

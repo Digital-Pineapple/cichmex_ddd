@@ -17,7 +17,7 @@ const s3Service = new S3Service_1.S3Service();
 const customerValidations = new AuthValidatons_1.AuthValidations();
 const customerController = new CustomerController_1.CustomerController(customerUserCase, s3Service);
 customerRouter
-    .get('/', customerValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), customerController.getAllCustomers)
+    .get('/', customerController.getAllCustomers)
     .get('/:id', customerController.getCustomerDetail)
     .post('/', customerController.createCustomer)
     .post('/update/:id', customerValidations.profilePhotoValidation, customerController.updateCustomer)

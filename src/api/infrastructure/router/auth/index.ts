@@ -39,9 +39,6 @@ authRouter
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', validateAuthentication, authController.verifyCode)
     .post('/verify-phone', authController.savePhone)
-// .patch('/update-customer', validateAuthentication, authController.updateCustomer)
-// .post('/upload-files', authValidations.filesValidations, authController.uploadFiles)
-// 
-
+    .post ('/loginByPhone', )
 export default authRouter;
 

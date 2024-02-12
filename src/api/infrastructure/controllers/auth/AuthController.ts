@@ -14,8 +14,6 @@ import { generateRandomCode } from '../../../../shared/infrastructure/validation
 
 import { IPhoneRequest } from '../../../application/auth/interfaces';
 import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
-import { sendVerifyMail } from '../../../../shared/infrastructure/nodemailer/emailer';
-import { errorMonitor } from 'nodemailer/lib/xoauth2';
 
 
 export class AuthController extends ResponseData {
@@ -58,6 +56,8 @@ export class AuthController extends ResponseData {
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }
     }
+
+
 
     public async loginAdmin(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { email, password } = req.body;

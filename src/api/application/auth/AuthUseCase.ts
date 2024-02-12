@@ -29,6 +29,7 @@ export class AuthUseCase extends Authentication {
         return await this.generateJWT(user);
     }
 
+
     async findUser(email: string): Promise<ErrorHandler | IAuth> {
         let customer = await this.authRepository.findOneItem({ email });
         return await (customer);

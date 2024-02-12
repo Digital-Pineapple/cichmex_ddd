@@ -35,8 +35,6 @@ authRouter
     .post('/change-password', ValidateAuthentication_1.default, authController.changePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', ValidateAuthentication_1.default, authController.verifyCode)
-    .post('/verify-phone', authController.savePhone);
-// .patch('/update-customer', validateAuthentication, authController.updateCustomer)
-// .post('/upload-files', authValidations.filesValidations, authController.uploadFiles)
-// 
+    .post('/verify-phone', authController.savePhone)
+    .post('/loginByPhone');
 exports.default = authRouter;

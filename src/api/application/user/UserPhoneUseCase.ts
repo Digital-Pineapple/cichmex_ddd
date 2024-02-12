@@ -24,8 +24,16 @@ export class UserPhoneUseCase extends Authentication {
     return phoneResponse;
 }
  
-  public async findPhone(phone_number: string): Promise<IPhone | ErrorHandler > {
-    return await this.phoneRepository.findByPhoneNumber(phone_number)
+  public async findPhone(phone_number: string): Promise<IPhoneResponse | ErrorHandler > {
+   
+    const phone = await this.phoneRepository.findOneItem({phone_number:phone_number})
+    console.log(phone,'usecase');
+    
+    if (!phone) {
+        return new ErrorHandler('El teléfono no fue encontrado', 404);
+    }
+    const phoneResponse : IPhoneResponse = { phone_id: phone._id, verified: phone.verified, phone_number: phone.phone_number };
+    return phoneResponse;
  }
   public async createUserPhone(phone: IPhone, phoneNumber: string): Promise<IPhone |IPhoneResponse | ErrorHandler | null> {
     const noRepeat = await this.phoneRepository.findByPhoneNumber(phoneNumber)

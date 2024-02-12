@@ -40,6 +40,10 @@ export class UserUseCase extends Authentication {
     return await this.userRepository.findOneItem({email:email})
 
   }
+  public async findUserByPhone(phone_id:string): Promise<UserEntity | ErrorHandler | null> {
+    return await this.userRepository.findOneItem({phone_id:phone_id})
+
+  }
   public async createUser(body:any): Promise<UserEntity | IAuth |  ErrorHandler | null> {
     let user = await this.userRepository.findOneItem({ email: body.email }, TypeUserPopulateConfig);
         if (user) return new ErrorHandler('El usuario ya existe',400);
@@ -48,6 +52,14 @@ export class UserUseCase extends Authentication {
         return await this.generateJWT(user1);
     
   }
+
+  async signInByPhone(phone_id: string, password: string): Promise<ErrorHandler | IAuth> {
+    const user = await this.userRepository.findOneItem({phone_id})
+    if (!user) return new ErrorHandler('No exite este usuario', 400);
+    const validatePassword = this.decryptPassword(password, user.password)
+    if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);
+    return await this.generateJWT(user);
+}
 
 
 }

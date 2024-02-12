@@ -38,6 +38,7 @@ export class UserController extends ResponseData {
         this.signUpByPhone = this.signUpByPhone.bind(this);
         this.updateUser = this.updateUser.bind(this);
         this.deleteUser = this.deleteUser.bind(this);
+        this.loginPhone = this.loginPhone.bind(this);
 
     }
 
@@ -101,7 +102,7 @@ export class UserController extends ResponseData {
             const code = generateRandomCode();
             const phoneC = prefix + phone_number
             const phoneString = phoneC.toString()
-             // await this.twilioService.sendSMS(phoneString,`CarWash autolavado y más. Código de verificación - ${code}`)
+            await this.twilioService.sendSMS(phoneString,`CarWash autolavado y más. Código de verificación - ${code}`)
             const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
             this.invoke(newPhone, 200, res, '', next);
         } catch (error) {
@@ -206,6 +207,31 @@ export class UserController extends ResponseData {
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }
     }
+
+    public async loginPhone(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
+        const { password, phone_number } = req.body
+        
+        
+        
+        try {
+
+            const phoneInfo = await this.phoneUserUseCase.findPhone(phone_number)
+        
+console.log(phoneInfo);
+
+            
+
+
+            const response = await this.userUseCase.signInByPhone(phoneInfo?.phone_id,password)
+            
+            this.invoke(response, 200, res, '', next);
+
+        } catch (error) {
+            console.log(error)
+            next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
+        }
+    }
+
     public async deleteUser(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
         const { id } = req.params
         try {
