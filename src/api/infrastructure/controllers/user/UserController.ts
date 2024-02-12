@@ -146,14 +146,12 @@ export class UserController extends ResponseData {
     public async verifyPhone(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
         const { id } = req.params
         const { code } = req.body;
-      
-
         try {
             const infoPhone = await this.phoneUserUseCase.getOnePhone(id)
-
             if (!(infoPhone instanceof ErrorHandler)) {
                 if (infoPhone?.code === code) {
                     const verified = await this.phoneUserUseCase.verifyCode(id)
+                    
                     this.invoke(verified, 200, res, '', next)
                 } else {
                     next(new ErrorHandler('El codigo no coincide', 400))
