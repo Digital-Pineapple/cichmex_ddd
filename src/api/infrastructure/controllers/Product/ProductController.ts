@@ -103,6 +103,10 @@ export class ProductController extends ResponseData {
 public async updateProduct(req: Request, res: Response, next: NextFunction) {
   const { id } = req.params;
   const { name, price, description, slug, sizes, tag } = req.body;
+  console.log(req);
+  
+  console.log(req.files);
+  
   
   try {
     if (req.files && req.files.length > 0) {

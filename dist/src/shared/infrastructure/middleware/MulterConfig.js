@@ -9,12 +9,12 @@ exports.multerConfig = {
     storage: multer_1.default.diskStorage({
         filename: function (req, file, cb) {
             cb(null, file.originalname);
-        }
+        },
     }),
     fileFilter: (req, file, cb) => {
         // if (file.mimetype === "image/jpeg" || file.mimetype === "image/png" || file.mimetype === "image/jpg") {
         //     return cb(null, false);
         // }
         cb(null, true);
-    }
+    },
 };
