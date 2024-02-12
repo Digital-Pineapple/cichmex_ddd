@@ -32,10 +32,6 @@ const AddressSchema = new Schema<AddressEntity>(
       type: String,
       required: true,
     },
-    coords: {
-      type: Object,
-      required: false,
-    },
     state: {
       type: String,
       required: true,
@@ -43,6 +39,10 @@ const AddressSchema = new Schema<AddressEntity>(
     municipality: {
       type: String,
       required: true,
+    },
+    city: {
+      type: String,
+      required: false,
     },
     neighborhood: {
       type: String,
@@ -56,10 +56,20 @@ const AddressSchema = new Schema<AddressEntity>(
       type: String,
       required: false,
     },
+    country: {
+      type: String,
+      required: false,
+      default: "México",
+    },
     status: {
       type: Boolean,
       required: false,
       default: true,
+    },
+    default: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   {

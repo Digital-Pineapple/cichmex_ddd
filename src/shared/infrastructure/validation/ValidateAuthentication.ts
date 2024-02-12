@@ -22,7 +22,6 @@ export const validateAuthentication = async(req: Request, res: Response, next: N
             req.user = userData;
             next();
         } catch (error) {
-            
             next(new ErrorHandler('Token no valido', 400));
         }
     }

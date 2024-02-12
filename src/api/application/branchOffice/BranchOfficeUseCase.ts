@@ -17,7 +17,7 @@ export class BranchOfficeUseCase {
   }
 
   public async getInfoBranchOffices(): Promise<BranchOfficeEntity[] | BranchOfficeResponse[] | null> {
-   let data =  await this.branchOfficeRepository.getInfoBranches({activated:true}) 
+   let data : any  =  await this.branchOfficeRepository.getInfoBranches({activated:true}) 
    
    const info = ()=>{
 
