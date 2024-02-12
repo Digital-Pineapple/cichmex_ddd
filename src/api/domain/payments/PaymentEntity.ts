@@ -8,6 +8,7 @@ import { UserEntity } from "../user/UserEntity";
   user_id?: UserEntity,
   MP_info?: object;
   status?:boolean;
+  payment_status?: string
   
 }
 
