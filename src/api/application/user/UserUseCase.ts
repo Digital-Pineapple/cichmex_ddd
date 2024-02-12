@@ -15,7 +15,7 @@ export class UserUseCase extends Authentication {
   public async getUser(id: string): Promise<UserEntity | ErrorHandler | null > {
     return await this.userRepository.findAllAll(id)
  }
-  public async getOneUser(id: string): Promise<UserEntity | ErrorHandler | null > {
+  public async getOneUser(id: string): Promise<UserEntity | ErrorHandler | null > { 
      return await this.userRepository.findAllAll(id, TypeUserPopulateConfig,PhonePopulateConfig, PopulatePointStore)
   }
   public async getUserEmail(id: string): Promise<IGoogleResponse | ErrorHandler | null > {

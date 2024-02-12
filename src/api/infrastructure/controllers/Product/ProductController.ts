@@ -1,3 +1,5 @@
+import { CategoryUseCase } from './../../../application/category/CategoryUseCase';
+import { body } from 'express-validator';
 import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
@@ -10,6 +12,7 @@ export class ProductController extends ResponseData {
 
   constructor(
     private productUseCase: ProductUseCase,
+    private categoryUseCase : CategoryUseCase,
     private readonly s3Service: S3Service
   ) {
     super();
@@ -18,6 +21,8 @@ export class ProductController extends ResponseData {
     this.createProduct = this.createProduct.bind(this);
     this.updateProduct = this.updateProduct.bind(this);
     this.deleteProduct = this.deleteProduct.bind(this);
+    this.searchProduct = this.searchProduct.bind(this);
+    this.getProductsByCategory = this.getProductsByCategory.bind(this);
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
@@ -71,7 +76,7 @@ export class ProductController extends ResponseData {
   }
 
   public async createProduct(req: Request, res: Response, next: NextFunction) {
-    const { name, price, description, size, tag, subCategory } = req.body;  
+    const { name, price, description, size, tag, category, subCategory } = req.body;  
 
     const createSlug = (slug: string): string => {
       let processedSlug = slug
@@ -101,6 +106,7 @@ export class ProductController extends ResponseData {
           size,
           tag,
           slug, 
+          category,
           subCategory
         );
         if (!(response instanceof ErrorHandler)) {
@@ -135,7 +141,9 @@ export class ProductController extends ResponseData {
           description,
           size,
           tag,
-          slug, subCategory
+          slug,
+          category, 
+          subCategory
         );
         response2 = response
       }
@@ -152,7 +160,7 @@ export class ProductController extends ResponseData {
 
   public async updateProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const { name, price, description, slug, sizes, images } = req.body;
+    const { name, price, description, slug, sizes, category, subCategory, images } = req.body;
 
     try {
 
@@ -176,6 +184,8 @@ export class ProductController extends ResponseData {
           price,
           description,
           sizes,
+          category,
+          subCategory,
           images: paths,
         });
         response.images = urls
@@ -188,6 +198,8 @@ export class ProductController extends ResponseData {
           description,
           slug,
           sizes,
+          category,
+          subCategory
         });
 
         this.invoke(response, 201, res, 'Se actualizó con éxito', next);
@@ -207,5 +219,31 @@ export class ProductController extends ResponseData {
     } catch (error) {
       next(new ErrorHandler("Hubo un error eliminar", 500));
     }
+  }
+  public async searchProduct(req: Request, res: Response, next: NextFunction){
+    const{search}= req.body
+    console.log(req.body,'controller');
+    
+    try{
+      const response = await this.productUseCase.searchProduct(search)
+      this.invoke(response, 201, res, 'Busqueda exitosa', next);
+    }catch(error){
+      console.log(error);
+      next(new ErrorHandler("Hubo un error al buscar", 500));
+    }
+
+  }
+  public async getProductsByCategory(req: Request, res: Response, next: NextFunction){
+    const { category } = req.body
+    // console.log(typeof category);    
+    try{
+      const categoria = await this.categoryUseCase.getDetailCategoryByName(category);      
+      const response = await this.productUseCase.searchProductsByCategory(categoria._id);
+      this.invoke(response, 201, res, '', next);
+    }catch(error){
+      console.log(error);
+      next(new ErrorHandler("Hubo un error al obtener la información", 500));
+    }
+
   }
 }

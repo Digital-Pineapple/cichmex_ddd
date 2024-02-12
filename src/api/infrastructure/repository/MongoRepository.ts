@@ -21,14 +21,14 @@ export abstract class MongoRepository {
   public async findSubCategoriesByCategory(category_id: any): Promise<any> {
     return await this.MODEL.find({ category_id: category_id,  status: true })
   }
-
+  
   public async findOneStockByBranch(branch_id: String, product_id: String, populateConfig?: any): Promise<any> {
     const result = await this.MODEL.findOne({ product_id, branch_id }).populate(populateConfig)
     return result
   }
 
-  public async findById(_id: String, populateConfig?: any): Promise<any> {
-    return await this.MODEL.findById(_id, {  status: true });
+  public async findById(_id: String, populateConfig?: any, populateConfig2?:any): Promise<any> {
+    return await this.MODEL.findById(_id, {  status: true }).populate(populateConfig).populate(populateConfig2);
   }
 
   public async findByIdPupulate(
@@ -46,6 +46,12 @@ export abstract class MongoRepository {
       .then((res) => res?._id);
   }
   public async findByName(name: string): Promise<any> {
+    return await this.MODEL.find({ name });
+  }
+  public async findOneByName(name: string): Promise<any> {
+    return await this.MODEL.findOne({ name });
+  }
+  public async findByCategory(name: string): Promise<any> {
     return await this.MODEL.find({ name });
   }
   public async findByPhoneNumber(phone_number: string): Promise<any> {
@@ -115,8 +121,9 @@ export abstract class MongoRepository {
       populateConfig1).populate(populateConfig2).populate(populateConfig3);
   }
 
-  public async search(search: string): Promise<any> {
-    const noSpecialCharacters = search.replace(
+  public async search(search: any): Promise<any> {
+    const a = search.toString()
+    const noSpecialCharacters = a.replace(
       /[`~!@#$%^&*()_|+\-=?;:'"<>\{\}\[\]\\\/]/gi,
       ""
     );

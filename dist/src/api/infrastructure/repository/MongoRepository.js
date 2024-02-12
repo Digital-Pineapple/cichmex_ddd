@@ -40,9 +40,9 @@ class MongoRepository {
             return result;
         });
     }
-    findById(_id, populateConfig) {
+    findById(_id, populateConfig, populateConfig2) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findById(_id, { status: true });
+            return yield this.MODEL.findById(_id, { status: true }).populate(populateConfig).populate(populateConfig2);
         });
     }
     findByIdPupulate(_id, populateConfig) {
@@ -59,6 +59,16 @@ class MongoRepository {
         });
     }
     findByName(name) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.find({ name });
+        });
+    }
+    findOneByName(name) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.findOne({ name });
+        });
+    }
+    findByCategory(name) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.MODEL.find({ name });
         });
@@ -140,7 +150,8 @@ class MongoRepository {
     }
     search(search) {
         return __awaiter(this, void 0, void 0, function* () {
-            const noSpecialCharacters = search.replace(/[`~!@#$%^&*()_|+\-=?;:'"<>\{\}\[\]\\\/]/gi, "");
+            const a = search.toString();
+            const noSpecialCharacters = a.replace(/[`~!@#$%^&*()_|+\-=?;:'"<>\{\}\[\]\\\/]/gi, "");
             return yield this.MODEL.find({
                 $or: [
                     {

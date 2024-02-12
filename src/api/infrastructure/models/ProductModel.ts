@@ -33,6 +33,11 @@ const ProductSchema = new Schema<ProductEntity>(
       required: true,
       unique: true
     },
+    category: {
+      type: mongoose.Types.ObjectId,
+      ref: 'Categories',
+      required: false
+    },
     subCategory: {
       type: mongoose.Types.ObjectId,
       ref: 'SubCategory',
