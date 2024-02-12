@@ -32,9 +32,9 @@ const userController = new UserController(userPhoneserUseCase, userUseCase, type
 
 userRouter
     .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), userController.allUsers)
-    .get('/phones', userController.allPhones)
-    .get('/phone/:id', userController.onePhone)
-    .get('/:id', userController.getUser)
+    .get('/phones', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), userController.allPhones)
+    .get('/phone/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57',"65a8193ae6f31eef3013bc59"]), userController.onePhone)
+    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), userController.getUser)
     .get('/getVerifyEmail/:id', userController.getVerifyEmail)
     .post('/send-code', userController.sendCode)
     .post ('/resend-code/:id', userController.resendCode)
@@ -42,7 +42,7 @@ userRouter
     .post ('/verify-phone/:id', userController.verifyPhone)
     .post ('/verify-email/:id', userController.verifyEmail)
     .post ('/registerbyPhone', userController.signUpByPhone)
-    .delete('/phone-delete/:id', userController.deletePhone)
-    .delete('/delete-user/:id', userController.deleteUser)
+    .delete('/phone-delete/:id',userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc59']), userController.deletePhone)
+    .delete('/delete-user/:id',userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), userController.deleteUser)
 
 export default userRouter;

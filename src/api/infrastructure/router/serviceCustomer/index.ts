@@ -5,6 +5,7 @@ import { ServicesCustomerController } from '../../controllers/servicesCustomer/S
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import ServiceCustomerModel from '../../models/ServicesCustomerModel';
 import { ServicesCustomerValidations } from '../../../../shared/infrastructure/validation/ServicesCustomer/ServiceCustomerValidation';
+import { UserValidations } from '../../../../shared/infrastructure/validation/User/UserValidation';
 
 const serviceCustomerRouter = Router();
 
@@ -13,17 +14,18 @@ const serviceCustomerUseCase      = new ServiceCustomerUseCase (serviceCustomerR
 const s3Service                   = new S3Service()
 const servicesCustomerVAlidations = new ServicesCustomerValidations() 
 const serviceCustomerController   = new ServicesCustomerController(serviceCustomerUseCase, s3Service);
+const userValidations = new UserValidations();
 
 serviceCustomerRouter
 
-    .get('/', serviceCustomerController.getAllServicesCustomer)
-    .get('/customer/:id', serviceCustomerController.getServicesCustomerDetailByCustomer)
-    .get('/:id', serviceCustomerController.getServiceCustomerDetail)
-    .post('/', serviceCustomerController.createServiceCustomer)
-    .post('/edit/:id',servicesCustomerVAlidations.servicePhotoValidation, serviceCustomerController.updateServiceCustomer)
-    .post('/edit/SC/:id', serviceCustomerController.updateTypeCarSC)
-    .delete('/:id', serviceCustomerController.deleteServiceCustomer)
-    .delete('/SC/:id', serviceCustomerController.deleteOneSC)
+    .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), serviceCustomerController.getAllServicesCustomer)
+    .get('/customer/:id',userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), serviceCustomerController.getServicesCustomerDetailByCustomer)
+    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), serviceCustomerController.getServiceCustomerDetail)
+    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc59']), serviceCustomerController.createServiceCustomer)
+    .post('/edit/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), servicesCustomerVAlidations.servicePhotoValidation, serviceCustomerController.updateServiceCustomer)
+    .post('/edit/SC/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), serviceCustomerController.updateTypeCarSC)
+    .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), serviceCustomerController.deleteServiceCustomer)
+    .delete('/SC/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), serviceCustomerController.deleteOneSC)
     
 
 export default serviceCustomerRouter;

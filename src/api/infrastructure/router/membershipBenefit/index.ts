@@ -6,6 +6,7 @@ import { MembershipHistoryRepository } from '../../repository/membership/Members
 import { MembershipBenefitsUseCase } from '../../../application/membership/membershipBenefitsUseCase';
 import { MembershipHistoryUseCase } from '../../../application/membership/membershipHistoryUseCase';
 import { MembershipBenefitsController } from '../../controllers/memberships/membershipBenefitsController'
+import { UserValidations } from '../../../../shared/infrastructure/validation/User/UserValidation';
 
 
 const membershipBenefitRouter = Router();
@@ -15,16 +16,17 @@ const membershipHistoryRepository = new MembershipHistoryRepository(MembershipHi
 const membershipBenefitsUseCase = new MembershipBenefitsUseCase(membershipBenefitsRespository)
 const membershipHistoryUseCase = new MembershipHistoryUseCase(membershipHistoryRepository)
 const membershipBenefitsController = new MembershipBenefitsController(membershipBenefitsUseCase,membershipHistoryUseCase)
+const userValidations = new UserValidations();
 
 
 
 membershipBenefitRouter
-    .get('/', membershipBenefitsController.getAllMembershipsBenefits)
-    .get('/:id', membershipBenefitsController.getMembershipHistory)
-    .post('/',membershipBenefitsController.createMembershipBenefit)
+    .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.getAllMembershipsBenefits)
+    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.getMembershipHistory)
+    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.createMembershipBenefit)
     // .patch('/:id', membershipBenefitsController.updateMembershipBenefit)
-    .delete('/:id', membershipBenefitsController.deleteMembershipBenefit)
-    .delete('/useUp/:id', membershipBenefitsController.getUpOneBenefit)
+    .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.deleteMembershipBenefit)
+    .delete('/useUp/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.getUpOneBenefit)
     
 
 export default membershipBenefitRouter;

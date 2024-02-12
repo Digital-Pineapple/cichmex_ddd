@@ -57,8 +57,9 @@ export class BranchOfficeController extends ResponseData {
     }
 
     public async createBranchOffice(req: Request, res: Response, next: NextFunction) {
-        const { user_id, name, description, location, opening_time, closing_time } = req.body;
+        let { user_id, name, description, location, opening_time, closing_time } = req.body;
         try {
+            location=JSON.parse(location);
             if (req.files) {
                 const paths: string[] = [];
                 const urls: string[] = [];

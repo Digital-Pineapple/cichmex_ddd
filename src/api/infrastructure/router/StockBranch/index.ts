@@ -15,6 +15,7 @@ import StockBranchModel from '../../models/stock/StockBranchModel';
 import StockInputModel from '../../models/stock/StockInputModel';
 import StockOutputModel from '../../models/stock/StockOutputModel';
 import StockReturnModel from '../../models/stock/StockReturnModel';
+import { UserValidations } from '../../../../shared/infrastructure/validation/User/UserValidation';
 
 
 const stockBranchRouter = Router();
@@ -29,16 +30,17 @@ const stockReturnUseCase   = new StockReturnUseCase(stockReturnRepository)
 const stockBranchUseCase      = new StockBranchUseCase (stockBranchRepository);
 
 const stockBranchController   = new StockBranchController(stockBranchUseCase,stockInputUseCase,stockOutputhUseCase,stockReturnUseCase );
+const userValidations = new UserValidations();
 
 stockBranchRouter
 
-    .get('/:id', stockBranchController.getAllStockInBranch)
-    .post('/', stockBranchController.createStockBranch)
-    .get('/one/:id', stockBranchController.getOneStockBranchDetail)
-    .patch('/:id', stockBranchController.updateStockBranch)
-    .patch('/add/:id', stockBranchController.addStocInkBranch)
-    .patch('/remove/:id', stockBranchController.removeStocInkBranch)
-    .patch('/return/:id', stockBranchController.returnStocInkBranch)
+    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockBranchController.getAllStockInBranch)
+    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockBranchController.createStockBranch)
+    .get('/one/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockBranchController.getOneStockBranchDetail)
+    .patch('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockBranchController.updateStockBranch)
+    .patch('/add/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockBranchController.addStocInkBranch)
+    .patch('/remove/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockBranchController.removeStocInkBranch)
+    .patch('/return/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockBranchController.returnStocInkBranch)
 
     
 
