@@ -12,6 +12,12 @@ export class UserUseCase extends Authentication {
   public async allUsers(): Promise<UserEntity[] | ErrorHandler | null> {
     return await this.userRepository.findAll(TypeUserPopulateConfig,PhonePopulateConfig)
   }
+
+  public async allCarrierDrivers(): Promise<UserEntity[] | ErrorHandler | null> {
+    const allUsers = await this.userRepository.findAll(TypeUserPopulateConfig,PhonePopulateConfig)
+    const carrier_drivers = allUsers.filter((item:any) => item.type_user.name === 'CarrierDriver')
+    return carrier_drivers
+  }
   public async getUser(id: string): Promise<UserEntity | ErrorHandler | null > {
     return await this.userRepository.findAllAll(id)
  }
@@ -51,6 +57,15 @@ export class UserUseCase extends Authentication {
 
   }
   public async createUser(body:any): Promise<UserEntity | IAuth |  ErrorHandler | null> {
+    let user = await this.userRepository.findOneItem({ email: body.email });
+        if (user) return new ErrorHandler('El usuario ya existe',400);
+        const password = await this.encryptPassword(body.password);
+        const user1 = await this.userRepository.createOne({ ...body, password });
+        return await this.generateJWT(user1);
+    
+  }
+
+  public async createCarrierDriver(body:any): Promise<UserEntity | IAuth |  ErrorHandler | null> {
     let user = await this.userRepository.findOneItem({ email: body.email });
         if (user) return new ErrorHandler('El usuario ya existe',400);
         const password = await this.encryptPassword(body.password);
