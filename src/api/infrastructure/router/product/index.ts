@@ -12,22 +12,27 @@ import CategoryModel from "../../models/CategoryModel";
 import StockStoreHouseModel from '../../models/stockStoreHouse/StockStoreHouseModel';
 import { StockStoreHouseRepository } from '../../repository/stockStoreHouse/StockStoreHouseRepository';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
+import { SubCategoryUseCase } from '../../../application/subCategory/SubCategoryUseCase';
+import { SubCategoryRepository } from '../../repository/subCategory/SubCategoryRepository';
+import SubCategoryModel from '../../models/SubCategoryModel';
 
 const productRouter = Router();
 
 const productRepository = new ProductRepository(ProductModel);
 const categoryRepository = new CategoryRepository(CategoryModel)
+const subcategoryRepository = new SubCategoryRepository(SubCategoryModel)
 
 const stockStoreHouseRepository    = new StockStoreHouseRepository(StockStoreHouseModel);
 
 const productUseCase = new ProductUseCase(productRepository);
 const categoryUseCase = new CategoryUseCase(categoryRepository)
+const subCategoryUseCase = new SubCategoryUseCase(subcategoryRepository);
 const stockStoreHouseUseCase      = new StockStoreHouseUseCase(stockStoreHouseRepository);
 
 const s3Service = new S3Service();
 const productvalidations = new ProductValidations()
 
-const productController = new ProductController(productUseCase, categoryUseCase,stockStoreHouseUseCase,  s3Service);
+const productController = new ProductController(productUseCase, categoryUseCase,stockStoreHouseUseCase,  s3Service, subCategoryUseCase);
 const userValidations = new UserValidations();
 
 productRouter
@@ -40,6 +45,7 @@ productRouter
   .post("/:id", productvalidations.productValidation,userValidations.authTypeUserValidation(['SUPER-ADMIN']), productController.updateProduct)
   .post('/search/ok', productController.searchProduct)
   .delete("/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN']), productController.deleteProduct)
-  .get("/productsByCategories/ok", productController.getProductsByCategories);
+  .get("/productsByCategories/ok", productController.getProductsByCategories)
+  .post("/productsBySubCategory/ok", productController.getProductsBySubCategory);
 
 export default productRouter;

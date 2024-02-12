@@ -31,6 +31,7 @@ export class ProductOrderController extends ResponseData {
     this.getAssignedPO = this.getAssignedPO.bind(this);
     this.verifyAndStartRoute = this.verifyAndStartRoute.bind(this);
     this.getDeliveries  = this.getDeliveries.bind(this);
+    this.getProductOrderByBranch = this.getProductOrderByBranch.bind(this);
 
   }
 

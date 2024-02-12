@@ -50,12 +50,16 @@ const ProductSchema = new Schema<ProductEntity>(
       default:true,
      },
      weight:{
-      type:String,
+      type:Number,
       required:false,
      },
      video:{
       type:String,
       required:false
+     },
+     product_key:{
+      type:String,
+      required:true
      }
 
   },

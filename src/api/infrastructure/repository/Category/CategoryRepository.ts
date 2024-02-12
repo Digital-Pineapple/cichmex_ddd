@@ -45,10 +45,13 @@ export class CategoryRepository extends MongoRepository implements CategoryConfi
           ]);
           return result;
     }
-    async findCategoriesAndProducts (storehouse: string): Promise<Category[]  | null>{
+    async findCategoriesAndProducts (categoryNames: string[] , storehouse: string): Promise<Category[]  | null>{
         const storehouseId = new ObjectId(storehouse);       
         const result = await this.MODEL.aggregate([
-            { $limit: 4 },
+            // { $limit: 4 },
+            {$match:{
+              name: { $in: categoryNames }
+            }},
             {
               $lookup: {                
                 from: "products",

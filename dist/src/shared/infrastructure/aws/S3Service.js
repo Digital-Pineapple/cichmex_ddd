@@ -65,7 +65,7 @@ class S3Service {
             const params = {
                 Bucket: this.bucket,
                 Key: this.environment + key,
-                Expires: 300,
+                // Expires : 300,
             };
             return yield this.s3.getSignedUrl('getObject', params);
         });

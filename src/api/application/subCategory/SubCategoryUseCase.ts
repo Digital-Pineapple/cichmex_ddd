@@ -32,6 +32,14 @@ export class SubCategoryUseCase {
     public async deleteOneSubCategory(_id: string): Promise<SubCategory | null> {
         return this.subCategoriesRepository.updateOne(_id, {status: false})
     }
+    public async getProductsBySubCategory(subcat_id: any, storehouse:any): Promise<SubCategory | null> {
+            return await this.subCategoriesRepository.findProductsBySubCategory(subcat_id, storehouse);
+    }
+    public async getDetailSubCategoryByName(name: string): Promise<SubCategory | null> {
+        return await this.subCategoriesRepository.findOneItem({name});
+    }
+
+
     
 
 
