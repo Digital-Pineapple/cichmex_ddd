@@ -94,11 +94,10 @@ export class UserController extends ResponseData {
         const { id } = req.params
         try {
             const response = await this.userUseCase.getOneUser(id)
-            if (!(response instanceof ErrorHandler)) {    
-                if (!response?.google && response !== null) {
-                    const url = await this.s3Service.getUrlObject(response?.profile_image + ".jpg");
-                    response.profile_image = url;
-                }
+            if (!(response instanceof ErrorHandler) && response?.profile_image !== undefined) {
+                response?.profile_image ?
+                    response.profile_image = await this.s3Service.getUrlObject(response.profile_image+".jpg") :
+                    'No hay imagen de perfil'
             }
             this.invoke(response, 200, res, '', next);
         } catch (error) {
@@ -267,6 +266,11 @@ export class UserController extends ResponseData {
             const phoneInfo  = await this.phoneUserUseCase.findPhone(phone_number)
             if (!(phoneInfo instanceof ErrorHandler)) {
                 const response = await this.userUseCase.signInByPhone(phoneInfo.phone_id,password)
+                if (!(response instanceof ErrorHandler) && response.user.profile_image !== undefined) {
+                    response.user.profile_image ?
+                        response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image+".jpg") :
+                        'No hay imagen de perfil'
+                }
                 this.invoke(response, 200, res, '', next);
                 
             }
@@ -310,7 +314,7 @@ export class UserController extends ResponseData {
                     response,
                     201,
                     res,
-                    "El usuario se actualizó con éxito jsjs",
+                    "El usuario se actualizó con éxito",
                     next
                 );
             } else {
@@ -321,7 +325,7 @@ export class UserController extends ResponseData {
                     response,
                     201,
                     res,
-                    "El usuario se actualizó con éxitojaja",
+                    "El usuario se actualizó con éxito",
                     next
                 );
             }

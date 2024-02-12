@@ -45,12 +45,10 @@ export class AuthController extends ResponseData {
         const { email, password } = req.body;
         try {
             const response = await this.authUseCase.signIn(email, password);
-   
-            
-
-            if (!(response instanceof ErrorHandler) && response.user.profile_image === undefined) {
+        
+            if (!(response instanceof ErrorHandler) && response.user.profile_image !== undefined) {
                 response.user.profile_image ?
-                    response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image) :
+                    response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image+".jpg") :
                     'No hay imagen de perfil'
             }
 
@@ -146,9 +144,9 @@ export class AuthController extends ResponseData {
 
     public async changePassword(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { password, new_password } = req.body;
-        const { user } = req;
+        const { id } = req.params;
         try {
-            const response = await this.authUseCase.changePassword(password, new_password, user);
+            const response = await this.authUseCase.changePassword(password, new_password, id);
             this.invoke(response, 200, res, 'La contraseña se cambio con exito', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al cambiar la contraseña', 500));

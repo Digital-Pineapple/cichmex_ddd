@@ -37,7 +37,7 @@ authRouter
     .post('/registerAdmin/seed', authValidations.registerValidation, authController.registerAdmin)
     .post('/google', authValidations.googleLoginValidations, authController.loginWithGoogle)
     .post('/registerByGoogle', authValidations.googleLoginValidations, authController.registerByGoogle)
-    .post('/change-password', validateAuthentication, authController.changePassword)
+    .post('/change-password/:id', validateAuthentication, authController.changePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', validateAuthentication, authController.verifyCode)
     .post('/verify-phone', authController.savePhone)

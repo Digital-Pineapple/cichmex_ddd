@@ -40,9 +40,9 @@ class AuthController extends ResponseData_1.ResponseData {
             const { email, password } = req.body;
             try {
                 const response = yield this.authUseCase.signIn(email, password);
-                if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image === undefined) {
+                if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image !== undefined) {
                     response.user.profile_image ?
-                        response.user.profile_image = yield this.s3Service.getUrlObject(response.user.profile_image) :
+                        response.user.profile_image = yield this.s3Service.getUrlObject(response.user.profile_image + ".jpg") :
                         'No hay imagen de perfil';
                 }
                 this.invoke(response, 200, res, '', next);
@@ -138,9 +138,9 @@ class AuthController extends ResponseData_1.ResponseData {
     changePassword(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { password, new_password } = req.body;
-            const { user } = req;
+            const { id } = req.params;
             try {
-                const response = yield this.authUseCase.changePassword(password, new_password, user);
+                const response = yield this.authUseCase.changePassword(password, new_password, id);
                 this.invoke(response, 200, res, 'La contraseña se cambio con exito', next);
             }
             catch (error) {

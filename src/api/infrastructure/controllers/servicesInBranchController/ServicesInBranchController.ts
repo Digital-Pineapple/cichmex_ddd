@@ -55,7 +55,7 @@ export class ServicesInBranchController extends ResponseData {
 
         try {
             const response = await this.servicesInBranchUseCase
-            .createServiceInBranch({ user_id, service_id, typeCar_id, price, description, branch_id })
+            .createServiceInBranch({  service_id, typeCar_id, price, description, branch_id })
             this.invoke(response, 201, res, 'Se creo con exito', next);
         } catch (error) {
             console.log(error);
