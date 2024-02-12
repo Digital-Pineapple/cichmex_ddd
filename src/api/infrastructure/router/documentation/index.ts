@@ -23,7 +23,7 @@ documentationRouter
     .get('/:id', documentationController.getDocumentationDetail)
     .get('/user/:id', documentationController.getAllDocumentationsByCustomer)
     .post('/',documentationValidations.DocumentationFileValidation, documentationController.createDocumentation)
-    .post('/validate', documentationValidations.DocumentationFileValidation,documentationController.validateDocumentation)
+    .put('/verify', documentationValidations.DocumentationFileValidation,documentationController.validateDocumentation)
     .post('/:id', documentationValidations.DocumentationFileValidation, documentationController.updateDocumentation)
     .delete('/:id', documentationController.deleteDocumentation)
     

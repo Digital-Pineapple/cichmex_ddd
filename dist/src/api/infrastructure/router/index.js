@@ -27,7 +27,7 @@ const apiRouter = () => {
     apiRouter.use('/auth', auth_1.default);
     apiRouter.use('/user', user_1.default);
     // apiRouter.use('/auth/admin', authAdminRouter);
-    // apiRouter.use('/customer', customerRouter);
+    //apiRouter.use('/customer', customerRouter);
     apiRouter.use('/services', services_1.default);
     apiRouter.use('/services-branch', servicesInBranch_1.default);
     apiRouter.use('/type-car', typeCar_1.default);

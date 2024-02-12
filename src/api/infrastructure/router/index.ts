@@ -27,7 +27,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/auth', authRouter);
     apiRouter.use('/user', userRouter);
     // apiRouter.use('/auth/admin', authAdminRouter);
-    // apiRouter.use('/customer', customerRouter);
+    //apiRouter.use('/customer', customerRouter);
     apiRouter.use('/services', serviceRouter);
     apiRouter.use('/services-branch', servicesInBranchRouter);
     apiRouter.use('/type-car', typeCarRouter)
