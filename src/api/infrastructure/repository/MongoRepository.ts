@@ -70,12 +70,11 @@ export abstract class MongoRepository {
   public async findByCustomerAndName(
     customer_id: string,
     name: string,
-    status: boolean
   ): Promise<any> {
     return await this.MODEL.find({
       customer_id: customer_id,
       name: name,
-      status,
+      deleted:false
     });
   }
   public async updateOne(_id: String, updated: object): Promise<any> {

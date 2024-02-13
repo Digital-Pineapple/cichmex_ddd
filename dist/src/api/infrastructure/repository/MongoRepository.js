@@ -89,12 +89,12 @@ class MongoRepository {
             return yield this.MODEL.find({ _id });
         });
     }
-    findByCustomerAndName(customer_id, name, status) {
+    findByCustomerAndName(customer_id, name) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.MODEL.find({
                 customer_id: customer_id,
                 name: name,
-                status,
+                deleted: false
             });
         });
     }
@@ -140,7 +140,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiohistorymodels",
+                        from: "membershiohistorymodels", // (hijo)--memberHistory
                         let: {
                             id: "$_id",
                         },
@@ -174,7 +174,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiohistorymodels",
+                        from: "membershiohistorymodels", // (hijo)--memberHistory
                         let: {
                             id: "$_id",
                         },

@@ -1,10 +1,10 @@
-import { CustomerEntity } from "../customer/CustomerEntity";
+import { UserEntity } from "../user/UserEntity";
+import MongooseDelete = require("mongoose-delete");
 
-export interface IFile {
-    name           : string;
-    message       ?: string;
-    status         : boolean;
-    customer_id   ?: CustomerEntity;
-    url            : string;
-    verify         : boolean;
+export interface IFile extends MongooseDelete.SoftDeleteInterface{
+    name: string;
+    message?: string;
+    user_id?: UserEntity;
+    url: string;
+    verify: boolean;
 }

@@ -20,9 +20,9 @@ export class DocumentationUseCase {
         return await this.documentRepository.findByCustomer(customer_id);
     }
 
-    public async getDocumentByNameAndCustomer(customer_id: string, name:string, status: boolean ): Promise<IFile | ErrorHandler | null> {
+    public async getDocumentByNameAndCustomer(customer_id: string, name:string ): Promise<IFile | ErrorHandler | null> {
         
-        return await this.documentRepository.findByCustomerAndName(customer_id, name, status);
+        return await this.documentRepository.findByCustomerAndName(customer_id, name);
     }
 
     

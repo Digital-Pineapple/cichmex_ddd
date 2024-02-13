@@ -24,7 +24,7 @@ export class CarDetailController extends ResponseData {
     public async getAllCarDetails(req: Request, res: Response, next: NextFunction) {
         try {
             const response = await this.carDetailUseCase.getAllCarDetail();
-                await Promise.all(response.map(async(res)=> {
+                await Promise.all(response?.map(async(res)=> {
                     const url = await this.s3Service.getUrlObject(res.carDetail_image + ".jpg");
                     
                     
@@ -54,8 +54,8 @@ export class CarDetailController extends ResponseData {
     public async getCarDetailByCustomer(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         try {
-            const response = await this.carDetailUseCase.getDetailCarDetailByCustomer(id),;
-            await Promise.all(response.map(async(res)=> {
+            const response = await this.carDetailUseCase.getDetailCarDetailByCustomer(id);
+            await Promise.all(response?.map(async(res)=> {
                 const url = await this.s3Service.getUrlObject(res.carDetail_image + ".jpg");
                 const nameTypeCar = await this.carDetailUseCase.getDetailNameCar( res.typeCar_id );
                 console.log(nameTypeCar);
@@ -85,7 +85,7 @@ export class CarDetailController extends ResponseData {
                 }
                 const response = await this.carDetailUseCase.createNewCarDetail( plate_number,customer_id,pathObject,status, typeCar_id);
                 if (response) {
-                    response.carDetail_image = url;
+                    response?.carDetail_image = url;
                 }
                 
                 this.invoke(response, 201, res, 'Se creó con éxito', next);

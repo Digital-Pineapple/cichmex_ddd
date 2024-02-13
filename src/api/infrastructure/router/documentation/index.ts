@@ -21,7 +21,7 @@ documentationRouter
 
     .get('/', documentationController.getAllDocumentations)
     .get('/:id', documentationController.getDocumentationDetail)
-    .get('/customer/:id', documentationController.getAllDocumentationsByCustomer)
+    .get('/user/:id', documentationController.getAllDocumentationsByCustomer)
     .post('/',documentationValidations.DocumentationFileValidation, documentationController.createDocumentation)
     .post('/validate', documentationValidations.DocumentationFileValidation,documentationController.validateDocumentation)
     .post('/:id', documentationValidations.DocumentationFileValidation, documentationController.updateDocumentation)

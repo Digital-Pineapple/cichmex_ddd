@@ -1,7 +1,8 @@
 import { Schema, model } from 'mongoose';
 import { IFile } from '../../domain/documentation/DocumentationsEntity';
+import MongooseDelete from 'mongoose-delete';
 
-const FileSchema = new Schema<IFile>(
+const FileSchema = new Schema<IFile>  (
     {
         
         name: {
@@ -13,11 +14,6 @@ const FileSchema = new Schema<IFile>(
             type: String,
             required: false,
         },
-        status: {
-            type: Boolean,
-            required: true,
-
-        },
         url: {
             type: String,
             required: true,
@@ -27,7 +23,7 @@ const FileSchema = new Schema<IFile>(
             required: true,
 
         },
-        customer_id: {
+        user_id: {
             type: Schema.Types.ObjectId,
             ref: 'Customer'
 
@@ -40,6 +36,8 @@ const FileSchema = new Schema<IFile>(
         timestamps: true,
     }
 );
- const FileModel = model('FileModel', FileSchema);
+
+FileSchema.plugin(MongooseDelete, { overrideMethods:'all' });
+ const FileModel = model('Files', FileSchema);
 
  export default FileModel;

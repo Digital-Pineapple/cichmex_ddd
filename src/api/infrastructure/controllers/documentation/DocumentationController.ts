@@ -49,19 +49,19 @@ export class DocumentationController extends ResponseData {
 
     public async createDocumentation(req: Request, res: Response, next: NextFunction) {
 
-        const { customer_id, name, status, message, verify } = req.body;
+        const { user_id, name, status, message, verify } = req.body;
 
-        const ok = await this.documentationUseCase.getDocumentByNameAndCustomer(customer_id, name, status);
+        const ok = await this.documentationUseCase.getDocumentByNameAndCustomer(user_id, name);
         try {
-            const pathObject = `${this.path}/${customer_id}/${name}`;
+            const pathObject = `${this.path}/${user_id}/${name}`;
             if (ok?.length <= 0) {
 
                 const { success,url, key } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".pdf", req.file, "application/pdf");
                 if (!success) {
                     return new ErrorHandler('Hubo un error al subir el documento', 400);
                 }
-                const file = await this.documentationUseCase.createNewDocumentation(name, message, status, customer_id,pathObject, verify);
-                file.url = url
+                const file = await this.documentationUseCase.createNewDocumentation(name, message, status, user_id,pathObject, verify);
+                file?.url = url
                 this.invoke(file, 201, res, 'El documento se creó con éxito', next);
             } else {
 
