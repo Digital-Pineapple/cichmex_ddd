@@ -54,14 +54,14 @@ export class DocumentationController extends ResponseData {
         const ok = await this.documentationUseCase.getDocumentByNameAndCustomer(user_id, name);
         try {
             const pathObject = `${this.path}/${user_id}/${name}`;
-            if (ok?.length <= 0) {
+            if (ok.length <= 0) {
 
                 const { success,url, key } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".pdf", req.file, "application/pdf");
                 if (!success) {
                     return new ErrorHandler('Hubo un error al subir el documento', 400);
                 }
                 const file = await this.documentationUseCase.createNewDocumentation(name, message, status, user_id,pathObject, verify);
-                file?.url = url
+                file.url = url
                 this.invoke(file, 201, res, 'El documento se creó con éxito', next);
             } else {
 
