@@ -24,7 +24,7 @@ export class BranchOfficeController extends ResponseData {
         const response = await this.branchOfficeUseCase.getAllBranchOffices()
         try {
             const updatedResponse = await Promise.all(
-                response?.map(async (item: any) => {
+                response.map(async (item: any) => {
                     const images = item.images;
                     const updatedImages = await Promise.all(
                         images.map(async (image: any) => {
@@ -63,7 +63,7 @@ export class BranchOfficeController extends ResponseData {
                 const paths: string[] = [];
                 const urls: string[] = [];
 
-                await Promise.all(req.files?.map(async (item: any, index: number) => {
+                await Promise.all(req.files.map(async (item: any, index: number) => {
                     const pathObject: string = `${this.path}/${user_id}/${index}`;
                     const { url, success, key } = await this.s3Service.uploadToS3AndGetUrl(
                         pathObject + ".jpg",
@@ -116,7 +116,7 @@ export class BranchOfficeController extends ResponseData {
         if (req.files) {
             const paths: string[] = [];
             const urls: string[] = [];
-            await Promise.all(req.files?.map(async (item: any, index: number) => {
+            await Promise.all(req.files.map(async (item: any, index: number) => {
                 const pathObject: string = `${this.path}/${user_id}/${index}`;
                 const { url, success, key } = await this.s3Service.uploadToS3AndGetUrl(
                     pathObject + ".jpg",
@@ -128,7 +128,7 @@ export class BranchOfficeController extends ResponseData {
                 if (!success) return new ErrorHandler("Hubo un error al subir la imagen", 400)
                 const response = await this.branchOfficeUseCase.updateBranchOffice(id, { description, location, opening_time, closing_time, images: paths })
                 if (!(response instanceof ErrorHandler)) {
-                    response?.images = urls;
+                    response.images = urls;
                 }
                 this.invoke(
                     response,
