@@ -19,13 +19,13 @@ const userValidations = new UserValidations();
 
 documentationRouter
 
-    .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), documentationController.getAllDocumentations)
-    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), documentationController.getDocumentationDetail)
-    .get('/customer/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), documentationController.getAllDocumentationsByCustomer)
+    .get('/', documentationController.getAllDocumentations)
+    .get('/:id', documentationController.getDocumentationDetail)
+    .get('/customer/:id', documentationController.getAllDocumentationsByCustomer)
     .post('/',documentationValidations.DocumentationFileValidation, documentationController.createDocumentation)
-    .post('/validate', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57']), documentationValidations.DocumentationFileValidation,documentationController.validateDocumentation)
-    .post('/:id',userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53', '65a8193ae6f31eef3013bc57']), documentationValidations.DocumentationFileValidation, documentationController.updateDocumentation)
-    .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53', '65a8193ae6f31eef3013bc57']), documentationController.deleteDocumentation)
+    .post('/validate', documentationValidations.DocumentationFileValidation,documentationController.validateDocumentation)
+    .post('/:id', documentationValidations.DocumentationFileValidation, documentationController.updateDocumentation)
+    .delete('/:id', documentationController.deleteDocumentation)
     
 
 export default documentationRouter;

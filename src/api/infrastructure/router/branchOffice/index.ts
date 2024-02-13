@@ -16,8 +16,8 @@ const userValidations = new UserValidations();
 
 branchOfficeRouter
 
-.get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), branchOfficeController.getAllBranchOffices)
-.get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), branchOfficeController.getBranchOfficeDetail)
+.get('/',branchOfficeController.getAllBranchOffices)
+.get('/:id', branchOfficeController.getBranchOfficeDetail)
 .post('/', branchOfficeController.createBranchOffice)
 .patch('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57']), branchOfficeController.updateBranchOffice)
 .delete('/:id',userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), branchOfficeController.deleteBranchOffice)

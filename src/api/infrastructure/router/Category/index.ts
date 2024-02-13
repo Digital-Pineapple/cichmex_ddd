@@ -18,7 +18,7 @@ const categoryController   = new CategoryController(categoryUseCase, s3Service);
 const userValidations = new UserValidations();
 
 categoryRouter
-    .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), categoryController.getAllCategories)
+    .get('/', categoryController.getAllCategories)
     .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), categoryController.getCategory)
     .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), categoryController.createCategory)
     .patch('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), categoryValidations.categoryPhotoValidation, categoryController.updateCategory)
