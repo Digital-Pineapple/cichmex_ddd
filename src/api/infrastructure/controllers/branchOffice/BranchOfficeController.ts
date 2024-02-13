@@ -58,8 +58,7 @@ export class BranchOfficeController extends ResponseData {
 
     public async createBranchOffice(req: Request, res: Response, next: NextFunction) {
         let { user_id, name, description, location, opening_time, closing_time } = req.body;
-        try {
-            location=JSON.parse(location);
+        try {            
             if (req.files) {
                 const paths: string[] = [];
                 const urls: string[] = [];
@@ -104,6 +103,7 @@ export class BranchOfficeController extends ResponseData {
 
         } catch (error) {
             console.log(error);
+            console.log("tu objeto location es: "+location);
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
 
