@@ -25,7 +25,7 @@ export class ProductController extends ResponseData {
       const response = await this.productUseCase.getProducts();
   
       const updatedResponse = await Promise.all(
-        response?.map(async (item: any) => {
+        response.map(async (item: any) => {
           const images = item.images;
           const updatedImages = await Promise.all(
             images.map(async (image: any) => {

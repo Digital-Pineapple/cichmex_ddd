@@ -48,7 +48,7 @@ class CustomerController extends ResponseData_1.ResponseData {
             const { id } = req.params;
             try {
                 const customer = yield this.customerUseCase.getDetailCustomer(id);
-                const image = yield this.s3Service.getUrlObject((customer === null || customer === void 0 ? void 0 : customer.profile_image) + ".jpg");
+                const image = yield this.s3Service.getUrlObject(customer.profile_image + ".jpg");
                 customer.profile_image = image;
                 this.invoke(customer, 200, res, "", next);
             }

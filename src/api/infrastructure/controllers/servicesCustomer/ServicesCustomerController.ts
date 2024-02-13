@@ -107,7 +107,7 @@ export class ServicesCustomerController extends ResponseData {
         const { id } = req.params;
 
         try {
-            const response = await this.serviceCustomerUseCase.updateOneServiceCustomer(id, { status: false} );
+            const response = await this.serviceCustomerUseCase.updateOneServiceCustomer(id, {status: false} );
             this.invoke(response, 200, res, 'Eliminado correctamente', next);
         } catch (error) {
             console.log(error);

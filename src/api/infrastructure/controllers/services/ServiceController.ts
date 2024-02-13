@@ -37,7 +37,7 @@ export class ServicesController extends ResponseData {
         const { id } = req.params;
         try {
             const response = await this.servicesUseCase.getDetailService(id);
-            const url = await this.s3Service.getUrlObject(response?.image + ".jpg");
+            const url = await this.s3Service.getUrlObject(response.image + ".jpg");
             response.image = url;
             this.invoke(response, 200, res, '', next);
         } catch (error) {
@@ -63,11 +63,11 @@ export class ServicesController extends ResponseData {
                 const pathObject = `${this.path}/${id}/${name}`;
                 const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
                 if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-                const response = await this.servicesUseCase.updateOneService(id, { name, status, description, subCategory, service_image: pathObject, directory: pathObject });
+                const response = await this.servicesUseCase.updateOneService(id, { name, description, subCategory, service_image: pathObject, directory: pathObject });
                 response.service_image = url;
                 this.invoke(response, 201, res, 'El servicio se actualizó con éxito', next);
             } else {
-                const response = await this.servicesUseCase.updateOneService(id, { name, status, description, subCategory });
+                const response = await this.servicesUseCase.updateOneService(id, { name, description, subCategory });
                 this.invoke(response, 201, res, 'El servicio se actualizó con éxito', next);
             }
         } catch (error) {

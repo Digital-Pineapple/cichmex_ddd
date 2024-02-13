@@ -76,7 +76,7 @@ export class MembershipBenefitsController extends ResponseData {
         end_date,
         status
       );
-      const membershipBenfit_id = memBenefit?._id;
+      const membershipBenfit_id = memBenefit._id;
       // Crear historial de membresía
       const historyPromises = Array.from({ length: quantity }, async () => {
         const date_service = new Date();

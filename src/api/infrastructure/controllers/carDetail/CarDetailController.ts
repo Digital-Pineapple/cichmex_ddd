@@ -85,7 +85,7 @@ export class CarDetailController extends ResponseData {
                 }
                 const response = await this.carDetailUseCase.createNewCarDetail( plate_number,customer_id,pathObject,status, typeCar_id);
                 if (response) {
-                    response?.carDetail_image = url;
+                    response.carDetail_image = url;
                 }
                 
                 this.invoke(response, 201, res, 'Se creó con éxito', next);

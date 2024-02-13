@@ -56,7 +56,7 @@ export class CustomerController extends ResponseData {
     try {
       const customer = await this.customerUseCase.getDetailCustomer(id);
       const image = await this.s3Service.getUrlObject(
-        customer?.profile_image + ".jpg"
+        customer.profile_image + ".jpg"
       );
       customer.profile_image = image;
       this.invoke(customer, 200, res, "", next);
