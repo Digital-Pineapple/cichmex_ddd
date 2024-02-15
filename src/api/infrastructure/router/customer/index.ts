@@ -19,7 +19,7 @@ customerRouter
     .post('/', customerController.createCustomer)
     .post('/update/:id',customerValidations.profilePhotoValidation, customerController.updateCustomer)
     .post('/validate/:id', customerController.validateCustomer)
-    .delete('/:id', customerController.deleteCustomer)
+    // .delete('/:id', customerController.deleteCustomer)
 
 export default customerRouter;
 

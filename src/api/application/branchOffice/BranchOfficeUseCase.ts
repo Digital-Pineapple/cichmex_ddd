@@ -20,6 +20,12 @@ export class BranchOfficeUseCase {
     return await this.branchOfficeRepository.findById(_id);
   }
 
+  public async getBranchesUser(
+    _id: string
+  ): Promise<BranchOfficeEntity[] | null> {
+    return await this.branchOfficeRepository.findByUser(_id)
+  }
+
 
   public async createBranchOffice(
     body: any
@@ -43,6 +49,8 @@ export class BranchOfficeUseCase {
   ): Promise<BranchOfficeEntity | ILocation | null> {
     return await this.branchOfficeRepository.updateOne(_id, updated);
   }
+
+
   public async deleteOneBranchOffice(
     _id: string
   ): Promise<BranchOfficeEntity | null> {

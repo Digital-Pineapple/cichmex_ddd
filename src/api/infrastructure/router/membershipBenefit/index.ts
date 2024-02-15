@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import MembershipBenefitsModel from '../../models/MembershipBenefitsModel';
-import MembershipHistoryModel from '../../models/MembershipHistoryModel'
+import MembershipBenefitsModel from '../../models/Memberships/MembershipBenefitsModel';
+import MembershipHistoryModel from '../../models/Memberships/MembershipHistoryModel'
 import { MembershipBenefitsRepository } from '../../repository/membership/MembershipBenefitRepository';
 import { MembershipHistoryRepository } from '../../repository/membership/MembershipHistoryRepository';
 import { MembershipBenefitsUseCase } from '../../../application/membership/membershipBenefitsUseCase';

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import MembershipModel from '../../models/MembershipModel';
+import MembershipModel from '../../models/Memberships/MembershipModel';
 import { MembershipRepository } from '../../repository/membership/MembershipRepository';
 import { MembershipUseCase } from '../../../application/membership/membershipUseCase';
 import { MembershipsController } from '../../controllers/memberships/membershipController';

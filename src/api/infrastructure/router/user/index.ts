@@ -31,7 +31,7 @@ const twilioService = new TwilioService();
 const userController = new UserController(userPhoneserUseCase, userUseCase, typeUserUseCase, twilioService, s3Service)
 
 userRouter
-    .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), userController.allUsers)
+    .get('/', userController.allUsers)
     .get('/phones', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), userController.allPhones)
     .get('/phone/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57',"65a8193ae6f31eef3013bc59"]), userController.onePhone)
     .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), userController.getUser)

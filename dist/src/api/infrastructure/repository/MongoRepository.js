@@ -70,9 +70,9 @@ class MongoRepository {
             return yield this.MODEL.find({ phone_number: phone_number, deleted: false });
         });
     }
-    findByCustomer(customer_id) {
+    findByUser(_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.find({ customer_id: customer_id, status: true });
+            return yield this.MODEL.find({ user_id: _id, deleted: false });
         });
     }
     findByPlateNumber(plate_number, customer_id) {

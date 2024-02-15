@@ -51,8 +51,8 @@ export abstract class MongoRepository {
   public async findByPhoneNumber(phone_number: string): Promise<any> {
     return await this.MODEL.find({ phone_number: phone_number, deleted: false });
   }
-  public async findByCustomer(customer_id: string): Promise<any> {
-    return await this.MODEL.find({ customer_id: customer_id, status: true });
+  public async findByUser(_id: string): Promise<any> {
+    return await this.MODEL.find({ user_id:_id, deleted: false });
   }
   public async findByPlateNumber(
     plate_number: string,

@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { MembershipEntity } from '../../domain/membership/MembershipEntity';
+import { MembershipEntity } from '../../../domain/membership/MembershipEntity';
 
 import MongooseDelete = require("mongoose-delete");
 

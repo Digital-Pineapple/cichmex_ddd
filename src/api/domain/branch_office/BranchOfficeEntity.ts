@@ -13,10 +13,12 @@ export interface BranchOfficeEntity extends MongooseDelete.SoftDeleteDocument {
   opening_time?: string;
   closing_time?: string;
   location ?: ILocation;
+  services?: string[]
   createdAt        :   NativeDate;
   updatedAt        :   NativeDate;
 
 }
+
 
 export interface ILocation extends MongooseDelete.SoftDeleteDocument{
   state?: string;
@@ -31,3 +33,4 @@ export interface ILocation extends MongooseDelete.SoftDeleteDocument{
 export interface BranchOfficeEntityICR extends MongooseDelete.SoftDeleteDocument {
   images?: string[];
 }
+

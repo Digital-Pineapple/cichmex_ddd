@@ -1,5 +1,5 @@
 import mongoose, { Schema, model } from "mongoose";
-import { MembershipBenefits } from "../../domain/membership/MembershipEntity";
+import { MembershipBenefits } from "../../../domain/membership/MembershipEntity";
 
 const MembershipBenefitsSchema = new Schema<MembershipBenefits>(
   {

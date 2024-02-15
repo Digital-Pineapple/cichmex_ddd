@@ -14,6 +14,7 @@ export class BranchOfficeController extends ResponseData {
         super();
         this.getAllBranchOffices = this.getAllBranchOffices.bind(this);
         this.getBranchOfficeDetail = this.getBranchOfficeDetail.bind(this);
+        this.getBranchesByUser  = this.getBranchesByUser.bind(this);
         this.createBranchOffice = this.createBranchOffice.bind(this);
         this.updateBranchOffice = this.updateBranchOffice.bind(this);
         this.deleteBranchOffice = this.deleteBranchOffice.bind(this);
@@ -48,8 +49,22 @@ export class BranchOfficeController extends ResponseData {
 
     public async getBranchOfficeDetail(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
+
+        
+        
         try {
             const response = await this.branchOfficeUseCase.getDetailBranchOffice(id)
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+
+    public async getBranchesByUser(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        
+        try {
+            const response = await this.branchOfficeUseCase.getBranchesUser(id)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
@@ -88,6 +103,33 @@ export class BranchOfficeController extends ResponseData {
             }
 
             const response = await this.branchOfficeUseCase.createBranchOffice({ user_id, name, description, location, opening_time, closing_time, })
+            
+            
+            this.invoke(
+                response,
+                201,
+                res,
+                "Se registró con éxito",
+                next
+            );
+
+
+
+
+        } catch (error) {
+            console.log(error);
+            console.log("tu objeto location es: "+location);
+            next(new ErrorHandler('Hubo un error al crear', 500));
+        }
+
+    }
+
+    public async addServices(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.params
+        const { services } = req.body;
+        try {            
+            const response = await this.branchOfficeUseCase
+
             
             
             this.invoke(

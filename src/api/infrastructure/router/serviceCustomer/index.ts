@@ -24,7 +24,7 @@ serviceCustomerRouter
     .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc59']), serviceCustomerController.createServiceCustomer)
     .post('/edit/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), servicesCustomerVAlidations.servicePhotoValidation, serviceCustomerController.updateServiceCustomer)
     .post('/edit/SC/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), serviceCustomerController.updateTypeCarSC)
-    .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), serviceCustomerController.deleteServiceCustomer)
+    // .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), serviceCustomerController.deleteServiceCustomer)
     .delete('/SC/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), serviceCustomerController.deleteOneSC)
     
 

@@ -18,6 +18,7 @@ import productRouter from './product';
 import stockBranchRouter from './StockBranch';
 import typeUserRouter from './typeUser';
 import userRouter from './user';
+import servicesInBranchRouter from './servicesInBranch';
 
 export const apiRouter = (): Router => {
 
@@ -25,9 +26,10 @@ export const apiRouter = (): Router => {
 
     apiRouter.use('/auth', authRouter);
     apiRouter.use('/user', userRouter);
-    apiRouter.use('/auth/admin', authAdminRouter);
+    // apiRouter.use('/auth/admin', authAdminRouter);
     // apiRouter.use('/customer', customerRouter);
     apiRouter.use('/services', serviceRouter);
+    apiRouter.use('/services-branch', servicesInBranchRouter);
     apiRouter.use('/type-car', typeCarRouter)
     apiRouter.use('/type-user', typeUserRouter)
     apiRouter.use('/category', categoryRouter)
@@ -52,6 +54,7 @@ apiRouterx.use('/auth', authRouter);
 // apiRouterx.use('/auth/admin', authAdminRouter);
 // apiRouterx.use('/customer', customerRouter);
 apiRouterx.use('/services', serviceRouter);
+apiRouterx.use('services-branch', servicesInBranchRouter)
 apiRouterx.use('/type-car', typeCarRouter)
 apiRouterx.use('/type-user', typeUserRouter)
 apiRouterx.use('/category', categoryRouter)

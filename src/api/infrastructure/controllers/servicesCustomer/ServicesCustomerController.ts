@@ -17,7 +17,7 @@ export class ServicesCustomerController extends ResponseData {
         this.getServiceCustomerDetail = this.getServiceCustomerDetail.bind(this);
         this.createServiceCustomer = this.createServiceCustomer.bind(this);
         this.updateServiceCustomer = this.updateServiceCustomer.bind(this);
-        this.deleteServiceCustomer = this.deleteServiceCustomer.bind(this);
+        // this.deleteServiceCustomer = this.deleteServiceCustomer.bind(this);
         this.updateTypeCarSC = this.updateTypeCarSC.bind(this);
         this.getServicesCustomerDetailByCustomer = this.getServicesCustomerDetailByCustomer.bind(this);
         this.deleteOneSC = this.deleteOneSC.bind(this);
@@ -102,19 +102,19 @@ export class ServicesCustomerController extends ResponseData {
     }
 
 
-    public async deleteServiceCustomer(req: Request, res: Response, next: NextFunction) {
+    // public async deleteServiceCustomer(req: Request, res: Response, next: NextFunction) {
 
-        const { id } = req.params;
+    //     const { id } = req.params;
 
-        try {
-            const response = await this.serviceCustomerUseCase.updateOneServiceCustomer(id, {status: false} );
-            this.invoke(response, 200, res, 'Eliminado correctamente', next);
-        } catch (error) {
-            console.log(error);
-            next(new ErrorHandler('Hubo un error al eliminar', 500));
-        }
+    //     try {
+    //         const response = await this.serviceCustomerUseCase.updateOneServiceCustomer(id, {deleted: false} );
+    //         this.invoke(response, 200, res, 'Eliminado correctamente', next);
+    //     } catch (error) {
+    //         console.log(error);
+    //         next(new ErrorHandler('Hubo un error al eliminar', 500));
+    //     }
 
-    }
+    // }
     public async deleteOneSC(req: Request, res: Response, next: NextFunction) {
 
         const { id } = req.params;
