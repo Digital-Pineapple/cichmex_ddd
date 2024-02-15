@@ -208,23 +208,18 @@ export class UserController extends ResponseData {
         }
     }
 
-    public async loginPhone(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
+    public async loginPhone(req: Request, res: Response, next: NextFunction): Promise<UserEntity| IPhone | ErrorHandler | void> {
         const { password, phone_number } = req.body
-        
-        
         
         try {
 
-            const phoneInfo = await this.phoneUserUseCase.findPhone(phone_number)
-        
-console.log(phoneInfo);
+            const phoneInfo  = await this.phoneUserUseCase.findPhone(phone_number)
+            if (!(phoneInfo instanceof ErrorHandler)) {
+                const response = await this.userUseCase.signInByPhone(phoneInfo.phone_id,password)
+                this.invoke(response, 200, res, '', next);
+                
+            }
 
-            
-
-
-            const response = await this.userUseCase.signInByPhone(phoneInfo?.phone_id,password)
-            
-            this.invoke(response, 200, res, '', next);
 
         } catch (error) {
             console.log(error)

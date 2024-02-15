@@ -93,7 +93,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     }
     signInWithGoogle(idToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            let { email, fullname, picture } = yield this.validateGoogleToken(idToken);
+            let { email, picture } = yield this.validateGoogleToken(idToken);
             let user = yield this.authRepository.findOneItem({ email });
             if (user.email_verified === true) {
                 user.profile_image = picture;

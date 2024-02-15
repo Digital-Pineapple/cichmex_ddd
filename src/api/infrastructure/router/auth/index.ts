@@ -39,6 +39,5 @@ authRouter
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', validateAuthentication, authController.verifyCode)
     .post('/verify-phone', authController.savePhone)
-    .post ('/loginByPhone', )
 export default authRouter;
 

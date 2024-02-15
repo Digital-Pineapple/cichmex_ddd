@@ -27,8 +27,6 @@ export class UserPhoneUseCase extends Authentication {
   public async findPhone(phone_number: string): Promise<IPhoneResponse | ErrorHandler > {
    
     const phone = await this.phoneRepository.findOneItem({phone_number:phone_number})
-    console.log(phone,'usecase');
-    
     if (!phone) {
         return new ErrorHandler('El teléfono no fue encontrado', 404);
     }

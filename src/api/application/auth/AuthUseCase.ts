@@ -89,7 +89,7 @@ export class AuthUseCase extends Authentication {
     }
 
     async signInWithGoogle(idToken: string): Promise<IGoogleResponseLogin | IAuth | ErrorHandler | null> {
-        let { email, fullname, picture } = await this.validateGoogleToken(idToken);
+        let { email, picture } = await this.validateGoogleToken(idToken);
         
         let user = await this.authRepository.findOneItem({ email });
         if (user.email_verified === true) {
