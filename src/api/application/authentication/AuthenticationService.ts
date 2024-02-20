@@ -8,6 +8,7 @@ export interface IGoogle {
     fullname    : string | undefined;
     email       : string | undefined;
     picture     : string | undefined;
+    
 }
 export interface IGoogleRegister {
     fullname    : string | undefined;
@@ -18,6 +19,13 @@ export interface IGoogleResponse {
     user_id    : string ;
     verified      : boolean ;
     email : string;
+
+}
+export interface IGoogleReg {
+    user_id    : string ;
+    email : string;
+    fullname : string;
+    profile_image :string |undefined;
 
 }
 export interface IGoogleResponseLogin {
@@ -33,7 +41,7 @@ export interface IdUserAndVerified {
     verified   : string |undefined;
 }
 export interface IAuth {
-    user    :  UserEntity;
+    user    :  UserEntity | IGoogleReg;
     token?  : string;
 }
 
@@ -43,7 +51,7 @@ export class Authentication {
     private googleKey   = process.env.GOOGLE_CLIENT_ID;
     private client      = new OAuth2Client(this.googleKey);
 
-    protected async generateJWT(user: UserEntity ): Promise<IAuth> {
+    protected async generateJWT(user: UserEntity | IGoogleReg  ): Promise<IAuth> {
         return new Promise((resolve, reject) => {
             const payload: string | object | Buffer = {user};
 
@@ -67,7 +75,7 @@ export class Authentication {
             if(!ticket) reject('El token de google no es valido');
             
             const payload = ticket.getPayload();
-            resolve({ fullname: payload?.name, email: payload?.email, picture: payload?.picture });
+            resolve({ fullname: payload?.name, email: payload?.email, picture: payload?.picture});
         })
         
     }

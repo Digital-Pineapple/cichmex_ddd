@@ -33,7 +33,7 @@ const userController = new UserController(userPhoneserUseCase, userUseCase, type
 userRouter
     .get('/', userController.allUsers)
     .get('/phones', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), userController.allPhones)
-    .get('/phone/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57',"65a8193ae6f31eef3013bc59"]), userController.onePhone)
+    .get('/phone/:id', userController.onePhone)
     .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), userController.getUser)
     .get('/getVerifyEmail/:id', userController.getVerifyEmail)
     .post('/send-code', userController.sendCode)

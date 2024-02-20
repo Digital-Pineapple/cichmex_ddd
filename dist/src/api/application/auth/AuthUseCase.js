@@ -69,6 +69,26 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             }
         });
     }
+    signUp2(body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const user = yield this.authRepository.findOneItem({ email: body.email });
+                if (user) {
+                    return new ErrorHandler_1.ErrorHandler('Este correo ya se encuentra registrado', 409);
+                }
+                else {
+                    //  const newPassword = await this.encryptPassword(body.password)
+                    const newUser = yield this.authRepository.createOne(Object.assign({}, body));
+                    const newUserResponse = { user_id: newUser._id, email: newUser.email, fullname: newUser.fullname, profile_image: newUser.profile_image };
+                    const user = this.generateJWT(newUserResponse);
+                    return user;
+                }
+            }
+            catch (error) {
+                throw new ErrorHandler_1.ErrorHandler('Error en el proceso de registro', 500);
+            }
+        });
+    }
     signUpPlatform(body) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -95,24 +115,26 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
         return __awaiter(this, void 0, void 0, function* () {
             let { email, picture } = yield this.validateGoogleToken(idToken);
             let user = yield this.authRepository.findOneItem({ email });
-            if (user.email_verified === true) {
-                user.profile_image = picture;
-                user = yield this.generateJWT(user);
-            }
-            if (user.email_verified === false) {
-                const user2 = { user_id: user === null || user === void 0 ? void 0 : user._id, verified: user === null || user === void 0 ? void 0 : user.email_verified, email: user === null || user === void 0 ? void 0 : user.email, profile_image: picture };
-                user = user2;
-            }
+            // if (user.email_verified === true) {
+            //     user.profile_image === picture
+            //     user = await this.generateJWT(user);
+            // }
+            // if (user.email_verified === false) {
+            //     const user2: IGoogleResponseLogin = { user_id: user?._id, verified: user?.email_verified, email: user?.email, profile_image: picture }
+            //     user = user2
+            // }
             if (!user)
                 return new ErrorHandler_1.ErrorHandler('No existe usuario', 409);
+            user.profile_image = picture;
+            user = yield this.generateJWT(user);
             return user;
         });
     }
     signUpWithGoogle(idToken) {
         return __awaiter(this, void 0, void 0, function* () {
             let { email, fullname, picture } = yield this.validateGoogleToken(idToken);
-            let user = yield this.authRepository.findOneItem({ email: email, deleted: true });
-            if (user === null || user === void 0 ? void 0 : user.email) {
+            let user = yield this.authRepository.findOneItem({ email: email, deleted: false });
+            if (user) {
                 return new ErrorHandler_1.ErrorHandler('El usuario ya exite favor de iniciar sesión', 401);
             }
             if (!user) {

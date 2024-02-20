@@ -1,4 +1,4 @@
-import { Authentication, IGoogle, IGoogleRegister, IGoogleResponse, IGoogleResponseLogin, IdUserAndVerified } from '../authentication/AuthenticationService';
+import { Authentication, IGoogle, IGoogleReg, IGoogleRegister, IGoogleResponse, IGoogleResponseLogin, IdUserAndVerified } from '../authentication/AuthenticationService';
 
 import { AuthRepository } from '../../domain/auth/AuthRepository';
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
@@ -65,6 +65,25 @@ export class AuthUseCase extends Authentication {
         }
     }
 
+    async signUp2(body: any): Promise<IGoogleReg | IAuth | ErrorHandler | null> {
+        try {
+            const user = await this.authRepository.findOneItem({ email: body.email });
+            if (user) {
+                    return new ErrorHandler('Este correo ya se encuentra registrado', 409);
+                
+            } else {
+                //  const newPassword = await this.encryptPassword(body.password)
+                const newUser = await this.authRepository.createOne({ ...body});
+                const newUserResponse = { user_id: newUser._id,email: newUser.email, fullname:newUser.fullname, profile_image:newUser.profile_image };
+                const user = this.generateJWT(newUserResponse)
+                return user;
+            }
+        } catch (error) {
+
+            throw new ErrorHandler('Error en el proceso de registro', 500);
+        }
+    }
+
     async signUpPlatform(body: any): Promise<UserEntity | IGoogleResponse | ErrorHandler | null> {
         try {
             const newUser = await this.authRepository.createOne({ ...body });
@@ -92,23 +111,28 @@ export class AuthUseCase extends Authentication {
         let { email, picture } = await this.validateGoogleToken(idToken);
         
         let user = await this.authRepository.findOneItem({ email });
-        if (user.email_verified === true) {
-            user.profile_image = picture
-            user = await this.generateJWT(user);
-        }
-        if (user.email_verified === false) {
-            const user2: IGoogleResponseLogin = { user_id: user?._id, verified: user?.email_verified, email: user?.email, profile_image: picture }
-            user = user2
-        }
+        // if (user.email_verified === true) {
+        //     user.profile_image === picture
+        //     user = await this.generateJWT(user);
+        // }
+        // if (user.email_verified === false) {
+        //     const user2: IGoogleResponseLogin = { user_id: user?._id, verified: user?.email_verified, email: user?.email, profile_image: picture }
+        //     user = user2
+        // }
         if (!user) return new ErrorHandler('No existe usuario', 409)
+        user.profile_image = picture
+        user = await this.generateJWT(user)
         
         return user
     }
 
     async signUpWithGoogle(idToken: string): Promise<IGoogle | ErrorHandler | null> {
-        let { email, fullname, picture } = await this.validateGoogleToken(idToken);
-        let user = await this.authRepository.findOneItem({ email: email, deleted:true })
-        if (user?.email) {
+
+        let {email,fullname,picture} = await this.validateGoogleToken(idToken);
+    
+        
+        let user = await this.authRepository.findOneItem({ email: email, deleted:false })
+        if (user) {
             return new ErrorHandler('El usuario ya exite favor de iniciar sesión', 401)
         }
         if (!user) {
@@ -116,6 +140,7 @@ export class AuthUseCase extends Authentication {
         }
 
         return user
+       
 
     }
 

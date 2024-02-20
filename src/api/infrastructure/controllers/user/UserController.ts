@@ -131,6 +131,8 @@ export class UserController extends ResponseData {
     public async verifyPhone(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
         const { id } = req.params
         const { code } = req.body;
+        console.log(req);
+        
         try {
             const infoPhone = await this.phoneUserUseCase.getOnePhone(id)
 
