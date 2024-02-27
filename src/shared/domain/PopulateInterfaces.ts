@@ -58,5 +58,10 @@ export const PhonePopulateConfig : IUserPopulateConfig ={
 export const UserPopulateConfig : IUserPopulateConfig ={
     path: 'typeUser',
     select: ['name' ],
-  
+}
+
+
+export const BranchPopulateConfig : IUserPopulateConfig={
+    path: 'user_id',
+    select: ["fullname",'_id','email'  ],
 }

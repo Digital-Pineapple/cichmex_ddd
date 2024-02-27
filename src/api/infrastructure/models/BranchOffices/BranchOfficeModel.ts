@@ -40,6 +40,7 @@ const IlocationSchema = new mongoose.Schema<ILocation>(
        user_id: {
         type: mongoose.Types.ObjectId,
         required:true,
+        ref:'User'
       },
       name: {
         type: String,

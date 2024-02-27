@@ -38,8 +38,9 @@ export abstract class MongoRepository {
   ): Promise<any> {
     return await this.MODEL.findById(_id)
       .populate(populateConfig)
-      .then((res) => res?._id);
+    
   }
+
   public async findNameById(_id: String, populateConfig?: any): Promise<any> {
     return await this.MODEL.findById(_id)
       .populate(populateConfig)
@@ -53,6 +54,9 @@ export abstract class MongoRepository {
   }
   public async findByUser(_id: string): Promise<any> {
     return await this.MODEL.find({ user_id:_id, deleted: false });
+  }
+  public async findByUserAndVerify(_id: string): Promise<any> {
+    return await this.MODEL.find({ user_id:_id, deleted: false, verify:true });
   }
   public async findByPlateNumber(
     plate_number: string,

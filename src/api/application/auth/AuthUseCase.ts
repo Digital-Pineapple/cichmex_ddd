@@ -8,7 +8,7 @@ import { IAuth } from '../authentication/AuthenticationService';
 import { MomentService } from '../../../shared/infrastructure/moment/MomentService';
 import { IFileKeys, IPhoneRequest } from './interfaces';
 import { UserEntity } from '../../domain/user/UserEntity';
-import { UserPopulateConfig } from '../../../shared/domain/PopulateInterfaces'
+import { BranchPopulateConfig, TypeUserPopulateConfig, UserPopulateConfig } from '../../../shared/domain/PopulateInterfaces'
 import {  sendVerifyMail } from '../../../shared/infrastructure/nodemailer/emailer';
 
 export class AuthUseCase extends Authentication {
@@ -20,7 +20,9 @@ export class AuthUseCase extends Authentication {
     async signIn(email: string, password: string): Promise<ErrorHandler | IAuth> {
 
 
-        const user = await this.authRepository.findOneItem({ email });
+        const user = await this.authRepository.findOneItem({ email }, TypeUserPopulateConfig);
+        console.log(user, email,'useCAse');
+        
         if (!user) return new ErrorHandler('No exite este usuario', 400);
         const validatePassword = this.decryptPassword(password, user.password)
         

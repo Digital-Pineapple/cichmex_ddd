@@ -49,8 +49,7 @@ class MongoRepository {
     findByIdPupulate(_id, populateConfig) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.MODEL.findById(_id)
-                .populate(populateConfig)
-                .then((res) => res === null || res === void 0 ? void 0 : res._id);
+                .populate(populateConfig);
         });
     }
     findNameById(_id, populateConfig) {
@@ -73,6 +72,11 @@ class MongoRepository {
     findByUser(_id) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.MODEL.find({ user_id: _id, deleted: false });
+        });
+    }
+    findByUserAndVerify(_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.find({ user_id: _id, deleted: false, verify: true });
         });
     }
     findByPlateNumber(plate_number, customer_id) {

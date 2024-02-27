@@ -19,6 +19,10 @@ export class DocumentationUseCase {
         
         return await this.documentRepository.findByUser(_id)
     }
+    public async getDocumentationByUserAndVerify(_id: string): Promise<IFile | ErrorHandler | null> {
+        
+        return await this.documentRepository.findByUserAndVerify(_id)
+    }
 
     public async getDocumentByNameAndCustomer(customer_id: string, name:string ): Promise<IFile | ErrorHandler | null> {
         
