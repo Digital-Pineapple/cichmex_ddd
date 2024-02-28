@@ -51,7 +51,6 @@ export class AuthController extends ResponseData {
                     'No hay imagen de perfil'
             }
 
-            console.log(response,'authController');
             
 
             this.invoke(response, 200, res, '', next);
@@ -189,7 +188,7 @@ export class AuthController extends ResponseData {
 
         try {
             const find = await this.authUseCase.findUser(user.email);
-            const response = await this.authUseCase.generateToken(user);
+            const response = await this.authUseCase.generateToken(find);
             
             this.invoke(response, 200, res, '', next);
         } catch (error) {

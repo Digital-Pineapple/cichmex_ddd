@@ -43,7 +43,6 @@ class AuthController extends ResponseData_1.ResponseData {
                         response.user.profile_image = yield this.s3Service.getUrlObject(response.user.profile_image) :
                         'No hay imagen de perfil';
                 }
-                console.log(response, 'authController');
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {
@@ -182,7 +181,7 @@ class AuthController extends ResponseData_1.ResponseData {
             const { user } = req;
             try {
                 const find = yield this.authUseCase.findUser(user.email);
-                const response = yield this.authUseCase.generateToken(user);
+                const response = yield this.authUseCase.generateToken(find);
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {

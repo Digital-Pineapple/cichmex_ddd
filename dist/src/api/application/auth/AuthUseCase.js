@@ -22,8 +22,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     }
     signIn(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.TypeUserPopulateConfig);
-            console.log(user, email, 'useCAse');
+            const user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig);
             if (!user)
                 return new ErrorHandler_1.ErrorHandler('No exite este usuario', 400);
             const validatePassword = this.decryptPassword(password, user.password);
@@ -34,7 +33,8 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     }
     findUser(email) {
         return __awaiter(this, void 0, void 0, function* () {
-            let customer = yield this.authRepository.findOneItem({ email });
+            let customer = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.TypeUserPopulateConfig);
+            console.log(customer);
             return yield (customer);
         });
     }
@@ -134,7 +134,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     signUpWithGoogle(idToken) {
         return __awaiter(this, void 0, void 0, function* () {
             let { email, fullname, picture } = yield this.validateGoogleToken(idToken);
-            let user = yield this.authRepository.findOneItem({ email: email, deleted: false });
+            let user = yield this.authRepository.findOneItem({ email: email, deleted: false }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig);
             if (user) {
                 return new ErrorHandler_1.ErrorHandler('El usuario ya exite favor de iniciar sesión', 401);
             }
