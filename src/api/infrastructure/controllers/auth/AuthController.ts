@@ -188,6 +188,8 @@ export class AuthController extends ResponseData {
 
         try {
             const find = await this.authUseCase.findUser(user.email);
+            const  url  = await this.s3Service.getUrlObject(find.profile_image + ".jpg")
+           find.profile_image = url
             const response = await this.authUseCase.generateToken(find);
             
             this.invoke(response, 200, res, '', next);
