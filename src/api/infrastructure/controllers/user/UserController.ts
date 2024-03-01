@@ -240,11 +240,11 @@ export class UserController extends ResponseData {
     }
     public async updateUser(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { fullname, type_customer } = req.body;
+        const { fullname } = req.body;
         try {
             if (req.file) {
                 const pathObject = `${this.path}/${id}/${fullname}`;
-                const response = await this.userUseCase.updateUser(id, { fullname, type_customer, profile_image: pathObject })
+                const response = await this.userUseCase.updateUser(id, { fullname, profile_image: pathObject })
                 if (!(response instanceof ErrorHandler)) {
                     const { url, success } = await this.s3Service.uploadToS3AndGetUrl(
                         pathObject + ".jpg",
@@ -267,7 +267,6 @@ export class UserController extends ResponseData {
             } else {
                 const response = await this.userUseCase.updateUser(id, {
                     fullname,
-                    type_customer,
                 });
                 this.invoke(
                     response,

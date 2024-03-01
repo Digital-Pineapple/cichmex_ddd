@@ -51,6 +51,11 @@ export class AuthController extends ResponseData {
                     'No hay imagen de perfil'
             }
 
+<<<<<<< HEAD
+=======
+            
+
+>>>>>>> 2d3cbcb78da06ff472618b4e6ec64cd497ae1346
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
@@ -186,7 +191,9 @@ export class AuthController extends ResponseData {
 
         try {
             const find = await this.authUseCase.findUser(user.email);
-            const response = await this.authUseCase.generateToken(user);
+            const  url  = await this.s3Service.getUrlObject(find.profile_image + ".jpg")
+           find.profile_image = url
+            const response = await this.authUseCase.generateToken(find);
             
             this.invoke(response, 200, res, '', next);
         } catch (error) {

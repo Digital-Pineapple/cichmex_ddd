@@ -8,7 +8,7 @@ import { IAuth } from '../authentication/AuthenticationService';
 import { MomentService } from '../../../shared/infrastructure/moment/MomentService';
 import { IFileKeys, IPhoneRequest } from './interfaces';
 import { UserEntity } from '../../domain/user/UserEntity';
-import { BranchPopulateConfig, TypeUserPopulateConfig, UserPopulateConfig } from '../../../shared/domain/PopulateInterfaces'
+import { BranchPopulateConfig, PhonePopulateConfig, TypeUserPopulateConfig, UserPopulateConfig } from '../../../shared/domain/PopulateInterfaces'
 import {  sendVerifyMail } from '../../../shared/infrastructure/nodemailer/emailer';
 
 export class AuthUseCase extends Authentication {
@@ -20,7 +20,11 @@ export class AuthUseCase extends Authentication {
     async signIn(email: string, password: string): Promise<ErrorHandler | IAuth> {
 
 
+<<<<<<< HEAD
         const user = await this.authRepository.findOneItem({ email }, TypeUserPopulateConfig);
+=======
+        const user = await this.authRepository.findOneItem({ email }, TypeUserPopulateConfig, PhonePopulateConfig);
+>>>>>>> 2d3cbcb78da06ff472618b4e6ec64cd497ae1346
         
         if (!user) return new ErrorHandler('No exite este usuario', 400);
         const validatePassword = this.decryptPassword(password, user.password)
@@ -31,8 +35,10 @@ export class AuthUseCase extends Authentication {
     }
 
 
-    async findUser(email: string): Promise<ErrorHandler | IAuth> {
-        let customer = await this.authRepository.findOneItem({ email });
+    async findUser(email: string): Promise<  UserEntity> {
+        let customer = await this.authRepository.findOneItem({ email },PhonePopulateConfig, TypeUserPopulateConfig);
+        console.log(customer);
+        
         return await (customer);
     }
 
@@ -132,7 +138,7 @@ export class AuthUseCase extends Authentication {
         let {email,fullname,picture} = await this.validateGoogleToken(idToken);
     
         
-        let user = await this.authRepository.findOneItem({ email: email, deleted:false })
+        let user = await this.authRepository.findOneItem({ email: email, deleted:false }, TypeUserPopulateConfig,PhonePopulateConfig)
         if (user) {
             return new ErrorHandler('El usuario ya exite favor de iniciar sesión', 401)
         }
