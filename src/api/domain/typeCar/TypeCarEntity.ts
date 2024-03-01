@@ -1,8 +1,6 @@
-
-export interface TypeCarEntity {
-    _id              :   string;
+import MongooseDelete = require("mongoose-delete");
+export interface TypeCarEntity extends MongooseDelete.SoftDeleteInterface {
     name             :   string;
-    status           ?:   boolean;
     typeCar_image    ?:   string;
     createdAt       ?:   NativeDate;
     updatedAt       ?:   NativeDate;

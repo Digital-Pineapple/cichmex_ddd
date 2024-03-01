@@ -14,6 +14,14 @@ const MembershipSchema = new Schema<MembershipEntity>(
         type: Number,
         required:true,
     },
+    discount_porcent:{
+      type:Number,
+      required:false,
+    },
+    discount_products:{
+      type:Number,
+      required:false,
+    },
       price_discount:{
         type:Number,
       },
@@ -21,9 +29,12 @@ const MembershipSchema = new Schema<MembershipEntity>(
         type: Array,
         required: false
       },
-      status:{
-        type:Boolean,
-      }
+     type_cars:{
+      type:Array,
+      required:false,
+      ref:'TypeCar'
+      
+     }
 
       
     },
@@ -33,6 +44,6 @@ const MembershipSchema = new Schema<MembershipEntity>(
     }
   );
   MembershipSchema.plugin(MongooseDelete, { deletedAt:true });
-  const MembershipModel = model('MembershipModel', MembershipSchema);
+  const MembershipModel = model('Memberships', MembershipSchema);
 
   export default MembershipModel;

@@ -18,7 +18,6 @@ const config_1 = require("../../../../config");
 const ErrorHandler_1 = require("../../domain/ErrorHandler");
 const UserModel_1 = __importDefault(require("../../../api/infrastructure/models/UserModel"));
 const verifyToken_1 = require("../helpers/verifyToken");
-const mongodb_1 = require("mongodb");
 const validateAuthentication = (req, res, next) => {
     const token = req.header('token');
     if (!token)
@@ -36,7 +35,7 @@ const validateAuthentication = (req, res, next) => {
 };
 exports.validateAuthentication = validateAuthentication;
 const checkTypeUserAuth = (type_user) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b, _c;
     try {
         const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ').pop();
         if (!token) {
@@ -49,7 +48,7 @@ const checkTypeUserAuth = (type_user) => (req, res, next) => __awaiter(void 0, v
         }
         const userTypes = Array.isArray(type_user) ? type_user : [type_user];
         // Convertir userData.type_user a ObjectId si es un string
-        const userTypeString = userData.type_user instanceof mongodb_1.ObjectId ? userData.type_user.toString() : userData.type_user;
+        const userTypeString = ((_b = userData.type_user) === null || _b === void 0 ? void 0 : _b._id) ? (_c = userData.type_user._id) === null || _c === void 0 ? void 0 : _c.toString() : '';
         if (!userTypes.includes(userTypeString)) {
             throw new ErrorHandler_1.ErrorHandler('No tiene permisos necesarios', 403);
         }

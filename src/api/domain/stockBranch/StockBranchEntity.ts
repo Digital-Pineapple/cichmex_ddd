@@ -2,7 +2,6 @@
 import MongooseDelete = require("mongoose-delete");
 import { ProductEntity } from "../product/ProductEntity";
 import { BranchOfficeEntity } from "../branch_office/BranchOfficeEntity";
-import { CustomerEntity } from "../customer/CustomerEntity";
 import { UserEntity } from "../user/UserEntity";
 
 export interface StockBranchEntity extends MongooseDelete.SoftDeleteInterface {
@@ -27,7 +26,7 @@ export interface IProductOutput extends MongooseDelete.SoftDeleteInterface{
   stock_id:StockBranchEntity
   quantity: number,
   newQuantity: number,
-  responsible?: CustomerEntity | UserEntity,
+  responsible?:  UserEntity,
   createdAt: NativeDate;
 }
 
@@ -35,6 +34,6 @@ export interface IProductReturn extends MongooseDelete.SoftDeleteInterface{
   stock_id: StockBranchEntity
   quantity: number,
   newQuantity: number,
-  responsible_id: CustomerEntity | UserEntity,
+  responsible_id: UserEntity,
   createdAt: NativeDate;
 }

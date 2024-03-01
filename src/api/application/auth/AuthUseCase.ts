@@ -21,7 +21,6 @@ export class AuthUseCase extends Authentication {
 
 
         const user = await this.authRepository.findOneItem({ email }, TypeUserPopulateConfig);
-        console.log(user, email,'useCAse');
         
         if (!user) return new ErrorHandler('No exite este usuario', 400);
         const validatePassword = this.decryptPassword(password, user.password)

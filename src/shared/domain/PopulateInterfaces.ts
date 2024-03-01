@@ -1,4 +1,5 @@
 import ProductModel from '../../api/infrastructure/models/ProductModel';
+import ServiceModel from '../../api/infrastructure/models/ServicesModel';
 import SubCategoryModel from '../../api/infrastructure/models/SubCategoryModel';
 export interface IAuthPopulateConfig {
     path    : string;
@@ -32,6 +33,15 @@ select: 'name',
 export const typeCarPopulateConfing: ICarServicePopulateConfig= {
     path: '_id',
     select: 'name',
+}
+export const typeCarMembershipPopulateConfing: ICarServicePopulateConfig= {
+    path: 'type_cars',
+    select: 'name',
+}
+export const ServicesMembershipPopulateConfing: IStockPopulateConfig= {
+    path: `service_quantity.service_id`,
+    select: ['name','description'],
+    model: ServiceModel
 }
 
 export const stockBranchPopulateConfig : IStockPopulateConfig ={
