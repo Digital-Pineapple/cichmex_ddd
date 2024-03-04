@@ -51,11 +51,6 @@ export class AuthController extends ResponseData {
                     'No hay imagen de perfil'
             }
 
-<<<<<<< HEAD
-=======
-            
-
->>>>>>> 2d3cbcb78da06ff472618b4e6ec64cd497ae1346
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));

@@ -19,12 +19,7 @@ export class AuthUseCase extends Authentication {
 
     async signIn(email: string, password: string): Promise<ErrorHandler | IAuth> {
 
-
-<<<<<<< HEAD
-        const user = await this.authRepository.findOneItem({ email }, TypeUserPopulateConfig);
-=======
         const user = await this.authRepository.findOneItem({ email }, TypeUserPopulateConfig, PhonePopulateConfig);
->>>>>>> 2d3cbcb78da06ff472618b4e6ec64cd497ae1346
         
         if (!user) return new ErrorHandler('No exite este usuario', 400);
         const validatePassword = this.decryptPassword(password, user.password)
@@ -37,8 +32,6 @@ export class AuthUseCase extends Authentication {
 
     async findUser(email: string): Promise<  UserEntity> {
         let customer = await this.authRepository.findOneItem({ email },PhonePopulateConfig, TypeUserPopulateConfig);
-        console.log(customer);
-        
         return await (customer);
     }
 

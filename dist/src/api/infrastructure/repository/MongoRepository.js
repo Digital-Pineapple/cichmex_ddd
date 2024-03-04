@@ -144,7 +144,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiohistorymodels", // (hijo)--memberHistory
+                        from: "membershiohistorymodels",
                         let: {
                             id: "$_id",
                         },
@@ -178,7 +178,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiohistorymodels", // (hijo)--memberHistory
+                        from: "membershiohistorymodels",
                         let: {
                             id: "$_id",
                         },
