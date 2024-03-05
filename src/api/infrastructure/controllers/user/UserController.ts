@@ -36,9 +36,11 @@ export class UserController extends ResponseData {
         this.verifyEmail = this.verifyEmail.bind(this);
         this.deletePhone = this.deletePhone.bind(this);
         this.signUpByPhone = this.signUpByPhone.bind(this);
+        this.signUpPartnerByPhone = this.signUpPartnerByPhone.bind(this);
         this.updateUser = this.updateUser.bind(this);
         this.deleteUser = this.deleteUser.bind(this);
         this.loginPhone = this.loginPhone.bind(this);
+        this.physicalDeletePhone = this.physicalDeletePhone.bind(this)
 
     }
 
@@ -102,7 +104,7 @@ export class UserController extends ResponseData {
             const code = generateRandomCode();
             const phoneC = prefix + phone_number
             const phoneString = phoneC.toString()
-            await this.twilioService.sendSMS(phoneString,`CarWash autolavado y más. Código de verificación - ${code}`)
+            // await this.twilioService.sendSMS(phoneString,`CarWash autolavado y más. Código de verificación - ${code}`)
             const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
             this.invoke(newPhone, 200, res, '', next);
         } catch (error) {
@@ -182,6 +184,20 @@ export class UserController extends ResponseData {
         }
     }
 
+
+    public async physicalDeletePhone(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
+        const { id } = req.params
+        try {
+            const response = await this.phoneUserUseCase.deletePhysicalPhone(id)
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error);
+            
+            next(new ErrorHandler('Hubo un error al eliminar', 500));
+        }
+    }
+
+
     public async getVerifyEmail(req: Request, res: Response, next: NextFunction): Promise<IGoogleResponse | ErrorHandler | void> {
         const { id } = req.params
         
@@ -189,7 +205,8 @@ export class UserController extends ResponseData {
             const response = await this.userUseCase.getUserEmail(id)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-            next(new ErrorHandler('Hubo un error al eliminar', 500));
+            
+            next(new ErrorHandler('Hubo un error', 500));
         }
     }
 
@@ -207,6 +224,23 @@ export class UserController extends ResponseData {
         } catch (error) {
             console.log(error)
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
+        }
+    }
+
+    public async signUpPartnerByPhone(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
+        const { fullname, email, password, phone_id } = req.body
+        try {
+
+            const responsedefault = await this.typeUserUseCase.getTypeUsers()
+            const def = responsedefault?.filter(item => item.name === 'Partner')
+            const TypeUser_id = def?.map(item => item._id)
+            const response = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser_id })
+            // await sendMail(email, fullname)
+            this.invoke(response, 200, res, '', next);
+
+        } catch (error) {
+            console.log(error)
+            next(new ErrorHandler('Hubo un error ', 500));
         }
     }
 

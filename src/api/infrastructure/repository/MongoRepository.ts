@@ -91,6 +91,10 @@ export abstract class MongoRepository {
     return await this.MODEL.findByIdAndUpdate(_id, { deleted: true, date_service }, { new: true })
   }
 
+  public async PhysicalDelete(_id: any): Promise<any> {
+    return await this.MODEL.deleteOne({_id:_id})
+  }
+
   public async createOne(body: object): Promise<any> {
 
     const newObject = new this.MODEL(body);

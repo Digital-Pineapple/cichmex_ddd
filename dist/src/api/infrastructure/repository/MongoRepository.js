@@ -112,6 +112,11 @@ class MongoRepository {
             return yield this.MODEL.findByIdAndUpdate(_id, { deleted: true, date_service }, { new: true });
         });
     }
+    PhysicalDelete(_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.deleteOne({ _id: _id });
+        });
+    }
     createOne(body) {
         return __awaiter(this, void 0, void 0, function* () {
             const newObject = new this.MODEL(body);
