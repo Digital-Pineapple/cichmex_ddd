@@ -13,6 +13,7 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { sendMail } from '../../../../shared/infrastructure/nodemailer/emailer';
 import { IGoogleResponse } from '../../../application/authentication/AuthenticationService';
 import { IncomingClientScope } from 'twilio/lib/jwt/ClientCapability';
+import { errorMonitor } from 'nodemailer/lib/xoauth2';
 
 
 export class UserController extends ResponseData {
@@ -104,9 +105,15 @@ export class UserController extends ResponseData {
             const code = generateRandomCode();
             const phoneC = prefix + phone_number
             const phoneString = phoneC.toString()
-            // await this.twilioService.sendSMS(phoneString,`CarWash autolavado y más. Código de verificación - ${code}`)
-            const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
-            this.invoke(newPhone, 200, res, '', next);
+            const noRepeat = await this.phoneUserUseCase.findOnePhone(phone_number)
+            if ( noRepeat == null) {
+                await this.twilioService.sendSMS(phoneString,`CarWash autolavado y más. Código de verificación - ${code}`)
+                const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
+                this.invoke(newPhone, 200, res, '', next);
+              
+            }else{
+                next (new ErrorHandler('telefono ya existe',500))
+            }
         } catch (error) {
             console.error('Error:', error);
             this.invoke(error, 500, res, 'Error interno del servidor', next);

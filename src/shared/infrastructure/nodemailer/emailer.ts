@@ -1,10 +1,7 @@
 import nodemaler from 'nodemailer'
 import fs from 'fs'
-// const dirname = `C:/Users/Hugo NG/Desktop/carwash/carwash_ddd/src/shared/infrastructure/nodemailer`
-//  const dirname = `D:/CarWashAPI/carwash_ddd/src/shared/infrastructure/nodemailer`
-//production
-//const dirname = `/var/www/api_carwash/carwash_ddd/src/shared/infrastructure/nodemailer`
-const dirname = `/home/pc/Documentos/CarWashApi/carwash_ddd/src/shared/infrastructure/nodemailer`
+
+const dirname   = process.env.DIR_NODEMAILER;
 
 const htmlContent = fs.readFileSync(dirname + '/WelcomeEmail.html', 'utf-8');
 
