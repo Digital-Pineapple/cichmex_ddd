@@ -14,6 +14,7 @@ import { generateRandomCode } from '../../../../shared/infrastructure/validation
 
 import { IPhoneRequest } from '../../../application/auth/interfaces';
 import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
+import { MPService } from '../../../../shared/infrastructure/mercadopago/MPService';
 
 
 export class AuthController extends ResponseData {
@@ -22,7 +23,8 @@ export class AuthController extends ResponseData {
     constructor(private readonly authUseCase: AuthUseCase,
         private readonly typeUserUseCase: TypeUserUseCase,
         private readonly s3Service: S3Service,
-        private readonly twilioService: TwilioService
+        private readonly twilioService: TwilioService,
+        private readonly mpService : MPService
     ) {
         super();
         this.login = this.login.bind(this);
@@ -36,6 +38,7 @@ export class AuthController extends ResponseData {
         this.revalidateToken = this.revalidateToken.bind(this);
         this.verifyCode = this.verifyCode.bind(this);
         this.savePhone = this.savePhone.bind(this);
+        this.MercadoPagoPayment = this.MercadoPagoPayment.bind(this);
     }
 
     public async login(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
@@ -243,5 +246,16 @@ export class AuthController extends ResponseData {
     //         next(new ErrorHandler('Hubo un error al subir los archivos', 500));
     //     }
     // }
+
+    public async MercadoPagoPayment(req: Request, res: Response, next: NextFunction) {
+
+        const { items } = req.body;
+        try {
+            const response = await this.mpService.payMercadoPago(items)
+            this.invoke(response.response?.init_point, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler('Error', 500));
+        }
+    }
 
 }

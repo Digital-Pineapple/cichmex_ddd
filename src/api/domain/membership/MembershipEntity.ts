@@ -16,6 +16,13 @@ export interface MembershipEntity extends MongooseDelete.SoftDeleteDocument {
 
 }
 
+export interface MembershipInfoResponse  {
+  _id:string,
+  name: string;
+  price_standard: number;
+  price_discount?: number;
+}
+
 export interface ServiceQuantity {
   service_id: {
     type: Schema.Types.ObjectId;

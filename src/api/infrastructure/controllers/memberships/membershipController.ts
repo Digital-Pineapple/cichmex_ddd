@@ -11,6 +11,7 @@ export class MembershipsController extends ResponseData {
         super();
         this.getAllMemberships = this.getAllMemberships.bind(this);
         this.getMembership = this.getMembership.bind(this);
+        this.getMembershipInfo = this.getMembershipInfo.bind(this);
         this.createMembership = this.createMembership.bind(this);
         this.updateMembership = this.updateMembership.bind(this);
         this.deleteMembership = this.deleteMembership.bind(this);
@@ -31,6 +32,19 @@ export class MembershipsController extends ResponseData {
             const response = await this.membershipUseCase.getDetailMembership(id)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+    public async getMembershipInfo(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        try {
+            const response = await this.membershipUseCase.getInfoMembership(id)
+            console.log(response);
+            
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error);
+            
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }

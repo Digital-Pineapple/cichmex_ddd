@@ -13,7 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/compression": "^1.7.2",
-    "@types/mongoose-delete": "^1.0.3",
+    "@types/mongoose-delete": "^1.0.4",
     "@types/uuid": "^9.0.1",
     "awilix": "^8.0.0",
     "aws-sdk": "^2.1329.0",

@@ -27,6 +27,7 @@ const TEST : Configuration = {
     TWILIO_PHONE_NUMBER :   process.env.TWILIO_PHONE_NUMBER!,
     MY_NUMBER           :   process.env.MY_NUMBER!,
     DIR_NODEMAILER      :   process.env.DIR_NODEMAILER!,
+    MERCADOPAGO_TOKEN   :   process.env.MERCADOPAGO_TOKEN!,
 }
 
 

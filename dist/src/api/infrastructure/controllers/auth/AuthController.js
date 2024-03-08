@@ -14,12 +14,13 @@ const ErrorHandler_1 = require("../../../../shared/domain/ErrorHandler");
 const ResponseData_1 = require("../../../../shared/infrastructure/validation/ResponseData");
 const Utils_1 = require("../../../../shared/infrastructure/validation/Utils");
 class AuthController extends ResponseData_1.ResponseData {
-    constructor(authUseCase, typeUserUseCase, s3Service, twilioService) {
+    constructor(authUseCase, typeUserUseCase, s3Service, twilioService, mpService) {
         super();
         this.authUseCase = authUseCase;
         this.typeUserUseCase = typeUserUseCase;
         this.s3Service = s3Service;
         this.twilioService = twilioService;
+        this.mpService = mpService;
         this.path = '/users';
         this.login = this.login.bind(this);
         this.loginAdmin = this.loginAdmin.bind(this);
@@ -32,6 +33,7 @@ class AuthController extends ResponseData_1.ResponseData {
         this.revalidateToken = this.revalidateToken.bind(this);
         this.verifyCode = this.verifyCode.bind(this);
         this.savePhone = this.savePhone.bind(this);
+        this.MercadoPagoPayment = this.MercadoPagoPayment.bind(this);
     }
     login(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -217,6 +219,35 @@ class AuthController extends ResponseData_1.ResponseData {
             }
             catch (error) {
                 next(new ErrorHandler_1.ErrorHandler('El codigo no se ha enviado', 500));
+            }
+        });
+    }
+    // public async uploadFiles({ files, user}: Request, res: Response, next: NextFunction) {
+    //     const documents = [ files?.ine, files?.curp, files?.prook_address, files?.criminal_record ];
+    //     let keys: any = [];
+    //     try {
+    //         if(!files?.ine || !files?.curp || !files?.prook_address || !files?.criminal_record) return next(new ErrorHandler('los archivos son requeridos', 400));
+    //         await Promise.all(documents?.map(async (file) => {
+    //             const pathObject = `${this.path}/${user._id}/${file[0].fieldname}`;
+    //             keys.push({ field: file[0].fieldname, key: pathObject })
+    //             await this.s3Service.uploadToS3(pathObject+ ".pdf", file[0], "application/pdf")
+    //         }));
+    //         const response = await this.authUseCase.uploadCustomerFiles(user._id, keys);
+    //         this.invoke(response, 200, res, 'Los archivos se subieron correctamente', next);
+    //     } catch (error) {
+    //         next(new ErrorHandler('Hubo un error al subir los archivos', 500));
+    //     }
+    // }
+    MercadoPagoPayment(req, res, next) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            const { items } = req.body;
+            try {
+                const response = yield this.mpService.payMercadoPago(items);
+                this.invoke((_a = response.response) === null || _a === void 0 ? void 0 : _a.init_point, 200, res, '', next);
+            }
+            catch (error) {
+                next(new ErrorHandler_1.ErrorHandler('Error', 500));
             }
         });
     }

@@ -14,7 +14,8 @@ const userValidations = new UserValidations();
 
 membershipRouter
     .get('/', membershipController.getAllMemberships)
-    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipController.getMembership)
+    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc59' ]), membershipController.getMembership)
+    .get('/info/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc59','65a8193ae6f31eef3013bc57' ]), membershipController.getMembershipInfo)
     .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipController.createMembership)
     .patch('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipController.updateMembership)
     .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipController.deleteMembership)
