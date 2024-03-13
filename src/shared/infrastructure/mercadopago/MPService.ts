@@ -10,25 +10,22 @@ export class MPService {
         this.preference = new Preference(client);
     }
 
-    async payMercadoPago(items: any) {
+    async createLinkMP(item: any) {
+        
         try {
             const response = await this.preference.create({
                 body: {
                     items:[
-                        // {
-                        //     id:item.id,
-                        //     quantity: items.quantity,
-                        //     title:'',
-                        //     unit_price:'',
-                        //     category_id:'',
-                        //     currency_id:'',
-                        //     description:'',
-                        //     picture_url:'',
-                        // }
+                        {
+                            id:item._id,
+                            title:item?.name,
+                            unit_price:item?.price_discount,
+                            quantity: 1
+                        },
                     ],
                     back_urls: {
-                        success: 'https://example.com/success',
-                        failure: 'https://example.com/failure'
+                        success: 'http://localhost:3000/auth/inicio',
+                        failure: 'http://localhost:3000/auth/inicio'
                     },
                     auto_return: 'approved'
                 }
@@ -36,8 +33,9 @@ export class MPService {
 
             return { response, success: true, message: 'Pago realizado correctamente' };
         } catch (error) {
+           console.log(error,'mpservice');
            
-            return { success: false, message: `Error: ${error}` };
+            return { success: false, message: `Error: ${error?.message}` };
         }
     }
 }

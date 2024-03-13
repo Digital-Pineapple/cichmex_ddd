@@ -251,7 +251,7 @@ export class AuthController extends ResponseData {
 
         const { items } = req.body;
         try {
-            const response = await this.mpService.payMercadoPago(items)
+            const response = await this.mpService.createLinkMP(items)
             this.invoke(response.response?.init_point, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Error', 500));

@@ -243,7 +243,7 @@ class AuthController extends ResponseData_1.ResponseData {
         return __awaiter(this, void 0, void 0, function* () {
             const { items } = req.body;
             try {
-                const response = yield this.mpService.payMercadoPago(items);
+                const response = yield this.mpService.createLinkMP(items);
                 this.invoke((_a = response.response) === null || _a === void 0 ? void 0 : _a.init_point, 200, res, '', next);
             }
             catch (error) {
