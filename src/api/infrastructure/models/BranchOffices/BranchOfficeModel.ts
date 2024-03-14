@@ -7,9 +7,18 @@ import MongooseDelete = require("mongoose-delete");
 
 const IlocationSchema = new mongoose.Schema<ILocation>(
     {
+       state_id:{
+        type: String,
+        required:false
+       },
        state: {
         type: String,
         required:false,
+      },
+      municipality_id:{
+        type:String,
+        required:false
+
       },
       municipality: {
         type: String,
