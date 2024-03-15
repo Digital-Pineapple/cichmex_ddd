@@ -28,8 +28,6 @@ export interface ILocation extends MongooseDelete.SoftDeleteDocument{
   lat?: number;
   lgt?: number;
   direction ?: string;
-  createdAt       ?:   NativeDate;
-  updatedAt       ?:   NativeDate;
 }
 
 export interface BranchOfficeEntityICR extends MongooseDelete.SoftDeleteDocument {

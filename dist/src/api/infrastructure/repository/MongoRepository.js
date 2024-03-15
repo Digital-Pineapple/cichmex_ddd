@@ -104,7 +104,8 @@ class MongoRepository {
     }
     updateOne(_id, updated) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findByIdAndUpdate(_id, updated, { new: true });
+            console.log(updated);
+            return yield this.MODEL.findByIdAndUpdate(_id, updated, { new: true, });
         });
     }
     softDelete(_id, date_service) {

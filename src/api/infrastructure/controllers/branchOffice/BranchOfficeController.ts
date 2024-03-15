@@ -154,7 +154,9 @@ export class BranchOfficeController extends ResponseData {
 
     public async updateBranchOffice(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params
-        const { user_id, description, location, opening_time, closing_time } = req.body;
+        const { user_id, description, location, opening_time, closing_time, name } = req.body;
+        
+
 
         if (req.files) {
             const paths: string[] = [];
@@ -169,7 +171,7 @@ export class BranchOfficeController extends ResponseData {
                 paths.push(pathObject);
                 urls.push(url)
                 if (!success) return new ErrorHandler("Hubo un error al subir la imagen", 400)
-                const response = await this.branchOfficeUseCase.updateBranchOffice(id, { description, location, opening_time, closing_time, images: paths })
+                const response = await this.branchOfficeUseCase.updateBranchOffice(id, { description: description, location: location, opening_time: opening_time, closing_time: closing_time, images: paths, name:name })
                 if (!(response instanceof ErrorHandler)) {
                     response.images = urls;
                 }
@@ -182,7 +184,7 @@ export class BranchOfficeController extends ResponseData {
             }))
         }
 
-        const response = await this.branchOfficeUseCase.updateBranchOffice(id, { description: description, location: location, opening_time: opening_time, closing_time: closing_time })
+        const response = await this.branchOfficeUseCase.updateBranchOffice(id, { description: description, location: location, opening_time: opening_time, closing_time: closing_time, name:name })
         this.invoke(
             response,
             201,

@@ -48,7 +48,12 @@ export class BranchOfficeUseCase {
     _id: string,
     updated: any
   ): Promise<BranchOfficeEntity | ILocation | null> {
-    return await this.branchOfficeRepository.updateOne(_id, updated);
+    const Branch = {
+      ...updated,
+      location: JSON.parse(updated.location)
+    }
+    
+    return await this.branchOfficeRepository.updateOne(_id, {...Branch});
   }
 
 
