@@ -11,7 +11,7 @@ export interface MembershipEntity extends MongooseDelete.SoftDeleteDocument {
   discount_products?:number,
   price_discount?: number;
   service_quantity?: [ServiceQuantity];
-  type_cars ?:[string]
+  type_cars ?:[TypeCarEntity]
   
 
 }
@@ -21,6 +21,7 @@ export interface MembershipInfoResponse  {
   name: string;
   price_standard: number;
   price_discount?: number;
+  discount_porcent?: number;
 }
 
 export interface ServiceQuantity {

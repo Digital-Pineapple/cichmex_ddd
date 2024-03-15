@@ -37,15 +37,12 @@ export class MembershipsController extends ResponseData {
     }
     public async getMembershipInfo(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        console.log(id);
         
         try {
             const response = await this.membershipUseCase.getInfoMembership(id)
-            console.log(response);
             
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-            console.log(error, 'informacion');
             
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }

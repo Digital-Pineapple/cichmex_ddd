@@ -19,7 +19,8 @@ const paymentValidation = new PaymentValidations();
 paymentRouter
     .get('/', paymentController.getAllPayments)
     .get('/:id', paymentController.getPayment)
-    .post('/',paymentValidation.paymentValidation, paymentController.createPayment)
+    .post('/',paymentValidation.paymentValidation, paymentController.createLMP)
+    // .post('/ticket', paymentController)
     .delete('/:id', paymentController.deletePayment)
 
 

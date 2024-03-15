@@ -21,6 +21,7 @@ export class PaymentUseCase {
           
     } 
     public async createNewPayment(object:any): Promise<PaymentEntity | ErrorHandler | null> {
+        console.log(object);
         
         return await this.paymentRepository.createOne(object);
     }

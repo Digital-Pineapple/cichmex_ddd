@@ -9,14 +9,15 @@ export class PaymentController extends ResponseData {
     protected path = '/payment'
 
     constructor(private paymentUseCase: PaymentUseCase,
-        private readonly mpService : MPService,
-        ) {
+        private readonly mpService: MPService,
+    ) {
         super();
         this.getAllPayments = this.getAllPayments.bind(this);
         this.getPayment = this.getPayment.bind(this);
-        this.createPayment = this.createPayment.bind(this);
+        this.createLMP = this.createLMP.bind(this);
+        this.createTicket = this.createTicket.bind(this);
         this.deletePayment = this.deletePayment.bind(this);
-       
+
     }
 
     public async getAllPayments(req: Request, res: Response, next: NextFunction) {
@@ -38,30 +39,36 @@ export class PaymentController extends ResponseData {
     }
 
 
-    public async createPayment(req: Request, res: Response, next: NextFunction) {
-        const { values } = req.body; 
-        
-        
-               
-       try{
-        
-            const {response,  success, message } = await this.mpService.createLinkMP(values)
-            
-                    if (success === true) {
-                        
-                        this.invoke(response?.init_point, 201, res, 'Registro exitoso', next);
-                    }
-                    if (success === false) {
-                        next(new ErrorHandler(`Error:${message}`,500))
-                    }
-        
+    public async createLMP(req: Request, res: Response, next: NextFunction) {
+        const { values } = req.body;
+        try {
+
+            const { response, success, message } = await this.mpService.createLinkMP(values)
+
+            if (success === true) {
+
+                this.invoke(response?.init_point, 201, res, 'Registro exitoso', next);
+            }
+            if (success === false) {
+                next(new ErrorHandler(`Error:${message}`, 500))
+            }
+
         } catch (error) {
             console.log(error);
-            
+
             next(new ErrorHandler('Error', 500));
         }
     }
-    
+    public async createTicket(req: Request, res: Response, next: NextFunction) {
+        const { values } = req.body;
+        try {
+            await this.paymentUseCase.createNewPayment(values)
+        } catch (error) {
+            
+        }
+        
+    }
+
     public async deletePayment(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         try {

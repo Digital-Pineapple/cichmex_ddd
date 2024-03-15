@@ -24,10 +24,12 @@ export class MPService {
                         },
                     ],
                     back_urls: {
-                        success: 'http://localhost:3000/auth/inicio',
-                        failure: 'http://localhost:3000/auth/inicio'
+                        "success": "https://carwashymas.com/auth/inicio",
+                        "failure": "http://localhost:3000/auth/inicio",
+                        "pending": "http://www.tu-sitio/pending"
                     },
-                    auto_return: 'approved'
+                    auto_return: "approved",
+
                 }
             });
 
