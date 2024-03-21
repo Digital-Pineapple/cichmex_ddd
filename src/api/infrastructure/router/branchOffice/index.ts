@@ -11,6 +11,8 @@ import FileModel from '../../models/DocumentationModel';
 
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { UserValidations } from '../../../../shared/infrastructure/validation/User/UserValidation';
+import { BranchOfficeValidations } from '../../../../shared/infrastructure/validation/BranchOffice/BranchOfficeValidatios';
+
 
 const branchOfficeRouter = Router();
 
@@ -23,6 +25,7 @@ const documentationUseCase   = new DocumentationUseCase(documentationRepository)
 const s3Service        = new S3Service()
 const branchOfficeController     = new BranchOfficeController(branchOfficeUseCase, documentationUseCase, s3Service);
 const userValidations = new UserValidations();
+const branchOfficeValidation = new BranchOfficeValidations()
 
 branchOfficeRouter
 
@@ -30,7 +33,7 @@ branchOfficeRouter
 .get('/:id', branchOfficeController.getBranchOfficeDetail)
 .get('/user/:id', branchOfficeController.getBranchesByUser)
 .post('/', branchOfficeController.createBranchOffice)
-.post('/verify/:id',branchOfficeController.verifyBranchOffice)
+.post('/verify/:id' , branchOfficeController.verifyBranchOffice)
 .put('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57']), branchOfficeController.updateBranchOffice)
 .delete('/:id',userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57']), branchOfficeController.deleteBranchOffice)
 

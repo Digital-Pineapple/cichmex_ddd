@@ -155,6 +155,8 @@ export class BranchOfficeController extends ResponseData {
     public async updateBranchOffice(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params
         const { user_id, description, location, opening_time, closing_time, name } = req.body;
+        console.log(req.body);
+        
         
 
 

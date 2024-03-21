@@ -6,12 +6,12 @@ import { RequestValidator } from '../RequestValidator';
 import { multerConfig } from '../../middleware/MulterConfig';
 import validateAuthentication from '../ValidateAuthentication';
 
-export class UserValidations {
+export class BranchOfficeValidations {
 
     private upload  = multer(multerConfig);
 
 
-    readonly ImageValidation = [
+    readonly imageValidation = [,
         validateAuthentication,
         this.upload.array('images',3),
     ]
