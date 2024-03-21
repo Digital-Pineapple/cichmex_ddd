@@ -17,6 +17,7 @@ export class PaymentController extends ResponseData {
         this.createLMP = this.createLMP.bind(this);
         this.createTicket = this.createTicket.bind(this);
         this.deletePayment = this.deletePayment.bind(this);
+      
 
     }
 
@@ -60,12 +61,10 @@ export class PaymentController extends ResponseData {
         }
     }
     public async createTicket(req: Request, res: Response, next: NextFunction) {
-        const { values } = req.body;
-        try {
-            await this.paymentUseCase.createNewPayment(values)
-        } catch (error) {
-            
-        }
+        const payment = req.query
+        console.log(payment);
+        
+        
         
     }
 

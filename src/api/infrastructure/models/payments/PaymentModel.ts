@@ -1,6 +1,6 @@
 
 import mongoose, {  Schema,  model, Document } from 'mongoose';
-import  PaymentEntity  from '../../../domain/payments/PaymentEntity';
+import  {PaymentEntity}  from '../../../domain/payments/PaymentEntity';
 import MongooseDelete, { SoftDeleteModel, SoftDeleteDocument } from 'mongoose-delete';
 
 

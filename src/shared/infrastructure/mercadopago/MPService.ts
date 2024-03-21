@@ -24,11 +24,12 @@ export class MPService {
                         },
                     ],
                     back_urls: {
-                        "success": "https://carwashymas.com/auth/inicio",
-                        "failure": "http://localhost:3000/auth/inicio",
-                        "pending": "http://www.tu-sitio/pending"
+                        "success": "https://localhost:3000/auth/PagoExitoso",
+                        "failure": "https://localhost:3000/auth/inicio",
+                        "pending": "https://localhost:3000/auth/inicio"
                     },
                     auto_return: "approved",
+                    notification_url:'https://2e43-2806-2a0-101b-413f-f667-94f0-c972-d512.ngrok-free.app/api/payments/success'
 
                 }
             });

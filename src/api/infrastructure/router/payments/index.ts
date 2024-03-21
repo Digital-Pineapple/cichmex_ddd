@@ -20,6 +20,8 @@ paymentRouter
     .get('/', paymentController.getAllPayments)
     .get('/:id', paymentController.getPayment)
     .post('/',paymentValidation.paymentValidation, paymentController.createLMP)
+    .post('/success',paymentController.createTicket )
+    
     // .post('/ticket', paymentController)
     .delete('/:id', paymentController.deletePayment)
 

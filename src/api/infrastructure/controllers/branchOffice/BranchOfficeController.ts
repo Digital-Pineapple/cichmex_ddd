@@ -155,7 +155,7 @@ export class BranchOfficeController extends ResponseData {
     public async updateBranchOffice(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params
         const { user_id, description, location, opening_time, closing_time, name } = req.body;
-        
+
 
 
         if (req.files) {
@@ -171,7 +171,7 @@ export class BranchOfficeController extends ResponseData {
                 paths.push(pathObject);
                 urls.push(url)
                 if (!success) return new ErrorHandler("Hubo un error al subir la imagen", 400)
-                const response = await this.branchOfficeUseCase.updateBranchOffice(id, { description: description, location: location, opening_time: opening_time, closing_time: closing_time, images: paths, name:name })
+                const response = await this.branchOfficeUseCase.updateBranchOffice(id, { description: description, location: location, opening_time: opening_time, closing_time: closing_time, images: paths, name: name })
                 if (!(response instanceof ErrorHandler)) {
                     response.images = urls;
                 }
@@ -184,7 +184,7 @@ export class BranchOfficeController extends ResponseData {
             }))
         }
 
-        const response = await this.branchOfficeUseCase.updateBranchOffice(id, { description: description, location: location, opening_time: opening_time, closing_time: closing_time, name:name })
+        const response = await this.branchOfficeUseCase.updateBranchOffice(id, { description: description, location: location, opening_time: opening_time, closing_time: closing_time, name: name })
         this.invoke(
             response,
             201,
@@ -216,11 +216,11 @@ export class BranchOfficeController extends ResponseData {
             const documents = await this.documentationUseCase.getDocumentationByUserAndVerify(user_id)
 
             const nameFiles = ['ine', 'curp', 'proof_address', 'criminal_record'];
-            if (!(documents instanceof ErrorHandler) && documents !== null){
-                const resultado = documents.map((documento : any) =>
+            if (!(documents instanceof ErrorHandler) && documents !== null) {
+                const resultado = documents.map((documento: any) =>
                     nameFiles.some(nombre => documento.name === nombre)
                 );
-                
+
                 if (resultado.length == 4) {
                     const response = await this.branchOfficeUseCase.updateBranchOffice(id, { activated: true })
                     this.invoke(response, 201, res, 'Activación exitosa', next);
@@ -231,7 +231,7 @@ export class BranchOfficeController extends ResponseData {
 
         } catch (error) {
             console.log(error);
-            
+
             next(new ErrorHandler('Error', 500));
         }
     }

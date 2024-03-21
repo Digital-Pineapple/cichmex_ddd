@@ -53,6 +53,7 @@ export const checkTypeUserAuth = (type_user: string | string[]) => async (req: R
 
         next();
     } catch (error) {
+        
         next(error); // Pasar el error original para una mejor depuración
     }
 }

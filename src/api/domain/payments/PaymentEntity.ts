@@ -2,7 +2,7 @@
 import { SoftDeleteDocument } from 'mongoose-delete';
 
 
-  interface PaymentEntity extends SoftDeleteDocument {
+ export interface PaymentEntity extends SoftDeleteDocument {
 
   id: string;
   quantity?: number;
@@ -15,6 +15,18 @@ import { SoftDeleteDocument } from 'mongoose-delete';
   
 }
 
-export default PaymentEntity
 
 
+export interface TicketMPEntity extends SoftDeleteDocument {
+    collection_id: string;
+    collection_status: string;
+    payment_id: string;
+    payment_type: string;
+    merchant_order_id: string;
+    preference_id: string;
+    site_id: string;
+    processig_mode: string;
+    merchant_account_id: string;
+
+
+}
