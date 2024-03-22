@@ -105,6 +105,8 @@ console.log(updated);
   }
 
   public async findOneItem(query: Object, populateConfig1?: any, populateConfig2?:any): Promise<any> {    
+    console.log(query,'mongo repository');
+    
     return await this.MODEL.findOne({ ...query, deleted: false }).populate(
       populateConfig1).populate(populateConfig2);
   }

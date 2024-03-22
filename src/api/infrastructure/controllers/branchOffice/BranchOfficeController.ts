@@ -156,7 +156,6 @@ export class BranchOfficeController extends ResponseData {
         const { id } = req.params
         const { user_id, description, location, opening_time, closing_time, name } = req.body;
 
-
         if (req.files) {
             const paths: string[] = [];
             const urls: string[] = [];

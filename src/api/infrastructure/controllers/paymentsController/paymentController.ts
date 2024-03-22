@@ -45,9 +45,8 @@ export class PaymentController extends ResponseData {
         try {
 
             const { response, success, message } = await this.mpService.createLinkMP(values)
-
             if (success === true) {
-
+               
                 this.invoke(response?.init_point, 201, res, 'Registro exitoso', next);
             }
             if (success === false) {
@@ -60,10 +59,17 @@ export class PaymentController extends ResponseData {
             next(new ErrorHandler('Error', 500));
         }
     }
+
     public async createTicket(req: Request, res: Response, next: NextFunction) {
-        const payment = req.query
-        console.log(payment);
         
+        const info = await this.mpService.reciveWebHook(req)
+        console.log(info);
+        
+        // if (info !== undefined && info.status ==='approved'){
+        //     const response = await this.paymentUseCase.createNewPayment({MP_info :info})
+            
+            
+        // }
         
         
     }
