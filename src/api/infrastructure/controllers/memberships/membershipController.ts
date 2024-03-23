@@ -36,15 +36,23 @@ export class MembershipsController extends ResponseData {
     }
 
     public async createMembership(req: Request, res: Response, next: NextFunction) {
-        const { name,price_standard, price_discount,service_quantity,status } = req.body;
-        
+        const { name, price_standard, discount_porcent, discount_products, service_quantity, type_cars } = req.body;
+    
         try {
-            const response = await this.membershipUseCase.createNewMembership( name,price_standard, price_discount,service_quantity,status);
+            let response;
+            if (discount_porcent) {
+                let discount = (price_standard * discount_porcent) / 100;
+                const price_discount = price_standard - discount;
+                response = await this.membershipUseCase.createNewMembership(name, price_standard, discount_porcent, discount_products, price_discount, service_quantity, type_cars);
+            } else {
+                response = await this.membershipUseCase.createNewMembership(name, price_standard, discount_products, service_quantity, type_cars);
+            }
             this.invoke(response, 201, res, 'Alta con exito', next);
         } catch (error) {
             next(new ErrorHandler('Error al dar de alta', 500));
         }
     }
+    
 
     public async updateMembership(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;

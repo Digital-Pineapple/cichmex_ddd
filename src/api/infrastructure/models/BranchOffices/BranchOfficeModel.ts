@@ -1,5 +1,5 @@
 import mongoose, {model, Schema } from "mongoose";
-import { BranchOfficeEntity, ILocation } from '../../domain/branch_office/BranchOfficeEntity';
+import { BranchOfficeEntity, ILocation } from '../../../domain/branch_office/BranchOfficeEntity';
 
 
 import MongooseDelete = require("mongoose-delete");
@@ -40,6 +40,7 @@ const IlocationSchema = new mongoose.Schema<ILocation>(
        user_id: {
         type: mongoose.Types.ObjectId,
         required:true,
+        ref:'User'
       },
       name: {
         type: String,
@@ -69,7 +70,11 @@ const IlocationSchema = new mongoose.Schema<ILocation>(
         type:String,
         required:false
       },
-      location:IlocationSchema
+      location:IlocationSchema,
+      services :{
+        type: Array,
+        required:false
+      }
      
     },
     {

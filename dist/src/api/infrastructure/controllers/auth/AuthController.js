@@ -55,11 +55,11 @@ class AuthController extends ResponseData_1.ResponseData {
             const { email, password } = req.body;
             try {
                 const response = yield this.authUseCase.signIn(email, password);
-                if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image === undefined) {
-                    response.user.profile_image ?
-                        response.user.profile_image = yield this.s3Service.getUrlObject(response.user.profile_image) :
-                        'No hay imagen de perfil';
-                }
+                // if (!(response instanceof ErrorHandler) && response.user.profile_image === undefined) {
+                //     response.user.profile_image ?
+                //         response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image) :
+                //         'No hay imagen de perfil'
+                // }
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {
@@ -119,8 +119,9 @@ class AuthController extends ResponseData_1.ResponseData {
                     const responsedefault = yield this.typeUserUseCase.getTypeUsers();
                     const def = responsedefault === null || responsedefault === void 0 ? void 0 : responsedefault.filter(item => item.name === 'Customer');
                     const TypeUser_id = def === null || def === void 0 ? void 0 : def.map(item => item._id);
-                    const code = (0, Utils_1.generateRandomCode)();
-                    const resp = yield this.authUseCase.signUpPlatform({ email: response === null || response === void 0 ? void 0 : response.email, fullname: response === null || response === void 0 ? void 0 : response.fullname, accountVerify: code, type_user: TypeUser_id, google: true });
+                    // const code = generateRandomCode();
+                    const resp = yield this.authUseCase.signUp2({ email: response === null || response === void 0 ? void 0 : response.email, fullname: response === null || response === void 0 ? void 0 : response.fullname, type_user: TypeUser_id, google: true, profile_image: response === null || response === void 0 ? void 0 : response.picture });
+                    // const resp = await this.authUseCase.signUpPlatform({ email: response?.email, fullname: response?.fullname, accountVerify: code, type_user: TypeUser_id, google: true });
                     this.invoke(resp, 200, res, '', next);
                 }
                 else {
@@ -180,7 +181,9 @@ class AuthController extends ResponseData_1.ResponseData {
             const { user } = req;
             try {
                 const find = yield this.authUseCase.findUser(user.email);
-                const response = yield this.authUseCase.generateToken(user);
+                const url = yield this.s3Service.getUrlObject(find.profile_image + ".jpg");
+                find.profile_image = url;
+                const response = yield this.authUseCase.generateToken(find);
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {

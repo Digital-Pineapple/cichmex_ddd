@@ -13,6 +13,7 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { sendMail } from '../../../../shared/infrastructure/nodemailer/emailer';
 import { IGoogleResponse } from '../../../application/authentication/AuthenticationService';
 import { IncomingClientScope } from 'twilio/lib/jwt/ClientCapability';
+import { errorMonitor } from 'nodemailer/lib/xoauth2';
 
 
 export class UserController extends ResponseData {
@@ -36,9 +37,11 @@ export class UserController extends ResponseData {
         this.verifyEmail = this.verifyEmail.bind(this);
         this.deletePhone = this.deletePhone.bind(this);
         this.signUpByPhone = this.signUpByPhone.bind(this);
+        this.signUpPartnerByPhone = this.signUpPartnerByPhone.bind(this);
         this.updateUser = this.updateUser.bind(this);
         this.deleteUser = this.deleteUser.bind(this);
         this.loginPhone = this.loginPhone.bind(this);
+        this.physicalDeletePhone = this.physicalDeletePhone.bind(this)
 
     }
 
@@ -102,9 +105,15 @@ export class UserController extends ResponseData {
             const code = generateRandomCode();
             const phoneC = prefix + phone_number
             const phoneString = phoneC.toString()
-            await this.twilioService.sendSMS(phoneString,`CarWash autolavado y más. Código de verificación - ${code}`)
-            const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
-            this.invoke(newPhone, 200, res, '', next);
+            const noRepeat = await this.phoneUserUseCase.findOnePhone(phone_number)
+            if ( noRepeat == null) {
+                await this.twilioService.sendSMS(phoneString,`CarWash autolavado y más. Código de verificación - ${code}`)
+                const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
+                this.invoke(newPhone, 200, res, '', next);
+              
+            }else{
+                next (new ErrorHandler('telefono ya existe',500))
+            }
         } catch (error) {
             console.error('Error:', error);
             this.invoke(error, 500, res, 'Error interno del servidor', next);
@@ -131,6 +140,8 @@ export class UserController extends ResponseData {
     public async verifyPhone(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
         const { id } = req.params
         const { code } = req.body;
+        console.log(req);
+        
         try {
             const infoPhone = await this.phoneUserUseCase.getOnePhone(id)
 
@@ -180,6 +191,20 @@ export class UserController extends ResponseData {
         }
     }
 
+
+    public async physicalDeletePhone(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
+        const { id } = req.params
+        try {
+            const response = await this.phoneUserUseCase.deletePhysicalPhone(id)
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error);
+            
+            next(new ErrorHandler('Hubo un error al eliminar', 500));
+        }
+    }
+
+
     public async getVerifyEmail(req: Request, res: Response, next: NextFunction): Promise<IGoogleResponse | ErrorHandler | void> {
         const { id } = req.params
         
@@ -187,7 +212,8 @@ export class UserController extends ResponseData {
             const response = await this.userUseCase.getUserEmail(id)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-            next(new ErrorHandler('Hubo un error al eliminar', 500));
+            
+            next(new ErrorHandler('Hubo un error', 500));
         }
     }
 
@@ -205,6 +231,23 @@ export class UserController extends ResponseData {
         } catch (error) {
             console.log(error)
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
+        }
+    }
+
+    public async signUpPartnerByPhone(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
+        const { fullname, email, password, phone_id } = req.body
+        try {
+
+            const responsedefault = await this.typeUserUseCase.getTypeUsers()
+            const def = responsedefault?.filter(item => item.name === 'Partner')
+            const TypeUser_id = def?.map(item => item._id)
+            const response = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser_id })
+            // await sendMail(email, fullname)
+            this.invoke(response, 200, res, '', next);
+
+        } catch (error) {
+            console.log(error)
+            next(new ErrorHandler('Hubo un error ', 500));
         }
     }
 
@@ -238,11 +281,11 @@ export class UserController extends ResponseData {
     }
     public async updateUser(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { fullname, type_customer } = req.body;
+        const { fullname } = req.body;
         try {
             if (req.file) {
                 const pathObject = `${this.path}/${id}/${fullname}`;
-                const response = await this.userUseCase.updateUser(id, { fullname, type_customer, profile_image: pathObject })
+                const response = await this.userUseCase.updateUser(id, { fullname, profile_image: pathObject })
                 if (!(response instanceof ErrorHandler)) {
                     const { url, success } = await this.s3Service.uploadToS3AndGetUrl(
                         pathObject + ".jpg",
@@ -265,7 +308,6 @@ export class UserController extends ResponseData {
             } else {
                 const response = await this.userUseCase.updateUser(id, {
                     fullname,
-                    type_customer,
                 });
                 this.invoke(
                     response,

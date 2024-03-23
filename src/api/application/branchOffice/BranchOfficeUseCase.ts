@@ -1,4 +1,5 @@
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
+import { BranchPopulateConfig } from "../../../shared/domain/PopulateInterfaces";
 import { BranchOfficeEntity, ILocation } from "../../domain/branch_office/BranchOfficeEntity";
 import { BranchOfficeRepository } from "../../domain/branch_office/BranchOfficeRepository";
 import { body } from 'express-validator';
@@ -17,7 +18,13 @@ export class BranchOfficeUseCase {
   public async getDetailBranchOffice(
     _id: string
   ): Promise<BranchOfficeEntity | null> {
-    return await this.branchOfficeRepository.findById(_id);
+    return await this.branchOfficeRepository.findByIdPupulate(_id, BranchPopulateConfig);
+  }
+
+  public async getBranchesUser(
+    _id: string
+  ): Promise<BranchOfficeEntity[] | null> {
+    return await this.branchOfficeRepository.findByUser(_id)
   }
 
 
@@ -43,6 +50,8 @@ export class BranchOfficeUseCase {
   ): Promise<BranchOfficeEntity | ILocation | null> {
     return await this.branchOfficeRepository.updateOne(_id, updated);
   }
+
+
   public async deleteOneBranchOffice(
     _id: string
   ): Promise<BranchOfficeEntity | null> {

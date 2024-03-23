@@ -1,4 +1,4 @@
-import { Authentication, IGoogle, IGoogleRegister, IGoogleResponse, IGoogleResponseLogin, IdUserAndVerified } from '../authentication/AuthenticationService';
+import { Authentication, IGoogle, IGoogleReg, IGoogleRegister, IGoogleResponse, IGoogleResponseLogin, IdUserAndVerified } from '../authentication/AuthenticationService';
 
 import { AuthRepository } from '../../domain/auth/AuthRepository';
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
@@ -8,7 +8,7 @@ import { IAuth } from '../authentication/AuthenticationService';
 import { MomentService } from '../../../shared/infrastructure/moment/MomentService';
 import { IFileKeys, IPhoneRequest } from './interfaces';
 import { UserEntity } from '../../domain/user/UserEntity';
-import { UserPopulateConfig } from '../../../shared/domain/PopulateInterfaces'
+import { BranchPopulateConfig, PhonePopulateConfig, TypeUserPopulateConfig, UserPopulateConfig } from '../../../shared/domain/PopulateInterfaces'
 import {  sendVerifyMail } from '../../../shared/infrastructure/nodemailer/emailer';
 
 export class AuthUseCase extends Authentication {
@@ -19,8 +19,8 @@ export class AuthUseCase extends Authentication {
 
     async signIn(email: string, password: string): Promise<ErrorHandler | IAuth> {
 
-
-        const user = await this.authRepository.findOneItem({ email });
+        const user = await this.authRepository.findOneItem({ email }, TypeUserPopulateConfig, PhonePopulateConfig);
+        
         if (!user) return new ErrorHandler('No exite este usuario', 400);
         const validatePassword = this.decryptPassword(password, user.password)
         
@@ -30,8 +30,8 @@ export class AuthUseCase extends Authentication {
     }
 
 
-    async findUser(email: string): Promise<ErrorHandler | IAuth> {
-        let customer = await this.authRepository.findOneItem({ email });
+    async findUser(email: string): Promise<  UserEntity> {
+        let customer = await this.authRepository.findOneItem({ email },PhonePopulateConfig, TypeUserPopulateConfig);
         return await (customer);
     }
 
@@ -58,6 +58,25 @@ export class AuthUseCase extends Authentication {
                 const newUser = await this.authRepository.createOne({ ...body,password:newPassword });
                 const newUserResponse = { user_id: newUser._id, verified: newUser.email_verified, email: newUser.email };
                 return newUserResponse;
+            }
+        } catch (error) {
+
+            throw new ErrorHandler('Error en el proceso de registro', 500);
+        }
+    }
+
+    async signUp2(body: any): Promise<IGoogleReg | IAuth | ErrorHandler | null> {
+        try {
+            const user = await this.authRepository.findOneItem({ email: body.email });
+            if (user) {
+                    return new ErrorHandler('Este correo ya se encuentra registrado', 409);
+                
+            } else {
+                //  const newPassword = await this.encryptPassword(body.password)
+                const newUser = await this.authRepository.createOne({ ...body});
+                const newUserResponse = { user_id: newUser._id,email: newUser.email, fullname:newUser.fullname, profile_image:newUser.profile_image };
+                const user = this.generateJWT(newUserResponse)
+                return user;
             }
         } catch (error) {
 
@@ -92,23 +111,28 @@ export class AuthUseCase extends Authentication {
         let { email, picture } = await this.validateGoogleToken(idToken);
         
         let user = await this.authRepository.findOneItem({ email });
-        if (user.email_verified === true) {
-            user.profile_image = picture
-            user = await this.generateJWT(user);
-        }
-        if (user.email_verified === false) {
-            const user2: IGoogleResponseLogin = { user_id: user?._id, verified: user?.email_verified, email: user?.email, profile_image: picture }
-            user = user2
-        }
+        // if (user.email_verified === true) {
+        //     user.profile_image === picture
+        //     user = await this.generateJWT(user);
+        // }
+        // if (user.email_verified === false) {
+        //     const user2: IGoogleResponseLogin = { user_id: user?._id, verified: user?.email_verified, email: user?.email, profile_image: picture }
+        //     user = user2
+        // }
         if (!user) return new ErrorHandler('No existe usuario', 409)
+        user.profile_image = picture
+        user = await this.generateJWT(user)
         
         return user
     }
 
     async signUpWithGoogle(idToken: string): Promise<IGoogle | ErrorHandler | null> {
-        let { email, fullname, picture } = await this.validateGoogleToken(idToken);
-        let user = await this.authRepository.findOneItem({ email: email, deleted:true })
-        if (user?.email) {
+
+        let {email,fullname,picture} = await this.validateGoogleToken(idToken);
+    
+        
+        let user = await this.authRepository.findOneItem({ email: email, deleted:false }, TypeUserPopulateConfig,PhonePopulateConfig)
+        if (user) {
             return new ErrorHandler('El usuario ya exite favor de iniciar sesión', 401)
         }
         if (!user) {
@@ -116,6 +140,7 @@ export class AuthUseCase extends Authentication {
         }
 
         return user
+       
 
     }
 

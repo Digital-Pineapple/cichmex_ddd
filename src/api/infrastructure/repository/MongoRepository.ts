@@ -38,8 +38,9 @@ export abstract class MongoRepository {
   ): Promise<any> {
     return await this.MODEL.findById(_id)
       .populate(populateConfig)
-      .then((res) => res?._id);
+    
   }
+
   public async findNameById(_id: String, populateConfig?: any): Promise<any> {
     return await this.MODEL.findById(_id)
       .populate(populateConfig)
@@ -51,8 +52,11 @@ export abstract class MongoRepository {
   public async findByPhoneNumber(phone_number: string): Promise<any> {
     return await this.MODEL.find({ phone_number: phone_number, deleted: false });
   }
-  public async findByCustomer(customer_id: string): Promise<any> {
-    return await this.MODEL.find({ customer_id: customer_id, status: true });
+  public async findByUser(_id: string): Promise<any> {
+    return await this.MODEL.find({ user_id:_id, deleted: false });
+  }
+  public async findByUserAndVerify(_id: string): Promise<any> {
+    return await this.MODEL.find({ user_id:_id, deleted: false, verify:true });
   }
   public async findByPlateNumber(
     plate_number: string,
@@ -85,6 +89,10 @@ export abstract class MongoRepository {
 
   public async softDelete(_id: any, date_service: Date): Promise<any> {
     return await this.MODEL.findByIdAndUpdate(_id, { deleted: true, date_service }, { new: true })
+  }
+
+  public async PhysicalDelete(_id: any): Promise<any> {
+    return await this.MODEL.deleteOne({_id:_id})
   }
 
   public async createOne(body: object): Promise<any> {

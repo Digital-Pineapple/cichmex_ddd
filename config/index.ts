@@ -28,6 +28,7 @@ export type Configuration = {
     TWILIO_AUTH_TOKEN   :   string;
     TWILIO_PHONE_NUMBER :   string;
     MY_NUMBER           :   string;
+    DIR_NODEMAILER      :   string;
 };
 
 

@@ -1,20 +1,25 @@
 import mongoose, {  Schema } from "mongoose";
 
 import MongooseDelete = require("mongoose-delete");
+import { TypeCarEntity } from "../typeCar/TypeCarEntity";
 
 
 export interface MembershipEntity extends MongooseDelete.SoftDeleteDocument {
   name: string;
   price_standard: number;
+  discount_porcent?: number,
+  discount_products?:number,
   price_discount?: number;
   service_quantity?: [ServiceQuantity];
-  status?: boolean;
+  type_cars ?:[string]
+  
+
 }
 
 export interface ServiceQuantity {
   service_id: {
     type: Schema.Types.ObjectId;
-    ref: "Service";
+    ref: "Services";
   };
   quantity: {
     type: number;

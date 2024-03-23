@@ -26,7 +26,7 @@ export class ServiceCustomerUseCase {
   public async getServiceCustomerByCustomer(
     customer_id: string
   ): Promise<ServiceCustomer | ErrorHandler | null> {
-    return await this.servicesCustomerRepository.findByCustomer(customer_id);
+    return await this.servicesCustomerRepository.findByUser(customer_id);
   }
 
   public async createNewServiceCustomer(
@@ -97,6 +97,6 @@ export class ServiceCustomerUseCase {
     // );
     console.log(service.services.filter((service:IServices) => service._id === service_id) );
     
-    return await this.servicesCustomerRepository.updateOne(id, service);
+    return await this.servicesCustomerRepository.updateOne(_id, service);
   }
 }

@@ -33,6 +33,11 @@ export class UserPhoneUseCase extends Authentication {
     const phoneResponse : IPhoneResponse = { phone_id: phone._id, verified: phone.verified, phone_number: phone.phone_number };
     return phoneResponse;
  }
+
+ public async findOnePhone(phone_number: string): Promise<IPhone | null > {
+  return  await this.phoneRepository.findOneItem({phone_number:phone_number})
+}
+
   public async createUserPhone(phone: IPhone, phoneNumber: string): Promise<IPhone |IPhoneResponse | ErrorHandler | null> {
     const noRepeat = await this.phoneRepository.findByPhoneNumber(phoneNumber)
     if (noRepeat.length > 0 ) return new ErrorHandler('El telefono ya ha sido registrado',400);
@@ -50,6 +55,9 @@ export class UserPhoneUseCase extends Authentication {
   }
   public async deletePhone(id: string): Promise<IPhone | ErrorHandler | null> {
     return await this.phoneRepository.updateOne(id, { deleted: true})
+  }
+  public async deletePhysicalPhone(id: string): Promise<IPhone | ErrorHandler | null> {
+    return await this.phoneRepository.PhysicalDelete(id)
   }
  
 

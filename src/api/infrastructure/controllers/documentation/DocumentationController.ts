@@ -3,6 +3,7 @@ import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 import { DocumentationUseCase } from '../../../application/documentation/DocumentationUseCase';
+import { IRespFile } from '../../../domain/documentation/DocumentationsEntity';
 
 
 export class DocumentationController extends ResponseData {
@@ -25,7 +26,7 @@ export class DocumentationController extends ResponseData {
     public async getAllDocumentations(req: Request, res: Response, next: NextFunction) {
         try {
             const response = await this.documentationUseCase.getDocumentations();
-            await Promise.all(response?.map(async (res) => {
+            await Promise.all(response?.map(async (res: any) => {
                 const url = await this.s3Service.getUrlObject(res.url + ".pdf");
                 res.url = url;
             }));
@@ -40,8 +41,12 @@ export class DocumentationController extends ResponseData {
         try {
             const documentation = await this.documentationUseCase.getDetailDocumentation(id);
             const url = await this.s3Service.getUrlObject(documentation?.url + ".pdf");
-            documentation.url = url;
-            this.invoke(documentation, 200, res, '', next)
+            if (documentation !== null) {
+                
+                documentation.url = url;
+                this.invoke(documentation, 200, res, '', next)
+            }
+            return this.invoke(documentation,200,res,'',next)
         } catch (error) {
             next(new ErrorHandler('Error al encontrar la documentacion', 404));
         }
@@ -49,19 +54,21 @@ export class DocumentationController extends ResponseData {
 
     public async createDocumentation(req: Request, res: Response, next: NextFunction) {
 
-        const { user_id, name, status, message, verify } = req.body;
+        const { user_id, name, message, verify } = req.body;
 
-        const ok = await this.documentationUseCase.getDocumentByNameAndCustomer(user_id, name);
+        const noRepeat = await this.documentationUseCase.getDocumentByNameAndCustomer(user_id, name);
         try {
             const pathObject = `${this.path}/${user_id}/${name}`;
-            if (ok.length <= 0) {
+            if (noRepeat !== null && !(noRepeat instanceof ErrorHandler)) {
 
-                const { success,url, key } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".pdf", req.file, "application/pdf");
+                const { success,url } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".pdf", req.file, "application/pdf");
                 if (!success) {
                     return new ErrorHandler('Hubo un error al subir el documento', 400);
                 }
-                const file = await this.documentationUseCase.createNewDocumentation(name, message, status, user_id,pathObject, verify);
-                file.url = url
+                const file = await this.documentationUseCase.createNewDocumentation(name, message, user_id,pathObject, verify);
+                if (file !== null && !(file instanceof ErrorHandler)) {     
+                    file.url = url
+                }
                 this.invoke(file, 201, res, 'El documento se creó con éxito', next);
             } else {
 
@@ -102,7 +109,7 @@ export class DocumentationController extends ResponseData {
         const { id } = req.params;
 
         try {
-            const documentation = await this.documentationUseCase.updateOneDocumentation(id, { status: false });
+            const documentation = await this.documentationUseCase.updateOneDocumentation(id, { deleted: true });
             this.invoke(documentation, 200, res, 'La documentación ha sido eliminado', next);
         } catch (error) {
             console.log(error);
@@ -113,15 +120,18 @@ export class DocumentationController extends ResponseData {
 
     public async getAllDocumentationsByCustomer(req: Request, res: Response, next: NextFunction) {
         const {id } = req.params;
-        console.log(id);
-        
         try {
-             const response = await this.documentationUseCase.getDocumentationByCustomer(id);
-            await Promise.all(response.map(async (res) => {
-                const url = await this.s3Service.getUrlObject(res.url + ".pdf");
-                res.url = url;
-            }));
-            this.invoke(response, 200, res, '', next);
+             const response = await this.documentationUseCase.getDocumentationByUser(id);
+             if (!(response instanceof ErrorHandler)) {
+                
+                 await Promise.all(response != null ? response.map(async (res:any) => {
+                     const url = await this.s3Service.getUrlObject(res.url + ".pdf");
+                     res.url = url;
+                 }):'');
+                return this.invoke(response, 200, res, '', next);
+             }
+            return this.invoke(response,200,res,'', next)
+             
         } catch (error) {
             console.log(error);
             
@@ -131,15 +141,14 @@ export class DocumentationController extends ResponseData {
     }
 
     public async validateDocumentation(req: Request, res: Response, next: NextFunction) {
-        const { _id, message, verify } = req.body;
-        console.log(_id, verify);
-        if (_id !== undefined ) {
-            try {
-                const documentation = await this.documentationUseCase.updateOneDocumentation(_id, { verify, message })
-                this.invoke(documentation, 200, res, "Se valido con éxito", next)
-            } catch (error) {
-                next(new ErrorHandler(`Hubo un error: ${error}`, 500));
-            }
+        const { id, message, verify } = req.body;
+        
+        const info = await this.documentationUseCase.getDetailDocumentation(id)
+        if (info !== null ) {
+                const documentation = await this.documentationUseCase.updateOneDocumentation(id, { verify, message })
+                if (documentation !== null) {
+                    this.invoke(documentation, 201, res, "Se valido con éxito", next)
+                }
         }else{
             next(new ErrorHandler(`Hubo un error `, 500));
         }

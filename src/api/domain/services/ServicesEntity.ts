@@ -1,6 +1,8 @@
 import { SubCategory } from "../subCategory/SubCategoryEntity";
 
-export interface ServicesEntity {
+import MongooseDelete = require("mongoose-delete");
+
+export interface ServicesEntity extends MongooseDelete.SoftDeleteInterface {
     name: string;
     description: string;
     image?: string;

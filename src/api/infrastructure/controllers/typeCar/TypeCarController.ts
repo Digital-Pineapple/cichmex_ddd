@@ -62,7 +62,7 @@ export class TypeCarController extends ResponseData {
                 const pathObject = `${this.path}/${id}/${name}`;
                 const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
                 if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-                const response = await this.typeCarUseCase.updateTypeCar(id, {name,status, typeCar_image:pathObject});
+                const response = await this.typeCarUseCase.updateTypeCar(id, {name, typeCar_image:pathObject});
                 response.typeCar_image = url;
                 this.invoke(response, 201, res, 'El tipo de auto se actualizó con éxito', next);
             }else{

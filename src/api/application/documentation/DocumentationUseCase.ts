@@ -15,9 +15,13 @@ export class DocumentationUseCase {
         return await this.documentRepository.findById(_id);
     }
 
-    public async getDocumentationByCustomer(customer_id: string): Promise<IFile | ErrorHandler | null> {
+    public async getDocumentationByUser(_id: string): Promise<IFile | ErrorHandler | null> {
         
-        return await this.documentRepository.findByCustomer(customer_id);
+        return await this.documentRepository.findByUser(_id)
+    }
+    public async getDocumentationByUserAndVerify(_id: string): Promise<IFile | ErrorHandler | null> {
+        
+        return await this.documentRepository.findByUserAndVerify(_id)
     }
 
     public async getDocumentByNameAndCustomer(customer_id: string, name:string ): Promise<IFile | ErrorHandler | null> {
@@ -27,11 +31,11 @@ export class DocumentationUseCase {
 
     
     
-    public async createNewDocumentation(name: string , message: string, status: boolean, customer_id: any,  url: any, verify: boolean ): Promise<IFile | ErrorHandler | null> {
-        const customer = await this.documentRepository.findOneItem({ customer_id, name });
-        if (customer) { return new ErrorHandler('Ya existe documentacion en este usuario xd', 400)}
+    public async createNewDocumentation(name: string , message: string, user_id: any,  url: any, verify: boolean ): Promise<IFile | ErrorHandler | null> {
+        const customer = await this.documentRepository.findOneItem({ user_id, name });
+        if (customer) { return new ErrorHandler('Ya existe documentacion en este usuario', 400)}
         else{
-        return await this.documentRepository.createOne({ name, url, status, message,customer_id, verify });}
+        return await this.documentRepository.createOne({ name, url, message,user_id, verify });}
     }
     
 

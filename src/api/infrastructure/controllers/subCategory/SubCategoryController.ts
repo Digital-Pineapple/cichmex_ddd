@@ -49,10 +49,10 @@ export class SubCategoryController extends ResponseData {
     }
 
     public async createSubCategory(req: Request, res: Response, next: NextFunction) {
-        const { name, category_id } = req.body;
+        const { name, category } = req.body;
         
         try {
-            const response = await this.subCategoryUseCase.createNewSubCategory(name, category_id);
+            const response = await this.subCategoryUseCase.createNewSubCategory(name, category);
             this.invoke(response, 201, res, 'La subcategoria se creo con exito', next);
         } catch (error) {
             console.log(error);

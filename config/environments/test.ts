@@ -26,6 +26,7 @@ const TEST : Configuration = {
     TWILIO_AUTH_TOKEN   :   process.env.TWILIO_AUTH_TOKEN!,
     TWILIO_PHONE_NUMBER :   process.env.TWILIO_PHONE_NUMBER!,
     MY_NUMBER           :   process.env.MY_NUMBER!,
+    DIR_NODEMAILER      :   process.env.DIR_NODEMAILER!,
 }
 
 

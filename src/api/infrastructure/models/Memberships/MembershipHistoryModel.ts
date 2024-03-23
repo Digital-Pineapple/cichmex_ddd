@@ -1,5 +1,5 @@
 import mongoose, {model, Schema } from "mongoose";
-import { MembershipHistory } from "../../domain/membership/MembershipEntity";
+import { MembershipHistory } from "../../../domain/membership/MembershipEntity";
 
 import MongooseDelete = require("mongoose-delete");
 

@@ -54,7 +54,7 @@ export class UserUseCase extends Authentication {
   }
 
   async signInByPhone(phone_id: string, password: string): Promise<ErrorHandler | IAuth> {
-    const user = await this.userRepository.findOneItem({phone_id})
+    const user = await this.userRepository.findOneItem({phone_id}, TypeUserPopulateConfig, PhonePopulateConfig)
     if (!user) return new ErrorHandler('No exite este usuario', 400);
     const validatePassword = this.decryptPassword(password, user.password)
     if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);

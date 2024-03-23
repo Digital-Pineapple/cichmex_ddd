@@ -18,6 +18,7 @@ import productRouter from './product';
 import stockBranchRouter from './StockBranch';
 import typeUserRouter from './typeUser';
 import userRouter from './user';
+import servicesInBranchRouter from './servicesInBranch';
 
 export const apiRouter = (): Router => {
 
@@ -25,9 +26,10 @@ export const apiRouter = (): Router => {
 
     apiRouter.use('/auth', authRouter);
     apiRouter.use('/user', userRouter);
-    apiRouter.use('/auth/admin', authAdminRouter);
-    // apiRouter.use('/customer', customerRouter);
+    // apiRouter.use('/auth/admin', authAdminRouter);
+    //apiRouter.use('/customer', customerRouter);
     apiRouter.use('/services', serviceRouter);
+    apiRouter.use('/services-branch', servicesInBranchRouter);
     apiRouter.use('/type-car', typeCarRouter)
     apiRouter.use('/type-user', typeUserRouter)
     apiRouter.use('/category', categoryRouter)
@@ -37,10 +39,10 @@ export const apiRouter = (): Router => {
     apiRouter.use('/service-customer', serviceCustomerRouter)
     apiRouter.use('/car_detail', carDetailRouter)
     apiRouter.use('/memberships', membershipRouter)
-    apiRouter.use('/membership-benefits', membershipBenefitRouter )
-    apiRouter.use('/branch-offices', branchOfficeRouter )
-    apiRouter.use('/product', productRouter )
-    apiRouter.use('/stock-branch', stockBranchRouter )
+    apiRouter.use('/membership-benefits', membershipBenefitRouter)
+    apiRouter.use('/branch-offices', branchOfficeRouter)
+    apiRouter.use('/product', productRouter)
+    apiRouter.use('/stock-branch', stockBranchRouter)
 
 
 
@@ -52,19 +54,20 @@ apiRouterx.use('/auth', authRouter);
 // apiRouterx.use('/auth/admin', authAdminRouter);
 // apiRouterx.use('/customer', customerRouter);
 apiRouterx.use('/services', serviceRouter);
+apiRouterx.use('services-branch', servicesInBranchRouter)
 apiRouterx.use('/type-car', typeCarRouter)
 apiRouterx.use('/type-user', typeUserRouter)
 apiRouterx.use('/category', categoryRouter)
 apiRouterx.use('/sub-category', subCategoryRouter)
-apiRouterx.use('/commission',commissionRouter)
-apiRouterx.use('/documentation',documentationRouter)
+apiRouterx.use('/commission', commissionRouter)
+apiRouterx.use('/documentation', documentationRouter)
 apiRouterx.use('/service-customer', serviceCustomerRouter)
 apiRouterx.use('/car-detail', carDetailRouter)
 apiRouterx.use('/memberships', membershipRouter)
 apiRouterx.use('/membership-benefit', membershipBenefitRouter)
 apiRouterx.use('/branch-offices', branchOfficeRouter)
 apiRouterx.use('/product', productRouter)
-apiRouterx.use('/stock-branch', stockBranchRouter )
+apiRouterx.use('/stock-branch', stockBranchRouter)
 
 
 export default apiRouter

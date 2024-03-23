@@ -29,14 +29,15 @@ export const checkTypeUserAuth = (type_user: string | string[]) => async (req: R
     try {
         const token = req.headers.authorization?.split(' ').pop();
         
+        
         if (!token) {
             throw new ErrorHandler('Token es requerido', 401);
         }
         
         const tokenData = await verifyToken(token);
-        
-        const userData = await UserModel.findById(tokenData.user._id);
 
+        const userData = await UserModel.findById(tokenData.user._id);
+       
         if (!userData) {
             throw new ErrorHandler('Usuario no encontrado', 404);
         }
@@ -44,7 +45,7 @@ export const checkTypeUserAuth = (type_user: string | string[]) => async (req: R
         const userTypes = Array.isArray(type_user) ? type_user : [type_user];
         
         // Convertir userData.type_user a ObjectId si es un string
-        const userTypeString = userData.type_user instanceof ObjectId ? userData.type_user.toString() : userData.type_user;
+        const userTypeString = userData.type_user?._id ? userData.type_user._id?.toString() :''
         
         if (!userTypes.includes(userTypeString)) {
             throw new ErrorHandler('No tiene permisos necesarios', 403);

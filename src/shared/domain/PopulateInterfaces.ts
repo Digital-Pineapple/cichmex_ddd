@@ -1,4 +1,5 @@
 import ProductModel from '../../api/infrastructure/models/ProductModel';
+import ServiceModel from '../../api/infrastructure/models/ServicesModel';
 import SubCategoryModel from '../../api/infrastructure/models/SubCategoryModel';
 export interface IAuthPopulateConfig {
     path    : string;
@@ -33,6 +34,15 @@ export const typeCarPopulateConfing: ICarServicePopulateConfig= {
     path: '_id',
     select: 'name',
 }
+export const typeCarMembershipPopulateConfing: ICarServicePopulateConfig= {
+    path: 'type_cars',
+    select: 'name',
+}
+export const ServicesMembershipPopulateConfing: IStockPopulateConfig= {
+    path: `service_quantity.service_id`,
+    select: ['name','description'],
+    model: ServiceModel
+}
 
 export const stockBranchPopulateConfig : IStockPopulateConfig ={
     path: 'product_id',
@@ -58,5 +68,10 @@ export const PhonePopulateConfig : IUserPopulateConfig ={
 export const UserPopulateConfig : IUserPopulateConfig ={
     path: 'typeUser',
     select: ['name' ],
-  
+}
+
+
+export const BranchPopulateConfig : IUserPopulateConfig={
+    path: 'user_id',
+    select: ["fullname",'_id','email'  ],
 }
