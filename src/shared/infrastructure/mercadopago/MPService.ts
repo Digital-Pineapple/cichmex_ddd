@@ -30,9 +30,9 @@ export class MPService {
                         
                     },
                     back_urls: {
-                        "success": "https://localhost:3000/auth/PagoExitoso",
-                        "failure": "https://localhost:3000/auth/inicio",
-                        "pending": "https://localhost:3000/auth/inicio"
+                        "success": "https://carwashymas.com/auth/PagoExitoso",
+                        "failure": "https://carwashymas.com/auth/inicio",
+                        "pending": "https://carwashymas.com/auth/inicio"
                     },
                     auto_return: "approved",
                     notification_url:'https://api.carwashymas.com/api/payments/success',
