@@ -29,6 +29,7 @@ export type Configuration = {
     TWILIO_PHONE_NUMBER :   string;
     MY_NUMBER           :   string;
     DIR_NODEMAILER      :   string;
+    MERCADOPAGO_TOKEN   :   string;
 };
 
 

@@ -82,8 +82,9 @@ export abstract class MongoRepository {
     });
   }
   public async updateOne(_id: String, updated: object): Promise<any> {
+console.log(updated);
 
-    return await this.MODEL.findByIdAndUpdate(_id, updated, { new: true });
+    return await this.MODEL.findByIdAndUpdate(_id, updated, { new: true, });
   }
 
 
@@ -104,6 +105,8 @@ export abstract class MongoRepository {
   }
 
   public async findOneItem(query: Object, populateConfig1?: any, populateConfig2?:any): Promise<any> {    
+    console.log(query,'mongo repository');
+    
     return await this.MODEL.findOne({ ...query, deleted: false }).populate(
       populateConfig1).populate(populateConfig2);
   }

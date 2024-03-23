@@ -21,13 +21,13 @@ export interface BranchOfficeEntity extends MongooseDelete.SoftDeleteDocument {
 
 
 export interface ILocation extends MongooseDelete.SoftDeleteDocument{
+  state_id?:string;
   state?: string;
+  municipality_id?:string;
   municipality?: string;
   lat?: number;
   lgt?: number;
   direction ?: string;
-  createdAt       ?:   NativeDate;
-  updatedAt       ?:   NativeDate;
 }
 
 export interface BranchOfficeEntityICR extends MongooseDelete.SoftDeleteDocument {

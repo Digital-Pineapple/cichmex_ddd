@@ -1,19 +1,14 @@
 import multer from 'multer';
-
 import { body } from 'express-validator';
-
 import { RequestValidator } from '../RequestValidator';
 import { multerConfig } from '../../middleware/MulterConfig';
 import validateAuthentication from '../ValidateAuthentication';
 
-export class UserValidations {
+export class BranchOfficeValidations {
 
-    private upload  = multer(multerConfig);
-
+    private upload = multer(multerConfig); 
 
     readonly ImageValidation = [
-        validateAuthentication,
-        this.upload.array('images',3),
+        this.upload.array("images", 3),
     ]
-
 }

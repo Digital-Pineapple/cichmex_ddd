@@ -12,6 +12,7 @@ import { AuthValidations } from '../../../../shared/infrastructure/validation/Au
 import { TypeUsersRepository } from '../../repository/typeUser/TypeUsersRepository';
 import TypeUserModel from '../../models/TypeUserModel';
 import UserModel from '../../models/UserModel';
+import { MPService } from '../../../../shared/infrastructure/mercadopago/MPService';
 
 const authRouter = Router();
 
@@ -22,9 +23,10 @@ const typeUserRepository = new TypeUsersRepository(TypeUserModel)
 const typeUserUseCase = new TypeUserUseCase(typeUserRepository)
 
 const s3Service = new S3Service();
+const mpService = new MPService()
 const twilioService = new TwilioService();
 const authValidations = new AuthValidations();
-const authController = new AuthController(authUseCase, typeUserUseCase, s3Service, twilioService);
+const authController = new AuthController(authUseCase, typeUserUseCase, s3Service, twilioService, mpService);
 
 authRouter
 
@@ -39,5 +41,6 @@ authRouter
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', validateAuthentication, authController.verifyCode)
     .post('/verify-phone', authController.savePhone)
+    .post('/mercadoPago', authController.MercadoPagoPayment )
 export default authRouter;
 
