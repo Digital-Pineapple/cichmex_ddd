@@ -178,25 +178,6 @@ export class BranchOfficeController extends ResponseData {
     }
 
     public async updateBranchOffice(req: Request, res: Response, next: NextFunction) {
-<<<<<<< HEAD
-        const { id } = req.params
-        const { user_id, description, location, opening_time, closing_time, name } = req.body;
-
-        if (req.files) {
-            const paths: string[] = [];
-            const urls: string[] = [];
-            await Promise.all(req.files.map(async (item: any, index: number) => {
-                const pathObject: string = `${this.path}/${user_id}/${index}`;
-                const { url, success, key } = await this.s3Service.uploadToS3AndGetUrl(
-                    pathObject + ".jpg",
-                    item,
-                    "image/jpeg"
-                );
-                paths.push(pathObject);
-                urls.push(url)
-                if (!success) return new ErrorHandler("Hubo un error al subir la imagen", 400)
-                const response = await this.branchOfficeUseCase.updateBranchOffice(id, { description: description, location: location, opening_time: opening_time, closing_time: closing_time, images: paths, name: name })
-=======
         try {
             const { id } = req.params;
             const { user_id, description, location, opening_time, closing_time, name } = req.body;
@@ -234,7 +215,6 @@ export class BranchOfficeController extends ResponseData {
                 });
     
                 // Asignar las URLs de las imágenes a la respuesta
->>>>>>> bba920331b68e53544f521ab7f6cab5b5f38c633
                 if (!(response instanceof ErrorHandler)) {
                     response.images = urls;
                 }

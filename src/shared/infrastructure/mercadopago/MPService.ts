@@ -6,7 +6,6 @@ const mercadopago = require("mercadopago");
 export class MPService {
     private access_token = config.MERCADOPAGO_TOKEN;
     private preference: Preference;
-    private payment : Payment;
 
     constructor() {
         const client = new MercadoPagoConfig({ accessToken: this.access_token });
@@ -36,7 +35,7 @@ export class MPService {
                         "pending": "https://localhost:3000/auth/inicio"
                     },
                     auto_return: "approved",
-                    notification_url:'https://2579-2806-2a0-101b-413f-736-7fdf-2ec1-3ec1.ngrok-free.app/api/payments/success',
+                    notification_url:'https://eb76-177-247-97-248.ngrok-free.app/api/payments/success',
                 }
             });
 
