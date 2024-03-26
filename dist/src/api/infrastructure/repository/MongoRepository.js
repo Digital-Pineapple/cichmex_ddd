@@ -37,7 +37,6 @@ class MongoRepository {
     findOneStockByBranch(branch_id, product_id, populateConfig) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield this.MODEL.findOne({ product_id, branch_id }).populate(populateConfig);
-            console.log(result);
             return result;
         });
     }
@@ -127,7 +126,6 @@ class MongoRepository {
     }
     findOneItem(query, populateConfig1, populateConfig2) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(query, 'mongo repository');
             return yield this.MODEL.findOne(Object.assign(Object.assign({}, query), { deleted: false })).populate(populateConfig1).populate(populateConfig2);
         });
     }
@@ -151,7 +149,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiohistorymodels", // (hijo)--memberHistory
+                        from: "membershiphistories",
                         let: {
                             id: "$_id",
                         },
@@ -168,11 +166,11 @@ class MongoRepository {
                         as: "MembershipHistoryList",
                     },
                 },
-                {
-                    $match: {
-                        $and: [{ "MembershipHistoryList.deleted": false }],
-                    },
-                },
+                // {
+                //   $match: {
+                //     $and: [{ "MembershipHistoryList.deleted": true }],
+                //   },
+                // },
             ]);
             return result;
         });
@@ -185,7 +183,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiohistorymodels", // (hijo)--memberHistory
+                        from: "membershiphistories",
                         let: {
                             id: "$_id",
                         },
@@ -202,6 +200,11 @@ class MongoRepository {
                         as: "MembershipHistoryList",
                     },
                 },
+                // {
+                //   $match: {
+                //     $and: [{ "MembershipHistoryList.deleted": false }],
+                //   },
+                // },
             ]);
             const info = result.filter(item => item._id == id);
             return info;

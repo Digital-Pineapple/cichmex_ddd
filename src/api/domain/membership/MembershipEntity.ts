@@ -46,7 +46,7 @@ export interface MembershipBenefits extends MongooseDelete.SoftDeleteDocument  {
   };
   client_id: {
     type: Schema.Types.ObjectId;
-    ref: "Customers";
+    ref: "User";
   };
   quantity: {
     type: number;
@@ -60,20 +60,41 @@ export interface MembershipBenefits extends MongooseDelete.SoftDeleteDocument  {
     type: Date;
     required: true;
   };
-  status: {
-    type?: boolean;
+  activated: {
+    type: boolean;
+    
    
   };
   // membership_history:{}[]
 }
 export interface MembershipHistory extends MongooseDelete.SoftDeleteDocument {
 
+  membershipBenefit_id:{
+    type: mongoose.ObjectId;
+  },
     date_service:{
         type:Date;
         required:false   
+    },
+    typeCar_id:{
+      type:Schema.Types.ObjectId;
+      ref:'TypeCar',
+      required:false,
+    },
+    car_color:{
+      type:string,
+      required: false,
+    },
+    plate_number:{
+      type: string,
+      required: false,
+    },
+    branch_office_id:{
+      type:Schema.Types.ObjectId;
+      ref:'BranchOffices',
+      required:false,
     }
-    membershipBenefit_id:{
-      type: mongoose.ObjectId;
-    }
+
+  
     
 }

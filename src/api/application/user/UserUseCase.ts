@@ -34,7 +34,7 @@ export class UserUseCase extends Authentication {
   }
 
   public async deleteUser(id: string): Promise<UserEntity | ErrorHandler | null> {
-    return await this.userRepository.updateOne(id, { deleted: true})
+    return await this.userRepository.PhysicalDelete(id)
   }
   public async findUser(email:string): Promise<UserEntity | ErrorHandler | null> {
     return await this.userRepository.findOneItem({email:email})

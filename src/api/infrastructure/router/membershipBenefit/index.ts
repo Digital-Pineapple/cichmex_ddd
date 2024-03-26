@@ -22,11 +22,12 @@ const userValidations = new UserValidations();
 
 membershipBenefitRouter
     .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.getAllMembershipsBenefits)
+    .get('/history', membershipBenefitsController.getHistory)
     .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.getMembershipHistory)
     .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.createMembershipBenefit)
     // .patch('/:id', membershipBenefitsController.updateMembershipBenefit)
     .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.deleteMembershipBenefit)
-    .delete('/useUp/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.getUpOneBenefit)
+    .delete('/useUp/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc59']), membershipBenefitsController.getUpOneBenefit)
     
 
 export default membershipBenefitRouter;

@@ -10,7 +10,7 @@ export abstract class MongoRepository {
   }
 
   public async findAll(populateOne?: any, populateTwo?: any): Promise<any> {
-    return await this.MODEL.find({ deleted: false }).populate(populateOne).populate(populateTwo);
+    return await this.MODEL.find({deleted:false}).populate(populateOne).populate(populateTwo);
   }
   public async findAllAll(id: string, populateOne?: any, populateTwo?: any): Promise<any> {
     return await this.MODEL.findById(id, { delted: false }).populate(populateOne).populate(populateTwo);
@@ -24,7 +24,6 @@ export abstract class MongoRepository {
 
   public async findOneStockByBranch(branch_id: String, product_id: String, populateConfig?: any): Promise<any> {
     const result = await this.MODEL.findOne({ product_id, branch_id }).populate(populateConfig)
-    console.log(result);
     return result
   }
 
@@ -105,7 +104,6 @@ console.log(updated);
   }
 
   public async findOneItem(query: Object, populateConfig1?: any, populateConfig2?:any): Promise<any> {    
-    console.log(query,'mongo repository');
     
     return await this.MODEL.findOne({ ...query, deleted: false }).populate(
       populateConfig1).populate(populateConfig2);
@@ -132,7 +130,7 @@ console.log(updated);
       //(padre) ---MembershipBenefits
       {
         $lookup: {
-          from: "membershiohistorymodels", // (hijo)--memberHistory
+          from: "membershiphistories", // (hijo)--memberHistory
           let: {
             id: "$_id",
           },
@@ -149,12 +147,12 @@ console.log(updated);
           as: "MembershipHistoryList",
         },
       },
-      {
-        $match: {
-          $and: [{ "MembershipHistoryList.deleted": false }],
+      // {
+      //   $match: {
+      //     $and: [{ "MembershipHistoryList.deleted": true }],
 
-        },
-      },
+      //   },
+      // },
     ]);
     return result
   };
@@ -166,7 +164,7 @@ console.log(updated);
       //(padre) ---MembershipBenefits
       {
         $lookup: {
-          from: "membershiohistorymodels", // (hijo)--memberHistory
+          from: "membershiphistories", // (hijo)--memberHistory
           let: {
             id: "$_id",
           },
@@ -183,6 +181,12 @@ console.log(updated);
           as: "MembershipHistoryList",
         },
       },
+      // {
+      //   $match: {
+      //     $and: [{ "MembershipHistoryList.deleted": false }],
+
+      //   },
+      // },
     ]);
     const info = result.filter(item => item._id == id);
     return info;

@@ -1,11 +1,11 @@
 import { response } from 'express';
 import { config } from '../../../../config';
-import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
-const mercadopago = require("mercadopago");
+import { MercadoPagoConfig, Preference, } from 'mercadopago';
 
 export class MPService {
     private access_token = config.MERCADOPAGO_TOKEN;
     private preference: Preference;
+
 
     constructor() {
         const client = new MercadoPagoConfig({ accessToken: this.access_token });
@@ -13,7 +13,8 @@ export class MPService {
     }
 
 
-    async createLinkMP(item: any) {   
+    async createLinkMP(item: any, user_id:any) {   
+        
         
         try {
             const response = await this.preference.create({
@@ -27,6 +28,7 @@ export class MPService {
                         },
                     ],
                     payer:{
+                        name:user_id
                         
                     },
                     back_urls: {
@@ -34,8 +36,9 @@ export class MPService {
                         "failure": "https://localhost:3000/auth/inicio",
                         "pending": "https://localhost:3000/auth/inicio"
                     },
+                
                     auto_return: "approved",
-                    notification_url:'https://eb76-177-247-97-248.ngrok-free.app/api/payments/success',
+                    notification_url:'https://de31-2806-2a0-101b-413f-6327-6a6c-d794-7078.ngrok-free.app/api/payments/success',
                 }
             });
 
@@ -48,11 +51,25 @@ export class MPService {
     }
 
     async reciveWebHook(data:any) {
+
         const payment = data.query
+        const paymentID = data.query['data.id']
+        let info = ''
+        
         try {
             if (payment.type === 'payment') {
-                const data = await mercadopago.payment.findById(payment['data.id'])
-                return data
+                const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentID}`,{
+                    method:'GET',
+                    headers:{
+                        'Authorization':`Bearer ${this.access_token}`
+                    }
+                })
+                if (response.ok) {
+                    const data = await response.json()
+                    info = data
+                }
+
+                return info
             }
         } catch (error) {
             console.log(error);

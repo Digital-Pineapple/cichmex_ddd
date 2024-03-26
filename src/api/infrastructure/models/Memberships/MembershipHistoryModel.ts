@@ -5,12 +5,29 @@ import MongooseDelete = require("mongoose-delete");
 
 const MembershipHistorySchema = new mongoose.Schema<MembershipHistory>(
   {
-    date_service: {
-      type: Date,
-    },
     membershipBenefit_id: {
       type: mongoose.Schema.Types.ObjectId,
     },
+    date_service: {
+      type: Date,
+      required:false,
+    },
+    typeCar_id:{
+      type:mongoose.Schema.Types.ObjectId,
+      required:false,
+    },
+    car_color:{
+      type:String,
+      required:false,
+    },
+    plate_number:{
+      type: String,
+      required:false
+    },
+    branch_office_id:{
+      type:mongoose.Schema.Types.ObjectId,
+      required:false,
+    }
   },
   {
     versionKey: false,
@@ -22,7 +39,7 @@ const MembershipHistorySchema = new mongoose.Schema<MembershipHistory>(
 MembershipHistorySchema.plugin(MongooseDelete, { overrideMethods:true});
 
 const MembershipHistoryModel = model<Document & MembershipHistory>(
-  'MembershioHistoryModel',
+  'MembershipHistory',
   MembershipHistorySchema
 );
 

@@ -20,6 +20,7 @@ export class MembershipBenefitsController extends ResponseData {
     this.deleteMembershipBenefit = this.deleteMembershipBenefit.bind(this);
     this.getMembershipHistory = this.getMembershipHistory.bind(this);
     this.getUpOneBenefit = this.getUpOneBenefit.bind(this);
+    this.getHistory = this.getHistory.bind(this);
   }
 
   public async getMembershipHistory(
@@ -89,7 +90,7 @@ export class MembershipBenefitsController extends ResponseData {
       await Promise.all(historyPromises);
       const idMembership = membershipBenfit_id.toString()
       const response =  await this.membershipBenefitsUseCase.getDetailMembershipBenefitHistory(idMembership)
-      this.invoke(response, 201, res, "Ceradoo con éxito alta con éxito", next);
+      this.invoke(response, 201, res, "Creado con éxito alta con éxito", next);
     } catch (error) {
       console.log(error);
       next(new ErrorHandler("Hubo un error al crear", 500))
@@ -162,6 +163,23 @@ export class MembershipBenefitsController extends ResponseData {
     } catch (error) {
       console.log(error);
       next(new ErrorHandler("Hubo un error eliminar", 500));
+      
+      
+    }
+  }
+
+  public async getHistory(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ){
+    
+    try {
+      const resp = await this.memberHistoryUseCase.getHistoryMembership()
+      this.invoke(resp,200,res,'Servicio pagado con éxito',next)
+    } catch (error) {
+      console.log(error);
+      next(new ErrorHandler("Hubo un error ", 500));
       
       
     }

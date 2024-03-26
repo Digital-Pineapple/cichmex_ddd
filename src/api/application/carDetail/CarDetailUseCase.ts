@@ -21,7 +21,7 @@ export class CarDetailUseCase {
     }
 
     public async getDetailCarDetailByCustomer(_id: string): Promise<CarDetail  | ErrorHandler| null> {
-        return await this.carDetailRepository.findByCustomer(_id);
+        return await this.carDetailRepository.findByUser(_id);
     }
     public async getDetailCarDetailByPlateNumber(plate_number:string, customer_id: string): Promise<CarDetail  | ErrorHandler| null> {
         return await this.carDetailRepository.findByPlateNumber(plate_number, customer_id);
