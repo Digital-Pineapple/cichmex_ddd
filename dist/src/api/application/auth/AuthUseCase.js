@@ -143,9 +143,9 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             return user;
         });
     }
-    changePassword(password, newPassword, user) {
+    changePassword(password, newPassword, id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let customer = yield this.authRepository.findById(user._id);
+            let customer = yield this.authRepository.findById(id);
             const currentPassword = this.decryptPassword(password, customer.password);
             if (!currentPassword)
                 return new ErrorHandler_1.ErrorHandler('Error la contraseña actual no es valida', 400);
