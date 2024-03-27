@@ -28,8 +28,6 @@ export const apiRouter = (): Router => {
 
     apiRouter.use('/auth', authRouter);
     apiRouter.use('/user', userRouter);
-    // apiRouter.use('/auth/admin', authAdminRouter);
-    //apiRouter.use('/customer', customerRouter);
     apiRouter.use('/services', serviceRouter);
     apiRouter.use('/services-branch', servicesInBranchRouter);
     apiRouter.use('/type-car', typeCarRouter)
@@ -55,8 +53,6 @@ export const apiRouter = (): Router => {
 const apiRouterx = Router();
 
 apiRouterx.use('/auth', authRouter);
-// apiRouterx.use('/auth/admin', authAdminRouter);
-// apiRouterx.use('/customer', customerRouter);
 apiRouterx.use('/services', serviceRouter);
 apiRouterx.use('services-branch', servicesInBranchRouter)
 apiRouterx.use('/type-car', typeCarRouter)

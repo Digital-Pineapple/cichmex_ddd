@@ -25,11 +25,11 @@ export class UserUseCase extends Authentication {
  }
 
   public async updateUser(id: string, updated:object): Promise<UserEntity | ErrorHandler | null> {
-    return await this.userRepository.updateOne(id,updated)
+   
+    return await this.userRepository.updateOne(id,{...updated})
   }
   public async updateRegisterUser(id: string, updated:object): Promise<IAuth | ErrorHandler | null> {
      let user = await this.userRepository.updateOne(id,updated)
-     console.log(user);
      return await this.generateJWT(user);
   }
 

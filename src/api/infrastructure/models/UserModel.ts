@@ -80,7 +80,7 @@ const UserSchema = new Schema<UserEntity>({
         default: false
     },
     accountVerify: {
-        type: String,
+        type: Boolean,
         required: false
     },
     facturapi_id: {
