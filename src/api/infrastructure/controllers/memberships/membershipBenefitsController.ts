@@ -22,6 +22,7 @@ export class MembershipBenefitsController extends ResponseData {
     this.getUpOneBenefit = this.getUpOneBenefit.bind(this);
     this.getHistory = this.getHistory.bind(this);
     this.consumeBenefit = this.consumeBenefit.bind(this);
+    this.getAllMembershipsBenefitsByUser = this.getAllMembershipsBenefitsByUser.bind(this);
   }
 
   public async getMembershipHistory(
@@ -48,6 +49,22 @@ export class MembershipBenefitsController extends ResponseData {
       const response = await this.membershipBenefitsUseCase.getMembershipBenefits();
       this.invoke(response, 200, res, "", next);
     } catch (error) {
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+
+  public async getAllMembershipsBenefitsByUser(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const {id} = req.params
+    try {
+      const response = await this.membershipBenefitsUseCase.getMembershipBenefitsUser(id);
+      this.invoke(response, 200, res, "", next);
+    } catch (error) {
+      console.log(error);
+      
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }

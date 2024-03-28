@@ -153,7 +153,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiphistories", // (hijo)--memberHistory
+                        from: "membershiphistories",
                         let: {
                             id: "$_id",
                         },
@@ -187,7 +187,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiphistories", // (hijo)--memberHistory
+                        from: "membershiphistories",
                         let: {
                             id: "$_id",
                         },
@@ -212,6 +212,35 @@ class MongoRepository {
             ]);
             const info = result.filter(item => item._id == id);
             return info;
+        });
+    }
+    ;
+    getMembershipDetailHistoryUser(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield this.MODEL.aggregate([
+                {
+                    $match: {
+                        client_id: id // Filtra por el ID del cliente
+                    }
+                },
+                // {
+                //     $lookup: {
+                //         from: "services", // Colección de servicios
+                //         localField: "service_id", // Campo local en la colección actual
+                //         foreignField: "_id", // Campo en la colección de servicios
+                //         as: "Service" // Alias para el resultado del join
+                //     }
+                // },
+                {
+                    $lookup: {
+                        from: "membershiphistories",
+                        localField: "_id",
+                        foreignField: "membershipBenefit_id",
+                        as: "MembershipHistoryList" // Alias para el resultado del join
+                    }
+                }
+            ]);
+            return result;
         });
     }
     ;

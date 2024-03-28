@@ -9,8 +9,9 @@ const MembershipBenefitsSchema = new Schema<MembershipBenefits>(
       required: true,
     },
     service_id: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref:'services'
     },
     client_id: {
       type: String,

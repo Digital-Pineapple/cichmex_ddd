@@ -11,6 +11,9 @@ export class MembershipBenefitsUseCase {
     public async getMembershipBenefits(): Promise<MembershipBenefits[] | ErrorHandler > {
         return await this.membershipBenefitsRepository.getAllMembershipHistory();
     }
+    public async getMembershipBenefitsUser(id:any): Promise<MembershipBenefits[] | ErrorHandler > {
+        return await this.membershipBenefitsRepository.getMembershipDetailHistoryUser(id)
+    }
     public async getAllhisto(): Promise<MembershipHistory[] | ErrorHandler > {
         return await this.membershipBenefitsRepository.findAll();
     }
