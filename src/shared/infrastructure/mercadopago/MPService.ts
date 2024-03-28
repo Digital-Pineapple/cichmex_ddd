@@ -14,7 +14,7 @@ export class MPService {
 
 
     async createLinkMP(item: any, user_id:any) {   
-        const path = 'https://localhost:3000/auth'
+        const path = 'https://carwashymas.com/auth'
         
         
         try {
@@ -34,8 +34,8 @@ export class MPService {
                     },
                     back_urls: {
                         "success":  `${path}/PagoExitoso`,
-                        "failure": "https://localhost:3000/auth/inicio",
-                        "pending": "https://localhost:3000/auth/inicio"
+                        "failure": "https:/carwashymas.com/auth/inicio",
+                        "pending": "https://carwashymas.com/auth/inicio"
                     },
                 
                     auto_return: "approved",
