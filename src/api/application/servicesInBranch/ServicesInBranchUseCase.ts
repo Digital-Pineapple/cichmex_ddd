@@ -1,4 +1,5 @@
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
+import { InfoBranch, ServiceInBenefits, nameCarPopulateConfing } from "../../../shared/domain/PopulateInterfaces";
 import { ServicesInBranchEntity } from "../../domain/servicesInBranch/servicesInBranchEntity";
 import { ServicesInBranchRepository } from "../../infrastructure/repository/servicesInBranch/ServicesInBranchRepository";
 
@@ -28,7 +29,7 @@ export class ServicesInBranchUseCase {
   public async getServicesInBranchByBranch(
     _id: string
   ): Promise<ServicesInBranchEntity[] | ErrorHandler | null> {
-    return await this.servicesInBranchRepository.findAllItems({branch_id:_id, deleted:false})
+    return await this.servicesInBranchRepository.findAllItems({branch_id:_id, deleted:false},ServiceInBenefits,nameCarPopulateConfing,InfoBranch)
   }
 
   public async createServiceInBranch(
@@ -45,7 +46,7 @@ export class ServicesInBranchUseCase {
         service_id: body.service_id,
         typeCar_id: body.typeCar_id,
         price: body.price,
-        description: body.price,
+        description: body.description,
         branch_id: body.branch_id
       });
     }

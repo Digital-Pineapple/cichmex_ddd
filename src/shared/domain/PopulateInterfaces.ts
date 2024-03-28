@@ -1,3 +1,4 @@
+import BranchOfficeModel from '../../api/infrastructure/models/BranchOffices/BranchOfficeModel';
 import MembershipModel from '../../api/infrastructure/models/Memberships/MembershipModel';
 import ProductModel from '../../api/infrastructure/models/ProductModel';
 import ServiceModel from '../../api/infrastructure/models/ServicesModel';
@@ -92,4 +93,9 @@ export const ServiceInBenefits : IStockPopulateConfig={
     path: 'service_id',
     select: ["name" ],
     model:ServiceModel
+}
+export const InfoBranch : IStockPopulateConfig={
+    path: 'branch_id',
+    select: ["name",'opening_time' ],
+    model:BranchOfficeModel
 }

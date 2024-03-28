@@ -87,7 +87,6 @@ export class ServicesInBranchController extends ResponseData {
             const response = await this.servicesInBranchUseCase.updateServiceInBranch(id,{ service_id, typeCar_id, price, description, branch_id})
             this.invoke(response, 201, res, 'Actualizado con éxito', next);
 
-
         } catch (error) {
             console.log(error);
             next(new ErrorHandler('Error al editar ', 500));
