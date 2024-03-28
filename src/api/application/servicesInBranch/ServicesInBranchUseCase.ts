@@ -25,12 +25,18 @@ export class ServicesInBranchUseCase {
     return await this.servicesInBranchRepository.findByUser(_id)
   }
 
+  public async getServicesInBranchByBranch(
+    _id: string
+  ): Promise<ServicesInBranchEntity[] | ErrorHandler | null> {
+    return await this.servicesInBranchRepository.findAllItems({branch_id:_id, deleted:false})
+  }
+
   public async createServiceInBranch(
     body:any
 
   ): Promise<ServicesInBranchEntity | ErrorHandler | null> {
     const response = await this.servicesInBranchRepository.
-    findOneItem({user_id:body.user_id,service_id:body, })
+    findOneItem({user_id:body.user_id,service_id:body.service_id, })
     if (response) {
       return new ErrorHandler("Servicio existente en sucursal", 400);
     } else {

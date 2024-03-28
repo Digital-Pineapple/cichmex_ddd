@@ -129,6 +129,11 @@ class MongoRepository {
             return yield this.MODEL.findOne(Object.assign(Object.assign({}, query), { deleted: false })).populate(populateConfig1).populate(populateConfig2);
         });
     }
+    findAllItems(query, populateConfig1, populateConfig2, populateConfig3) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.find(Object.assign({}, query)).populate(populateConfig1).populate(populateConfig2).populate(populateConfig3);
+        });
+    }
     search(search) {
         return __awaiter(this, void 0, void 0, function* () {
             const noSpecialCharacters = search.replace(/[`~!@#$%^&*()_|+\-=?;:'"<>\{\}\[\]\\\/]/gi, "");
@@ -149,7 +154,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiphistories",
+                        from: "membershiphistories", // (hijo)--memberHistory
                         let: {
                             id: "$_id",
                         },
@@ -183,7 +188,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiphistories",
+                        from: "membershiphistories", // (hijo)--memberHistory
                         let: {
                             id: "$_id",
                         },

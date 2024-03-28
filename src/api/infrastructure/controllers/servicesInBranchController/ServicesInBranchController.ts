@@ -16,6 +16,7 @@ export class ServicesInBranchController extends ResponseData {
         this.createServiceInBranch = this.createServiceInBranch.bind(this);
         this.updateServiceInBranch = this.updateServiceInBranch.bind(this);
         this.deleteServiceInBranch = this.deleteServiceInBranch.bind(this);
+        this.getServicesInBranchByBranch = this.getServicesInBranchByBranch.bind(this);
     }
 
     public async getAllServicesInBranch(req: Request, res: Response, next: NextFunction) {
@@ -42,6 +43,18 @@ export class ServicesInBranchController extends ResponseData {
 
         try {
             const response = await this.servicesInBranchUseCase.getServicesInBranchByUser(id)
+            this.invoke(response, 200, res, '', next)
+        } catch (error) {
+            console.log(error);
+
+            next(new ErrorHandler('Error al encontrar el servicio', 404));
+        }
+    }
+    public async getServicesInBranchByBranch(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+
+        try {
+            const response = await this.servicesInBranchUseCase.getServicesInBranchByBranch(id)
             this.invoke(response, 200, res, '', next)
         } catch (error) {
             console.log(error);

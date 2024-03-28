@@ -18,7 +18,7 @@ const userValidations = new UserValidations();
 servicesInBranchRouter
     .get('/', servicesInBranchController.getAllServicesInBranch)
     .get('/:id', servicesInBranchController.getServiceInBranchDetail)
-    .get('/user/:id', servicesInBranchController.getServicesInBranchByUser)
+    .get('/branch/:id', servicesInBranchController.getServicesInBranchByBranch)
     .post('/', servicesInBranchController.createServiceInBranch)
     .post('/:id',servicesInBranchController.updateServiceInBranch )
     .delete('/:id', servicesInBranchController.deleteServiceInBranch)
