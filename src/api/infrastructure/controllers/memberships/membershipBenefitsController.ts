@@ -21,6 +21,7 @@ export class MembershipBenefitsController extends ResponseData {
     this.getMembershipHistory = this.getMembershipHistory.bind(this);
     this.getUpOneBenefit = this.getUpOneBenefit.bind(this);
     this.getHistory = this.getHistory.bind(this);
+    this.consumeBenefit = this.consumeBenefit.bind(this);
   }
 
   public async getMembershipHistory(
@@ -75,15 +76,12 @@ export class MembershipBenefitsController extends ResponseData {
         quantity,
         start_date,
         end_date,
-        status
       );
-      const membershipBenfit_id = memBenefit._id;
+      const membershipBenfit_id = memBenefit?._id;
       // Crear historial de membresía
       const historyPromises = Array.from({ length: quantity }, async () => {
-        const date_service = new Date();
-        date_service.setFullYear(0, 0, 0);
         return this.memberHistoryUseCase.createOneHistoryMembership(
-          date_service,
+        
           membershipBenfit_id
         );
       });
@@ -97,42 +95,6 @@ export class MembershipBenefitsController extends ResponseData {
     }
 
   }
-
-  // public async updateMembershipBenefit(
-  //   req: Request,
-  //   res: Response,
-  //   next: NextFunction
-  // ) {
-  //   const { id } = req.params;
-  //   const {
-  //     membership_id,
-  //     service_id,
-  //     client_id,
-  //     quantity,
-  //     start_date,
-  //     end_date,
-  //     status,
-  //     // membership_history,
-  //   } = req.body;
-  //   try {
-  //     const response = await this.membershipBenefitsUseCase.updateOneMembershipBenefit(
-  //       id,
-  //       {
-  //         membership_id,
-  //         service_id,
-  //         client_id,
-  //         quantity,
-  //         start_date,
-  //         end_date,
-  //         status,
-  //       }
-  //     );
-  //     this.invoke(response, 201, res, "Se actualizó con éxito", next);
-  //   } catch (error) {
-  //     console.log(error);
-  //     next(new ErrorHandler("Hubo un error al actualizar", 500));
-  //   }
-  // }
 
   public async deleteMembershipBenefit(
     req: Request,
@@ -184,6 +146,33 @@ export class MembershipBenefitsController extends ResponseData {
       
     }
   }
+
+  public async consumeBenefit(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ){
+    const {id} = req.params
+    const { membershipBenefit_id, typeCar_id,car_color,plate_number, branch_office_id } = req.body
+    try {
+      const validateActivated = await this.membershipBenefitsUseCase.verifiedActiveBenefits(membershipBenefit_id, typeCar_id)
+      if (!(validateActivated instanceof ErrorHandler)) {
+        const date_service = new Date()
+        const response = await this.memberHistoryUseCase.consumeBenefit(id,membershipBenefit_id, date_service, typeCar_id,car_color,plate_number, branch_office_id)
+        this.invoke(response,200,res,'Servicio pagado con éxito',next)
+      }
+      else{
+        next(validateActivated)
+      }
+    } catch (error) {
+      console.log(error);
+      next(new ErrorHandler("Hubo un error ", 500));
+      
+      
+    }
+  }
+
+  
   
   
 }

@@ -38,7 +38,7 @@ export class AuthController extends ResponseData {
         this.revalidateToken = this.revalidateToken.bind(this);
         this.verifyCode = this.verifyCode.bind(this);
         this.savePhone = this.savePhone.bind(this);
-        this.MercadoPagoPayment = this.MercadoPagoPayment.bind(this);
+        
     }
 
     public async login(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
@@ -245,15 +245,6 @@ export class AuthController extends ResponseData {
     //     }
     // }
 
-    public async MercadoPagoPayment(req: Request, res: Response, next: NextFunction) {
-
-        const { items } = req.body;
-        try {
-            const response = await this.mpService.createLinkMP(items)
-            this.invoke(response.response?.init_point, 200, res, '', next);
-        } catch (error) {
-            next(new ErrorHandler('Error', 500));
-        }
-    }
+    
 
 }

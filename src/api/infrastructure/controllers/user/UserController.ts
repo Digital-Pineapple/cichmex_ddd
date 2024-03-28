@@ -12,8 +12,6 @@ import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { sendMail } from '../../../../shared/infrastructure/nodemailer/emailer';
 import { IGoogleResponse } from '../../../application/authentication/AuthenticationService';
-import { IncomingClientScope } from 'twilio/lib/jwt/ClientCapability';
-import { errorMonitor } from 'nodemailer/lib/xoauth2';
 
 
 export class UserController extends ResponseData {

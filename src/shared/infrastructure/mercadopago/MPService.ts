@@ -14,6 +14,7 @@ export class MPService {
 
 
     async createLinkMP(item: any, user_id:any) {   
+        const path = 'https://localhost:3000/auth'
         
         
         try {
@@ -32,13 +33,13 @@ export class MPService {
                         
                     },
                     back_urls: {
-                        "success": "https://localhost:3000/auth/PagoExitoso",
+                        "success":  `${path}/PagoExitoso`,
                         "failure": "https://localhost:3000/auth/inicio",
                         "pending": "https://localhost:3000/auth/inicio"
                     },
                 
                     auto_return: "approved",
-                    notification_url:'https://de31-2806-2a0-101b-413f-6327-6a6c-d794-7078.ngrok-free.app/api/payments/success',
+                    notification_url:`${process.env.URL_NOTIFICATION_TEST}/api/payments/success`,
                 }
             });
 

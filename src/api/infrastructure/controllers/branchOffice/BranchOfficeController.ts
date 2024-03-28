@@ -215,7 +215,7 @@ export class BranchOfficeController extends ResponseData {
                 });
     
                 // Asignar las URLs de las imágenes a la respuesta
-                if (!(response instanceof ErrorHandler)) {
+                if (!(response instanceof ErrorHandler && response !== null)) {
                     response.images = urls;
                 }
     

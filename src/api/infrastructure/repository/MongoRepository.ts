@@ -101,10 +101,10 @@ export abstract class MongoRepository {
 
   }
 
-  public async findOneItem(query: Object, populateConfig1?: any, populateConfig2?:any): Promise<any> {    
+  public async findOneItem(query: Object, populateConfig1?: any, populateConfig2?:any, populateConfig3?:any): Promise<any> {    
     
     return await this.MODEL.findOne({ ...query, deleted: false }).populate(
-      populateConfig1).populate(populateConfig2);
+      populateConfig1).populate(populateConfig2).populate(populateConfig3);
   }
 
   public async search(search: string): Promise<any> {

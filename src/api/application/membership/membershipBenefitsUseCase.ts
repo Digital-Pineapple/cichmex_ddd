@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { MembershipBenefits, MembershipHistory } from '../../domain/membership/MembershipEntity';
 import { MembershipBenefitsRepository } from '../../domain/membership/MembershipRepository'
+import { ServiceInBenefits, UserCarBenefits, validateTypeCarBenefits } from '../../../shared/domain/PopulateInterfaces';
 
 export class MembershipBenefitsUseCase {
 
@@ -32,6 +33,26 @@ export class MembershipBenefitsUseCase {
     }
     public async deleteMembershipBenefit(_id: string): Promise<MembershipBenefits> {
         return await this.membershipBenefitsRepository.updateOne(_id,{deleted:true});
+    }
+
+    public async verifiedActiveBenefits(_id: string, typeCar_id: string): Promise<MembershipBenefits | ErrorHandler> {
+        const info =  await this.membershipBenefitsRepository.findOneItem({_id:_id}, validateTypeCarBenefits, UserCarBenefits, ServiceInBenefits);
+        
+        if (info.activated === true) {
+            const type_cars = info.membership_id.type_cars;
+            const validateTypeCar = type_cars.some(car => car === typeCar_id);
+           if (validateTypeCar === true) {
+             return info
+
+           } else {
+            
+            return new ErrorHandler('La membresia no cubre este tipo de auto', 500)
+        
+           }
+            
+        } else {
+            return new ErrorHandler('Membresia inactiva', 500)
+        }
     }
     
 }

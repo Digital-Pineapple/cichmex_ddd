@@ -123,9 +123,9 @@ class MongoRepository {
             return newObject;
         });
     }
-    findOneItem(query, populateConfig1, populateConfig2) {
+    findOneItem(query, populateConfig1, populateConfig2, populateConfig3) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findOne(Object.assign(Object.assign({}, query), { deleted: false })).populate(populateConfig1).populate(populateConfig2);
+            return yield this.MODEL.findOne(Object.assign(Object.assign({}, query), { deleted: false })).populate(populateConfig1).populate(populateConfig2).populate(populateConfig3);
         });
     }
     search(search) {
