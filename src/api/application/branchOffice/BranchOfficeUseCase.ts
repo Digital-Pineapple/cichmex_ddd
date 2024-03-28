@@ -62,4 +62,10 @@ export class BranchOfficeUseCase {
   ): Promise<BranchOfficeEntity | null> {
     return this.branchOfficeRepository.updateOne(_id, { deleted: true });
   }
+  public async validateBranchOffice(
+    _id: string,
+    object: any
+  ): Promise<BranchOfficeEntity | null> {
+    return this.branchOfficeRepository.updateOne(_id, { ...object });
+  }
 }

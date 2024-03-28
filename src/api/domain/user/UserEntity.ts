@@ -29,7 +29,7 @@ export interface UserEntity extends MongooseDelete.SoftDeleteInterface {
     google          ?:   Boolean;
     facebook        ?:   Boolean;
     phone_id         ?:  IPhone;
-    accountVerify    ?:   string;
+    accountVerify    ?:   boolean;
     facturapi_id    ?:   string;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;

@@ -1,6 +1,8 @@
+import MembershipModel from '../../api/infrastructure/models/Memberships/MembershipModel';
 import ProductModel from '../../api/infrastructure/models/ProductModel';
 import ServiceModel from '../../api/infrastructure/models/ServicesModel';
 import SubCategoryModel from '../../api/infrastructure/models/SubCategoryModel';
+import UserModel from '../../api/infrastructure/models/UserModel';
 export interface IAuthPopulateConfig {
     path    : string;
     select  : string;
@@ -74,4 +76,20 @@ export const UserPopulateConfig : IUserPopulateConfig ={
 export const BranchPopulateConfig : IUserPopulateConfig={
     path: 'user_id',
     select: ["fullname",'_id','email'  ],
+}
+
+export const validateTypeCarBenefits : IStockPopulateConfig={
+    path: 'membership_id',
+    select: ["type_cars" ],
+    model:MembershipModel
+}
+export const UserCarBenefits : IStockPopulateConfig={
+    path: 'client_id',
+    select: ["fullname" ],
+    model:UserModel
+}
+export const ServiceInBenefits : IStockPopulateConfig={
+    path: 'service_id',
+    select: ["name" ],
+    model:ServiceModel
 }

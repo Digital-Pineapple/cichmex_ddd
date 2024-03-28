@@ -28,8 +28,6 @@ const apiRouter = () => {
     const apiRouter = (0, express_1.Router)();
     apiRouter.use('/auth', auth_1.default);
     apiRouter.use('/user', user_1.default);
-    // apiRouter.use('/auth/admin', authAdminRouter);
-    //apiRouter.use('/customer', customerRouter);
     apiRouter.use('/services', services_1.default);
     apiRouter.use('/services-branch', servicesInBranch_1.default);
     apiRouter.use('/type-car', typeCar_1.default);
@@ -52,8 +50,6 @@ const apiRouter = () => {
 exports.apiRouter = apiRouter;
 const apiRouterx = (0, express_1.Router)();
 apiRouterx.use('/auth', auth_1.default);
-// apiRouterx.use('/auth/admin', authAdminRouter);
-// apiRouterx.use('/customer', customerRouter);
 apiRouterx.use('/services', services_1.default);
 apiRouterx.use('services-branch', servicesInBranch_1.default);
 apiRouterx.use('/type-car', typeCar_1.default);

@@ -215,7 +215,7 @@ export class BranchOfficeController extends ResponseData {
                 });
     
                 // Asignar las URLs de las imágenes a la respuesta
-                if (!(response instanceof ErrorHandler)) {
+                if (!(response instanceof ErrorHandler && response !== null)) {
                     response.images = urls;
                 }
     
@@ -260,15 +260,15 @@ export class BranchOfficeController extends ResponseData {
 
         try {
             const documents = await this.documentationUseCase.getDocumentationByUserAndVerify(user_id)
-
-            const nameFiles = ['ine', 'curp', 'proof_address', 'criminal_record'];
+            
+            const nameFiles = ['csf'];
             if (!(documents instanceof ErrorHandler) && documents !== null) {
                 const resultado = documents.map((documento: any) =>
                     nameFiles.some(nombre => documento.name === nombre)
                 );
-
-                if (resultado.length == 4) {
-                    const response = await this.branchOfficeUseCase.updateBranchOffice(id, { activated: true })
+                
+                if (resultado.length === 1) {
+                    const response = await this.branchOfficeUseCase.validateBranchOffice(id, { activated: true })
                     this.invoke(response, 201, res, 'Activación exitosa', next);
                 } else {
                     next(new ErrorHandler('Documentos incompletos o no verificados', 500));

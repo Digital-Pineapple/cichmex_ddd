@@ -93,6 +93,7 @@ export class PaymentController extends ResponseData {
                                       if (!(ok instanceof ErrorHandler)) {
                                          let m_id = ok?._id
                                         let quantity =  parseInt(ok?.quantity)
+                                        
                                           const historyPromises = Array.from({length: quantity}, async () => {
                                             return this.membershipHistoryUseCase.createOneHistoryMembership(
                                               m_id

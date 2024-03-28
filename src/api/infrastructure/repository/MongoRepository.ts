@@ -81,8 +81,6 @@ export abstract class MongoRepository {
     });
   }
   public async updateOne(_id: String, updated: object): Promise<any> {
-console.log(updated);
-
     return await this.MODEL.findByIdAndUpdate(_id, updated, { new: true, });
   }
 
@@ -103,10 +101,10 @@ console.log(updated);
 
   }
 
-  public async findOneItem(query: Object, populateConfig1?: any, populateConfig2?:any): Promise<any> {    
+  public async findOneItem(query: Object, populateConfig1?: any, populateConfig2?:any, populateConfig3?:any): Promise<any> {    
     
     return await this.MODEL.findOne({ ...query, deleted: false }).populate(
-      populateConfig1).populate(populateConfig2);
+      populateConfig1).populate(populateConfig2).populate(populateConfig3);
   }
   public async findAllItems(query: Object, populateConfig1?: any, populateConfig2?:any, populateConfig3?:any): Promise<any> {    
     

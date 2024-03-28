@@ -37,6 +37,5 @@ authRouter
     .post('/change-password/:id', ValidateAuthentication_1.default, authController.changePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', ValidateAuthentication_1.default, authController.verifyCode)
-    .post('/verify-phone', authController.savePhone)
-    .post('/mercadoPago', authController.MercadoPagoPayment);
+    .post('/verify-phone', authController.savePhone);
 exports.default = authRouter;

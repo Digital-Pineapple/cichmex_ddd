@@ -26,6 +26,7 @@ membershipBenefitRouter
     .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.getMembershipHistory)
     .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.createMembershipBenefit)
     // .patch('/:id', membershipBenefitsController.updateMembershipBenefit)
+    .post('/consumeBenefit/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), membershipBenefitsController.consumeBenefit)
     .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.deleteMembershipBenefit)
     .delete('/useUp/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc59']), membershipBenefitsController.getUpOneBenefit)
     

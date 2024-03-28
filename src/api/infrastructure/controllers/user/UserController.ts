@@ -12,8 +12,6 @@ import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { sendMail } from '../../../../shared/infrastructure/nodemailer/emailer';
 import { IGoogleResponse } from '../../../application/authentication/AuthenticationService';
-import { IncomingClientScope } from 'twilio/lib/jwt/ClientCapability';
-import { errorMonitor } from 'nodemailer/lib/xoauth2';
 
 
 export class UserController extends ResponseData {
@@ -35,13 +33,15 @@ export class UserController extends ResponseData {
         this.resendCode = this.resendCode.bind(this);
         this.verifyPhone = this.verifyPhone.bind(this);
         this.verifyEmail = this.verifyEmail.bind(this);
+        
         this.deletePhone = this.deletePhone.bind(this);
         this.signUpByPhone = this.signUpByPhone.bind(this);
         this.signUpPartnerByPhone = this.signUpPartnerByPhone.bind(this);
         this.updateUser = this.updateUser.bind(this);
         this.deleteUser = this.deleteUser.bind(this);
         this.loginPhone = this.loginPhone.bind(this);
-        this.physicalDeletePhone = this.physicalDeletePhone.bind(this)
+        this.physicalDeletePhone = this.physicalDeletePhone.bind(this);
+        this.validateUser = this.validateUser.bind(this);
 
     }
 
@@ -332,6 +332,24 @@ export class UserController extends ResponseData {
         }
     }
 
+    public async validateUser(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        const { accountVerified } = req.body
+        const data = Boolean(accountVerified)
+        
+        try {   
+           const response = await this.userUseCase.updateUser(id,{accountVerify:data})
+           if (!(response instanceof ErrorHandler)) {    
+            if (!response?.google && response !== null) {
+                const url = await this.s3Service.getUrlObject(response?.profile_image + ".jpg");
+                response.profile_image = url;
+            }
+        }
+        this.invoke(response, 200, res, 'Verificado con éxito', next);
+        } catch (error) {
+            next(new ErrorHandler("Hubo un error al editar la información", 500));
+        }
+    }
 
 
 
