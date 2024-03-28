@@ -194,6 +194,34 @@ export abstract class MongoRepository {
     const info = result.filter(item => item._id == id);
     return info;
   };
+  public async getMembershipDetailHistoryUser(id: string): Promise<any> {
+    const result = await this.MODEL.aggregate([
+        {
+            $match: {
+                client_id: id // Filtra por el ID del cliente
+            }
+        },
+        // {
+        //     $lookup: {
+        //         from: "services", // Colección de servicios
+        //         localField: "service_id", // Campo local en la colección actual
+        //         foreignField: "_id", // Campo en la colección de servicios
+        //         as: "Service" // Alias para el resultado del join
+        //     }
+        // },
+        {
+            $lookup: {
+                from: "membershiphistories", // Colección de historias de membresía
+                localField: "_id", // Campo local en la colección actual
+                foreignField: "membershipBenefit_id", // Campo en la colección de historias de membresía
+                as: "MembershipHistoryList" // Alias para el resultado del join
+            }
+        }
+    ]);
+
+    return result;
+};
+
 
 }
 
