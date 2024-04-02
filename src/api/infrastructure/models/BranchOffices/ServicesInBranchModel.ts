@@ -31,7 +31,7 @@ import MongooseDelete = require("mongoose-delete");
       }
     },
     {
-        timestamps: true
+        timestamps: false
     }
   );
 

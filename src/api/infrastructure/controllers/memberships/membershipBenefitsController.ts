@@ -3,7 +3,7 @@ import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
 import { MembershipBenefitsUseCase } from "../../../application/membership/membershipBenefitsUseCase";
 import { MembershipHistoryUseCase } from "../../../application/membership/membershipHistoryUseCase";
-
+const { ObjectId } = require('mongodb');
 
 export class MembershipBenefitsController extends ResponseData {
   protected path = "/membership-benefits";
@@ -59,8 +59,9 @@ export class MembershipBenefitsController extends ResponseData {
     next: NextFunction
   ) {
     const {id} = req.params
+    const _id = new ObjectId(id)
     try {
-      const response = await this.membershipBenefitsUseCase.getMembershipBenefitsUser(id);
+      const response = await this.membershipBenefitsUseCase.getMembershipBenefitsUser(_id);
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       console.log(error);
@@ -83,13 +84,16 @@ export class MembershipBenefitsController extends ResponseData {
       end_date,
       status,
     } = req.body;
+    const membership =new ObjectId(membership_id);
+    const service =new ObjectId(service_id);
+    const user =new ObjectId(client_id);
 
     try {
       // Crear beneficio de membresía
       const memBenefit = await this.membershipBenefitsUseCase.createNewMembershipBenefit(
-        membership_id,
-        service_id,
-        client_id,
+        {membership_id: membership},
+       { service_id : service},
+        {client_id: user},
         quantity,
         start_date,
         end_date,

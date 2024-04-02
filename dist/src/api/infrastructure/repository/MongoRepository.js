@@ -218,27 +218,9 @@ class MongoRepository {
     getMembershipDetailHistoryUser(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield this.MODEL.aggregate([
-                {
-                    $match: {
-                        client_id: id // Filtra por el ID del cliente
-                    }
-                },
-                // {
-                //     $lookup: {
-                //         from: "services", // Colección de servicios
-                //         localField: "service_id", // Campo local en la colección actual
-                //         foreignField: "_id", // Campo en la colección de servicios
-                //         as: "Service" // Alias para el resultado del join
-                //     }
-                // },
-                {
-                    $lookup: {
-                        from: "membershiphistories",
-                        localField: "_id",
-                        foreignField: "membershipBenefit_id",
-                        as: "MembershipHistoryList" // Alias para el resultado del join
-                    }
-                }
+                { $match: { client_id: id } },
+                { $lookup: { from: "membershiphistories", localField: "_id", foreignField: "membershipBenefit_id", as: "MembershipHistoryList" } },
+                { $lookup: { from: "services", localField: "service_id", foreignField: "_id", as: "NameService" } }
             ]);
             return result;
         });
