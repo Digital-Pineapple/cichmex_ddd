@@ -17,6 +17,7 @@ export class ShoppingCartController extends ResponseData {
         this.createShoppingCart = this.createShoppingCart.bind(this);
         this.updateShoppingCart = this.updateShoppingCart.bind(this);
         this.deleteShoppingCart = this.deleteShoppingCart.bind(this);
+        this.deleteMembershipInCart = this.deleteMembershipInCart.bind(this)
 
     }
 
@@ -71,6 +72,21 @@ export class ShoppingCartController extends ResponseData {
             const response = await this.shoppingCartUseCase.deleteShoppingCart(id);
             this.invoke(response, 201, res, 'Eliminado con exito', next);
         } catch (error) {
+            next(new ErrorHandler('Hubo un error eliminar', 500));
+        }
+    }
+    public async deleteMembershipInCart(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        console.log(id,'kjnknknk');
+        
+        try {
+            const response = await this.shoppingCartUseCase.updateShoppingCart(id,{memberships:[]})
+            console.log(response);
+            
+            this.invoke(response, 201, res, 'Eliminado con exito', next);
+        } catch (error) {
+            console.log(error);
+            
             next(new ErrorHandler('Hubo un error eliminar', 500));
         }
     }

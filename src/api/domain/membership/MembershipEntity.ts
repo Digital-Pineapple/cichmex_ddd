@@ -24,6 +24,17 @@ export interface MembershipInfoResponse  {
   discount_porcent?: number;
 }
 
+export interface QrValidatedResponse  {
+  _id:string,
+  name: string;
+  activated: boolean;
+  service_id?: string;
+  service_name?: string;
+  typeCars : [string]
+  user_id: string
+
+}
+
 export interface ServiceQuantity {
   service_id: {
     type: Schema.Types.ObjectId;
@@ -73,7 +84,7 @@ export interface MembershipHistory extends MongooseDelete.SoftDeleteDocument {
     type: mongoose.ObjectId;
   },
     date_service:{
-        type:Date;
+        type:string;
         required:false   
     },
     typeCar_id:{

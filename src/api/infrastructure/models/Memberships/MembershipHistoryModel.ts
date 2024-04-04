@@ -9,7 +9,7 @@ const MembershipHistorySchema = new mongoose.Schema<MembershipHistory>(
       type: mongoose.Schema.Types.ObjectId,
     },
     date_service: {
-      type: Date,
+      type: String,
       required:false,
     },
     typeCar_id:{
@@ -36,7 +36,7 @@ const MembershipHistorySchema = new mongoose.Schema<MembershipHistory>(
 );
 
 // Aplica el plugin mongoose-delete al esquema
-MembershipHistorySchema.plugin(MongooseDelete, { overrideMethods:true});
+MembershipHistorySchema.plugin(MongooseDelete, { deletedBy:true});
 
 const MembershipHistoryModel = model<Document & MembershipHistory>(
   'MembershipHistory',

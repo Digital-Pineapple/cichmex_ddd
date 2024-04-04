@@ -17,10 +17,10 @@ export class MembershipBenefitsUseCase {
     public async getAllhisto(): Promise<MembershipHistory[] | ErrorHandler > {
         return await this.membershipBenefitsRepository.findAll();
     }
-    
+   
 
     public async getDetailMembershipBenefit(_id: string): Promise<MembershipBenefits | ErrorHandler | null> {
-        return await this.membershipBenefitsRepository.findById(_id)
+        return await this.membershipBenefitsRepository.findOneItem({_id:_id, deleted:false}, validateTypeCarBenefits, UserCarBenefits, ServiceInBenefits)
     }
     public async getDetailMembershipBenefitHistory(id:string): Promise<MembershipBenefits | ErrorHandler | null> {
         return await this.membershipBenefitsRepository.getMembershipDetailHistory(id)

@@ -19,6 +19,7 @@ shoppingCartRouter
     .get('/:id', shoppingCartController.getShoppingCart)
     .post('/', shoppingCartController.createShoppingCart)
     .put('/:id',shoppingCartController.updateShoppingCart )
+    .delete('/membership/:id', shoppingCartController.deleteMembershipInCart)
     .delete('/:id', shoppingCartController.deleteShoppingCart)
     
 

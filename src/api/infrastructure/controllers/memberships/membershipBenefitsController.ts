@@ -3,6 +3,8 @@ import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
 import { MembershipBenefitsUseCase } from "../../../application/membership/membershipBenefitsUseCase";
 import { MembershipHistoryUseCase } from "../../../application/membership/membershipHistoryUseCase";
+import { QrValidatedResponse } from "../../../domain/membership/MembershipEntity";
+import moment from "moment";
 const { ObjectId } = require('mongodb');
 
 export class MembershipBenefitsController extends ResponseData {
@@ -23,6 +25,8 @@ export class MembershipBenefitsController extends ResponseData {
     this.getHistory = this.getHistory.bind(this);
     this.consumeBenefit = this.consumeBenefit.bind(this);
     this.getAllMembershipsBenefitsByUser = this.getAllMembershipsBenefitsByUser.bind(this);
+    this.QrVerify = this.QrVerify.bind(this);
+    this.MembershipSales = this.MembershipSales.bind(this);
   }
 
   public async getMembershipHistory(
@@ -59,6 +63,7 @@ export class MembershipBenefitsController extends ResponseData {
     next: NextFunction
   ) {
     const {id} = req.params
+    
     const _id = new ObjectId(id)
     try {
       const response = await this.membershipBenefitsUseCase.getMembershipBenefitsUser(_id);
@@ -178,7 +183,7 @@ export class MembershipBenefitsController extends ResponseData {
     try {
       const validateActivated = await this.membershipBenefitsUseCase.verifiedActiveBenefits(membershipBenefit_id, typeCar_id)
       if (!(validateActivated instanceof ErrorHandler)) {
-        const date_service = new Date()
+        const date_service = moment().format(); 
         const response = await this.memberHistoryUseCase.consumeBenefit(id,membershipBenefit_id, date_service, typeCar_id,car_color,plate_number, branch_office_id)
         this.invoke(response,200,res,'Servicio pagado con éxito',next)
       }
@@ -187,13 +192,48 @@ export class MembershipBenefitsController extends ResponseData {
       }
     } catch (error) {
       console.log(error);
-      next(new ErrorHandler("Hubo un error ", 500));
+      next(new ErrorHandler("Servicio ya consumido", 500));
       
       
     }
   }
 
-  
-  
+  public async QrVerify(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ){
+    const { id, membershipBenefit_id } = req.body
+   try {
+    const response= await this.membershipBenefitsUseCase.getDetailMembershipBenefit(membershipBenefit_id)
+    const memhistory = await this.memberHistoryUseCase.getOneHistoryMembership(id)
+    if (memhistory?.deleted === true) {
+      next(new ErrorHandler('El beneficio se encuentra canjeado',500))
+    }else{
+
+      this.invoke(response,200,res,'',next)
+    }
+    
+   } catch (error) {
+    next(new ErrorHandler("Hubo un error ", 500));
+   }
   
 }
+
+public async MembershipSales(
+  req: Request,
+  res: Response,
+  next: NextFunction
+){
+  const { date_service, branch_office_id } = req.body
+  
+ try {
+  const response= await this.memberHistoryUseCase.getSalesDay(date_service,branch_office_id)
+    this.invoke(response,200,res,'',next)
+  
+ } catch (error) {
+  next(new ErrorHandler("Hubo un error ", 500));
+ }
+}
+}
+
