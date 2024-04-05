@@ -179,6 +179,7 @@ export class MembershipBenefitsController extends ResponseData {
     next: NextFunction
   ){
     const {id} = req.params
+    
     const { membershipBenefit_id, typeCar_id,car_color,plate_number, branch_office_id } = req.body
     try {
       const validateActivated = await this.membershipBenefitsUseCase.verifiedActiveBenefits(membershipBenefit_id, typeCar_id)
@@ -203,10 +204,14 @@ export class MembershipBenefitsController extends ResponseData {
     res: Response,
     next: NextFunction
   ){
-    const { id, membershipBenefit_id } = req.body
+    const{id} = req.params
+    const {  membershipBenefit_id } = req.body
+    const idH = id 
+const trimmedId = idH.trim(); 
+
    try {
     const response= await this.membershipBenefitsUseCase.getDetailMembershipBenefit(membershipBenefit_id)
-    const memhistory = await this.memberHistoryUseCase.getOneHistoryMembership(id)
+    const memhistory = await this.memberHistoryUseCase.getOneHistoryMembership(trimmedId)
     if (memhistory?.deleted === true) {
       next(new ErrorHandler('El beneficio se encuentra canjeado',500))
     }else{
@@ -215,6 +220,8 @@ export class MembershipBenefitsController extends ResponseData {
     }
     
    } catch (error) {
+    console.log(error);
+    
     next(new ErrorHandler("Hubo un error ", 500));
    }
   

@@ -118,10 +118,9 @@ export abstract class MongoRepository {
       ""
     );
     return await this.MODEL.find({
-      status: true,
       $or: [
         {
-          name: { $regex: ".*" + noSpecialCharacters + ".*", $options: "i" },
+          slug: { $regex: ".*" + noSpecialCharacters + ".*", $options: "i" },
         },
       ],
     });
