@@ -27,6 +27,7 @@ export class SocketServer {
 
     public resolve = async () => {
         this.socket.on('connection', () => {
+            console.log('connection');
             
         });
     }
