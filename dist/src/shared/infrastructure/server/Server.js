@@ -26,32 +26,18 @@ class Server {
             explorer: true,
         };
         this.startServer = () => __awaiter(this, void 0, void 0, function* () {
-            return yield new Promise((resolve) => {
+            return yield new Promise((resolve, reject) => {
                 this.httpServer.listen(config_1.config.PORT, () => {
                     console.log(`🚀 Application ${config_1.config.APP_NAME} running on PORT ${config_1.config.PORT}`);
                     resolve();
+                }).on('error', (err) => {
+                    reject(err);
                 });
             });
         });
         this.resolve = () => __awaiter(this, void 0, void 0, function* () {
             this.io.on('connection', (socket) => {
                 console.log('Client connected:', socket.id);
-                socket.on('notificationAction', () => __awaiter(this, void 0, void 0, function* () {
-                    try {
-                        // Guardar la notificación en la base de datos
-                        const notification = new Notification({ message: '¡Nueva notificación!' });
-                        yield notification.save();
-                        // Enviar la notificación a todos los clientes conectados
-                        io.emit('notification', notification);
-                        console.log('Notification sent:', notification);
-                    }
-                    catch (error) {
-                        console.error('Error sending notification:', error);
-                    }
-                }));
-                socket.on('disconnect', () => {
-                    console.log('Client disconnected:', socket.id);
-                });
             });
         });
         this.express = (0, express_1.default)();

@@ -21,6 +21,7 @@ shoppingCartRouter
     .put('/:id',shoppingCartController.updateShoppingCart )
     .delete('/membership/:id', shoppingCartController.deleteMembershipInCart)
     .delete('/:id', shoppingCartController.deleteShoppingCart)
+    .delete('/PinC/:id', shoppingCartController.deleteProductInCart)
     
 
 export default shoppingCartRouter;

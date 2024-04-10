@@ -12,6 +12,7 @@ const ShoppingCartSchema = new Schema<ShoppingCartEntity>({
     products: {
         type: Array,
         required: false,
+        ref:'Products',
     },
     memberships: {
         type: Array,

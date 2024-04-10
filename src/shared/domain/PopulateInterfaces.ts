@@ -22,6 +22,11 @@ export interface IStockPopulateConfig {
     select : string[];
     model : any  
 }
+export interface IModelConfig {
+    path : string;
+    select : string[];
+    model : any  
+}
 
 export const authPopulateConfing: IAuthPopulateConfig = {
     path: 'type_customer',
@@ -98,4 +103,10 @@ export const InfoBranch : IStockPopulateConfig={
     path: 'branch_id',
     select: ["name",'opening_time' ],
     model:BranchOfficeModel
+}
+
+export const PopulateProductCS : IStockPopulateConfig={
+    path: 'products.item',
+    select: ["name",'price', 'images' ],
+    model:ProductModel
 }

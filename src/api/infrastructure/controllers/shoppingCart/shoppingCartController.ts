@@ -18,6 +18,7 @@ export class ShoppingCartController extends ResponseData {
         this.updateShoppingCart = this.updateShoppingCart.bind(this);
         this.deleteShoppingCart = this.deleteShoppingCart.bind(this);
         this.deleteMembershipInCart = this.deleteMembershipInCart.bind(this)
+        this.deleteProductInCart  = this.deleteProductInCart.bind(this)
 
     }
 
@@ -35,6 +36,8 @@ export class ShoppingCartController extends ResponseData {
             const response = await this.shoppingCartUseCase.getShoppingCartByUser(id)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
+            console.log(error);
+            
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
@@ -53,18 +56,33 @@ export class ShoppingCartController extends ResponseData {
     }
 
     public async updateShoppingCart(req: Request, res: Response, next: NextFunction) {
-        const { id } = req.params
+        const { id } = req.params;
         const { products, membership } = req.body;
-
+    
         try {
-            const response = await this.shoppingCartUseCase.updateShoppingCart(id, { products, memberships: membership })
-            this.invoke(response, 201, res, '', next)
+            let updateData: any = {};
+    
+            if (products && products.length > 0) {
+                updateData['products'] = products
+            }
+    
+            if (membership && membership.length > 0) {
+                updateData['membership'] = membership;
+            }
+    
+            const response = await this.shoppingCartUseCase.updateShoppingCart(id, updateData);
+            
+            if (response !== null) {
+                this.invoke(response, 201, res, '', next);
+            } else {
+                this.invoke({}, 404, res, 'Shopping cart not found', next);
+            }
         } catch (error) {
             console.log(error);
-
             next(new ErrorHandler('Error', 500));
         }
     }
+    
 
     public async deleteShoppingCart(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
@@ -77,11 +95,24 @@ export class ShoppingCartController extends ResponseData {
     }
     public async deleteMembershipInCart(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        console.log(id,'kjnknknk');
         
         try {
             const response = await this.shoppingCartUseCase.updateShoppingCart(id,{memberships:[]})
             console.log(response);
+            
+            this.invoke(response, 201, res, 'Eliminado con exito', next);
+        } catch (error) {
+            console.log(error);
+            
+            next(new ErrorHandler('Hubo un error eliminar', 500));
+        }
+    }
+
+    public async deleteProductInCart(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.params
+        
+        try {
+            const response = await this.shoppingCartUseCase.deletePInCart(id)
             
             this.invoke(response, 201, res, 'Eliminado con exito', next);
         } catch (error) {
