@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
@@ -5,6 +6,9 @@ import { PaymentUseCase } from '../../../application/payment/paymentUseCase';
 import { stringify } from 'uuid';
 import { MPService } from '../../../../shared/infrastructure/mercadopago/MPService';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
+import { ProductShopping } from '../../../domain/product/ProductEntity';
+import mongoose from 'mongoose';
+import { ShoppingCartEntity } from '../../../domain/shoppingCart/shoppingCartEntity';
 
 export class ShoppingCartController extends ResponseData {
     protected path = '/shoppingCart'
@@ -19,6 +23,8 @@ export class ShoppingCartController extends ResponseData {
         this.deleteShoppingCart = this.deleteShoppingCart.bind(this);
         this.deleteMembershipInCart = this.deleteMembershipInCart.bind(this)
         this.deleteProductInCart  = this.deleteProductInCart.bind(this)
+        this.deleteProductsInShoppingCart = this.deleteProductsInShoppingCart.bind(this)
+        this.updateShoppingCartProducts = this.updateShoppingCartProducts.bind(this);
 
     }
 
@@ -116,10 +122,53 @@ export class ShoppingCartController extends ResponseData {
         try {
             const response = await this.shoppingCartUseCase.getShoppingCartByUser(user_id)
             const products = response?.products;
-            const productsFiltered = products?.filter((product)=>product?.item?._id !== id);
+            const productsFiltered = products?.filter((product)=>product?.item?._id !== new ObjectId(id));
             const response2 = await this.shoppingCartUseCase.updateShoppingCart(car_id,{products: productsFiltered})
             
             this.invoke(response2, 201, res, 'Eliminado con exito', next);
+        } catch (error) {
+            console.log(error);
+            
+            next(new ErrorHandler('Hubo un error eliminar', 500));
+        }
+    }
+
+    public async deleteProductsInShoppingCart(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params; // shopping_car id
+        
+        try {
+            const response = await this.shoppingCartUseCase.updateShoppingCart(id,{products:[]});
+
+            this.invoke(response, 201, res, 'Carrito de compras vaciado', next);
+        } catch (error) {
+            console.log(error);
+            
+            next(new ErrorHandler('Hubo un error eliminar', 500));
+        }
+    }
+
+    public async updateShoppingCartProducts(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params; // shopping_carid
+        const { user_id, cart_id } = req.body;        
+        try {                  
+            const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user_id);
+            const index = responseShoppingCartUser?.products?.findIndex(product=>product.item?._id.equals(id));
+            const quantity=1;
+            const newProduct = {
+                item: new ObjectId(id),
+                quantity
+            }
+            let response: any='';
+        
+            if(index !== -1){
+                responseShoppingCartUser?.products[index].quantity += quantity;
+                
+            }else{
+                responseShoppingCartUser?.products?.push(newProduct);
+            }
+            
+            response = await this.shoppingCartUseCase.updateShoppingCart(cart_id,{ products: responseShoppingCartUser?.products  });
+            this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
         } catch (error) {
             console.log(error);
             

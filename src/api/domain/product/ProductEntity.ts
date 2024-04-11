@@ -23,9 +23,10 @@ export interface ProductImage extends MongooseDelete.SoftDeleteDocument {
     updatedAt        :   NativeDate;
   }
 
-  export interface ProductShopping extends MongooseDelete.SoftDeleteDocument {
+  export interface ProductShopping  {
    
-    item ?: ProductEntity;
+    item ?: mongoose.Types.ObjectId,
+      
     quantity? :number
    
   }
