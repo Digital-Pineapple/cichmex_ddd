@@ -12,7 +12,7 @@ export class ShoppingCartUseCase {
     public async getShoppingCarts(): Promise<ShoppingCartEntity[] | ErrorHandler | null> {
         return await this.shoppingCartRepository.findAll()
     }
-    public async getShoppingCartByUser(id : any): Promise<ShoppingCartEntity | ErrorHandler | null> {
+    public async getShoppingCartByUser(id : any): Promise<ShoppingCartEntity  | null> {
         return await this.shoppingCartRepository.findOneItem({user_id:id}, PopulateProductCS)
     }
     public async createShoppingCart(body:any): Promise<ShoppingCartEntity | null> {

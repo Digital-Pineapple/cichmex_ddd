@@ -108,13 +108,18 @@ export class ShoppingCartController extends ResponseData {
         }
     }
 
+
     public async deleteProductInCart(req: Request, res: Response, next: NextFunction) {
-        const {id} = req.params
+        const { id } = req.params;
+        const { user_id, car_id } = req.body;
         
         try {
-            const response = await this.shoppingCartUseCase.deletePInCart(id)
+            const response = await this.shoppingCartUseCase.getShoppingCartByUser(user_id)
+            const products = response?.products;
+            const productsFiltered = products?.filter((product)=>product?.item?._id !== id);
+            const response2 = await this.shoppingCartUseCase.updateShoppingCart(car_id,{products: productsFiltered})
             
-            this.invoke(response, 201, res, 'Eliminado con exito', next);
+            this.invoke(response2, 201, res, 'Eliminado con exito', next);
         } catch (error) {
             console.log(error);
             

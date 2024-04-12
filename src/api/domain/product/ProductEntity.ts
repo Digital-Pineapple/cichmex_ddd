@@ -25,7 +25,7 @@ export interface ProductImage extends MongooseDelete.SoftDeleteDocument {
 
   export interface ProductShopping extends MongooseDelete.SoftDeleteDocument {
    
-    item ?: string;
+    item ?: ProductEntity;
     quantity? :number
    
   }
