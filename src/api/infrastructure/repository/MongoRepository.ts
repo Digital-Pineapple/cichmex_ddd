@@ -92,6 +92,9 @@ export abstract class MongoRepository {
   public async PhysicalDelete(_id: any): Promise<any> {
     return await this.MODEL.deleteOne({ _id: _id })
   }
+  public async DeletePinC(_id: any): Promise<any> {
+    return await this.MODEL.deleteOne({ item: _id })
+  }
 
   public async createOne(body: object): Promise<any> {
 

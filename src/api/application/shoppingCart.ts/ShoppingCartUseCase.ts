@@ -1,6 +1,7 @@
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { ShoppingCartRepository } from '../../domain/shoppingCart/shoppingCartRepository';
 import { ShoppingCartEntity } from '../../domain/shoppingCart/shoppingCartEntity';
+import { PopulateProductCS } from '../../../shared/domain/PopulateInterfaces';
 
 
 export class ShoppingCartUseCase {
@@ -11,8 +12,8 @@ export class ShoppingCartUseCase {
     public async getShoppingCarts(): Promise<ShoppingCartEntity[] | ErrorHandler | null> {
         return await this.shoppingCartRepository.findAll()
     }
-    public async getShoppingCartByUser(id : any): Promise<ShoppingCartEntity | ErrorHandler | null> {
-        return await this.shoppingCartRepository.findOneItem({user_id:id})
+    public async getShoppingCartByUser(id : any): Promise<ShoppingCartEntity  | null> {
+        return await this.shoppingCartRepository.findOneItem({user_id:id}, PopulateProductCS)
     }
     public async createShoppingCart(body:any): Promise<ShoppingCartEntity | null> {
         
@@ -31,6 +32,9 @@ export class ShoppingCartUseCase {
     }
     public async deleteShoppingCart(_id: string): Promise<ShoppingCartEntity | null> {
         return await this.shoppingCartRepository.updateOne(_id, {deleted: true})
+    }
+    public async deletePInCart(item_id:any): Promise<ShoppingCartEntity | null> {
+        return await this.shoppingCartRepository.DeletePinC(item_id)
     }
 }
     

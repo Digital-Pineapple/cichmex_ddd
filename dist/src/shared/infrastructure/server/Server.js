@@ -16,6 +16,7 @@ exports.Server = void 0;
 const express_1 = __importDefault(require("express"));
 const config_1 = require("../../../../config");
 const swagger_output_json_1 = __importDefault(require("../../../../swagger_output.json"));
+const http_1 = require("http");
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 class Server {
     constructor(router) {
@@ -24,15 +25,18 @@ class Server {
             explorer: true,
         };
         this.startServer = () => __awaiter(this, void 0, void 0, function* () {
-            return yield new Promise((resolve) => {
-                this.express.listen(config_1.config.PORT, () => {
+            return yield new Promise((resolve, reject) => {
+                this.httpServer.listen(config_1.config.PORT, () => {
                     console.log(`🚀 Application ${config_1.config.APP_NAME} running on PORT ${config_1.config.PORT}`);
                     resolve();
+                }).on('error', (err) => {
+                    reject(err);
                 });
             });
         });
         this.express = (0, express_1.default)();
-        this.express.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_output_json_1.default, this.swaggerUiOptions));
+        this.httpServer = (0, http_1.createServer)(this.express);
+        this.express.use("/api-docs", this.router, swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_output_json_1.default, this.swaggerUiOptions));
         this.express.use(this.router);
     }
 }

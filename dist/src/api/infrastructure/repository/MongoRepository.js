@@ -116,6 +116,11 @@ class MongoRepository {
             return yield this.MODEL.deleteOne({ _id: _id });
         });
     }
+    DeletePinC(_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.deleteOne({ item: _id });
+        });
+    }
     createOne(body) {
         return __awaiter(this, void 0, void 0, function* () {
             const newObject = new this.MODEL(body);
@@ -152,7 +157,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiphistories",
+                        from: "membershiphistories", // (hijo)--memberHistory
                         let: {
                             id: "$_id",
                         },
@@ -186,7 +191,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiphistories",
+                        from: "membershiphistories", // (hijo)--memberHistory
                         let: {
                             id: "$_id",
                         },
