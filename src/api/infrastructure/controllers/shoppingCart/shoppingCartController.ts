@@ -122,7 +122,8 @@ export class ShoppingCartController extends ResponseData {
         try {
             const response = await this.shoppingCartUseCase.getShoppingCartByUser(user_id)
             const products = response?.products;
-            const productsFiltered = products?.filter((product)=>product?.item?._id !== new ObjectId(id));
+            const productsFiltered = products?.filter((product)=>product?.item?._id.toString() !== id);
+            
             const response2 = await this.shoppingCartUseCase.updateShoppingCart(car_id,{products: productsFiltered})
             
             this.invoke(response2, 201, res, 'Eliminado con exito', next);
@@ -149,11 +150,10 @@ export class ShoppingCartController extends ResponseData {
 
     public async updateShoppingCartProducts(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params; // shopping_carid
-        const { user_id, cart_id } = req.body;        
-        try {                  
+        const { user_id, cart_id, quantity } = req.body;        
+        try {  
             const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user_id);
             const index = responseShoppingCartUser?.products?.findIndex(product=>product.item?._id.equals(id));
-            const quantity=1;
             const newProduct = {
                 item: new ObjectId(id),
                 quantity
