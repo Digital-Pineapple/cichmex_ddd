@@ -8,7 +8,6 @@ import swaggerUi from 'swagger-ui-express';
 export class Server {
     private readonly express: express.Application;
     private readonly httpServer: HttpServer;
-    public readonly io: ServerSocket;
 
     private swaggerUiOptions = {
         explorer: true,
@@ -17,11 +16,6 @@ export class Server {
     constructor(private router: Router) {
         this.express = express();
         this.httpServer = createServer(this.express);
-        this.io = new ServerSocket(this.httpServer, {
-            cors: {
-                origin: 'https://localhost:3000'
-            }
-        });
         this.express.use(
             "/api-docs",
             this.router,
@@ -39,12 +33,6 @@ export class Server {
             }).on('error', (err) => {
                 reject(err);
             });
-        });
-    }
-
-    public resolve = async () => {
-        this.io.on('connection', (socket: Socket) => {
-            console.log('Client connected:', socket.id);
         });
     }
 }
