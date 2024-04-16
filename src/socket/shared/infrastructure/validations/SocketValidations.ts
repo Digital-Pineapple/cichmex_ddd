@@ -1,40 +1,36 @@
-import UserModel from "../../../../api/infrastructure/models/UserModel";
-
+const UserModel = require("../../../../api/infrastructure/models/UserModel");
 const jwt = require('jsonwebtoken');
-import{config} from '../../../../../config'
-import { UserEntity } from "../../../../api/domain/user/UserEntity";
-import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
+const config = require('../../../../../config');
+const { ErrorHandler } = require("../../../../shared/domain/ErrorHandler");
 
-
-
-export const comprobarJWT = async( token = '') => {
+export const comprobarJWT = async (token = '') => {
     console.log(token);
     
-
     try {
-        
-        if(  token.length < 10 ) {
+        if (token.length < 10) {
             return null;
         }
 
-        const { user } = jwt.verify( token, config.SECRET_JWT_KEY )as {user:UserEntity};
-        if (!token) {
-            return null
-        }
-        
-        const usuario = await UserModel.findById( user._id );
+        const { user } = jwt.verify(token, config.SECRET_JWT_KEY);
 
-        if ( usuario ) {
-            return usuario
+        if (!user) {
+            throw new ErrorHandler(401, 'Token de autenticación inválido');
+        }
+
+        const usuario = await UserModel.findById(user._id);
+
+        if (usuario) {
+            return usuario;
         } else {
             return null;
         }
 
     } catch (error) {
-        return null;
+        console.error(error);
+        throw new ErrorHandler(500, 'Error al comprobar el token JWT');
     }
+};
 
-}
 
 
 

@@ -1,4 +1,5 @@
 import BranchOfficeModel from '../../api/infrastructure/models/BranchOffices/BranchOfficeModel';
+import MembershipBenefitsModel from '../../api/infrastructure/models/Memberships/MembershipBenefitsModel';
 import MembershipModel from '../../api/infrastructure/models/Memberships/MembershipModel';
 import ProductModel from '../../api/infrastructure/models/ProductModel';
 import ServiceModel from '../../api/infrastructure/models/ServicesModel';
@@ -110,3 +111,10 @@ export const PopulateProductCS : IStockPopulateConfig={
     select: ["name",'price', 'images' ],
     model:ProductModel
 }
+export const PopulateDetailMembership : IStockPopulateConfig={
+    path: 'membershipBenefit_id',
+    select: ["service_id" ],
+    model:MembershipBenefitsModel
+}
+
+
