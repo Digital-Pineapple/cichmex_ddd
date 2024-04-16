@@ -28,9 +28,9 @@ export class MembershipHistoryRepository extends MongoRepository implements Memb
         return await this.createOne(body);
     }
 
-    async getSalesDayByBranch(date_service: string, branch_office_id: string): Promise<MembershipHistory[] | null> {
+    async getSalesDayByBranch(date_service: string, branch_office_id: string, populate?:any): Promise<MembershipHistory[] | null> {
         try {
-            const data = await this.MembershipHistoryModel.find({branch_office_id:branch_office_id,date_service:{$regex:`${date_service}`} })
+            const data = await this.MembershipHistoryModel.find({branch_office_id:branch_office_id,date_service:{$regex:`${date_service}`} }).populate(populate)
             return data;
         } catch (error) {
             console.error("Error retrieving sales data by branch:", error);

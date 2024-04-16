@@ -10,7 +10,10 @@ export const Router = (socketRouter: ExpressRouter, errorMiddleware: ErrorMiddle
     const router = ExpressRouter();
 
     router
-        .use(cors())
+        .use(cors({
+            origin: 'https://localhost:4000',
+            credentials: true 
+        }))
         .use(bodyParser.json())
         .use(
             bodyParser.urlencoded({
