@@ -26,6 +26,7 @@ export class ShoppingCartController extends ResponseData {
         this.deleteProductInCart  = this.deleteProductInCart.bind(this)
         this.deleteProductsInShoppingCart = this.deleteProductsInShoppingCart.bind(this)
         this.updateShoppingCartProducts = this.updateShoppingCartProducts.bind(this);
+        this.updateProductQuantity = this.updateProductQuantity.bind(this);
 
     }
 
@@ -140,11 +141,9 @@ export class ShoppingCartController extends ResponseData {
         
         try {
             const response = await this.shoppingCartUseCase.updateShoppingCart(id,{products:[]});
-
             this.invoke(response, 201, res, 'Carrito de compras vaciado', next);
         } catch (error) {
             console.log(error);
-            
             next(new ErrorHandler('Hubo un error eliminar', 500));
         }
     }
@@ -160,9 +159,8 @@ export class ShoppingCartController extends ResponseData {
                 quantity
             }
             let response: any='';
-            if(index !== -1){
-                responseShoppingCartUser?.products[index].quantity += quantity;
-                
+            if(index !== -1){                
+                responseShoppingCartUser?.products[index].quantity += quantity;                
             }else{
                 responseShoppingCartUser?.products?.push(newProduct);
             }
@@ -175,6 +173,7 @@ export class ShoppingCartController extends ResponseData {
         }
     }
 
+    
     public async updateProductQuantity(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params; // product_id
         const { user_id, cart_id, quantity } = req.body;        
