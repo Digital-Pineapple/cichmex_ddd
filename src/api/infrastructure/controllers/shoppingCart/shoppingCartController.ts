@@ -1,3 +1,4 @@
+import { body } from 'express-validator';
 import { ObjectId } from 'mongodb';
 import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
@@ -117,14 +118,14 @@ export class ShoppingCartController extends ResponseData {
 
     public async deleteProductInCart(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { user_id, car_id } = req.body;
+        const { user_id, cart_id } = req.body;
         
         try {
+            
             const response = await this.shoppingCartUseCase.getShoppingCartByUser(user_id)
             const products = response?.products;
             const productsFiltered = products?.filter((product)=>product?.item?._id.toString() !== id);
-            
-            const response2 = await this.shoppingCartUseCase.updateShoppingCart(car_id,{products: productsFiltered})
+            const response2 = await this.shoppingCartUseCase.updateShoppingCart(cart_id,{products: productsFiltered})
             
             this.invoke(response2, 201, res, 'Eliminado con exito', next);
         } catch (error) {
@@ -159,7 +160,6 @@ export class ShoppingCartController extends ResponseData {
                 quantity
             }
             let response: any='';
-        
             if(index !== -1){
                 responseShoppingCartUser?.products[index].quantity += quantity;
                 
@@ -170,11 +170,27 @@ export class ShoppingCartController extends ResponseData {
             response = await this.shoppingCartUseCase.updateShoppingCart(cart_id,{ products: responseShoppingCartUser?.products  });
             this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
         } catch (error) {
-            console.log(error);
-            
-            next(new ErrorHandler('Hubo un error eliminar', 500));
+            console.log(error);            
+            next(new ErrorHandler('Hubo un error al actualizar el carrito', 500));
         }
     }
+
+    public async updateProductQuantity(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params; // product_id
+        const { user_id, cart_id, quantity } = req.body;        
+        try {  
+            const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user_id);
+            const index = responseShoppingCartUser?.products?.findIndex(product=>product.item?._id.equals(id));
+            responseShoppingCartUser?.products[index].quantity = quantity;
+            const response = await this.shoppingCartUseCase.updateShoppingCart(cart_id,{ products: responseShoppingCartUser?.products  });
+            this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
+        } catch (error) {
+            console.log(error);            
+            next(new ErrorHandler('Hubo un error al actualizar el carrito', 500));
+        }
+    }
+
+
 
 
 
