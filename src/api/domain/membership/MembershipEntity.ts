@@ -105,6 +105,11 @@ export interface MembershipHistory extends MongooseDelete.SoftDeleteDocument {
       ref:'BranchOffices',
       required:false,
     }
+    service:{
+      type:Schema.Types.ObjectId,
+      ref: 'Services',
+      required:false,
+    }
 
   
     
