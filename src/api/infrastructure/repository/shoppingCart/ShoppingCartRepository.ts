@@ -5,6 +5,7 @@ import { MongoRepository } from '../MongoRepository';
 
 import { ServicesEntity } from '../../../domain/services/ServicesEntity';
 import { ShoppingCartEntity } from '../../../domain/shoppingCart/shoppingCartEntity';
+import { ProductShopping } from '../../../domain/product/ProductEntity';
 
 export class ShoppingCartRepository extends MongoRepository implements ShoppingCartConfig {
 
@@ -15,6 +16,7 @@ export class ShoppingCartRepository extends MongoRepository implements ShoppingC
     async findOneShoppingCart(query: Object): Promise<ShoppingCartEntity | null> {
         return await this.findOneItem(query);
     }
+
 
     
 }

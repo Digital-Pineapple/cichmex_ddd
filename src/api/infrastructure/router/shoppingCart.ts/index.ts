@@ -21,6 +21,10 @@ shoppingCartRouter
     .put('/:id',shoppingCartController.updateShoppingCart )
     .delete('/membership/:id', shoppingCartController.deleteMembershipInCart)
     .delete('/:id', shoppingCartController.deleteShoppingCart)
+    .put('/product/:id', shoppingCartController.deleteProductInCart)
+    .delete('/products/:id', shoppingCartController.deleteProductsInShoppingCart)
+    .put('/products/:id', shoppingCartController.updateShoppingCartProducts)
+    .put('/product/quantity/:id', shoppingCartController.updateProductQuantity)
     
 
 export default shoppingCartRouter;

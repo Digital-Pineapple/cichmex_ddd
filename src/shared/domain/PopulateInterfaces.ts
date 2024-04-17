@@ -1,4 +1,5 @@
 import BranchOfficeModel from '../../api/infrastructure/models/BranchOffices/BranchOfficeModel';
+import MembershipBenefitsModel from '../../api/infrastructure/models/Memberships/MembershipBenefitsModel';
 import MembershipModel from '../../api/infrastructure/models/Memberships/MembershipModel';
 import ProductModel from '../../api/infrastructure/models/ProductModel';
 import ServiceModel from '../../api/infrastructure/models/ServicesModel';
@@ -18,6 +19,11 @@ export interface ICarServicePopulateConfig {
     select  : string;
 }
 export interface IStockPopulateConfig {
+    path : string;
+    select : string[];
+    model : any  
+}
+export interface IModelConfig {
     path : string;
     select : string[];
     model : any  
@@ -99,3 +105,16 @@ export const InfoBranch : IStockPopulateConfig={
     select: ["name",'opening_time' ],
     model:BranchOfficeModel
 }
+
+export const PopulateProductCS : IStockPopulateConfig={
+    path: 'products.item',
+    select: ["name",'price', 'images' ],
+    model:ProductModel
+}
+export const PopulateDetailMembership : IStockPopulateConfig={
+    path: 'membershipBenefit_id',
+    select: ["service_id" ],
+    model:MembershipBenefitsModel
+}
+
+
