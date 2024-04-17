@@ -24,7 +24,7 @@ membershipBenefitRouter
     .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.getAllMembershipsBenefits)
     .get('/history', membershipBenefitsController.getHistory)
     .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.getMembershipHistory)
-    .get('/user/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc59' ]), membershipBenefitsController.getAllMembershipsBenefitsByUser)
+    .get('/user/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc59','65a8193ae6f31eef3013bc57' ]), membershipBenefitsController.getAllMembershipsBenefitsByUser)
     .post('/Qr/Validate/:id', membershipBenefitsController.QrVerify)
     .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.createMembershipBenefit)
     .post('/sales-day', membershipBenefitsController.MembershipSales)
