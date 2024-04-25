@@ -1,5 +1,5 @@
 {
-    "CodeGPT.apiKey": "Ollama",
+    "CodeGPT.apiKey": "OpenAI",
     "CodeGPT.Autocomplete.provider": "Ollama - llama3:8b-instruct",
     "CodeGPT.Autocomplete.enabled": true
 }

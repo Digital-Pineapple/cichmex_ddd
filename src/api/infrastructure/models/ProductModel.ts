@@ -4,14 +4,7 @@ import MongooseDelete = require("mongoose-delete");
 import { ProductEntity, ProductImage } from "../../domain/product/ProductEntity";
 
 
-const ProductImageSchema = new Schema<ProductImage>(
-    {
-       url: {
-        type: String,
-        required:false,
-      },
-    },
-  );
+
   const ProductSchema = new Schema<ProductEntity>(
     {
        name: {
@@ -31,8 +24,8 @@ const ProductImageSchema = new Schema<ProductImage>(
           type:String,
           required:false,
       },
-      sizes:{
-        type:[String],
+      size:{
+        type:String,
         required:false,
       },
       tag:{

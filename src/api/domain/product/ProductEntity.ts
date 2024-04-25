@@ -9,7 +9,7 @@ export interface ProductEntity extends MongooseDelete.SoftDeleteDocument {
   price: number;
   description?: string;
   slug?: string;
-  sizes?: string[];
+  size?: string;
   tag: string;
   images?: string[];
   createdAt        :   NativeDate;
