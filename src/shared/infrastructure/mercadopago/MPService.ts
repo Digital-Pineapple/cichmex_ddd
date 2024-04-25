@@ -13,7 +13,7 @@ export class MPService {
     }
 
 
-    async createLinkMP(item: any, user_id:any) {   
+    async createLinkMP(items: any, user_id:any) {   
         const path = 'https://localhost:3000/auth'
         
         

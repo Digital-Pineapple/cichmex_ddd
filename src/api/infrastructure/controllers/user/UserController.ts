@@ -33,7 +33,7 @@ export class UserController extends ResponseData {
         this.resendCode = this.resendCode.bind(this);
         this.verifyPhone = this.verifyPhone.bind(this);
         this.verifyEmail = this.verifyEmail.bind(this);
-        
+
         this.deletePhone = this.deletePhone.bind(this);
         this.signUpByPhone = this.signUpByPhone.bind(this);
         this.signUpPartnerByPhone = this.signUpPartnerByPhone.bind(this);
@@ -42,6 +42,7 @@ export class UserController extends ResponseData {
         this.loginPhone = this.loginPhone.bind(this);
         this.physicalDeletePhone = this.physicalDeletePhone.bind(this);
         this.validateUser = this.validateUser.bind(this);
+        this.updateCollectionPoint  = this.updateCollectionPoint.bind(this);
 
     }
 
@@ -94,7 +95,7 @@ export class UserController extends ResponseData {
             const response = await this.userUseCase.getOneUser(id)
             if (!(response instanceof ErrorHandler) && response?.profile_image !== undefined) {
                 response?.profile_image ?
-                    response.profile_image = await this.s3Service.getUrlObject(response.profile_image+".jpg") :
+                    response.profile_image = await this.s3Service.getUrlObject(response.profile_image + ".jpg") :
                     'No hay imagen de perfil'
             }
             this.invoke(response, 200, res, '', next);
@@ -111,13 +112,13 @@ export class UserController extends ResponseData {
             const phoneC = prefix + phone_number
             const phoneString = phoneC.toString()
             const noRepeat = await this.phoneUserUseCase.findOnePhone(phone_number)
-            if ( noRepeat == null) {
-                await this.twilioService.sendSMS(phoneString,`CarWash autolavado y más. Código de verificación - ${code}`)
+            if (noRepeat == null) {
+                await this.twilioService.sendSMS(phoneString, `CarWash autolavado y más. Código de verificación - ${code}`)
                 const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
                 this.invoke(newPhone, 200, res, '', next);
-              
-            }else{
-                next (new ErrorHandler('telefono ya existe',500))
+
+            } else {
+                next(new ErrorHandler('telefono ya existe', 500))
             }
         } catch (error) {
             console.error('Error:', error);
@@ -146,7 +147,7 @@ export class UserController extends ResponseData {
         const { id } = req.params
         const { code } = req.body;
         console.log(req);
-        
+
         try {
             const infoPhone = await this.phoneUserUseCase.getOnePhone(id)
 
@@ -167,14 +168,14 @@ export class UserController extends ResponseData {
     public async verifyEmail(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
         const { id } = req.params
         const { code } = req.body;
-        
+
         try {
             const infoUser = await this.userUseCase.getUser(id)
             if (!(infoUser instanceof ErrorHandler)) {
                 if (infoUser?.accountVerify === code) {
-                    const response = this.userUseCase.updateRegisterUser(id,{email_verified:true, google: true})
-                    console.log(response,'userController');
-                    
+                    const response = this.userUseCase.updateRegisterUser(id, { email_verified: true, google: true })
+                    console.log(response, 'userController');
+
                     this.invoke(response, 200, res, '', next)
                 } else {
                     next(new ErrorHandler('El codigo no coincide', 400))
@@ -204,7 +205,7 @@ export class UserController extends ResponseData {
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             console.log(error);
-            
+
             next(new ErrorHandler('Hubo un error al eliminar', 500));
         }
     }
@@ -212,12 +213,12 @@ export class UserController extends ResponseData {
 
     public async getVerifyEmail(req: Request, res: Response, next: NextFunction): Promise<IGoogleResponse | ErrorHandler | void> {
         const { id } = req.params
-        
+
         try {
             const response = await this.userUseCase.getUserEmail(id)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-            
+
             next(new ErrorHandler('Hubo un error', 500));
         }
     }
@@ -256,21 +257,21 @@ export class UserController extends ResponseData {
         }
     }
 
-    public async loginPhone(req: Request, res: Response, next: NextFunction): Promise<UserEntity| IPhone | ErrorHandler | void> {
+    public async loginPhone(req: Request, res: Response, next: NextFunction): Promise<UserEntity | IPhone | ErrorHandler | void> {
         const { password, phone_number } = req.body
-        
+
         try {
 
-            const phoneInfo  = await this.phoneUserUseCase.findPhone(phone_number)
+            const phoneInfo = await this.phoneUserUseCase.findPhone(phone_number)
             if (!(phoneInfo instanceof ErrorHandler)) {
-                const response = await this.userUseCase.signInByPhone(phoneInfo.phone_id,password)
+                const response = await this.userUseCase.signInByPhone(phoneInfo.phone_id, password)
                 if (!(response instanceof ErrorHandler) && response.user.profile_image !== undefined) {
                     response.user.profile_image ?
-                        response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image+".jpg") :
+                        response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image + ".jpg") :
                         'No hay imagen de perfil'
                 }
                 this.invoke(response, 200, res, '', next);
-                
+
             }
 
 
@@ -332,24 +333,41 @@ export class UserController extends ResponseData {
         }
     }
 
-    public async validateUser(req: Request, res: Response, next: NextFunction) {
+    public async updateCollectionPoint(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { accountVerified } = req.body
-        const data = Boolean(accountVerified)
-        
-        try {   
-           const response = await this.userUseCase.updateUser(id,{accountVerify:data})
-           if (!(response instanceof ErrorHandler)) {    
+        const { store } = req.body;
+        try {
+            const response = await this.userUseCase.updateUser(id, { store: store })
+            this.invoke(
+                response,
+                201,
+                res,
+                "Cambio exitoso",
+                next
+            ); 
+        } catch(error) {
+        next(new ErrorHandler("Hubo un error al editar la información", 500));
+    }
+}
+
+    public async validateUser(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const { accountVerified } = req.body
+    const data = Boolean(accountVerified)
+
+    try {
+        const response = await this.userUseCase.updateUser(id, { accountVerify: data })
+        if (!(response instanceof ErrorHandler)) {
             if (!response?.google && response !== null) {
                 const url = await this.s3Service.getUrlObject(response?.profile_image + ".jpg");
                 response.profile_image = url;
             }
         }
         this.invoke(response, 200, res, 'Verificado con éxito', next);
-        } catch (error) {
-            next(new ErrorHandler("Hubo un error al editar la información", 500));
-        }
+    } catch (error) {
+        next(new ErrorHandler("Hubo un error al editar la información", 500));
     }
+}
 
 
 

@@ -31,6 +31,7 @@ export interface UserEntity extends MongooseDelete.SoftDeleteInterface {
     phone_id         ?:  IPhone;
     accountVerify    ?:   boolean;
     facturapi_id    ?:   string;
+    store           ?:   string;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;
 }

@@ -96,7 +96,6 @@ export class StockBranchController extends ResponseData {
         
         try {
             const response = await this.stockBranchUseCase.getOneStockInBranch(branch_id,product_id, stockBranchPopulateConfig)
-            
             const num1 = response.stock
             const num2 = parseInt(stock)
             const newQuantity = num1 + num2
