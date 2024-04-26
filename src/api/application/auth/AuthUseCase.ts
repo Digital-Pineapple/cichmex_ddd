@@ -8,7 +8,7 @@ import { IAuth } from '../authentication/AuthenticationService';
 import { MomentService } from '../../../shared/infrastructure/moment/MomentService';
 import { IFileKeys, IPhoneRequest } from './interfaces';
 import { UserEntity } from '../../domain/user/UserEntity';
-import { BranchPopulateConfig, PhonePopulateConfig, TypeUserPopulateConfig, UserPopulateConfig } from '../../../shared/domain/PopulateInterfaces'
+import { BranchPopulateConfig, PhonePopulateConfig, PopulatePointStore, TypeUserPopulateConfig, UserPopulateConfig } from '../../../shared/domain/PopulateInterfaces'
 import {  sendVerifyMail } from '../../../shared/infrastructure/nodemailer/emailer';
 
 export class AuthUseCase extends Authentication {
@@ -19,7 +19,7 @@ export class AuthUseCase extends Authentication {
 
     async signIn(email: string, password: string): Promise<ErrorHandler | IAuth> {
 
-        const user = await this.authRepository.findOneItem({ email }, TypeUserPopulateConfig, PhonePopulateConfig);
+        const user = await this.authRepository.findOneItem({ email }, TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
         
         if (!user) return new ErrorHandler('No exite este usuario', 400);
         const validatePassword = this.decryptPassword(password, user.password)
@@ -31,7 +31,7 @@ export class AuthUseCase extends Authentication {
 
 
     async findUser(email: string): Promise<  UserEntity> {
-        let customer = await this.authRepository.findOneItem({ email },PhonePopulateConfig, TypeUserPopulateConfig);
+        let customer = await this.authRepository.findOneItem({ email },PhonePopulateConfig, TypeUserPopulateConfig,PopulatePointStore);
         return await (customer);
     }
 
@@ -110,7 +110,7 @@ export class AuthUseCase extends Authentication {
     async signInWithGoogle(idToken: string): Promise<IGoogleResponseLogin | IAuth | ErrorHandler | null> {
         let { email, picture } = await this.validateGoogleToken(idToken);
         
-        let user = await this.authRepository.findOneItem({ email });
+        let user = await this.authRepository.findOneItem({ email },TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
         // if (user.email_verified === true) {
         //     user.profile_image === picture
         //     user = await this.generateJWT(user);

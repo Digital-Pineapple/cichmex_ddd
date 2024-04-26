@@ -1,6 +1,7 @@
 
 import MongooseDelete = require("mongoose-delete");
 import { TypeUserEntity } from "../typeUser/TypeUserEntity";
+import mongoose from "mongoose";
 export interface IPhone extends MongooseDelete.SoftDeleteInterface {
     code             ?:   string;
     prefix           :   string;
@@ -31,7 +32,7 @@ export interface UserEntity extends MongooseDelete.SoftDeleteInterface {
     phone_id         ?:  IPhone;
     accountVerify    ?:   boolean;
     facturapi_id    ?:   string;
-    store           ?:   string;
+    store           ?:   mongoose.Types.ObjectId;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;
 }

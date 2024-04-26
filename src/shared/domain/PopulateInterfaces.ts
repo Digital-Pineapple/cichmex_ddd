@@ -116,5 +116,10 @@ export const PopulateDetailMembership : IStockPopulateConfig={
     select: ["service_id" ],
     model:MembershipBenefitsModel
 }
+export const PopulatePointStore : IStockPopulateConfig={
+    path: 'store',
+    select: ["name", "closing_time", "opening_time", "location" ],
+    model: BranchOfficeModel
+}
 
 
