@@ -336,8 +336,11 @@ export class UserController extends ResponseData {
     public async updateCollectionPoint(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { store } = req.body;
+        
         try {
-            const response = await this.userUseCase.updateUser(id, { store: store })
+            const response = await this.userUseCase.updateUser(id,{store:store})
+            console.log(response);
+            
             this.invoke(
                 response,
                 201,

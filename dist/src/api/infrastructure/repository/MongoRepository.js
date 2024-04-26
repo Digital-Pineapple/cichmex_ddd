@@ -19,9 +19,9 @@ class MongoRepository {
             return yield this.MODEL.find({ deleted: false }).populate(populateOne).populate(populateTwo);
         });
     }
-    findAllAll(id, populateOne, populateTwo) {
+    findAllAll(id, populateOne, populateTwo, populateThree) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findById(id, { delted: false }).populate(populateOne).populate(populateTwo);
+            return yield this.MODEL.findById(id, { delted: false }).populate(populateOne).populate(populateTwo).populate(populateThree);
         });
     }
     findStockByBranch(branch_id) {
@@ -157,7 +157,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiphistories",
+                        from: "membershiphistories", // (hijo)--memberHistory
                         let: {
                             id: "$_id",
                         },
@@ -191,7 +191,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiphistories",
+                        from: "membershiphistories", // (hijo)--memberHistory
                         let: {
                             id: "$_id",
                         },
