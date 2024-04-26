@@ -31,6 +31,7 @@ export class ProductUseCase {
     
     return await this.productRepository.updateOne(_id, updated);
   }
+  
   public async deleteProduct(_id: string): Promise<ProductEntity | null> {
     return this.productRepository.updateOne(_id, { deleted: true });
   }

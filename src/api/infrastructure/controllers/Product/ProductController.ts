@@ -52,7 +52,7 @@ export class ProductController extends ResponseData {
 
     try {
       const response = await this.productUseCase.getProduct(id);
-      if (!(response instanceof ErrorHandler) ) {
+      if (!(response instanceof ErrorHandler)) {
         const updatedImages = await Promise.all(
           response.images.map(async (image: any) => {
             const url = await this.s3Service.getUrlObject(
@@ -63,8 +63,7 @@ export class ProductController extends ResponseData {
         );
         response.images = updatedImages;
       }
-      console.log(response);
-      
+
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
@@ -143,7 +142,6 @@ export class ProductController extends ResponseData {
       this.invoke(response2, 201, res, 'Producto creado con éxito', next);
 
     } catch (error) {
-      console.error(error);
       next(new ErrorHandler('Hubo un error al crear el producto', 500));
     }
   }
@@ -151,13 +149,10 @@ export class ProductController extends ResponseData {
 
   public async updateProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const { name, price, description, slug, sizes, tag } = req.body;
-    console.log(req);
-
-    console.log(req.files);
-
+    const { name, price, description, slug, sizes, images } = req.body;
 
     try {
+
       if (req.files && req.files.length > 0) {
         const paths: string[] = [];
         const urls: string[] = [];
@@ -166,7 +161,7 @@ export class ProductController extends ResponseData {
           const { url } = await this.s3Service.uploadToS3AndGetUrl(
             pathObject + ".jpg",
             item,
-            "image/jpeg"
+            "image/jpg"
           );
           paths.push(pathObject);
           urls.push(url)
@@ -178,26 +173,24 @@ export class ProductController extends ResponseData {
           price,
           description,
           sizes,
-          tag,
           images: paths,
         });
         response.images = urls
+
         this.invoke(response, 201, res, 'Se actualizó con éxito', next);
       } else {
-        // Si no hay nuevos archivos, simplemente actualiza el producto sin cambios en las imágenes
         const response = await this.productUseCase.updateProduct(id, {
           name,
           price,
           description,
           slug,
           sizes,
-          tag,
         });
 
         this.invoke(response, 201, res, 'Se actualizó con éxito', next);
+
       }
     } catch (error) {
-      console.error(error);
       next(new ErrorHandler('Hubo un error al actualizar', 500));
     }
   }
