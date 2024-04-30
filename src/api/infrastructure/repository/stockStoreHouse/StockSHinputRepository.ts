@@ -13,6 +13,10 @@ export class StockSHinputRepository extends MongoRepository implements  StockInp
     async getAllSHInputsInBranch(branchId: string): Promise<any[]> {
       return await this.findAll(branchId)
     }
+    async findStockByStoreHouse(branchId: string): Promise<any[] | null> {
+      return await this.MODEL.findById(branchId)
+    }
   
+
   }
 

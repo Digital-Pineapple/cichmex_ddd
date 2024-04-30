@@ -10,6 +10,10 @@ export class StockSHreturnUseCase {
     public async createReturn(body:object): Promise<SHProductReturn | null> {
         return this.stockStoreHouseRepository.createOne({...body})
     }
+    async findStockByStoreHouse(branchId: string): Promise<any[] | null> {
+        return await this.stockStoreHouseRepository.findById(branchId)
+      }
+    
     
 
 }

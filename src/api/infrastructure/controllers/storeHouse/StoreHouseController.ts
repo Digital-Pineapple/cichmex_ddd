@@ -16,6 +16,8 @@ export class StoreHouseController extends ResponseData {
         super();
         this.getAllStoreHouses = this.getAllStoreHouses.bind(this);
         this.createStoreHouse = this.createStoreHouse.bind(this);
+        this.deleteStoreHouse = this.deleteStoreHouse.bind(this);
+        this.getOneStoreHouse = this.getOneStoreHouse.bind(this);
 
     }
 
@@ -27,9 +29,23 @@ export class StoreHouseController extends ResponseData {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
+    public async getOneStoreHouse(req: Request, res: Response, next: NextFunction) {
+        const {id } = req.params
+        
+        try {
+            const response = await this.storeHouseUseCase.getDetailStoreHouse(id)
+            
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
 
     public async createStoreHouse(req: Request, res: Response, next: NextFunction) {
          const {  values  } = req.body;
+
+         
          try{ 
             const response = await this.storeHouseUseCase.createStoreHouse(values)
             this.invoke(response, 200, res, '', next);
@@ -40,5 +56,17 @@ export class StoreHouseController extends ResponseData {
         }
 
     }
+    public async deleteStoreHouse(req: Request, res: Response, next: NextFunction) {
+        const {  id  } = req.params;
+        try{ 
+           const response = await this.storeHouseUseCase.updateStoreHouse(id,{status:false})
+           this.invoke(response, 200, res, '', next);
+       }
+       catch (error) {
+           console.log(error);
+           next(new ErrorHandler('Hubo un error al eliminar', 500));
+       }
+
+   }
 
 }

@@ -34,13 +34,13 @@ const userValidations = new UserValidations();
 
 stockStoreHouseRouter
 
-    .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockStoreHouseController.getAllStock)
-    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockStoreHouseController.createStock)
-    .patch('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockStoreHouseController.updateStock)
-    .patch('/add/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockStoreHouseController.addStock)
-    .patch('/remove/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockStoreHouseController.removeStock)
-    .patch('/return/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockStoreHouseController.returnStock)
-
+    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.getAllStock)
+    .post('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.createStock)
+    .patch('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.updateStock)
+    .patch('/add/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.addStock)
+    .patch('/remove/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.removeStock)
+    .patch('/return/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.returnStock)
+    .delete('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.createStock)
     
 
 export default stockStoreHouseRouter;

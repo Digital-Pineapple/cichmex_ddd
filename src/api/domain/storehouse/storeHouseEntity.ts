@@ -6,8 +6,6 @@ export interface storeHouseEntity extends MongooseDelete.SoftDeleteDocument {
   _id: string;
   user_id: UserEntity ;
   name?: string;
-  description?: string;
-  activated?: boolean;
   phone_number?: number;
   images ?: string[];
   status?: boolean;

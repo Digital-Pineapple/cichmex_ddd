@@ -46,14 +46,6 @@ const StoreHouseSchema = new mongoose.Schema<storeHouseEntity>(
             type: String,
             required: true,
         },
-        description: {
-            type: String,
-            required: false,
-        },
-        activated: {
-            type: Boolean,
-            default: false
-        },
         phone_number: {
             type: String,
             required: false,
