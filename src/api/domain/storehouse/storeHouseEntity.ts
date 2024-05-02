@@ -1,8 +1,7 @@
 
 import { UserEntity } from "../user/UserEntity";
-import MongooseDelete = require("mongoose-delete");
 
-export interface storeHouseEntity extends MongooseDelete.SoftDeleteDocument {
+export interface storeHouseEntity  {
   _id: string;
   user_id: UserEntity ;
   name?: string;
@@ -16,7 +15,7 @@ export interface storeHouseEntity extends MongooseDelete.SoftDeleteDocument {
 }
 
 
-export interface SHLocation extends MongooseDelete.SoftDeleteDocument{
+export interface SHLocation {
   state_id?:string;
   state?: string;
   municipality_id?:string;
