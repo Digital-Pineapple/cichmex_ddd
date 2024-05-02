@@ -31,6 +31,16 @@ export class StockStoreHouseController extends ResponseData {
 
     public async getAllStock(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params
+        if (id === '662fe6c39ba1d8b3cfcd363b') {
+            try {
+                const response = await this.stockStoreHouseUseCase.getStock(id)            
+                this.invoke(response, 200, res, '', next);
+            } catch (error) {
+                next(new ErrorHandler('Hubo un error al consultar la información', 500));
+            }
+        } else {
+            next(new ErrorHandler('No tiene los permisos necesarios', 500));
+        }
         try {
             const response = await this.stockStoreHouseUseCase.getStock(id)            
             this.invoke(response, 200, res, '', next);
