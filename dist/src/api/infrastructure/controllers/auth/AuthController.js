@@ -25,6 +25,7 @@ class AuthController extends ResponseData_1.ResponseData {
         this.login = this.login.bind(this);
         this.loginAdmin = this.loginAdmin.bind(this);
         this.register = this.register.bind(this);
+        this.registerAndPay = this.registerAndPay.bind(this);
         this.registerAdmin = this.registerAdmin.bind(this);
         this.loginWithGoogle = this.loginWithGoogle.bind(this);
         this.registerByGoogle = this.registerByGoogle.bind(this);
@@ -76,6 +77,21 @@ class AuthController extends ResponseData_1.ResponseData {
                 const def = responsedefault === null || responsedefault === void 0 ? void 0 : responsedefault.filter(item => item.name === 'Customer');
                 const TypeUser_id = def === null || def === void 0 ? void 0 : def.map(item => item._id);
                 const response = yield this.authUseCase.signUp({ fullname, email, password, phone, type_user: TypeUser_id });
+                this.invoke(response, 200, res, '', next);
+            }
+            catch (error) {
+                next(new ErrorHandler_1.ErrorHandler(`Error:${error}`, 500));
+            }
+        });
+    }
+    registerAndPay(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { email, password, fullname } = req.body;
+            try {
+                const responsedefault = yield this.typeUserUseCase.getTypeUsers();
+                const def = responsedefault === null || responsedefault === void 0 ? void 0 : responsedefault.filter(item => item.name === 'Customer');
+                const TypeUser_id = def === null || def === void 0 ? void 0 : def.map(item => item._id);
+                const response = yield this.authUseCase.signUp2({ fullname, email, password, type_user: TypeUser_id });
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {

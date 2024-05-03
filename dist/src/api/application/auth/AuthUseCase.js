@@ -77,8 +77,8 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
                     return new ErrorHandler_1.ErrorHandler('Este correo ya se encuentra registrado', 409);
                 }
                 else {
-                    //  const newPassword = await this.encryptPassword(body.password)
-                    const newUser = yield this.authRepository.createOne(Object.assign({}, body));
+                    const newPassword = yield this.encryptPassword(body.password);
+                    const newUser = yield this.authRepository.createOne(Object.assign(Object.assign({}, body), { password: newPassword }));
                     const newUserResponse = { user_id: newUser._id, email: newUser.email, fullname: newUser.fullname, profile_image: newUser.profile_image };
                     const user = this.generateJWT(newUserResponse);
                     return user;
