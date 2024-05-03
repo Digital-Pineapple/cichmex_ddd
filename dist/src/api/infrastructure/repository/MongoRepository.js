@@ -16,7 +16,7 @@ class MongoRepository {
     }
     findAll(populateOne, populateTwo) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.find({ status: false }).populate(populateOne).populate(populateTwo);
+            return yield this.MODEL.find({ deleted: false }).populate(populateOne).populate(populateTwo);
         });
     }
     findAllAll(id, populateOne, populateTwo, populateThree) {
@@ -157,7 +157,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiphistories", // (hijo)--memberHistory
+                        from: "membershiphistories",
                         let: {
                             id: "$_id",
                         },
@@ -191,7 +191,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiphistories", // (hijo)--memberHistory
+                        from: "membershiphistories",
                         let: {
                             id: "$_id",
                         },

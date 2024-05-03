@@ -31,6 +31,7 @@ authRouter
     .post('/login', authValidations.loginValidation, authController.login)
     .post('/login/admin', authValidations.loginValidation, authController.loginAdmin)
     .post('/register', authValidations.registerValidation, authController.register)
+    .post('/register-Pay', authValidations.registerValidation, authController.registerAndPay)
     .post('/registerAdmin/seed', authValidations.registerValidation, authController.registerAdmin)
     .post('/google', authValidations.googleLoginValidations, authController.loginWithGoogle)
     .post('/registerByGoogle', authValidations.googleLoginValidations, authController.registerByGoogle)
