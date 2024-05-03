@@ -10,7 +10,7 @@ export abstract class MongoRepository {
   }
 
   public async findAll(populateOne?: any, populateTwo?: any): Promise<any> {
-    return await this.MODEL.find({ status: false }).populate(populateOne).populate(populateTwo);
+    return await this.MODEL.find({ deleted: false }).populate(populateOne).populate(populateTwo);
   }
   public async findAllAll(id: string, populateOne?: any, populateTwo?: any,populateThree?:any): Promise<any> {
     return await this.MODEL.findById(id, { delted: false }).populate(populateOne).populate(populateTwo).populate(populateThree);
