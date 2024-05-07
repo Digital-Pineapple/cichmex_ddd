@@ -24,6 +24,9 @@ export class MembershipHistoryRepository extends MongoRepository implements Memb
         return await this.findAll();
     }
 
+    async getOneMemHistory(query: Object): Promise<any| null> {
+        return await this.MODEL.find(query);
+    }
     async createOneMembershpHistory(body: Object): Promise<MembershipHistory | null> {
         return await this.createOne(body);
     }

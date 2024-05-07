@@ -1,6 +1,5 @@
 import mongoose, { Schema, model } from "mongoose";
 import { MembershipBenefits } from "../../../domain/membership/MembershipEntity";
-import MongooseDelete = require("mongoose-delete");
 
 const MembershipBenefitsSchema = new Schema<MembershipBenefits>(
   {
@@ -35,6 +34,10 @@ const MembershipBenefitsSchema = new Schema<MembershipBenefits>(
       type: Boolean,
       required: true,
     },
+    status:{
+      type:Boolean,
+      required:false,
+    }
   },
   {
     versionKey: false,
@@ -42,9 +45,8 @@ const MembershipBenefitsSchema = new Schema<MembershipBenefits>(
   }
 );
 
-MembershipBenefitsSchema.plugin(MongooseDelete,{overrideMethods:'all'})
 
-const MembershipBenefitsModel = model<Document & typeof MembershipBenefitsSchema >(
+const MembershipBenefitsModel = model<typeof MembershipBenefitsSchema >(
   "MembershipBenefits",
   MembershipBenefitsSchema
 );

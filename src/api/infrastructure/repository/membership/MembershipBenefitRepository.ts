@@ -12,8 +12,8 @@ export class MembershipBenefitsRepository extends MongoRepository implements Mem
         super(MembershipBenefitsModel);
     }
 
-    async findOneMembershipBenefit(query: Object): Promise<MembershipBenefits | null> {
-        return await this.findOneItem(query);
+    async findMembershipsBenefits(query: Object, populateConfig1:any,populateConfig2:any,populateConfig3:any): Promise<any | null> {
+        return await this.MODEL.find(query).populate(populateConfig1).populate(populateConfig2).populate(populateConfig3)
     }
 
     async findAndUpdateMembershipBenefit(_id: String, updated: object): Promise<MembershipBenefits | null> {

@@ -15,6 +15,7 @@ export class MPService {
 
     async   createLinkMP(item: any, user_id:any) {   
         const path = `${process.env.PATH_MP}`
+        const path_notification =`${process.env.URL_NOTIFICATION}`
         
         
         try {
@@ -39,7 +40,7 @@ export class MPService {
                     },
                 
                     auto_return: "approved",
-                    notification_url:`${process.env.URL_NOTIFICATION}/api/payments/success`,
+                    notification_url:`${path_notification}/api/payments/success`,
                 }
             });
 
@@ -47,7 +48,7 @@ export class MPService {
         } catch (error) {
            console.log(error);
            
-            return { success: false, message: `Error: ${error?.message}` };
+            return { success: false, message: `Error: ${error}` };
         }
     }
 
@@ -56,6 +57,8 @@ export class MPService {
         const payment = data.query
         const paymentID = data.query['data.id']
         let info = ''
+        console.log(payment);
+        
         
         try {
             if (payment.type === 'payment') {

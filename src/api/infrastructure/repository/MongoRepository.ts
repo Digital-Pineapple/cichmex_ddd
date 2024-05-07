@@ -86,7 +86,7 @@ export abstract class MongoRepository {
 
 
   public async softDelete(_id: any, date_service: Date): Promise<any> {
-    return await this.MODEL.findByIdAndUpdate(_id, { deleted: true, date_service }, { new: true })
+    return await this.MODEL.findByIdAndUpdate(_id, { status: false, date_service }, { new: true })
   }
 
   public async PhysicalDelete(_id: any): Promise<any> {
@@ -197,13 +197,17 @@ export abstract class MongoRepository {
     return info;
   };
   public async getMembershipDetailHistoryUser(id: string): Promise<any> {
+   
+    
     const result = await this.MODEL.aggregate([
       { $match: { client_id: id } },
       { $lookup: { from: "membershiphistories", localField: "_id", foreignField: "membershipBenefit_id", as: "MembershipHistoryList" } },
       { $lookup: { from: "services", localField: "service_id", foreignField: "_id", as: "NameService" } }
     ]);
 
+
     return result;
+    
   };
 
 

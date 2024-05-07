@@ -5,6 +5,7 @@ import { MembershipBenefitsUseCase } from "../../../application/membership/membe
 import { MembershipHistoryUseCase } from "../../../application/membership/membershipHistoryUseCase";
 import { QrValidatedResponse } from "../../../domain/membership/MembershipEntity";
 import moment from "moment";
+import { serve } from "swagger-ui-express";
 const { ObjectId } = require('mongodb');
 
 export class MembershipBenefitsController extends ResponseData {
@@ -183,9 +184,10 @@ export class MembershipBenefitsController extends ResponseData {
     const { membershipBenefit_id, typeCar_id,car_color,plate_number, branch_office_id } = req.body
     try {
       const validateActivated = await this.membershipBenefitsUseCase.verifiedActiveBenefits(membershipBenefit_id, typeCar_id)
+     
       if (!(validateActivated instanceof ErrorHandler)) {
-        const date_service = moment().format(); 
-        const response = await this.memberHistoryUseCase.consumeBenefit(id,membershipBenefit_id, date_service, typeCar_id,car_color,plate_number, branch_office_id)
+        const date_service = moment()
+        const response = await this.memberHistoryUseCase.consumeBenefit(id,membershipBenefit_id, date_service, typeCar_id,car_color,plate_number, branch_office_id, {service:validateActivated.service_id})
         this.invoke(response,200,res,'Servicio pagado con éxito',next)
       }
       else{
@@ -209,13 +211,16 @@ export class MembershipBenefitsController extends ResponseData {
     const idH = id 
 const trimmedId = idH.trim(); 
 
+
    try {
     const response= await this.membershipBenefitsUseCase.getDetailMembershipBenefit(membershipBenefit_id)
-    const memhistory = await this.memberHistoryUseCase.getOneHistoryMembership(trimmedId)
-    if (memhistory?.deleted === true) {
+    
+    const memhistory = await this.memberHistoryUseCase.getOneMemHistory(trimmedId)
+    
+    if (memhistory.status?.type === false) {
       next(new ErrorHandler('El beneficio se encuentra canjeado',500))
     }else{
-
+      
       this.invoke(response,200,res,'',next)
     }
     

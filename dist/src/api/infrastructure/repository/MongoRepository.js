@@ -108,7 +108,7 @@ class MongoRepository {
     }
     softDelete(_id, date_service) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findByIdAndUpdate(_id, { deleted: true, date_service }, { new: true });
+            return yield this.MODEL.findByIdAndUpdate(_id, { status: false, date_service }, { new: true });
         });
     }
     PhysicalDelete(_id) {
