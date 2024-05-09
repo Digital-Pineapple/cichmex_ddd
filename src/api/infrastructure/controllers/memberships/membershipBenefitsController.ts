@@ -186,7 +186,7 @@ export class MembershipBenefitsController extends ResponseData {
       const validateActivated = await this.membershipBenefitsUseCase.verifiedActiveBenefits(membershipBenefit_id, typeCar_id)
      
       if (!(validateActivated instanceof ErrorHandler)) {
-        const date_service = moment()
+        const date_service = moment().format()
         const response = await this.memberHistoryUseCase.consumeBenefit(id,membershipBenefit_id, date_service, typeCar_id,car_color,plate_number, branch_office_id, {service:validateActivated.service_id})
         this.invoke(response,200,res,'Servicio pagado con éxito',next)
       }

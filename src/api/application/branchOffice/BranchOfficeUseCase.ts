@@ -1,6 +1,6 @@
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
 import { BranchPopulateConfig } from "../../../shared/domain/PopulateInterfaces";
-import { BranchOfficeEntity, ILocation } from "../../domain/branch_office/BranchOfficeEntity";
+import { BranchOfficeEntity, BranchOfficeResponse, ILocation } from "../../domain/branch_office/BranchOfficeEntity";
 import { BranchOfficeRepository } from "../../domain/branch_office/BranchOfficeRepository";
 import { body } from 'express-validator';
 
@@ -14,6 +14,29 @@ export class BranchOfficeUseCase {
   > {
     return await this.branchOfficeRepository.findAll();
   }
+
+  public async getInfoBranchOffices(): Promise<BranchOfficeEntity[] | BranchOfficeResponse[] | null> {
+   let data =  await this.branchOfficeRepository.getInfoBranches({activated:true}) 
+   
+   const info = ()=>{
+
+     const a : BranchOfficeEntity[] = data?.map((item:any)=>{
+      let b = {
+      _id: item?._id,
+      name: item?.name,
+      description: item?.description,
+      phone_number: item?.phone_number || '',
+       }
+       return b
+    })
+    return a
+
+   }
+
+   return info()
+}
+
+
 
   public async getDetailBranchOffice(
     _id: string

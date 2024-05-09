@@ -29,6 +29,7 @@ const branchValidations = new BranchOfficeValidations()
 branchOfficeRouter
 
 .get('/',branchOfficeController.getAllBranchOffices)
+.get('/info',branchOfficeController.getBranchOfficesInfo)
 .get('/:id', branchOfficeController.getBranchOfficeDetail)
 .get('/user/:id', branchOfficeController.getBranchesByUser)
 .post('/', branchOfficeController.createBranchOffice)

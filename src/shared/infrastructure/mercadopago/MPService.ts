@@ -57,8 +57,6 @@ export class MPService {
         const payment = data.query
         const paymentID = data.query['data.id']
         let info = ''
-        console.log(payment);
-        
         
         try {
             if (payment.type === 'payment') {

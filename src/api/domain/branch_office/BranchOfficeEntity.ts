@@ -2,7 +2,7 @@
 import { UserEntity } from "../user/UserEntity";
 import MongooseDelete = require("mongoose-delete");
 
-export interface BranchOfficeEntity extends MongooseDelete.SoftDeleteDocument {
+export interface BranchOfficeEntity  {
   _id: string;
   user_id: UserEntity ;
   name?: string;
@@ -13,14 +13,15 @@ export interface BranchOfficeEntity extends MongooseDelete.SoftDeleteDocument {
   opening_time?: string;
   closing_time?: string;
   location ?: ILocation;
-  services?: string[]
+  services?: string[];
+  status?:boolean;
   createdAt        :   NativeDate;
   updatedAt        :   NativeDate;
 
 }
 
 
-export interface ILocation extends MongooseDelete.SoftDeleteDocument{
+export interface ILocation  {
   state_id?:string;
   state?: string;
   municipality_id?:string;
@@ -30,7 +31,14 @@ export interface ILocation extends MongooseDelete.SoftDeleteDocument{
   direction ?: string;
 }
 
-export interface BranchOfficeEntityICR extends MongooseDelete.SoftDeleteDocument {
+export interface BranchOfficeEntityICR {
   images?: string[];
+}
+
+export interface BranchOfficeResponse{
+  _id: string;
+  name?: string;
+  description?: string;
+  phone_number?: number;
 }
 

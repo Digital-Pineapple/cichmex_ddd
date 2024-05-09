@@ -3,7 +3,7 @@ import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 import { BranchOfficeUseCase } from '../../../application/branchOffice/BranchOfficeUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
-import { ILocation } from '../../../domain/branch_office/BranchOfficeEntity';
+import { BranchOfficeResponse, ILocation } from '../../../domain/branch_office/BranchOfficeEntity';
 import { DocumentationUseCase } from '../../../application/documentation/DocumentationUseCase';
 
 export class BranchOfficeController extends ResponseData {
@@ -15,6 +15,7 @@ export class BranchOfficeController extends ResponseData {
     ) {
         super();
         this.getAllBranchOffices = this.getAllBranchOffices.bind(this);
+        this.getBranchOfficesInfo = this.getBranchOfficesInfo.bind(this);
         this.getBranchOfficeDetail = this.getBranchOfficeDetail.bind(this);
         this.getBranchesByUser = this.getBranchesByUser.bind(this);
         this.createBranchOffice = this.createBranchOffice.bind(this);
@@ -50,20 +51,34 @@ export class BranchOfficeController extends ResponseData {
         }
     }
 
+    public async getBranchOfficesInfo(req: Request, res: Response, next: NextFunction) {
+        try {
+            // Obtener la información de las sucursales
+            const response = await this.branchOfficeUseCase.getInfoBranchOffices();
+            
+            this.invoke(response, 200, res, "", next);
+            
+
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
+
     public async getBranchOfficeDetail(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
 
         try {
-            const response= await this.branchOfficeUseCase.getDetailBranchOffice(id);
-            const updatedResponse=await Promise.all(
-                response.images.map(async(image:any)=>{
-                    const url=await this.s3Service.getUrlObject(
+            const response = await this.branchOfficeUseCase.getDetailBranchOffice(id);
+            const updatedResponse = await Promise.all(
+                response.images.map(async (image: any) => {
+                    const url = await this.s3Service.getUrlObject(
                         image + ".jpg"
                     );
                     return url
                 })
             );
-            response.images=updatedResponse;
+            response.images = updatedResponse;
 
             this.invoke(response, 200, res, '', next);
         } catch (error) {
@@ -118,7 +133,7 @@ export class BranchOfficeController extends ResponseData {
                     if (!(response instanceof ErrorHandler)) {
                         response.images = urls;
                     }
-                    
+
                     this.invoke(
                         response,
                         201,
@@ -181,12 +196,12 @@ export class BranchOfficeController extends ResponseData {
         try {
             const { id } = req.params;
             const { user_id, description, location, opening_time, closing_time, name } = req.body;
-            
+
             // Verificar si existen archivos adjuntos
             if (req.files && req.files.length > 0) {
                 const paths: string[] = [];
                 const urls: string[] = [];
-    
+
                 // Subir archivos a S3 y obtener las URLs
                 await Promise.all(req.files.map(async (file: any, index: number) => {
                     const pathObject: string = `${this.path}/${user_id}/${index}`;
@@ -195,15 +210,15 @@ export class BranchOfficeController extends ResponseData {
                         file,
                         "image/jpeg"
                     );
-    
+
                     if (!success) {
                         throw new ErrorHandler("Hubo un error al subir la imagen", 400);
                     }
-    
+
                     paths.push(pathObject);
                     urls.push(url);
                 }));
-    
+
                 // Actualizar la sucursal de la oficina con las URLs de las imágenes
                 const response = await this.branchOfficeUseCase.updateBranchOffice(id, {
                     description: description,
@@ -213,12 +228,12 @@ export class BranchOfficeController extends ResponseData {
                     images: paths, // Se usan las rutas de los archivos en S3
                     name: name
                 });
-    
+
                 // Asignar las URLs de las imágenes a la respuesta
                 if (!(response instanceof ErrorHandler && response !== null)) {
                     response.images = urls;
                 }
-    
+
                 // Enviar la respuesta al cliente
                 this.invoke(response, 201, res, "El usuario se actualizó con éxito", next);
             } else {
@@ -230,7 +245,7 @@ export class BranchOfficeController extends ResponseData {
                     closing_time: closing_time,
                     name: name
                 });
-    
+
                 // Enviar la respuesta al cliente
                 this.invoke(response, 201, res, "Se actualizó con éxito", next);
             }
@@ -239,7 +254,7 @@ export class BranchOfficeController extends ResponseData {
             this.invoke(error, 500, res, "Error interno del servidor", next);
         }
     }
-    
+
 
     public async deleteBranchOffice(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
@@ -260,13 +275,13 @@ export class BranchOfficeController extends ResponseData {
 
         try {
             const documents = await this.documentationUseCase.getDocumentationByUserAndVerify(user_id)
-            
+
             const nameFiles = ['csf'];
             if (!(documents instanceof ErrorHandler) && documents !== null) {
                 const resultado = documents.map((documento: any) =>
                     nameFiles.some(nombre => documento.name === nombre)
                 );
-                
+
                 if (resultado.length === 1) {
                     const response = await this.branchOfficeUseCase.validateBranchOffice(id, { activated: true })
                     this.invoke(response, 201, res, 'Activación exitosa', next);
