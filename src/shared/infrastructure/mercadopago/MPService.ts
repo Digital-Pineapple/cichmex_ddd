@@ -1,15 +1,19 @@
 import { response } from 'express';
 import { config } from '../../../../config';
-import { MercadoPagoConfig, Preference, } from 'mercadopago';
+import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 
 export class MPService {
     private access_token = config.MERCADOPAGO_TOKEN;
     private preference: Preference;
+    private payment : Payment;
+    
 
 
     constructor() {
         const client = new MercadoPagoConfig({ accessToken: this.access_token });
         this.preference = new Preference(client);
+        this.payment = new Payment(client)
+        
     }
 
 
@@ -30,7 +34,8 @@ export class MPService {
                         },
                     ],
                     payer:{
-                        name:user_id
+                        name:user_id,
+                       
                         
                     },
                     back_urls: {
@@ -76,6 +81,36 @@ export class MPService {
         } catch (error) {
             console.log(error);
             
+        }
+    }
+
+    async   createPaymentMP(item: any, user:any) {   
+        console.log(item,user,'MpService');
+        
+        const path = `${process.env.PATH_MP}`
+        const path_notification =`${process.env.URL_NOTIFICATION}`
+        
+        
+        try {
+            const response = await this.payment.create({
+                body: {
+                    transaction_amount:item.transaction_amount,
+                    payment_method_id:item.payment_method_id,
+                    notification_url:`${path_notification}/api/payments/success`,
+                    payer:{
+                        email:user.email,
+                        id:user._id
+                        
+                    },
+     
+                }
+            });
+
+            return { response, success: true, message: 'Pago realizado correctamente' };
+        } catch (error) {
+           console.log(error);
+           
+            return { success: false, message: `Error: ${error}` };
         }
     }
 }

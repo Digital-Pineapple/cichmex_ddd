@@ -7,6 +7,8 @@ import { MembershipBenefitsUseCase } from '../../../application/membership/membe
 import { MembershipUseCase } from '../../../application/membership/membershipUseCase';
 import moment from 'moment';
 import { MembershipHistoryUseCase } from '../../../application/membership/membershipHistoryUseCase';
+import { ValidationRequestInstance } from 'twilio/lib/rest/api/v2010/account/validationRequest';
+import { generateRandomCode } from '../../../../shared/infrastructure/validation/Utils';
 
 export class PaymentController extends ResponseData {
     protected path = '/payment'
@@ -23,6 +25,7 @@ export class PaymentController extends ResponseData {
         this.createLMP = this.createLMP.bind(this);
         this.createTicket = this.createTicket.bind(this);
         this.deletePayment = this.deletePayment.bind(this);
+        this.createPaymentMP = this.createPaymentMP.bind(this)
 
 
     }
@@ -53,6 +56,29 @@ export class PaymentController extends ResponseData {
             
             if (success === true) {
                 this.invoke(response?.init_point, 201, res, '', next);
+            } else {
+                next(new ErrorHandler(`Error: ${message}`, 500)); // Enviar error al siguiente middleware
+            }
+        } catch (error) {
+            console.log(error);
+            next(new ErrorHandler('Error', 500)); // Enviar error al siguiente middleware
+        }
+    }
+
+    public async createPaymentMP(req: Request, res: Response, next: NextFunction) {
+        const { values, user } = req.body;
+        
+        console.log(values,user,'controller mercado pago');
+        
+
+        try {
+            const uuid = generateRandomCode()
+            await this.paymentUseCase.createNewPayment()
+            const { response, success, message } = await this.mpService.createPaymentMP(values, user);
+            console.log(response,success,message, 'controller');
+            
+            if (success === true) {
+                this.invoke(response, 201, res, '', next);
             } else {
                 next(new ErrorHandler(`Error: ${message}`, 500)); // Enviar error al siguiente middleware
             }

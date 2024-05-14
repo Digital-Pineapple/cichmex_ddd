@@ -36,6 +36,7 @@ paymentRouter
     .get('/', paymentController.getAllPayments)
     .get('/:id', paymentController.getPayment)
     .post('/',paymentValidation.paymentValidation, paymentController.createLMP)
+    .post('/Membership-Pay', paymentController.createPaymentMP)
     .post('/success',paymentController.createTicket )
     
     // .post('/ticket', paymentController)
