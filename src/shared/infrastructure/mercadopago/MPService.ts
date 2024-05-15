@@ -84,24 +84,36 @@ export class MPService {
         }
     }
 
-    async   createPaymentMP(item: any, user:any) {   
-        console.log(item,user,'MpService');
+    async createPaymentMP(item: any, user:any, uuid:any, membership:any) {   
         
-        const path = `${process.env.PATH_MP}`
-        const path_notification =`${process.env.URL_NOTIFICATION}`
-        
+        const path_notification =`${process.env.URL_NOTIFICATION}/api/payments/Mem-Payment-success`
         
         try {
             const response = await this.payment.create({
+                requestOptions:{idempotencyKey:`${uuid}`},
                 body: {
                     transaction_amount:item.transaction_amount,
                     payment_method_id:item.payment_method_id,
-                    notification_url:`${path_notification}/api/payments/success`,
                     payer:{
-                        email:user.email,
-                        id:user._id
-                        
+                        email:item.payer.email,
+                        first_name:user.user_id  
                     },
+                    additional_info:{
+                        items:[
+                            {
+                                id:membership._id,
+                                title:membership.name,
+                                quantity:1,
+                                unit_price:membership.price_standard,
+                                description:membership.description,
+                            }
+                        ]
+                    },
+                    token:item.token,
+                    issuer_id:item.issuer_id,
+                    installments:item.installments,
+                    notification_url:path_notification,
+
      
                 }
             });

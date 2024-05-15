@@ -4,6 +4,9 @@ import  {PaymentEntity}  from '../../../domain/payments/PaymentEntity';
 
 
 const PaymentSchema = new Schema<PaymentEntity>({
+    uuid:{
+        type:String,
+    },
     user_id:{
         type:mongoose.Types.ObjectId,
         ref:'User',
@@ -11,7 +14,7 @@ const PaymentSchema = new Schema<PaymentEntity>({
     },
     MP_info: {
         type: Object,
-        required:true
+        required:false
     }
    
 }, {

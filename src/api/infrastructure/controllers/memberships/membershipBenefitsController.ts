@@ -64,7 +64,6 @@ export class MembershipBenefitsController extends ResponseData {
     next: NextFunction
   ) {
     const {id} = req.params
-    
     const _id = new ObjectId(id)
     try {
       const response = await this.membershipBenefitsUseCase.getMembershipBenefitsUser(_id);
@@ -88,7 +87,6 @@ export class MembershipBenefitsController extends ResponseData {
       quantity,
       start_date,
       end_date,
-      status,
     } = req.body;
     const membership =new ObjectId(membership_id);
     const service =new ObjectId(service_id);
