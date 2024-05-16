@@ -3,6 +3,7 @@
 import mongoose from "mongoose";
 import MongooseDelete = require("mongoose-delete");
 import { SubCategory } from "../subCategory/SubCategoryEntity";
+import { Category } from "../category/CategoryEntity";
 
 export interface ProductEntity extends MongooseDelete.SoftDeleteDocument {
 
@@ -12,6 +13,7 @@ export interface ProductEntity extends MongooseDelete.SoftDeleteDocument {
   slug?: string;
   size?: string;
   tag: string;
+  category: Category;
   subCategory?: SubCategory;
   images?: string[];
   createdAt        :   NativeDate;

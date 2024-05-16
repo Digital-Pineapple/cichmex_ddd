@@ -27,8 +27,8 @@ export abstract class MongoRepository {
     return result
   }
 
-  public async findById(_id: String, populateConfig?: any): Promise<any> {
-    return await this.MODEL.findById(_id, { deleted: false });
+  public async findById(_id: String, populateConfig?: any, populateConfig2?:any): Promise<any> {
+    return await this.MODEL.findById(_id, { deleted: false }).populate(populateConfig).populate(populateConfig2);
   }
 
   public async findByIdPupulate(
@@ -46,6 +46,9 @@ export abstract class MongoRepository {
       .then((res) => res?._id);
   }
   public async findByName(name: string): Promise<any> {
+    return await this.MODEL.find({ name });
+  }
+  public async findByCategory(name: string): Promise<any> {
     return await this.MODEL.find({ name });
   }
   public async findByPhoneNumber(phone_number: string): Promise<any> {
@@ -115,8 +118,9 @@ export abstract class MongoRepository {
       populateConfig1).populate(populateConfig2).populate(populateConfig3);
   }
 
-  public async search(search: string): Promise<any> {
-    const noSpecialCharacters = search.replace(
+  public async search(search: any): Promise<any> {
+    const a = search.toString()
+    const noSpecialCharacters = a.replace(
       /[`~!@#$%^&*()_|+\-=?;:'"<>\{\}\[\]\\\/]/gi,
       ""
     );

@@ -22,6 +22,7 @@ productRouter
   .get("/:id", productController.getProduct)
   .post("/", productvalidations.productValidation, userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.createProduct)
   .post("/:id", productvalidations.productValidation,userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.updateProduct)
+  .post('/search/ok', productController.searchProduct)
   .delete("/:id", userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.deleteProduct);
 
 export default productRouter;

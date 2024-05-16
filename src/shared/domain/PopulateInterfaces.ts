@@ -1,4 +1,5 @@
 import BranchOfficeModel from '../../api/infrastructure/models/BranchOffices/BranchOfficeModel';
+import CategoryModel from '../../api/infrastructure/models/CategoryModel';
 import MembershipBenefitsModel from '../../api/infrastructure/models/Memberships/MembershipBenefitsModel';
 import MembershipModel from '../../api/infrastructure/models/Memberships/MembershipModel';
 import ProductModel from '../../api/infrastructure/models/ProductModel';
@@ -120,6 +121,16 @@ export const PopulatePointStore : IStockPopulateConfig={
     path: 'store',
     select: ["name", "closing_time", "opening_time", "location" ],
     model: BranchOfficeModel
+}
+export const PopulateProductCategory : IStockPopulateConfig={
+    path: 'category',
+    select: ["name"],
+    model: CategoryModel
+}
+export const PopulateProductSubCategory : IStockPopulateConfig={
+    path: 'subCategory',
+    select: ["name"],
+    model: SubCategoryModel
 }
 
 
