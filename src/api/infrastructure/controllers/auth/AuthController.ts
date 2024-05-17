@@ -46,6 +46,8 @@ export class AuthController extends ResponseData {
 
     public async login(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { email, password } = req.body;
+  ;
+        
         try {
             const response = await this.authUseCase.signIn(email, password);
         
@@ -63,6 +65,7 @@ export class AuthController extends ResponseData {
 
     public async loginPartner(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { email, password } = req.body;
+     
         try {
             const response = await this.authUseCase.signInPartner(email, password);
         
@@ -84,8 +87,9 @@ export class AuthController extends ResponseData {
 
     public async loginAdmin(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { email, password } = req.body;
+     
         try {
-            const response = await this.authUseCase.signIn(email, password)
+            const response = await this.authUseCase.signInAdmin(email, password)
 
             // if (!(response instanceof ErrorHandler) && response.user.profile_image === undefined) {
             //     response.user.profile_image ?

@@ -23,8 +23,18 @@ export class AuthUseCase extends Authentication {
         
         if (!user) return new ErrorHandler('No exite este usuario', 400);
         const validatePassword = this.decryptPassword(password, user.password)
-        if (user.type_user.name !== 'Customer') {
-            return new ErrorHandler('No es un socio', 400);
+
+        if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);
+        return await this.generateJWT(user);
+    }
+    async signInAdmin(email: string, password: string): Promise<ErrorHandler | IAuth> {
+
+        const user = await this.authRepository.findOneItem({ email }, TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
+        
+        if (!user) return new ErrorHandler('No exite este usuario', 400);
+        const validatePassword = this.decryptPassword(password, user.password)
+        if (user.type_user.name !== 'Admin') {
+            return new ErrorHandler('No es un Admin', 400);
         }
 
         if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);

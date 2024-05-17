@@ -33,7 +33,7 @@ authRouter
     .get('/user', validateAuthentication, authController.revalidateToken)
     .post('/login', authValidations.loginValidation, authController.login)
     .post('/loginPartner', authValidations.loginValidation, authController.loginPartner)
-    .post('/login/admin', authValidations.loginValidation, authController.loginAdmin)
+    // .post('/login/admin', authValidations.loginValidation, authController.loginAdmin)
     .post('/register', authValidations.registerValidation, authController.register)
     .post('/register-Pay', authValidations.registerValidation, authController.registerAndPay)
     .post('/registerAdmin/seed', authValidations.registerValidation, authController.registerAdmin)

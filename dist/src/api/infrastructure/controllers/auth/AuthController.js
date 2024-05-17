@@ -40,6 +40,7 @@ class AuthController extends ResponseData_1.ResponseData {
     login(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { email, password } = req.body;
+            ;
             try {
                 const response = yield this.authUseCase.signIn(email, password);
                 if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image !== undefined) {
@@ -76,7 +77,7 @@ class AuthController extends ResponseData_1.ResponseData {
         return __awaiter(this, void 0, void 0, function* () {
             const { email, password } = req.body;
             try {
-                const response = yield this.authUseCase.signIn(email, password);
+                const response = yield this.authUseCase.signInAdmin(email, password);
                 // if (!(response instanceof ErrorHandler) && response.user.profile_image === undefined) {
                 //     response.user.profile_image ?
                 //         response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image) :

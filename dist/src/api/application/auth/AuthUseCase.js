@@ -26,8 +26,19 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             if (!user)
                 return new ErrorHandler_1.ErrorHandler('No exite este usuario', 400);
             const validatePassword = this.decryptPassword(password, user.password);
-            if (user.type_user.name !== 'Customer') {
-                return new ErrorHandler_1.ErrorHandler('No es un socio', 400);
+            if (!validatePassword)
+                return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son validos', 400);
+            return yield this.generateJWT(user);
+        });
+    }
+    signInAdmin(email, password) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
+            if (!user)
+                return new ErrorHandler_1.ErrorHandler('No exite este usuario', 400);
+            const validatePassword = this.decryptPassword(password, user.password);
+            if (user.type_user.name !== 'Admin') {
+                return new ErrorHandler_1.ErrorHandler('No es un Admin', 400);
             }
             if (!validatePassword)
                 return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son validos', 400);
