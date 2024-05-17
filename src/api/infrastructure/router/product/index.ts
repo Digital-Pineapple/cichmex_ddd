@@ -1,3 +1,4 @@
+import { CategoryUseCase } from './../../../application/category/CategoryUseCase';
 import { Router } from "express";
 import { ProductRepository } from "../../repository/product/ProductRepository";
 import { ProductUseCase } from "../../../application/product/productUseCase";
@@ -6,22 +7,31 @@ import { S3Service } from "../../../../shared/infrastructure/aws/S3Service";
 import ProductModel from "../../models/ProductModel";
 import { ProductValidations } from "../../../../shared/infrastructure/validation/Product/ProductValidation";
 import { UserValidations } from "../../../../shared/infrastructure/validation/User/UserValidation";
+import { CategoryRepository } from "../../repository/Category/CategoryRepository";
+import CategoryModel from "../../models/CategoryModel";
 
 const productRouter = Router();
 
 const productRepository = new ProductRepository(ProductModel);
+const categoryRepository = new CategoryRepository(CategoryModel)
+
 const productUseCase = new ProductUseCase(productRepository);
+const categoryUseCase = new CategoryUseCase(categoryRepository)
+
 const s3Service = new S3Service();
 const productvalidations = new ProductValidations()
-const productController = new ProductController(productUseCase, s3Service);
+
+const productController = new ProductController(productUseCase, categoryUseCase,  s3Service);
 const userValidations = new UserValidations();
 
 productRouter
 
   .get("/", productController.getAllProducts)
   .get("/:id", productController.getProduct)
+  .post('/search-category', productController.getProductsByCategory)
   .post("/", productvalidations.productValidation, userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.createProduct)
   .post("/:id", productvalidations.productValidation,userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.updateProduct)
+  .post('/search/ok', productController.searchProduct)
   .delete("/:id", userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.deleteProduct);
 
 export default productRouter;

@@ -152,6 +152,8 @@ export class ShoppingCartController extends ResponseData {
     public async updateShoppingCartProducts(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params; // shopping_carid
         const { user_id, cart_id, quantity } = req.body;
+        
+        
         try {
             const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user_id);
             const index = responseShoppingCartUser?.products?.findIndex(product => product.item?._id.equals(id));
@@ -167,6 +169,7 @@ export class ShoppingCartController extends ResponseData {
             }
 
             response = await this.shoppingCartUseCase.updateShoppingCart(cart_id, { products: responseShoppingCartUser?.products });
+            
             this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
         } catch (error) {
             console.log(error);
@@ -181,7 +184,7 @@ export class ShoppingCartController extends ResponseData {
         try {
             const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user_id);
             const index = responseShoppingCartUser?.products?.findIndex(product => product.item?._id.equals(id));
-            responseShoppingCartUser?.products[index].quantity = quantity;
+            responseShoppingCartUser.products[index].quantity = quantity;
             const response = await this.shoppingCartUseCase.updateShoppingCart(cart_id, { products: responseShoppingCartUser?.products });
             this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
         } catch (error) {

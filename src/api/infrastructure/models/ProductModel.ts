@@ -33,6 +33,11 @@ const ProductSchema = new Schema<ProductEntity>(
       required: true,
       unique: true
     },
+    category: {
+      type: mongoose.Types.ObjectId,
+      ref: 'Categories',
+      required: false
+    },
     subCategory: {
       type: mongoose.Types.ObjectId,
       ref: 'SubCategory',
@@ -41,7 +46,12 @@ const ProductSchema = new Schema<ProductEntity>(
     images: {
       type: Array,
       required: false,
-    }
+    },
+    status:{
+      type:Boolean,
+      required:false,
+      default:true,
+     }
 
   },
   {
@@ -50,9 +60,8 @@ const ProductSchema = new Schema<ProductEntity>(
   }
 );
 
-ProductSchema.plugin(MongooseDelete, { overrideMethods: true });
 
-const ProductModel = model<Document & ProductEntity>(
+const ProductModel = model<ProductEntity>(
   'Products',
   ProductSchema
 );

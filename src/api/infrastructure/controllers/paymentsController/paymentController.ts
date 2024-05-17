@@ -7,6 +7,9 @@ import { MembershipBenefitsUseCase } from '../../../application/membership/membe
 import { MembershipUseCase } from '../../../application/membership/membershipUseCase';
 import moment from 'moment';
 import { MembershipHistoryUseCase } from '../../../application/membership/membershipHistoryUseCase';
+import { ValidationRequestInstance } from 'twilio/lib/rest/api/v2010/account/validationRequest';
+import { generateRandomCode } from '../../../../shared/infrastructure/validation/Utils';
+import { v4 as uuidv4 } from 'uuid';
 
 export class PaymentController extends ResponseData {
     protected path = '/payment'
@@ -23,6 +26,8 @@ export class PaymentController extends ResponseData {
         this.createLMP = this.createLMP.bind(this);
         this.createTicket = this.createTicket.bind(this);
         this.deletePayment = this.deletePayment.bind(this);
+        this.createPaymentMP = this.createPaymentMP.bind(this)
+        this.PaymentSuccess  = this.PaymentSuccess.bind(this)
 
 
     }
@@ -48,9 +53,9 @@ export class PaymentController extends ResponseData {
     public async createLMP(req: Request, res: Response, next: NextFunction) {
         const { values, user_id } = req.body;
 
-
         try {
             const { response, success, message } = await this.mpService.createLinkMP(values, user_id);
+            
             if (success === true) {
                 this.invoke(response?.init_point, 201, res, '', next);
             } else {
@@ -63,11 +68,78 @@ export class PaymentController extends ResponseData {
     }
 
 
+    public async createPaymentMP(req: Request, res: Response, next: NextFunction) {
+        const { values, user, membership } = req.body;
+        const uuid4 = uuidv4()
+        try {
+            const response1 = await this.paymentUseCase.createNewPayment({uuid:uuid4}) //crea un pago en base de datos
+            const { response, success, message } = await this.mpService.createPaymentMP(values, user, {uuid:response1?.uuid}, membership); //respuesta de mercado libre
+            const createPayment = await this.paymentUseCase.updateOnePayment(response1?._id,{MP_info:response, user_id:user.user_id}) // se actualiza la informacion en base de datos
+            if (success === true && response?.status === 'approved') { // si la respuesta del pago es aprobada 
+                if (!(createPayment instanceof ErrorHandler)) {
+                    const client_id = createPayment.user_id;
+                    const idMembership = response.additional_info?.items[0].id;
+                    const membership_info = await this.membershipUseCase.getInfoMembership(idMembership);
+                    if (!(membership_info instanceof ErrorHandler)) {
+                        let start_date1 = moment().format('L');
+                        let end_date1 = moment().add(30, 'days').calendar();
+                        let services = membership_info?.service_quantity;
+                        let mem_id = membership_info?.id
+                        if (services !== undefined) {
+                            await Promise.all(services.map(async (item) => { 
+                                try {
+                                    const ok = await this.membershipBenefitUseCAse.createNewMembershipBenefit(
+                                        mem_id,
+                                        item.service_id._id,
+                                        client_id,
+                                        item.quantity,
+                                        start_date1,
+                                        end_date1
+                                    );
+                                    if (!(ok instanceof ErrorHandler)) {
+                                        let m_id = ok?._id
+                                        let quantity = parseInt(ok?.quantity)
+
+                                        const historyPromises = Array.from({ length: quantity }, async () => {
+                                            return this.membershipHistoryUseCase.createOneHistoryMembership(
+                                                m_id
+                                            );
+                                        });
+                                        await Promise.all(historyPromises);
+                                    }
+                                } catch (error) {
+                                    console.log(error, 'error al crear beneficios');
+
+                                }
+
+                            }));
+                        }
+                    }
+                   
+
+                    this.invoke(success,200,res,'Se pago correctamente', next)
+                }
+
+            } else {
+                next(new ErrorHandler(`Error: ${message}`, 500)); // Si la respuesta de pago es negativa 
+            }
+            
+        } catch (error) {
+            console.log(error);
+            next(new ErrorHandler('Error', 500)); //
+        }
+
+    
+    }
+
+
     public async createTicket(req: Request, res: Response, next: NextFunction) {
+        
         try {
             const info = await this.mpService.reciveWebHook(req);
 
             if (info !== undefined && info.status === 'approved') {
+                
                 const response = await this.paymentUseCase.createNewPayment({ MP_info: info });
                 if (!(response instanceof ErrorHandler)) {
 
@@ -111,6 +183,17 @@ export class PaymentController extends ResponseData {
                     }
                 }
             }
+            res.status(200).send('OK');
+            this.invoke(info, 201, res, 'Pago validado', next);
+        } catch (error) {
+            next(new ErrorHandler('Error', 500));
+        }
+    }
+
+    public async PaymentSuccess(req: Request, res: Response, next: NextFunction) {
+        
+        try {
+            const info = await this.mpService.reciveWebHook(req);
             res.status(200).send('OK');
             this.invoke(info, 201, res, 'Pago validado', next);
         } catch (error) {

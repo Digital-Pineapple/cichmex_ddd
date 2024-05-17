@@ -24,10 +24,12 @@ class AuthController extends ResponseData_1.ResponseData {
         this.path = '/users';
         this.login = this.login.bind(this);
         this.loginAdmin = this.loginAdmin.bind(this);
+        this.loginPartner = this.loginPartner.bind(this);
         this.register = this.register.bind(this);
         this.registerAndPay = this.registerAndPay.bind(this);
         this.registerAdmin = this.registerAdmin.bind(this);
         this.loginWithGoogle = this.loginWithGoogle.bind(this);
+        this.loginWithGooglePartner = this.loginWithGooglePartner.bind(this);
         this.registerByGoogle = this.registerByGoogle.bind(this);
         this.changePassword = this.changePassword.bind(this);
         this.uploadProfilePhoto = this.uploadProfilePhoto.bind(this);
@@ -38,6 +40,7 @@ class AuthController extends ResponseData_1.ResponseData {
     login(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { email, password } = req.body;
+            ;
             try {
                 const response = yield this.authUseCase.signIn(email, password);
                 if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image !== undefined) {
@@ -52,11 +55,29 @@ class AuthController extends ResponseData_1.ResponseData {
             }
         });
     }
+    loginPartner(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { email, password } = req.body;
+            try {
+                const response = yield this.authUseCase.signInPartner(email, password);
+                if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image !== undefined) {
+                    response.user.profile_image ?
+                        response.user.profile_image = yield this.s3Service.getUrlObject(response.user.profile_image + ".jpg") :
+                        'No hay imagen de perfil';
+                }
+                this.invoke(response, 200, res, '', next);
+            }
+            catch (error) {
+                console.log(error);
+                next(new ErrorHandler_1.ErrorHandler('Hubo un error al iniciar sesión', 500));
+            }
+        });
+    }
     loginAdmin(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { email, password } = req.body;
             try {
-                const response = yield this.authUseCase.signIn(email, password);
+                const response = yield this.authUseCase.signInAdmin(email, password);
                 // if (!(response instanceof ErrorHandler) && response.user.profile_image === undefined) {
                 //     response.user.profile_image ?
                 //         response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image) :
@@ -127,6 +148,18 @@ class AuthController extends ResponseData_1.ResponseData {
             }
         });
     }
+    loginWithGooglePartner(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { idToken } = req.body;
+            try {
+                const response = yield this.authUseCase.signInWithGooglePartner(idToken);
+                this.invoke(response, 200, res, '', next);
+            }
+            catch (error) {
+                next(new ErrorHandler_1.ErrorHandler('Usuario no registrado', 500));
+            }
+        });
+    }
     registerByGoogle(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { idToken } = req.body;
@@ -182,17 +215,6 @@ class AuthController extends ResponseData_1.ResponseData {
             }
         });
     }
-    // public async updateCustomer(req: Request, res: Response, next: NextFunction) {
-    //     const { user } = req;
-    //     const { email, fullname } = req.body;
-    //     try {
-    //         const response = await this.authUseCase.updateCustomer(user._id, email, fullname);
-    //         response.profile_image = await this.s3Service.getUrlObject(response?.profile_image);
-    //         this.invoke(response, 200, res, 'El usuario se actualizo con exito', next);
-    //     } catch (error) {
-    //         next(new ErrorHandler('Hubo un error al actualizar la información', 500));
-    //     }
-    // }
     revalidateToken(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { user } = req;

@@ -1,8 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { MembershipEntity } from '../../../domain/membership/MembershipEntity';
 
-import MongooseDelete = require("mongoose-delete");
-
 const MembershipSchema = new Schema<MembershipEntity>(
     {
       
@@ -34,6 +32,11 @@ const MembershipSchema = new Schema<MembershipEntity>(
       required:false,
       ref:'TypeCar'
       
+     },
+     status:{
+      type:Boolean,
+      required:false,
+      default:true,
      }
 
       
@@ -43,7 +46,7 @@ const MembershipSchema = new Schema<MembershipEntity>(
       timestamps: true,
     }
   );
-  MembershipSchema.plugin(MongooseDelete, { deletedAt:true });
+
   const MembershipModel = model('Memberships', MembershipSchema);
 
   export default MembershipModel;

@@ -14,7 +14,7 @@ const typeUserController     = new TypeUserController(typeUserUseCase);
 const userValidations = new UserValidations();
 
 typeUserRouter
-    .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), typeUserController.getAllTypeUser)
+    .get('/', typeUserController.getAllTypeUser)
     .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), typeUserController.getTypeUser)
     .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), typeUserController.createTypeUser)
     .post('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), typeUserController.updateTypeUser)

@@ -22,4 +22,4 @@ server
     yield container.invoke().resolve('db');
     console.log(`Env: ${config.NODE_ENV}`);
 }));
-serverSocket.startSocketServer();
+// serverSocket.startSocketServer();

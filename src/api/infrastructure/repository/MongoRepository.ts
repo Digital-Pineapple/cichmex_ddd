@@ -10,7 +10,7 @@ export abstract class MongoRepository {
   }
 
   public async findAll(populateOne?: any, populateTwo?: any): Promise<any> {
-    return await this.MODEL.find({ deleted: false }).populate(populateOne).populate(populateTwo);
+    return await this.MODEL.find({ status: true }).populate(populateOne).populate(populateTwo);
   }
   public async findAllAll(id: string, populateOne?: any, populateTwo?: any,populateThree?:any): Promise<any> {
     return await this.MODEL.findById(id, { delted: false }).populate(populateOne).populate(populateTwo).populate(populateThree);
@@ -19,16 +19,16 @@ export abstract class MongoRepository {
     return await this.MODEL.find({ branch_id: branch_id })
   }
   public async findSubCategoriesByCategory(category_id: any): Promise<any> {
-    return await this.MODEL.find({ category_id: category_id, deleted: false })
+    return await this.MODEL.find({ category_id: category_id,  status: true })
   }
-
+  
   public async findOneStockByBranch(branch_id: String, product_id: String, populateConfig?: any): Promise<any> {
     const result = await this.MODEL.findOne({ product_id, branch_id }).populate(populateConfig)
     return result
   }
 
-  public async findById(_id: String, populateConfig?: any): Promise<any> {
-    return await this.MODEL.findById(_id, { deleted: false });
+  public async findById(_id: String, populateConfig?: any, populateConfig2?:any): Promise<any> {
+    return await this.MODEL.findById(_id, {  status: true }).populate(populateConfig).populate(populateConfig2);
   }
 
   public async findByIdPupulate(
@@ -48,14 +48,20 @@ export abstract class MongoRepository {
   public async findByName(name: string): Promise<any> {
     return await this.MODEL.find({ name });
   }
+  public async findOneByName(name: string): Promise<any> {
+    return await this.MODEL.findOne({ name });
+  }
+  public async findByCategory(name: string): Promise<any> {
+    return await this.MODEL.find({ name });
+  }
   public async findByPhoneNumber(phone_number: string): Promise<any> {
-    return await this.MODEL.find({ phone_number: phone_number, deleted: false });
+    return await this.MODEL.find({ phone_number: phone_number,  status: true });
   }
   public async findByUser(_id: string): Promise<any> {
-    return await this.MODEL.find({ user_id: _id, deleted: false });
+    return await this.MODEL.find({ user_id: _id, status:true});
   }
   public async findByUserAndVerify(_id: string): Promise<any> {
-    return await this.MODEL.find({ user_id: _id, deleted: false, verify: true });
+    return await this.MODEL.find({ user_id: _id,  status: true, verify: true });
   }
   public async findByPlateNumber(
     plate_number: string,
@@ -86,7 +92,7 @@ export abstract class MongoRepository {
 
 
   public async softDelete(_id: any, date_service: Date): Promise<any> {
-    return await this.MODEL.findByIdAndUpdate(_id, { deleted: true, date_service }, { new: true })
+    return await this.MODEL.findByIdAndUpdate(_id, { status: false, date_service }, { new: true })
   }
 
   public async PhysicalDelete(_id: any): Promise<any> {
@@ -106,7 +112,7 @@ export abstract class MongoRepository {
 
   public async findOneItem(query: Object, populateConfig1?: any, populateConfig2?: any, populateConfig3?: any): Promise<any> {
 
-    return await this.MODEL.findOne({ ...query, deleted: false }).populate(
+    return await this.MODEL.findOne({ ...query}).populate(
       populateConfig1).populate(populateConfig2).populate(populateConfig3);
   }
   public async findAllItems(query: Object, populateConfig1?: any, populateConfig2?: any, populateConfig3?: any): Promise<any> {
@@ -115,8 +121,9 @@ export abstract class MongoRepository {
       populateConfig1).populate(populateConfig2).populate(populateConfig3);
   }
 
-  public async search(search: string): Promise<any> {
-    const noSpecialCharacters = search.replace(
+  public async search(search: any): Promise<any> {
+    const a = search.toString()
+    const noSpecialCharacters = a.replace(
       /[`~!@#$%^&*()_|+\-=?;:'"<>\{\}\[\]\\\/]/gi,
       ""
     );
@@ -197,13 +204,17 @@ export abstract class MongoRepository {
     return info;
   };
   public async getMembershipDetailHistoryUser(id: string): Promise<any> {
+   
+    
     const result = await this.MODEL.aggregate([
       { $match: { client_id: id } },
       { $lookup: { from: "membershiphistories", localField: "_id", foreignField: "membershipBenefit_id", as: "MembershipHistoryList" } },
       { $lookup: { from: "services", localField: "service_id", foreignField: "_id", as: "NameService" } }
     ]);
 
+
     return result;
+    
   };
 
 

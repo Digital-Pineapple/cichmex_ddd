@@ -1,10 +1,12 @@
+import { UserEntity } from "../user/UserEntity";
 
-import { SoftDeleteDocument } from 'mongoose-delete';
 
 
- export interface PaymentEntity extends SoftDeleteDocument {
-
-  MP_info: object;
+ export interface PaymentEntity  {
+  uuid?: string;
+  user_id?: UserEntity,
+  MP_info?: object;
+  status?:boolean;
   
 }
 

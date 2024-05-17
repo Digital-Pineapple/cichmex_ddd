@@ -20,7 +20,7 @@ export class MembershipBenefitsUseCase {
    
 
     public async getDetailMembershipBenefit(_id: string): Promise<MembershipBenefits | ErrorHandler | null> {
-        return await this.membershipBenefitsRepository.findOneItem({_id:_id, deleted:false}, validateTypeCarBenefits, UserCarBenefits, ServiceInBenefits)
+        return await this.membershipBenefitsRepository.findMembershipsBenefits({_id:_id, activated:true}, validateTypeCarBenefits, UserCarBenefits, ServiceInBenefits)
     }
     public async getDetailMembershipBenefitHistory(id:string): Promise<MembershipBenefits | ErrorHandler | null> {
         return await this.membershipBenefitsRepository.getMembershipDetailHistory(id)
@@ -35,27 +35,12 @@ export class MembershipBenefitsUseCase {
         return await this.membershipBenefitsRepository.updateOne(_id,updated);
     }
     public async deleteMembershipBenefit(_id: string): Promise<MembershipBenefits> {
-        return await this.membershipBenefitsRepository.updateOne(_id,{deleted:true});
+        return await this.membershipBenefitsRepository.updateOne(_id,{status:false});
     }
 
     public async verifiedActiveBenefits(_id: string, typeCar_id: string): Promise<MembershipBenefits | ErrorHandler> {
-        const info =  await this.membershipBenefitsRepository.findOneItem({_id:_id}, validateTypeCarBenefits, UserCarBenefits, ServiceInBenefits);
-        
-        if (info.activated === true) {
-            const type_cars = info.membership_id.type_cars;
-            const validateTypeCar = type_cars.some(car => car === typeCar_id);
-           if (validateTypeCar === true) {
-             return info
-
-           } else {
-            
-            return new ErrorHandler('La membresia no cubre este tipo de auto', 500)
-        
-           }
-            
-        } else {
-            return new ErrorHandler('Membresia inactiva', 500)
-        }
+        const info =  await this.membershipBenefitsRepository.findMembershipsBenefits({_id:_id}, validateTypeCarBenefits, UserCarBenefits, ServiceInBenefits);
+       return info
     }
     
 }

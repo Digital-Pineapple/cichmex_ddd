@@ -8,6 +8,7 @@ export interface IPhone extends MongooseDelete.SoftDeleteInterface {
     phone_number     :   number;
     expiration_date  ?:   NativeDate;
     verified         ?:   boolean;
+    status?: boolean;
     createdAt       ?:   NativeDate;
     updatedAt       ?:   NativeDate;
 }
@@ -32,6 +33,7 @@ export interface UserEntity extends MongooseDelete.SoftDeleteInterface {
     phone_id         ?:  IPhone;
     accountVerify    ?:   boolean;
     facturapi_id    ?:   string;
+    status?: boolean;
     store           ?:   mongoose.Types.ObjectId;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;

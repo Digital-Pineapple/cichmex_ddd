@@ -28,6 +28,12 @@ const FileSchema = new Schema<IFile>  (
             ref: 'Customer'
 
         },
+        status:{
+            type:Boolean,
+            required:false,
+            default:true,
+
+        }
 
 
     },
@@ -37,7 +43,6 @@ const FileSchema = new Schema<IFile>  (
     }
 );
 
-FileSchema.plugin(MongooseDelete, { overrideMethods:'all' });
  const FileModel = model('Files', FileSchema);
 
  export default FileModel;

@@ -2,8 +2,6 @@ import mongoose, {model, Schema } from "mongoose";
 import { StockBranchEntity, IProductInput, IProductOutput, IProductReturn } from '../../../domain/stockBranch/StockBranchEntity';
 
 
-import MongooseDelete = require("mongoose-delete");
-
   const BranchOfficeSchema = new Schema<StockBranchEntity>(
     {
        branch_id: {
@@ -18,6 +16,11 @@ import MongooseDelete = require("mongoose-delete");
           type:Number,
           required:false,
       },
+      status:{
+        type:Boolean,
+        required:false,
+        default:true,
+      }
       
     },
      
@@ -27,9 +30,8 @@ import MongooseDelete = require("mongoose-delete");
     }
   );
 
-  BranchOfficeSchema.plugin(MongooseDelete, { overrideMethods :true });
 
-const StockBranchModel = model<Document & StockBranchEntity>(
+const StockBranchModel = model<StockBranchEntity>(
   'StockInBranches',
   BranchOfficeSchema
 );

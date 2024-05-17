@@ -2,8 +2,6 @@ import mongoose, {model, Schema } from "mongoose";
 import { SHProductReturn } from '../../../domain/storehouse/stockStoreHouseEntity';
 
 
-import MongooseDelete = require("mongoose-delete");
-
 const StockSHReturnSchema = new Schema<SHProductReturn> ({
     SHStock_id:{
         type : mongoose.Types.ObjectId, ref:'StoreHouseStocks',
@@ -22,6 +20,11 @@ const StockSHReturnSchema = new Schema<SHProductReturn> ({
       type    : mongoose.Types.ObjectId, ref :'users',
       required: true,
   },
+  status:{
+    type:Boolean,
+    required:false,
+    default:true,
+   }
 },
   {
       timestamps: true,
@@ -30,9 +33,8 @@ const StockSHReturnSchema = new Schema<SHProductReturn> ({
 );
  
 
-StockSHReturnSchema.plugin(MongooseDelete, { overrideMethods :true });
 
-const StockSHReturnModel = model<Document & SHProductReturn>(
+const StockSHReturnModel = model< SHProductReturn>(
   'SHStockReturns',
   StockSHReturnSchema
 );

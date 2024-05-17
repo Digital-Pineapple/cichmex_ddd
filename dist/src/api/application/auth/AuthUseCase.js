@@ -31,6 +31,34 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             return yield this.generateJWT(user);
         });
     }
+    signInAdmin(email, password) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
+            if (!user)
+                return new ErrorHandler_1.ErrorHandler('No exite este usuario', 400);
+            const validatePassword = this.decryptPassword(password, user.password);
+            if (user.type_user.name !== 'Admin') {
+                return new ErrorHandler_1.ErrorHandler('No es un Admin', 400);
+            }
+            if (!validatePassword)
+                return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son validos', 400);
+            return yield this.generateJWT(user);
+        });
+    }
+    signInPartner(email, password) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
+            if (user.type_user.name !== 'Partner') {
+                return new ErrorHandler_1.ErrorHandler('No es un socio', 400);
+            }
+            if (!user)
+                return new ErrorHandler_1.ErrorHandler('No exite este usuario', 400);
+            const validatePassword = this.decryptPassword(password, user.password);
+            if (!validatePassword)
+                return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son validos', 400);
+            return yield this.generateJWT(user);
+        });
+    }
     findUser(email) {
         return __awaiter(this, void 0, void 0, function* () {
             let customer = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PopulatePointStore);
@@ -115,6 +143,9 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
         return __awaiter(this, void 0, void 0, function* () {
             let { email, picture } = yield this.validateGoogleToken(idToken);
             let user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
+            if (user.type_user.name !== 'Customer') {
+                return new ErrorHandler_1.ErrorHandler('No es un cliente', 400);
+            }
             // if (user.email_verified === true) {
             //     user.profile_image === picture
             //     user = await this.generateJWT(user);
@@ -123,6 +154,20 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             //     const user2: IGoogleResponseLogin = { user_id: user?._id, verified: user?.email_verified, email: user?.email, profile_image: picture }
             //     user = user2
             // }
+            if (!user)
+                return new ErrorHandler_1.ErrorHandler('No existe usuario', 409);
+            user.profile_image = picture;
+            user = yield this.generateJWT(user);
+            return user;
+        });
+    }
+    signInWithGooglePartner(idToken) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let { email, picture } = yield this.validateGoogleToken(idToken);
+            let user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
+            if (user.type_user.name !== 'Partner') {
+                return new ErrorHandler_1.ErrorHandler('No es un socio', 400);
+            }
             if (!user)
                 return new ErrorHandler_1.ErrorHandler('No existe usuario', 409);
             user.profile_image = picture;

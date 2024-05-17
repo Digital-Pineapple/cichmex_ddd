@@ -25,7 +25,7 @@ const SHlocationSchema = new mongoose.Schema<SHLocation>(
         direction: {
             type: String,
             required: true,
-        }
+        },
 
 
     },

@@ -1,8 +1,6 @@
 import mongoose, {model, Schema } from "mongoose";
 import { MembershipHistory } from "../../../domain/membership/MembershipEntity";
 
-import MongooseDelete = require("mongoose-delete");
-
 const MembershipHistorySchema = new mongoose.Schema<MembershipHistory>(
   {
     membershipBenefit_id: {
@@ -27,6 +25,11 @@ const MembershipHistorySchema = new mongoose.Schema<MembershipHistory>(
     branch_office_id:{
       type:mongoose.Schema.Types.ObjectId,
       required:false,
+    },
+    status:{
+      type:Boolean,
+      required:false,
+      default:true,
     }
   },
   {
@@ -35,10 +38,8 @@ const MembershipHistorySchema = new mongoose.Schema<MembershipHistory>(
   }
 );
 
-// Aplica el plugin mongoose-delete al esquema
-MembershipHistorySchema.plugin(MongooseDelete, { deletedBy:true});
 
-const MembershipHistoryModel = model<Document & MembershipHistory>(
+const MembershipHistoryModel = model< MembershipHistory>(
   'MembershipHistory',
   MembershipHistorySchema
 );

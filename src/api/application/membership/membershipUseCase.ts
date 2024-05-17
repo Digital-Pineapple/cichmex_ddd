@@ -15,7 +15,7 @@ export class MembershipUseCase {
     public async getDetailMembership(_id: string): Promise<MembershipEntity | ErrorHandler | null> {
         return await this.membershipRepository.findById(_id);
     }
-    public async getInfoMembership(_id: string): Promise<MembershipEntity | ErrorHandler | null> {
+    public async getInfoMembership(_id: any): Promise<MembershipEntity | ErrorHandler | null> {
         const info =  await this.membershipRepository.findAllAll(_id, ServicesMembershipPopulateConfing, typeCarMembershipPopulateConfing);
         // const response : MembershipInfoResponse = {
         //     _id:info._id,
@@ -37,7 +37,7 @@ export class MembershipUseCase {
         return await this.membershipRepository.updateOne(_id,updated);
     }
     public async deleteOneMembership(_id: string): Promise<MembershipEntity | null> {
-        return this.membershipRepository.updateOne(_id, {deleted: true})
+        return this.membershipRepository.updateOne(_id, {status: false})
     }
 
 }

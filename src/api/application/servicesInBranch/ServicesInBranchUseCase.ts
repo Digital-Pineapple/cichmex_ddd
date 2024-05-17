@@ -29,7 +29,7 @@ export class ServicesInBranchUseCase {
   public async getServicesInBranchByBranch(
     _id: string
   ): Promise<ServicesInBranchEntity[] | ErrorHandler | null> {
-    return await this.servicesInBranchRepository.findAllItems({branch_id:_id, deleted:false},ServiceInBenefits,nameCarPopulateConfing,InfoBranch)
+    return await this.servicesInBranchRepository.findAllItems({branch_id:_id, status:true},ServiceInBenefits,nameCarPopulateConfing,InfoBranch)
   }
 
   public async createServiceInBranch(

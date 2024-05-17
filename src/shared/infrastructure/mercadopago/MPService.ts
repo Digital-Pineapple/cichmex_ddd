@@ -1,20 +1,25 @@
 import { response } from 'express';
 import { config } from '../../../../config';
-import { MercadoPagoConfig, Preference, } from 'mercadopago';
+import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 
 export class MPService {
     private access_token = config.MERCADOPAGO_TOKEN;
     private preference: Preference;
+    private payment : Payment;
+    
 
 
     constructor() {
         const client = new MercadoPagoConfig({ accessToken: this.access_token });
         this.preference = new Preference(client);
+        this.payment = new Payment(client)
+        
     }
 
 
     async   createLinkMP(item: any, user_id:any) {   
         const path = `${process.env.PATH_MP}`
+        const path_notification =`${process.env.URL_NOTIFICATION}`
         
         
         try {
@@ -29,7 +34,8 @@ export class MPService {
                         },
                     ],
                     payer:{
-                        name:user_id
+                        name:user_id,
+                       
                         
                     },
                     back_urls: {
@@ -39,7 +45,7 @@ export class MPService {
                     },
                 
                     auto_return: "approved",
-                    notification_url:`${process.env.URL_NOTIFICATION}/api/payments/success`,
+                    notification_url:`${path_notification}/api/payments/success`,
                 }
             });
 
@@ -47,7 +53,7 @@ export class MPService {
         } catch (error) {
            console.log(error);
            
-            return { success: false, message: `Error: ${error?.message}` };
+            return { success: false, message: `Error: ${error}` };
         }
     }
 
@@ -75,6 +81,48 @@ export class MPService {
         } catch (error) {
             console.log(error);
             
+        }
+    }
+
+    async createPaymentMP(item: any, user:any, uuid:any, membership:any) {   
+        
+        const path_notification =`${process.env.URL_NOTIFICATION}/api/payments/Mem-Payment-success`
+        
+        try {
+            const response = await this.payment.create({
+                requestOptions:{idempotencyKey:`${uuid}`},
+                body: {
+                    transaction_amount:item.transaction_amount,
+                    payment_method_id:item.payment_method_id,
+                    payer:{
+                        email:item.payer.email,
+                        first_name:user.user_id  
+                    },
+                    additional_info:{
+                        items:[
+                            {
+                                id:membership._id,
+                                title:membership.name,
+                                quantity:1,
+                                unit_price:membership.price_standard,
+                                description:membership.description,
+                            }
+                        ]
+                    },
+                    token:item.token,
+                    issuer_id:item.issuer_id,
+                    installments:item.installments,
+                    notification_url:path_notification,
+
+     
+                }
+            });
+
+            return { response, success: true, message: 'Pago realizado correctamente' };
+        } catch (error) {
+           console.log(error);
+           
+            return { success: false, message: `Error: ${error}` };
         }
     }
 }

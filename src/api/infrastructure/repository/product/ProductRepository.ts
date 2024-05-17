@@ -2,6 +2,7 @@ import { Model } from 'mongoose';
 import { ProductRepository as ProductConfig } from '../../../domain/product/ProductRepository'
 import { MongoRepository } from '../MongoRepository';
 import { ProductEntity } from '../../../domain/product/ProductEntity';
+import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 
 
 export class ProductRepository extends MongoRepository implements ProductConfig  {
@@ -27,6 +28,10 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     }
     async updateImagesAndSlug(slug: string, images:[string], _id: string): Promise<ProductEntity | null > {
         return await this.findAndUpdateProduct(_id,{images:images, slug:slug})
+    }
+    
+    async getProductsByCategory(query:any, populateConfig1?:any): Promise<ProductEntity[] | ErrorHandler | null > {
+        return await this.MODEL.find({...query}).populate(populateConfig1)
     }
     
    

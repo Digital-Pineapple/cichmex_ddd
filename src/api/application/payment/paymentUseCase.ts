@@ -21,21 +21,14 @@ export class PaymentUseCase {
           
     } 
     public async createNewPayment(object:any): Promise<PaymentEntity | ErrorHandler | null> {
-        console.log(object.MP_info.id, 'informacion de objeto');
-        const noRepeat = await this.paymentRepository.findOneItem({ MP_info: { id: object.MP_info.id } });
-         console.log(noRepeat, 'noRepeat');
-        if (noRepeat) {     
-            return null
-        }else{
             return await this.paymentRepository.createOne({...object});
-        }
     }
 
     public async updateOnePayment(_id: string, updated: PaymentEntity): Promise<PaymentEntity> {
         return this.paymentRepository.updateOne(_id, updated);
     }
     public async deleteOnePayment(_id: string): Promise<PaymentEntity | null> {
-        return this.paymentRepository.updateOne(_id, {deleted: true})
+        return this.paymentRepository.updateOne(_id, {status: false})
     }
 
 }

@@ -39,7 +39,8 @@
     "socket.io": "^4.6.1",
     "swagger-autogen": "^2.23.1",
     "swagger-ui-express": "^4.6.2",
-    "twilio": "^4.8.0"
+    "twilio": "^4.8.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",

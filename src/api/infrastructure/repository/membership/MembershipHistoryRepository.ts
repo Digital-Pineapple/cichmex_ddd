@@ -24,18 +24,17 @@ export class MembershipHistoryRepository extends MongoRepository implements Memb
         return await this.findAll();
     }
 
+    async getOneMemHistory(query: Object): Promise<any| null> {
+        return await this.MODEL.find(query);
+    }
     async createOneMembershpHistory(body: Object): Promise<MembershipHistory | null> {
         return await this.createOne(body);
     }
 
-    async getSalesDayByBranch(date_service: string, branch_office_id: string, populate?:any): Promise<MembershipHistory[] | null> {
-        try {
-            const data = await this.MembershipHistoryModel.find({branch_office_id:branch_office_id,date_service:{$regex:`${date_service}`} }).populate(populate)
-            return data;
-        } catch (error) {
-            console.error("Error retrieving sales data by branch:", error);
-            return null;
-        }
+    async getSalesDayByBranch(date_service: any, branch_office_id: any, populate?:any, populate2?:any): Promise<MembershipHistory[] | null> {
+         return await this.MembershipHistoryModel.find({branch_office_id:branch_office_id,date_service:{$regex:`${date_service}`} }).populate(populate)
+            
+     
     }
 
 

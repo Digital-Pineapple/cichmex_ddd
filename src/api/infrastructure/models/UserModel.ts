@@ -1,34 +1,6 @@
 import { Mongoose, Schema, model } from 'mongoose';
 import { IPhone, UserEntity } from '../../domain/user/UserEntity';
-import MongooseDelete = require("mongoose-delete");
 
-const VerifyPhoneNumberSchema = new Schema<IPhone>({
-    code: {
-        type: String,
-        required: false,
-    },
-    prefix: {
-        type: String,
-        required: false,
-    },
-    phone_number: {
-        type: Number,
-        required: false,
-    },
-    expiration_date: {
-        type: Date,
-        required: false,
-    },
-    verified: {
-        type: Boolean,
-        required: true,
-        default: false
-    },
-},
-    {
-        timestamps: true
-    }
-);
 
 const UserSchema = new Schema<UserEntity>({
     fullname: {
@@ -92,11 +64,16 @@ const UserSchema = new Schema<UserEntity>({
         required: false,
         ref:'BranchOffices'
     },
+    status:{
+        type:Boolean,
+        required:false,
+        default:true,
+       }
 }, {
     timestamps: true,
     versionKey: false,
 });
-UserSchema.plugin(MongooseDelete, { overrideMethods: true })
+
 UserSchema.method('toJSON', function () {
     const { password, ...user } = this.toObject();
     return user;

@@ -29,10 +29,12 @@ export class AuthController extends ResponseData {
         super();
         this.login = this.login.bind(this);
         this.loginAdmin = this.loginAdmin.bind(this);
+        this.loginPartner = this.loginPartner.bind(this);
         this.register = this.register.bind(this);
         this.registerAndPay = this.registerAndPay.bind(this);
         this.registerAdmin = this.registerAdmin.bind(this);
         this.loginWithGoogle = this.loginWithGoogle.bind(this);
+        this.loginWithGooglePartner = this.loginWithGooglePartner.bind(this);
         this.registerByGoogle = this.registerByGoogle.bind(this);
         this.changePassword = this.changePassword.bind(this);
         this.uploadProfilePhoto = this.uploadProfilePhoto.bind(this);
@@ -44,6 +46,8 @@ export class AuthController extends ResponseData {
 
     public async login(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { email, password } = req.body;
+  ;
+        
         try {
             const response = await this.authUseCase.signIn(email, password);
         
@@ -59,12 +63,33 @@ export class AuthController extends ResponseData {
         }
     }
 
+    public async loginPartner(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
+        const { email, password } = req.body;
+     
+        try {
+            const response = await this.authUseCase.signInPartner(email, password);
+        
+            if (!(response instanceof ErrorHandler) && response.user.profile_image !== undefined) {
+                response.user.profile_image ?
+                    response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image+".jpg") :
+                    'No hay imagen de perfil'
+            }
+
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error);
+            
+            next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
+        }
+    }
+
 
 
     public async loginAdmin(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { email, password } = req.body;
+     
         try {
-            const response = await this.authUseCase.signIn(email, password)
+            const response = await this.authUseCase.signInAdmin(email, password)
 
             // if (!(response instanceof ErrorHandler) && response.user.profile_image === undefined) {
             //     response.user.profile_image ?
@@ -130,6 +155,17 @@ export class AuthController extends ResponseData {
             next(new ErrorHandler('Usuario no registrado', 500));
         }
     }
+    public async loginWithGooglePartner(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
+        const { idToken } = req.body;
+        try {
+            const response = await this.authUseCase.signInWithGooglePartner(idToken);
+            
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler('Usuario no registrado', 500));
+        }
+    }
+
     public async registerByGoogle(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { idToken } = req.body;
         
@@ -183,17 +219,7 @@ export class AuthController extends ResponseData {
         }
     }
 
-    // public async updateCustomer(req: Request, res: Response, next: NextFunction) {
-    //     const { user } = req;
-    //     const { email, fullname } = req.body;
-    //     try {
-    //         const response = await this.authUseCase.updateCustomer(user._id, email, fullname);
-    //         response.profile_image = await this.s3Service.getUrlObject(response?.profile_image);
-    //         this.invoke(response, 200, res, 'El usuario se actualizo con exito', next);
-    //     } catch (error) {
-    //         next(new ErrorHandler('Hubo un error al actualizar la información', 500));
-    //     }
-    // }
+
 
     public async revalidateToken(req: Request, res: Response, next: NextFunction) {
 
@@ -241,23 +267,7 @@ export class AuthController extends ResponseData {
         }
     }
 
-    // public async uploadFiles({ files, user}: Request, res: Response, next: NextFunction) {
-    //     const documents = [ files?.ine, files?.curp, files?.prook_address, files?.criminal_record ];
-    //     let keys: any = [];
-    //     try {
-    //         if(!files?.ine || !files?.curp || !files?.prook_address || !files?.criminal_record) return next(new ErrorHandler('los archivos son requeridos', 400));
 
-    //         await Promise.all(documents?.map(async (file) => {
-    //             const pathObject = `${this.path}/${user._id}/${file[0].fieldname}`;
-    //             keys.push({ field: file[0].fieldname, key: pathObject })
-    //             await this.s3Service.uploadToS3(pathObject+ ".pdf", file[0], "application/pdf")
-    //         }));
-    //         const response = await this.authUseCase.uploadCustomerFiles(user._id, keys);
-    //         this.invoke(response, 200, res, 'Los archivos se subieron correctamente', next);
-    //     } catch (error) {
-    //         next(new ErrorHandler('Hubo un error al subir los archivos', 500));
-    //     }
-    // }
 
     
 

@@ -2,7 +2,7 @@ import mongoose, { model, Schema } from "mongoose";
 import { SHProductInput } from '../../../domain/storehouse/stockStoreHouseEntity';
 
 
-import MongooseDelete = require("mongoose-delete");
+
 const StockSHinputSchema = new Schema<SHProductInput>({
   SHStock_id: {
     type: mongoose.Types.ObjectId, ref: 'StoreHouseStocks',
@@ -17,15 +17,20 @@ const StockSHinputSchema = new Schema<SHProductInput>({
     type: Number,
     required: true,
   },
+  status:{
+    type:Boolean,
+    required:false,
+    default:true,
+   }
 },
   {
     timestamps: true,
     versionKey: false
   }
 );
-StockSHinputSchema.plugin(MongooseDelete, { overrideMethods: true });
 
-const StockSHinputModel = model<Document & SHProductInput>(
+
+const StockSHinputModel = model<SHProductInput>(
   'SHStockInputs',
   StockSHinputSchema
 );

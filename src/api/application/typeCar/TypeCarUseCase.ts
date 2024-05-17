@@ -28,7 +28,7 @@ export class TypeCarUseCase {
     }
 
     public async deleteTypeCar(_id: string): Promise<TypeCarEntity | null> {
-        return await this.typeCarRepository.updateOne(_id,{deleted:true})
+        return await this.typeCarRepository.updateOne(_id,{status:false})
     }
 
     public async deleteTypeCarService(_id: string): Promise<TypeCarEntity | null> {

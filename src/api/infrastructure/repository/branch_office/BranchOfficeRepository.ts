@@ -1,7 +1,8 @@
 import { MongoRepository } from '../MongoRepository';
-import { BranchOfficeEntity,ILocation } from '../../../domain/branch_office/BranchOfficeEntity';
+import { BranchOfficeEntity,BranchOfficeResponse,ILocation } from '../../../domain/branch_office/BranchOfficeEntity';
 import { BranchOfficeRepository as BranchOfficeConfig } from '../../../domain/branch_office/BranchOfficeRepository';
 import { Model } from 'mongoose';
+import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 
 
 
@@ -10,6 +11,11 @@ export class BranchOfficeRepository extends MongoRepository implements BranchOff
 
     constructor(protected BranchOfficeModel: Model<any>) {
         super(BranchOfficeModel);
+    }
+
+    async getInfoBranches(query: Object): Promise<BranchOfficeEntity[] | ErrorHandler| BranchOfficeResponse[] | null> {
+        return await this.findAll({...query})
+
     }
 
     async findOneBranchOffice(query: Object): Promise<BranchOfficeEntity | null> {

@@ -2,8 +2,6 @@ import mongoose, {model, Schema } from "mongoose";
 import { StockBranchEntity, IProductReturn } from '../../../domain/stockBranch/StockBranchEntity';
 
 
-import MongooseDelete = require("mongoose-delete");
-
 const StockReturnSchema = new Schema<IProductReturn> ({
     stock_id:{
         type : mongoose.Types.ObjectId, ref:'stockinbranches',
@@ -22,6 +20,11 @@ const StockReturnSchema = new Schema<IProductReturn> ({
       type    : mongoose.Types.ObjectId, ref :'customers',
       required: true,
   },
+  status:{
+    type:Boolean,
+    required:false,
+    default:true,
+   }
 },
   {
       timestamps: true,
@@ -30,9 +33,8 @@ const StockReturnSchema = new Schema<IProductReturn> ({
 );
  
 
-StockReturnSchema.plugin(MongooseDelete, { overrideMethods :true });
 
-const StockBranchModel = model<Document & StockBranchEntity>(
+const StockBranchModel = model<StockBranchEntity>(
   'StockReturns',
   StockReturnSchema
 );

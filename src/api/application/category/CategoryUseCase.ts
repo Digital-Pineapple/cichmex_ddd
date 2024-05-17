@@ -15,6 +15,9 @@ export class CategoryUseCase {
     public async getDetailCategory(_id: string): Promise<Category  | null> {
         return await this.categoriesRepository.findById(_id);
     }
+    public async getDetailCategoryByName(name: string): Promise<Category  | null> {
+        return await this.categoriesRepository.findOneByName(name)
+    }
     public async getSubCategoriesByCategory(_id: string): Promise<Category[] | null> {
         return this.categoriesRepository.findAll(_id)
     }
@@ -29,7 +32,7 @@ export class CategoryUseCase {
         return await this.categoriesRepository.updateOne(_id,updated);
     }
     public async deleteOneCategory(_id: string): Promise<Category | null> {
-        return this.categoriesRepository.updateOne(_id, {deleted: true})
+        return this.categoriesRepository.updateOne(_id, {status: false})
     }
     
 
