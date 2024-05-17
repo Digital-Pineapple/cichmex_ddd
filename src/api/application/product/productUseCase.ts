@@ -1,3 +1,4 @@
+import { filter } from "compression";
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
 import { PopulateProductCategory, PopulateProductSubCategory } from "../../../shared/domain/PopulateInterfaces";
 import { ProductEntity } from "../../domain/product/ProductEntity";
@@ -8,7 +9,7 @@ export class ProductUseCase {
   constructor(private readonly productRepository: ProductRepository) {}
 
   public async getProducts(): Promise<ProductEntity[] | ErrorHandler> {
-    return await this.productRepository.findAll();
+    return await this.productRepository.findAll(PopulateProductCategory, PopulateProductSubCategory);
   }
 
   public async getProduct(
@@ -39,6 +40,9 @@ export class ProductUseCase {
 
   public async searchProduct(search: any): Promise<ProductEntity[] | null> {
     return this.productRepository.search(search)
+  }
+  public async searchProductsByCategory(category: any): Promise<ProductEntity[] | null> {
+     return this.productRepository.findAllItems({category}, PopulateProductCategory, PopulateProductSubCategory)
   }
   public async categoryProducts(category: any): Promise<ProductEntity[] | null> {
     return this.productRepository.search(category)

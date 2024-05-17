@@ -63,6 +63,11 @@ class MongoRepository {
             return yield this.MODEL.find({ name });
         });
     }
+    findOneByName(name) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.findOne({ name });
+        });
+    }
     findByCategory(name) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.MODEL.find({ name });

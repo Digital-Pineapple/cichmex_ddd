@@ -1,3 +1,4 @@
+import { CategoryUseCase } from './../../../application/category/CategoryUseCase';
 import { body } from 'express-validator';
 import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
@@ -11,6 +12,7 @@ export class ProductController extends ResponseData {
 
   constructor(
     private productUseCase: ProductUseCase,
+    private categoryUseCase : CategoryUseCase,
     private readonly s3Service: S3Service
   ) {
     super();
@@ -20,6 +22,7 @@ export class ProductController extends ResponseData {
     this.updateProduct = this.updateProduct.bind(this);
     this.deleteProduct = this.deleteProduct.bind(this);
     this.searchProduct = this.searchProduct.bind(this);
+    this.getProductsByCategory = this.getProductsByCategory.bind(this);
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
@@ -232,11 +235,10 @@ export class ProductController extends ResponseData {
   }
   public async getProductsByCategory(req: Request, res: Response, next: NextFunction){
     const { category } = req.body
-    console.log(req.body,'controller');
-    
+    // console.log(typeof category);    
     try{
-      // const findCategoryByName = this.productUseCase.getCategoryByName();
-      const response = await this.productUseCase.searchProduct(category)
+      const categoria = await this.categoryUseCase.getDetailCategoryByName(category);      
+      const response = await this.productUseCase.searchProductsByCategory(categoria._id);
       this.invoke(response, 201, res, '', next);
     }catch(error){
       console.log(error);

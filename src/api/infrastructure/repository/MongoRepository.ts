@@ -21,7 +21,7 @@ export abstract class MongoRepository {
   public async findSubCategoriesByCategory(category_id: any): Promise<any> {
     return await this.MODEL.find({ category_id: category_id, deleted: false })
   }
-
+  
   public async findOneStockByBranch(branch_id: String, product_id: String, populateConfig?: any): Promise<any> {
     const result = await this.MODEL.findOne({ product_id, branch_id }).populate(populateConfig)
     return result
@@ -47,6 +47,9 @@ export abstract class MongoRepository {
   }
   public async findByName(name: string): Promise<any> {
     return await this.MODEL.find({ name });
+  }
+  public async findOneByName(name: string): Promise<any> {
+    return await this.MODEL.findOne({ name });
   }
   public async findByCategory(name: string): Promise<any> {
     return await this.MODEL.find({ name });

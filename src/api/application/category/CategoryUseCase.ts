@@ -15,8 +15,8 @@ export class CategoryUseCase {
     public async getDetailCategory(_id: string): Promise<Category  | null> {
         return await this.categoriesRepository.findById(_id);
     }
-    public async getDetailCategoryByName(_id: string): Promise<Category  | null> {
-        return await this.categoriesRepository.findById(_id);
+    public async getDetailCategoryByName(name: string): Promise<Category  | null> {
+        return await this.categoriesRepository.findOneByName(name)
     }
     public async getSubCategoriesByCategory(_id: string): Promise<Category[] | null> {
         return this.categoriesRepository.findAll(_id)
