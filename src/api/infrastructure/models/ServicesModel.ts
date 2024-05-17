@@ -1,8 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { ServicesEntity } from '../../domain/services/ServicesEntity';
 
-import MongooseDelete = require('mongoose-delete')
-
 const ServiceSchema = new Schema<ServicesEntity>({
     name: {
         type: String,
@@ -21,14 +19,18 @@ const ServiceSchema = new Schema<ServicesEntity>({
         type: Schema.Types.ObjectId,
         ref: 'SubCategory'
 
-    }
+    },
+    status:{
+        type:Boolean,
+        required:false,
+        default:true,
+       }
 }, {
     versionKey: false,
     timestamps: true,
 },
 
 );
-ServiceSchema.plugin(MongooseDelete,{overrideMethods:true})
 
 const ServiceModel = model('Services', ServiceSchema);
 

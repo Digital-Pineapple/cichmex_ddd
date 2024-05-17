@@ -26,7 +26,7 @@ export class StockStoreHouseUseCase {
         return await this.stockStoreHouseRepository.updateOne(_id,updated);
     }
     public async deleteStock(_id: string): Promise<StockStoreHouseEntity | null> {
-        return this.stockStoreHouseRepository.updateOne(_id, {deleted: false})
+        return this.stockStoreHouseRepository.updateOne(_id, {status: false})
     }
    
     

@@ -1,9 +1,6 @@
 import mongoose, {model, Schema } from "mongoose";
 import { StockStoreHouseEntity } from '../../../domain/storehouse/stockStoreHouseEntity';
 
-
-import MongooseDelete = require("mongoose-delete");
-
   const StockStoreHouseSchema = new Schema<StockStoreHouseEntity>(
     {
 
@@ -35,9 +32,8 @@ import MongooseDelete = require("mongoose-delete");
     }
   );
 
-  StockStoreHouseSchema.plugin(MongooseDelete, { overrideMethods :true });
 
-const StockStoreHouseModel = model<Document & StockStoreHouseEntity>(
+const StockStoreHouseModel = model<StockStoreHouseEntity>(
   'StoreHouseStocks',
   StockStoreHouseSchema
 );

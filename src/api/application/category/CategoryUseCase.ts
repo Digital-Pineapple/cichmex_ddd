@@ -29,7 +29,7 @@ export class CategoryUseCase {
         return await this.categoriesRepository.updateOne(_id,updated);
     }
     public async deleteOneCategory(_id: string): Promise<Category | null> {
-        return this.categoriesRepository.updateOne(_id, {deleted: true})
+        return this.categoriesRepository.updateOne(_id, {status: false})
     }
     
 

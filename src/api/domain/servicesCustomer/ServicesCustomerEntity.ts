@@ -1,21 +1,21 @@
 import { ICarService } from "../carService/CarServiceEntity";
-import { CustomerEntity } from "../customer/CustomerEntity";
 import { SubCategory } from '../subCategory/SubCategoryEntity';
+import { UserEntity } from "../user/UserEntity";
 
 export interface IServices {
     _id            :   string;
     name           :   string;
     description    :   string;
-    status         :   boolean;
+    status?:boolean;
     service_image ?:   string;
     SubCategory    :   SubCategory;
     typeCarService ?:   [ICarService];
 }
 
 export interface ServiceCustomer {
-customer_id        :   CustomerEntity;
+user_id        :   UserEntity;
 services           :   [IServices];
-status             :   boolean;
+status?:boolean;
 createdAt         ?:   NativeDate;
 updatedAt         ?:   NativeDate;
 

@@ -23,6 +23,22 @@ export class AuthUseCase extends Authentication {
         
         if (!user) return new ErrorHandler('No exite este usuario', 400);
         const validatePassword = this.decryptPassword(password, user.password)
+        if (user.type_user.name !== 'Customer') {
+            return new ErrorHandler('No es un socio', 400);
+        }
+
+        if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);
+        return await this.generateJWT(user);
+    }
+    async signInPartner(email: string, password: string): Promise<ErrorHandler | IAuth> {
+
+        const user = await this.authRepository.findOneItem({ email }, TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
+        if (user.type_user.name !== 'Partner') {
+            return new ErrorHandler('No es un socio', 400);
+        }
+        
+        if (!user) return new ErrorHandler('No exite este usuario', 400);
+        const validatePassword = this.decryptPassword(password, user.password)
         
 
         if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);
@@ -111,6 +127,9 @@ export class AuthUseCase extends Authentication {
         let { email, picture } = await this.validateGoogleToken(idToken);
         
         let user = await this.authRepository.findOneItem({ email },TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
+        if (user.type_user.name !== 'Customer') {
+            return new ErrorHandler('No es un cliente', 400);
+        }
         // if (user.email_verified === true) {
         //     user.profile_image === picture
         //     user = await this.generateJWT(user);
@@ -119,6 +138,21 @@ export class AuthUseCase extends Authentication {
         //     const user2: IGoogleResponseLogin = { user_id: user?._id, verified: user?.email_verified, email: user?.email, profile_image: picture }
         //     user = user2
         // }
+        if (!user) return new ErrorHandler('No existe usuario', 409)
+        user.profile_image = picture
+        user = await this.generateJWT(user)
+        
+        return user
+    }
+
+    async signInWithGooglePartner(idToken: string): Promise<IGoogleResponseLogin | IAuth | ErrorHandler | null> {
+        let { email, picture } = await this.validateGoogleToken(idToken);
+        
+        let user = await this.authRepository.findOneItem({ email },TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
+
+        if (user.type_user.name !== 'Partner') {
+            return new ErrorHandler('No es un socio', 400);
+        }
         if (!user) return new ErrorHandler('No existe usuario', 409)
         user.profile_image = picture
         user = await this.generateJWT(user)

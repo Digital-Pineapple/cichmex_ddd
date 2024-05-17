@@ -1,15 +1,12 @@
 import { Router } from 'express';
 
 import authRouter from './auth/';
-import authAdminRouter from './authAdmin';
-import customerRouter from './customer/';
 import serviceRouter from './services';
 import typeCarRouter from './typeCar';
 import categoryRouter from './Category';
 import subCategoryRouter from './subCategory';
 import commissionRouter from './commission';
 import documentationRouter from './documentation';
-import serviceCustomerRouter from './serviceCustomer';
 import carDetailRouter from './carDetail';
 import membershipRouter from './membership';
 import membershipBenefitRouter from './membershipBenefit';
@@ -38,7 +35,6 @@ export const apiRouter = (): Router => {
     apiRouter.use('/sub-category', subCategoryRouter)
     apiRouter.use('/commission', commissionRouter)
     apiRouter.use('/documentation', documentationRouter)
-    apiRouter.use('/service-customer', serviceCustomerRouter)
     apiRouter.use('/car_detail', carDetailRouter)
     apiRouter.use('/memberships', membershipRouter)
     apiRouter.use('/membership-benefits', membershipBenefitRouter)
@@ -65,7 +61,6 @@ apiRouterx.use('/category', categoryRouter)
 apiRouterx.use('/sub-category', subCategoryRouter)
 apiRouterx.use('/commission', commissionRouter)
 apiRouterx.use('/documentation', documentationRouter)
-apiRouterx.use('/service-customer', serviceCustomerRouter)
 apiRouterx.use('/car-detail', carDetailRouter)
 apiRouterx.use('/memberships', membershipRouter)
 apiRouterx.use('/membership-benefit', membershipBenefitRouter)

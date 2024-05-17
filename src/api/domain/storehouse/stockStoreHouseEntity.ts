@@ -23,6 +23,7 @@ export interface SHProductInput extends MongooseDelete.SoftDeleteInterface{
     quantity: number,
     newQuantity: number
     createdAt: NativeDate;
+    status?:boolean;
   }
   export interface SHProductOutput extends MongooseDelete.SoftDeleteInterface{
     SHStock_id ?: string,
@@ -30,6 +31,7 @@ export interface SHProductInput extends MongooseDelete.SoftDeleteInterface{
     newQuantity: number,
     responsible?:  UserEntity,
     createdAt: NativeDate;
+    status?:boolean;
   }
   export interface SHProductReturn extends MongooseDelete.SoftDeleteInterface{
     SHStock_id ?: string,
@@ -37,5 +39,6 @@ export interface SHProductInput extends MongooseDelete.SoftDeleteInterface{
     newQuantity: number,
     responsible_id: UserEntity,
     createdAt: NativeDate;
+    status?:boolean;
   }
   

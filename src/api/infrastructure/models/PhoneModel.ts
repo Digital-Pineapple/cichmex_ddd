@@ -25,6 +25,11 @@ const PhoneSchema = new Schema<IPhone>  ({
         required: true,
         default : false
     },
+    status:{
+        type:Boolean,
+        required:false,
+        default:true,
+       }
 },
     {
         timestamps: true,
@@ -32,7 +37,6 @@ const PhoneSchema = new Schema<IPhone>  ({
     }
 );
 
-PhoneSchema.plugin(MongooseDelete, {overrideMethods:true})
 
 const PhoneModel = model('Phone', PhoneSchema);
 

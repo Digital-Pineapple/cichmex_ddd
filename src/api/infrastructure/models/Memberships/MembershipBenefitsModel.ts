@@ -37,6 +37,7 @@ const MembershipBenefitsSchema = new Schema<MembershipBenefits>(
     status:{
       type:Boolean,
       required:false,
+      default:true,
     }
   },
   {
@@ -46,7 +47,7 @@ const MembershipBenefitsSchema = new Schema<MembershipBenefits>(
 );
 
 
-const MembershipBenefitsModel = model<typeof MembershipBenefitsSchema >(
+const MembershipBenefitsModel = model<MembershipBenefits >(
   "MembershipBenefits",
   MembershipBenefitsSchema
 );

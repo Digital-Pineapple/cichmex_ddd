@@ -1,8 +1,6 @@
 import mongoose, {model, Schema } from "mongoose";
 import { IProductInput, IProductOutput } from '../../../domain/stockBranch/StockBranchEntity';
 
-
-import MongooseDelete = require("mongoose-delete");
 const StockInputSchema = new Schema<IProductInput> ({
   stock_id:{
     type : mongoose.Types.ObjectId, ref:'stockinbranches',
@@ -17,15 +15,19 @@ const StockInputSchema = new Schema<IProductInput> ({
       type    : Number,
       required: true,
   },
+  status:{
+    type:Boolean,
+    required:false,
+    default:true,
+   }
 },
   {
       timestamps: true,
       versionKey: false
   }
 );
-StockInputSchema.plugin(MongooseDelete, { overrideMethods :true });
 
-const StockInputModel = model<Document & IProductInput>(
+const StockInputModel = model<IProductInput>(
   'StockInputs',
   StockInputSchema
 );

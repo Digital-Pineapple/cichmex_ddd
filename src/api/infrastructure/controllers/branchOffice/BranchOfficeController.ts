@@ -5,6 +5,7 @@ import { BranchOfficeUseCase } from '../../../application/branchOffice/BranchOff
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { BranchOfficeResponse, ILocation } from '../../../domain/branch_office/BranchOfficeEntity';
 import { DocumentationUseCase } from '../../../application/documentation/DocumentationUseCase';
+import mongoose from 'mongoose';
 
 export class BranchOfficeController extends ResponseData {
     protected path = '/branch_office';
@@ -113,7 +114,8 @@ export class BranchOfficeController extends ResponseData {
     }
 
     public async createBranchOffice(req: Request, res: Response, next: NextFunction) {
-        let { user_id, name, description, location, opening_time, closing_time } = req.body;
+        const { user_id, name, description, location, opening_time, closing_time } = req.body;
+         const location1 = JSON.parse(location)
         try {
             if (req.files) {
                 const paths: string[] = [];
@@ -129,7 +131,8 @@ export class BranchOfficeController extends ResponseData {
                     paths.push(pathObject);
                     urls.push(url)
                     if (!success) return new ErrorHandler("Hubo un error al subir la imagen", 400)
-                    const response = await this.branchOfficeUseCase.createBranchOffice({ user_id, name, description, location, opening_time, closing_time, images: paths })
+                        
+                    const response = await this.branchOfficeUseCase.createBranchOffice({  user_id, name, description, location, opening_time, closing_time, images: paths, status:true }, location1)
                     if (!(response instanceof ErrorHandler)) {
                         response.images = urls;
                     }
@@ -143,7 +146,7 @@ export class BranchOfficeController extends ResponseData {
                 }))
             }
 
-            const response = await this.branchOfficeUseCase.createBranchOffice({ user_id, name, description, location, opening_time, closing_time, })
+            const response = await this.branchOfficeUseCase.createBranchOffice({ user_id, name, description, location, opening_time, closing_time, }, location1)
 
 
             this.invoke(
@@ -159,7 +162,6 @@ export class BranchOfficeController extends ResponseData {
 
         } catch (error) {
             console.log(error);
-            console.log("tu objeto location es: " + location);
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
 

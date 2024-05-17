@@ -8,7 +8,7 @@ export interface CarDetail {
     typeCar_id?: TypeCarEntity;
     carDetail_image?: string;
     plate_number: string;
-    status: boolean;
+    status?:boolean;
     // brand?: string;
     // model ?: string;
     // version: string;

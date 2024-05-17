@@ -37,7 +37,7 @@ export class TypeUserUseCase {
     }
 
     public async deleteTypeUser(_id: string): Promise<TypeUserEntity | null> {
-        return await this.typeUserRepository.updateOne(_id,{deleted:true})
+        return await this.typeUserRepository.updateOne(_id,{status:false})
     }
 
 }

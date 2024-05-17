@@ -2,8 +2,6 @@ import mongoose, {model, mongo,  } from "mongoose";
 import { ServicesInBranchEntity } from "../../../domain/servicesInBranch/servicesInBranchEntity";
 
 
-import MongooseDelete = require("mongoose-delete");
-
   const ServicesInBranchSchema = new mongoose.Schema<ServicesInBranchEntity>(
     {
       branch_id:{
@@ -28,16 +26,21 @@ import MongooseDelete = require("mongoose-delete");
       description:{
         type:String,
         required:false
+      },
+      status:{
+        type:Boolean,
+        required:false,
+        default:true,
       }
     },
     {
-        timestamps: false
+      versionKey: false,
+      timestamps: true
     }
   );
 
-  ServicesInBranchSchema.plugin(MongooseDelete, { overrideMethods:true });
 
-const ServicesInBranchModel = model<Document & ServicesInBranchEntity>(
+const ServicesInBranchModel = model<ServicesInBranchEntity>(
   'ServicesInBranch',
   ServicesInBranchSchema
 );

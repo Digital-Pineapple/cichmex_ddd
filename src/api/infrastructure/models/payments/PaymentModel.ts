@@ -15,6 +15,11 @@ const PaymentSchema = new Schema<PaymentEntity>({
     MP_info: {
         type: Object,
         required:false
+    },
+    status:{
+        type:Boolean,
+        required:false,
+        default:true,
     }
    
 }, {

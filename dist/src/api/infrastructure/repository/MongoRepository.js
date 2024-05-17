@@ -16,7 +16,7 @@ class MongoRepository {
     }
     findAll(populateOne, populateTwo) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.find({ deleted: false }).populate(populateOne).populate(populateTwo);
+            return yield this.MODEL.find({ status: true }).populate(populateOne).populate(populateTwo);
         });
     }
     findAllAll(id, populateOne, populateTwo, populateThree) {
@@ -31,7 +31,7 @@ class MongoRepository {
     }
     findSubCategoriesByCategory(category_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.find({ category_id: category_id, deleted: false });
+            return yield this.MODEL.find({ category_id: category_id, status: true });
         });
     }
     findOneStockByBranch(branch_id, product_id, populateConfig) {
@@ -42,7 +42,7 @@ class MongoRepository {
     }
     findById(_id, populateConfig) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findById(_id, { deleted: false });
+            return yield this.MODEL.findById(_id, { status: true });
         });
     }
     findByIdPupulate(_id, populateConfig) {
@@ -65,17 +65,17 @@ class MongoRepository {
     }
     findByPhoneNumber(phone_number) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.find({ phone_number: phone_number, deleted: false });
+            return yield this.MODEL.find({ phone_number: phone_number, status: true });
         });
     }
     findByUser(_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.find({ user_id: _id, deleted: false });
+            return yield this.MODEL.find({ user_id: _id, status: true });
         });
     }
     findByUserAndVerify(_id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.find({ user_id: _id, deleted: false, verify: true });
+            return yield this.MODEL.find({ user_id: _id, status: true, verify: true });
         });
     }
     findByPlateNumber(plate_number, customer_id) {
@@ -130,7 +130,7 @@ class MongoRepository {
     }
     findOneItem(query, populateConfig1, populateConfig2, populateConfig3) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findOne(Object.assign(Object.assign({}, query), { deleted: false })).populate(populateConfig1).populate(populateConfig2).populate(populateConfig3);
+            return yield this.MODEL.findOne(Object.assign({}, query)).populate(populateConfig1).populate(populateConfig2).populate(populateConfig3);
         });
     }
     findAllItems(query, populateConfig1, populateConfig2, populateConfig3) {

@@ -26,7 +26,7 @@ export class StockBranchUseCase {
         return await this.stockBranchRepository.updateOne(_id,updated);
     }
     public async deleteStockBranch(_id: string): Promise<StockBranchEntity | null> {
-        return this.stockBranchRepository.updateOne(_id, {deleted: false})
+        return this.stockBranchRepository.updateOne(_id, {status: false})
     }
     
 

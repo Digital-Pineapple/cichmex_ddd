@@ -12,6 +12,7 @@ export interface StockBranchEntity extends MongooseDelete.SoftDeleteInterface {
   inputs: IProductInput[];
   outputs: IProductOutput[];
   returns:IProductReturn[];
+  status?:boolean;
   createdAt: NativeDate;
   updatedAt: NativeDate;
 }
@@ -20,6 +21,7 @@ export interface IProductInput extends MongooseDelete.SoftDeleteInterface{
   stock_id: StockBranchEntity,
   quantity: number,
   newQuantity: number
+  status?:boolean;
   createdAt: NativeDate;
 }
 export interface IProductOutput extends MongooseDelete.SoftDeleteInterface{
@@ -27,6 +29,7 @@ export interface IProductOutput extends MongooseDelete.SoftDeleteInterface{
   quantity: number,
   newQuantity: number,
   responsible?:  UserEntity,
+  status?:boolean;
   createdAt: NativeDate;
 }
 
@@ -35,5 +38,6 @@ export interface IProductReturn extends MongooseDelete.SoftDeleteInterface{
   quantity: number,
   newQuantity: number,
   responsible_id: UserEntity,
+  status?:boolean;
   createdAt: NativeDate;
 }

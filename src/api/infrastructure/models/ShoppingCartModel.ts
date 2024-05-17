@@ -1,6 +1,5 @@
 import { Schema, model } from 'mongoose';
 
-import MongooseDelete = require('mongoose-delete')
 import { ShoppingCartEntity } from '../../domain/shoppingCart/shoppingCartEntity';
 
 const ShoppingCartSchema = new Schema<ShoppingCartEntity>({
@@ -19,13 +18,18 @@ const ShoppingCartSchema = new Schema<ShoppingCartEntity>({
         required: false
 
     },
+    status:{
+        type:Boolean,
+        required:false,
+        default:true,
+       }
 }, {
     versionKey: false,
     timestamps: true,
 },
 
 );
-ShoppingCartSchema.plugin(MongooseDelete,{overrideMethods:true})
+
 
 const ShoppingCartModel = model('ShoppingCart', ShoppingCartSchema);
 

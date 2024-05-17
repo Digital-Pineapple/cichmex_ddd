@@ -33,6 +33,6 @@ export class ProductUseCase {
   }
   
   public async deleteProduct(_id: string): Promise<ProductEntity | null> {
-    return this.productRepository.updateOne(_id, { deleted: true });
+    return this.productRepository.updateOne(_id, { status: false });
   }
 }

@@ -14,6 +14,7 @@ export interface ProductEntity extends MongooseDelete.SoftDeleteDocument {
   tag: string;
   subCategory?: SubCategory;
   images?: string[];
+  status?:boolean;
   createdAt        :   NativeDate;
   updatedAt        :   NativeDate;
 }

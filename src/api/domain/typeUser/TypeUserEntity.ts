@@ -6,6 +6,7 @@ export interface TypeUserEntity extends MongooseDelete.SoftDeleteInterface {
     _id  ?: string;
     name : string;
     type : number;
+    status?: boolean;
     
 }
 

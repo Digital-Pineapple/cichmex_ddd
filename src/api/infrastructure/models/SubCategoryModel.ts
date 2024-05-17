@@ -1,7 +1,5 @@
 import { Schema, model } from 'mongoose';
-import mongoosePaginate from 'mongoose-paginate-v2';
 import { SubCategory } from '../../domain/subCategory/SubCategoryEntity';
-import MongooseDelete = require("mongoose-delete");
 
 
 const SubCategorySchema = new Schema<SubCategory>(
@@ -18,14 +16,18 @@ const SubCategorySchema = new Schema<SubCategory>(
         type: Schema.Types.ObjectId, 
         ref:'Categories'
 
-      }
+      },
+      status:{
+        type:Boolean,
+        required:false,
+        default:true,
+       }
     },
     {
       versionKey: false,
       timestamps: true,
     }
   );
-  SubCategorySchema.plugin(MongooseDelete, {overrideMethods:true})
 
   const SubCategoryModel = model("SubCategory", SubCategorySchema);
   export default SubCategoryModel

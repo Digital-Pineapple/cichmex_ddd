@@ -7,4 +7,5 @@ export interface ServicesEntity extends MongooseDelete.SoftDeleteInterface {
     description: string;
     image?: string;
     subCategory: SubCategory;
+    status?:boolean;
 }

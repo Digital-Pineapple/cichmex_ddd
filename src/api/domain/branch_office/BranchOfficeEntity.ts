@@ -1,9 +1,10 @@
 
+import mongoose from "mongoose";
 import { UserEntity } from "../user/UserEntity";
 import MongooseDelete = require("mongoose-delete");
 
 export interface BranchOfficeEntity  {
-  _id: string;
+
   user_id: UserEntity ;
   name?: string;
   description?: string;
@@ -21,14 +22,14 @@ export interface BranchOfficeEntity  {
 }
 
 
-export interface ILocation  {
-  state_id?:string;
+export interface ILocation {
+  state_id?: string;
   state?: string;
-  municipality_id?:string;
+  municipality_id?: string;
   municipality?: string;
   lat?: number;
   lgt?: number;
-  direction ?: string;
+  direction: string;
 }
 
 export interface BranchOfficeEntityICR {

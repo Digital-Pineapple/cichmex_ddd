@@ -54,7 +54,7 @@ export class UserPhoneUseCase extends Authentication {
     return await this.phoneRepository.updateOne(id, { verified: true })
   }
   public async deletePhone(id: string): Promise<IPhone | ErrorHandler | null> {
-    return await this.phoneRepository.updateOne(id, { deleted: true})
+    return await this.phoneRepository.updateOne(id, { status: false})
   }
   public async deletePhysicalPhone(id: string): Promise<IPhone | ErrorHandler | null> {
     return await this.phoneRepository.PhysicalDelete(id)

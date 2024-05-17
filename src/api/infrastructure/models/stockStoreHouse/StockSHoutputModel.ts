@@ -2,7 +2,6 @@ import mongoose, { model, Schema } from "mongoose";
 import { SHProductOutput } from '../../../domain/storehouse/stockStoreHouseEntity';
 
 
-import MongooseDelete = require("mongoose-delete");
 
 const StockSHoutputChema = new Schema<SHProductOutput>({
   SHStock_id: {
@@ -17,13 +16,18 @@ const StockSHoutputChema = new Schema<SHProductOutput>({
     type: Number,
     required: true,
   },
+  status:{
+    type:Boolean,
+    required:false,
+    default:true,
+   }
 },
   {
     timestamps: true,
     versionKey: false
   }
 );
-StockSHoutputChema.plugin(MongooseDelete, { overrideMethods: true });
+
 
 const StockSHoutputModel = model<Document & SHProductOutput>(
   'SHStockOutputs',

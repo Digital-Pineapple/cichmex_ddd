@@ -41,7 +41,12 @@ const ProductSchema = new Schema<ProductEntity>(
     images: {
       type: Array,
       required: false,
-    }
+    },
+    status:{
+      type:Boolean,
+      required:false,
+      default:true,
+     }
 
   },
   {
@@ -50,9 +55,8 @@ const ProductSchema = new Schema<ProductEntity>(
   }
 );
 
-ProductSchema.plugin(MongooseDelete, { overrideMethods: true });
 
-const ProductModel = model<Document & ProductEntity>(
+const ProductModel = model<ProductEntity>(
   'Products',
   ProductSchema
 );

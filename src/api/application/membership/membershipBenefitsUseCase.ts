@@ -35,7 +35,7 @@ export class MembershipBenefitsUseCase {
         return await this.membershipBenefitsRepository.updateOne(_id,updated);
     }
     public async deleteMembershipBenefit(_id: string): Promise<MembershipBenefits> {
-        return await this.membershipBenefitsRepository.updateOne(_id,{deleted:true});
+        return await this.membershipBenefitsRepository.updateOne(_id,{status:false});
     }
 
     public async verifiedActiveBenefits(_id: string, typeCar_id: string): Promise<MembershipBenefits | ErrorHandler> {

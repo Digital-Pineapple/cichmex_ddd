@@ -1,8 +1,9 @@
+import mongoose from "mongoose";
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
 import { BranchPopulateConfig } from "../../../shared/domain/PopulateInterfaces";
 import { BranchOfficeEntity, BranchOfficeResponse, ILocation } from "../../domain/branch_office/BranchOfficeEntity";
 import { BranchOfficeRepository } from "../../domain/branch_office/BranchOfficeRepository";
-import { body } from 'express-validator';
+
 
 export class BranchOfficeUseCase {
   constructor(
@@ -52,18 +53,16 @@ export class BranchOfficeUseCase {
 
 
   public async createBranchOffice(
-    body: any
+    body: any, location :object
   ): Promise<BranchOfficeEntity | ErrorHandler> {
     const newBranch = {
       ...body,
-      location: JSON.parse(body.location)
+      location
     }
-
-    const noRepeat = await this.branchOfficeRepository.findOneItem({ name: body.name })
+    const noRepeat = await this.branchOfficeRepository.findOneItem({ name: newBranch.name, status:true })
     if (noRepeat) {
       return new ErrorHandler('Esta sucursal ya existe', 401)
     }
-
     return await this.branchOfficeRepository.createOne({ ...newBranch });
   }
 
@@ -83,7 +82,7 @@ export class BranchOfficeUseCase {
   public async deleteOneBranchOffice(
     _id: string
   ): Promise<BranchOfficeEntity | null> {
-    return this.branchOfficeRepository.updateOne(_id, { deleted: true });
+    return this.branchOfficeRepository.updateOne(_id, { status: false });
   }
   public async validateBranchOffice(
     _id: string,

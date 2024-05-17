@@ -31,7 +31,7 @@ export class ShoppingCartUseCase {
         return await this.shoppingCartRepository.updateOne(_id,{...updated});
     }
     public async deleteShoppingCart(_id: string): Promise<ShoppingCartEntity | null> {
-        return await this.shoppingCartRepository.updateOne(_id, {deleted: true})
+        return await this.shoppingCartRepository.updateOne(_id, {status: true})
     }
     public async deletePInCart(item_id:any): Promise<ShoppingCartEntity | null> {
         return await this.shoppingCartRepository.DeletePinC(item_id)

@@ -28,7 +28,8 @@ const MembershipHistorySchema = new mongoose.Schema<MembershipHistory>(
     },
     status:{
       type:Boolean,
-      required:false
+      required:false,
+      default:true,
     }
   },
   {

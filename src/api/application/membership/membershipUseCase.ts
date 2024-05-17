@@ -37,7 +37,7 @@ export class MembershipUseCase {
         return await this.membershipRepository.updateOne(_id,updated);
     }
     public async deleteOneMembership(_id: string): Promise<MembershipEntity | null> {
-        return this.membershipRepository.updateOne(_id, {deleted: true})
+        return this.membershipRepository.updateOne(_id, {status: false})
     }
 
 }

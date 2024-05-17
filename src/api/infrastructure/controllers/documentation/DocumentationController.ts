@@ -109,7 +109,7 @@ export class DocumentationController extends ResponseData {
         const { id } = req.params;
 
         try {
-            const documentation = await this.documentationUseCase.updateOneDocumentation(id, { deleted: true });
+            const documentation = await this.documentationUseCase.updateOneDocumentation(id, { status: false });
             this.invoke(documentation, 200, res, 'La documentación ha sido eliminado', next);
         } catch (error) {
             console.log(error);

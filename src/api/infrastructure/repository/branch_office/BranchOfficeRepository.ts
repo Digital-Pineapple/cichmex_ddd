@@ -14,7 +14,7 @@ export class BranchOfficeRepository extends MongoRepository implements BranchOff
     }
 
     async getInfoBranches(query: Object): Promise<BranchOfficeEntity[] | ErrorHandler| BranchOfficeResponse[] | null> {
-        return await this.MODEL.find(query)
+        return await this.findAll({...query})
 
     }
 

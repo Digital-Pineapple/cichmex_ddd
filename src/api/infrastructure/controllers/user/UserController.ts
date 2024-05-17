@@ -33,7 +33,7 @@ export class UserController extends ResponseData {
         this.resendCode = this.resendCode.bind(this);
         this.verifyPhone = this.verifyPhone.bind(this);
         this.verifyEmail = this.verifyEmail.bind(this);
-
+        this.loginPhonePartner = this.loginPhonePartner.bind(this)
         this.deletePhone = this.deletePhone.bind(this);
         this.signUpByPhone = this.signUpByPhone.bind(this);
         this.signUpPartnerByPhone = this.signUpPartnerByPhone.bind(this);
@@ -113,7 +113,7 @@ export class UserController extends ResponseData {
             const phoneString = phoneC.toString()
             const noRepeat = await this.phoneUserUseCase.findOnePhone(phone_number)
             if (noRepeat == null) {
-                await this.twilioService.sendSMS(phoneString, `CarWash autolavado y más. Código de verificación - ${code}`)
+                // await this.twilioService.sendSMS(phoneString, `CarWash autolavado y más. Código de verificación - ${code}`)
                 const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
                 this.invoke(newPhone, 200, res, '', next);
 
@@ -281,6 +281,35 @@ export class UserController extends ResponseData {
         }
     }
 
+    public async loginPhonePartner(req: Request, res: Response, next: NextFunction): Promise<UserEntity | IPhone | ErrorHandler | void> {
+        const { password, phone_number } = req.body
+        
+
+        try {
+
+            const phoneInfo = await this.phoneUserUseCase.findPhone(phone_number)
+            
+            if (!(phoneInfo instanceof ErrorHandler)) {
+                const response = await this.userUseCase.signInByPhone(phoneInfo.phone_id, password)
+                if (!(response instanceof ErrorHandler) && response.user.profile_image !== undefined) {
+                    response.user.profile_image ?
+                        response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image + ".jpg") :
+                        'No hay imagen de perfil'
+                }
+                this.invoke(response, 200, res, '', next);
+
+            }
+            else{
+                this.invoke(phoneInfo, 200, res, '', next);
+            }
+
+
+        } catch (error) {
+            console.log(error)
+            next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
+        }
+    }
+
     public async deleteUser(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
         const { id } = req.params
         try {
@@ -371,11 +400,5 @@ export class UserController extends ResponseData {
         next(new ErrorHandler("Hubo un error al editar la información", 500));
     }
 }
-
-
-
-
-
-
 
 }

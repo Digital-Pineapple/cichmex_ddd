@@ -184,7 +184,7 @@ export class ShoppingCartController extends ResponseData {
         try {
             const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user_id);
             const index = responseShoppingCartUser?.products?.findIndex(product => product.item?._id.equals(id));
-            responseShoppingCartUser?.products[index].quantity = quantity;
+            responseShoppingCartUser.products[index].quantity = quantity;
             const response = await this.shoppingCartUseCase.updateShoppingCart(cart_id, { products: responseShoppingCartUser?.products });
             this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
         } catch (error) {

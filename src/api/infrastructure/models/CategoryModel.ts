@@ -1,6 +1,5 @@
 import { Schema, model } from 'mongoose';
 import { Category } from '../../domain/category/CategoryEntity';
-import MongooseDelete = require("mongoose-delete");
 
 
 
@@ -13,15 +12,20 @@ const CategorySchema = new Schema<Category>(
       category_image:{
         type: String,
         required: false,
-      }
+      },
+      status:{
+        type:Boolean,
+        required:false,
+        default:true,
+       }
     },
     {
       versionKey: false,
       timestamps: true,
     }
   );
-  CategorySchema.plugin(MongooseDelete,{overrideMethods:true})
 
-  const CategoryModel = model<Document & Category>('Categories', CategorySchema);
+
+  const CategoryModel = model<Category>('Categories', CategorySchema);
 
   export default CategoryModel;

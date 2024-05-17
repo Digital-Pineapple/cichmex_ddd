@@ -44,9 +44,9 @@ export class TypeCarController extends ResponseData {
     }
 
     public async createTypeCar(req: Request, res: Response, next: NextFunction) {
-        const { name, status } = req.body;
+        const { name } = req.body;
         try {
-            const response = await this.typeCarUseCase.createNewTypeCar(name, status);
+            const response = await this.typeCarUseCase.createNewTypeCar(name);
             this.invoke(response, 200, res, '', next)
         } catch (error) {
             console.log(error)

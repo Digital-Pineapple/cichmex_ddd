@@ -1,6 +1,5 @@
 import { Schema, model, plugin } from 'mongoose';
 import { TypeCarEntity } from '../../domain/typeCar/TypeCarEntity';
-import MongooseDelete = require("mongoose-delete");
 
 const TypeCarSchema = new Schema<TypeCarEntity>({
     name: {
@@ -11,13 +10,17 @@ const TypeCarSchema = new Schema<TypeCarEntity>({
         type: String,
         required: false
     },
+    status:{
+        type:Boolean,
+        required:false,
+        default:true,
+       }
 
 }, {
     versionKey: false,
     timestamps: true,
 });
 
-TypeCarSchema.plugin(MongooseDelete, { overrideMethods: true})
 
 const TypeCarModel = model('TypeCar', TypeCarSchema);
 

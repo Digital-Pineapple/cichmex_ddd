@@ -6,7 +6,7 @@ import { UserEntity } from "../user/UserEntity";
   uuid?: string;
   user_id?: UserEntity,
   MP_info?: object;
-
+  status?:boolean;
   
 }
 

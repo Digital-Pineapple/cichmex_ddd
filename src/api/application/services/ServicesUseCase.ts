@@ -18,17 +18,17 @@ export class ServicesUseCase {
     }
 
     public async createNewService(name: string, description: string, subCategory:SubCategory): Promise<ServicesEntity | ErrorHandler | null> {
-        const service = await this.servicesRepository.findOneItem({name:name , deleted:false});
+        const service = await this.servicesRepository.findOneItem({name:name , status:true});
         if (service) return new ErrorHandler('El servicio ha sido registrado',400);
         return await this.servicesRepository.createOne({ name, description, subCategory });
     }
 
-    public async updateOneService(_id: string, updated: ServicesEntity): Promise<ServicesEntity> {
+    public async updateOneService(_id: string, updated: any): Promise<ServicesEntity> {
         return this.servicesRepository.updateOne(_id, updated);
     }
 
     public async deleteOneService(_id: string): Promise<ServicesEntity | null> {
-        return this.servicesRepository.updateOne(_id,{deleted:true})
+        return this.servicesRepository.updateOne(_id,{status:false})
     }
     
 }

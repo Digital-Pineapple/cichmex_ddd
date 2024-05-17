@@ -10,4 +10,5 @@ export interface ServicesInBranchEntity extends MongooseDelete.SoftDeleteInterfa
     typeCar_id  : TypeCarEntity;
     price       : number;
     description ?: string;
+    status?:boolean;
 }

@@ -75,10 +75,7 @@ export interface MembershipBenefits {
   activated: {
     type: boolean;
   };
-  status:{
-    type:boolean,
-    required:false,
-  }
+  status?:Boolean
 }
 export interface MembershipHistory  {
 

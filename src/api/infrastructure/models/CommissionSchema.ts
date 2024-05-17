@@ -1,5 +1,4 @@
 import { Schema, model } from 'mongoose';
-import mongoosePaginate from 'mongoose-paginate-v2';
 
 const CommissionSchema = new Schema<CommissionEntity>(
     {
@@ -12,9 +11,10 @@ const CommissionSchema = new Schema<CommissionEntity>(
         required:true,
       },
       status:{
-        type: Boolean,
-        required: true,
-      },
+        type:Boolean,
+        required:false,
+        default:true,
+       },
       discount:{
         type: Number,
         required: true

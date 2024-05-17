@@ -61,10 +61,21 @@ export class UserUseCase extends Authentication {
 
   async signInByPhone(phone_id: string, password: string): Promise<ErrorHandler | IAuth> {
     const user = await this.userRepository.findOneItem({phone_id}, TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore)
+    if (user.type_user.name !== 'Partner') {
+      return new ErrorHandler('No es un socio', 400);
+    }
+    
     if (!user) return new ErrorHandler('No exite este usuario', 400);
     const validatePassword = this.decryptPassword(password, user.password)
     if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);
     return await this.generateJWT(user);
+}
+async signInByPhonePartner(phone_id: string, password: string): Promise<ErrorHandler | IAuth> {
+  const user = await this.userRepository.findOneItem({phone_id}, TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore)
+  if (!user) return new ErrorHandler('No exite este usuario', 400);
+  const validatePassword = this.decryptPassword(password, user.password)
+  if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);
+  return await this.generateJWT(user);
 }
 
 
