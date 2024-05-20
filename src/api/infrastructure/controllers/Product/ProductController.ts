@@ -54,26 +54,30 @@ export class ProductController extends ResponseData {
 
   public async getProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-
+  
     try {
       const response = await this.productUseCase.getProduct(id);
+      console.log(response.images, 'sdfsdfsdf');
+  
       if (!(response instanceof ErrorHandler)) {
-        const updatedImages = await Promise.all(
-          response.images.map(async (image: any) => {
-            const url = await this.s3Service.getUrlObject(
-              image + ".jpg"
-            );
-            return url;
-          })
-        );
-        response.images = updatedImages;
+        if (response.images !== null && response.images!== undefined) {
+          const updatedImages = await Promise.all(
+            response.images.map(async (image: any) => {
+              const url = await this.s3Service.getUrlObject(image + ".jpg");
+              return url;
+            })
+          );
+          response.images = updatedImages;
+        }
+       
       }
-
+  
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
+  
 
   public async createProduct(req: Request, res: Response, next: NextFunction) {
     const { name, price, description, size, tag, category, subCategory } = req.body;  

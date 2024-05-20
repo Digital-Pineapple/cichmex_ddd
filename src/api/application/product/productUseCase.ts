@@ -15,7 +15,7 @@ export class ProductUseCase {
   public async getProduct(
     _id: string
   ): Promise<ProductEntity | ErrorHandler > {
-    return await this.productRepository.findById(_id,PopulateProductCategory, PopulateProductSubCategory );
+    return await this.productRepository.findById(_id,PopulateProductSubCategory, PopulateProductSubCategory );
   }
 
   public async createProduct(

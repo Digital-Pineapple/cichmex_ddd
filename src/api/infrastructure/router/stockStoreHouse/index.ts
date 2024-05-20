@@ -36,6 +36,7 @@ stockStoreHouseRouter
 
     .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.getAllStock)
     .get('/online/:id', stockStoreHouseController.getAllStock)
+    .get('/available', stockStoreHouseController.getAvailableStock)
     .post('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.createStock)
     .patch('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.updateStock)
     .patch('/add/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.addStock)

@@ -41,19 +41,30 @@ export class AuthUseCase extends Authentication {
         return await this.generateJWT(user);
     }
     async signInPartner(email: string, password: string): Promise<ErrorHandler | IAuth> {
-
-        const user = await this.authRepository.findOneItem({ email }, TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
-        if (user.type_user.name !== 'Partner') {
-            return new ErrorHandler('No es un socio', 400);
+        try {
+            const user = await this.authRepository.findUser({ email: email, status: true }, TypeUserPopulateConfig, PhonePopulateConfig, PopulatePointStore);
+    
+            if (user) {
+                if (user.type_user?.name !== 'Partner') {
+                    return new ErrorHandler('No es un socio', 400);
+                }
+    
+                const validatePassword = this.decryptPassword(password, user.password);
+    
+                if (!validatePassword) {
+                    return new ErrorHandler('El usuario o contraseña no son válidos', 400);
+                }
+    
+                return await this.generateJWT(user);
+            } else {
+                return new ErrorHandler('No existe este usuario', 400);
+            }
+        } catch (error) {
+            // Manejo adicional de errores, si es necesario
+            return new ErrorHandler('Error en el servidor', 500);
         }
-        
-        if (!user) return new ErrorHandler('No exite este usuario', 400);
-        const validatePassword = this.decryptPassword(password, user.password)
-        
-
-        if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);
-        return await this.generateJWT(user);
     }
+    
 
 
     async findUser(email: string): Promise<  UserEntity> {

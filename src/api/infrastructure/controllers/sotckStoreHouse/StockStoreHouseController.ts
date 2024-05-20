@@ -26,6 +26,7 @@ export class StockStoreHouseController extends ResponseData {
         this.addStock = this.addStock.bind(this);
         this.removeStock = this.removeStock.bind(this);
         this.returnStock = this.returnStock.bind(this);
+        this.getAvailableStock = this.getAvailableStock.bind(this);
 
     }
 
@@ -47,6 +48,12 @@ export class StockStoreHouseController extends ResponseData {
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
+    }
+
+    public async getAvailableStock(req: Request, res: Response, next: NextFunction) {
+            const response = await this.stockStoreHouseUseCase.getStock({id:"662fe69b9ba1d8b3cfcd3634"})            
+            this.invoke(response, 200, res, '', next);
+        
     }
 
     public async createStock(req: Request, res: Response, next: NextFunction) {
