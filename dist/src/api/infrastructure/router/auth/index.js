@@ -29,7 +29,7 @@ const authController = new AuthController_1.AuthController(authUseCase, typeUser
 authRouter
     .get('/user', ValidateAuthentication_1.default, authController.revalidateToken)
     .post('/login', authValidations.loginValidation, authController.login)
-    .post('/loginPartner', authValidations.loginValidation, authController.loginPartner)
+    .post('/partner', authValidations.loginValidation, authController.loginPartner)
     // .post('/login/admin', authValidations.loginValidation, authController.loginAdmin)
     .post('/register', authValidations.registerValidation, authController.register)
     .post('/register-Pay', authValidations.registerValidation, authController.registerAndPay)

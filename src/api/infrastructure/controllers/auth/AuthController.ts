@@ -67,6 +67,7 @@ export class AuthController extends ResponseData {
         const { email, password } = req.body;
      
         try {
+            
             const response = await this.authUseCase.signInPartner(email, password);
         
             if (!(response instanceof ErrorHandler) && response.user.profile_image !== undefined) {

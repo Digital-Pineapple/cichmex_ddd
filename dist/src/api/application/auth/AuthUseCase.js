@@ -46,17 +46,28 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
         });
     }
     signInPartner(email, password) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
-            if (user.type_user.name !== 'Partner') {
-                return new ErrorHandler_1.ErrorHandler('No es un socio', 400);
+            try {
+                const user = yield this.authRepository.findUser({ email: email, status: true }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
+                if (user) {
+                    if (((_a = user.type_user) === null || _a === void 0 ? void 0 : _a.name) !== 'Partner') {
+                        return new ErrorHandler_1.ErrorHandler('No es un socio', 400);
+                    }
+                    const validatePassword = this.decryptPassword(password, user.password);
+                    if (!validatePassword) {
+                        return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son válidos', 400);
+                    }
+                    return yield this.generateJWT(user);
+                }
+                else {
+                    return new ErrorHandler_1.ErrorHandler('No existe este usuario', 400);
+                }
             }
-            if (!user)
-                return new ErrorHandler_1.ErrorHandler('No exite este usuario', 400);
-            const validatePassword = this.decryptPassword(password, user.password);
-            if (!validatePassword)
-                return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son validos', 400);
-            return yield this.generateJWT(user);
+            catch (error) {
+                // Manejo adicional de errores, si es necesario
+                return new ErrorHandler_1.ErrorHandler('Error en el servidor', 500);
+            }
         });
     }
     findUser(email) {

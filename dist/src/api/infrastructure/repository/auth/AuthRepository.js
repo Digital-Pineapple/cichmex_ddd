@@ -31,5 +31,10 @@ class AuthRepository extends MongoRepository_1.MongoRepository {
             return yield this.UserModel.findByIdAndUpdate(_id, { 'phone.verified': true }, { new: true });
         });
     }
+    findUser(query, populateConfig1, populateConfig2, populateConfig3) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.MODEL.findOne(Object.assign({}, query)).populate(populateConfig1).populate(populateConfig2).populate(populateConfig3);
+        });
+    }
 }
 exports.AuthRepository = AuthRepository;
