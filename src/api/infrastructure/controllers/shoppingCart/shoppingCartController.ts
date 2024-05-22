@@ -178,23 +178,42 @@ export class ShoppingCartController extends ResponseData {
     }
 
 
-    public async updateProductQuantity(req: Request, res: Response, next: NextFunction) {
+    public async updateProductQuantity(req: Request, res: Response, next: NextFunction): Promise<void> {
         const { id } = req.params; // product_id
         const { user_id, cart_id, quantity } = req.body;
+    
         try {
-            const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user_id);
-            const index = responseShoppingCartUser?.products?.findIndex(product => product.item?._id.equals(id));
-            responseShoppingCartUser.products[index].quantity = quantity;
-            const response = await this.shoppingCartUseCase.updateShoppingCart(cart_id, { products: responseShoppingCartUser?.products });
-            this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
+          // Obtener el carrito de compras del usuario
+          const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user_id);
+    
+          if (responseShoppingCartUser && responseShoppingCartUser.products) {
+            // Encontrar el índice del producto en el carrito
+            const index = responseShoppingCartUser.products.findIndex(product => product.item?._id.equals(id));
+    
+            // Validar si el producto fue encontrado
+            if (index !== -1) {
+              responseShoppingCartUser.products[index].quantity = quantity;
+    
+              // Actualizar el carrito de compras
+              const response = await this.shoppingCartUseCase.updateShoppingCart(cart_id, { products: responseShoppingCartUser.products });
+    
+              // Enviar respuesta al cliente
+              this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
+            } else {
+              // Producto no encontrado en el carrito
+              next(new ErrorHandler('Producto no encontrado en el carrito', 404));
+            }
+          } else {
+            // Carrito de compras no encontrado
+            next(new ErrorHandler('Carrito de compras no encontrado', 404));
+          }
         } catch (error) {
-            console.log(error);
-            next(new ErrorHandler('Hubo un error al actualizar el carrito', 500));
+          console.error(error);
+          next(new ErrorHandler('Hubo un error al actualizar el carrito', 500));
         }
+
+
     }
-
-
-
 
 
 }

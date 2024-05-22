@@ -32,6 +32,7 @@ export class StockStoreHouseController extends ResponseData {
 
     public async getAllStock(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params
+        
         if (id === '662fe69b9ba1d8b3cfcd3634') {
             try {
                 const response = await this.stockStoreHouseUseCase.getStock(id)            

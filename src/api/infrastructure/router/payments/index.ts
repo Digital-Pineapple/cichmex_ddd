@@ -16,20 +16,26 @@ import MembershipHistoryModel from '../../models/Memberships/MembershipHistoryMo
 import { MembershipRepository } from '../../repository/membership/MembershipRepository';
 import MembershipModel from '../../models/Memberships/MembershipModel';
 import { MembershipUseCase } from '../../../application/membership/membershipUseCase';
+import { ProductOrderRepository } from '../../repository/product/ProductOrderRepository';
+import ProductOrderModel from '../../models/products/ProductOrderModel';
+import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
 
 const paymentRouter = Router();
 
 const paymentRepository = new PaymentRepository(PaymentModel);
+const productOrderRepository = new ProductOrderRepository(ProductOrderModel)
 const membershipRepository = new MembershipRepository(MembershipModel)
 const membershipHistoryRepository = new MembershipHistoryRepository(MembershipHistoryModel)
 const membershipHistoryUseCase = new MembershipHistoryUseCase(membershipHistoryRepository)
+const productOrderUseCase = new ProductOrderUseCase(productOrderRepository)
+
 const membershipBenefitsRespository = new MembershipBenefitsRepository(MembershipBenefitsModel)
 const membershipBenefitsUseCase= new MembershipBenefitsUseCase(membershipBenefitsRespository)
 const membershipUseCase = new MembershipUseCase(membershipRepository)
 
 const paymentUseCase = new PaymentUseCase(paymentRepository);
 const mpService = new MPService()
-const paymentController = new PaymentController(paymentUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase);
+const paymentController = new PaymentController(paymentUseCase, productOrderUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase);
 const paymentValidation = new PaymentValidations();
 
 paymentRouter
@@ -37,9 +43,9 @@ paymentRouter
     .get('/:id', paymentController.getPayment)
     .post('/',paymentValidation.paymentValidation, paymentController.createLMP)
     .post('/Membership-Pay', paymentController.createPaymentMP)
+    .post('/Products-Pay', paymentController.createPaymentProductMP)
     .post('/success',paymentController.createTicket )
-    .post('/Mem-Payment-success',paymentController.PaymentSuccess )
-    
+    .post('/Mem-Payment-success',paymentController.PaymentSuccess)
     // .post('/ticket', paymentController)
     .delete('/:id', paymentController.deletePayment)
 

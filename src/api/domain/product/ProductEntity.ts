@@ -1,11 +1,10 @@
-
-
 import mongoose from "mongoose";
-import MongooseDelete = require("mongoose-delete");
 import { SubCategory } from "../subCategory/SubCategoryEntity";
 import { Category } from "../category/CategoryEntity";
+import { PaymentEntity } from "../payments/PaymentEntity";
+import { BranchOfficeEntity } from "../branch_office/BranchOfficeEntity";
 
-export interface ProductEntity extends MongooseDelete.SoftDeleteDocument {
+export interface ProductEntity {
 
   name: string;
   price: number;
@@ -21,7 +20,7 @@ export interface ProductEntity extends MongooseDelete.SoftDeleteDocument {
   updatedAt        :   NativeDate;
 }
 
-export interface ProductImage extends MongooseDelete.SoftDeleteDocument {
+export interface ProductImage  {
    
     url: string;
     createdAt        :   NativeDate;
@@ -34,5 +33,19 @@ export interface ProductImage extends MongooseDelete.SoftDeleteDocument {
       
     quantity? :number
    
+  }
+
+  export interface ProductOrderEntity{
+
+    payment: PaymentEntity;
+    products?: [ProductEntity];
+    discount?: number;
+    subTotal?: number;
+    total?: number;
+    branch?: BranchOfficeEntity;
+    deliveryStatus: boolean;
+    status?:boolean;
+    createdAt        :   NativeDate;
+    updatedAt        :   NativeDate;
   }
 

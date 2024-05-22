@@ -2,7 +2,7 @@ import BranchOfficeModel from '../../api/infrastructure/models/BranchOffices/Bra
 import CategoryModel from '../../api/infrastructure/models/CategoryModel';
 import MembershipBenefitsModel from '../../api/infrastructure/models/Memberships/MembershipBenefitsModel';
 import MembershipModel from '../../api/infrastructure/models/Memberships/MembershipModel';
-import ProductModel from '../../api/infrastructure/models/ProductModel';
+import ProductModel from '../../api/infrastructure/models/products/ProductModel';
 import ServiceModel from '../../api/infrastructure/models/ServicesModel';
 import SubCategoryModel from '../../api/infrastructure/models/SubCategoryModel';
 import UserModel from '../../api/infrastructure/models/UserModel';

@@ -54,13 +54,11 @@ export class ProductController extends ResponseData {
 
   public async getProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-  
     try {
       const response = await this.productUseCase.getProduct(id);
-      console.log(response.images, 'sdfsdfsdf');
   
-      if (!(response instanceof ErrorHandler)) {
-        if (response.images !== null && response.images!== undefined) {
+      if (!(response instanceof ErrorHandler ) && response !== null ) {
+        if (response.images) {
           const updatedImages = await Promise.all(
             response.images.map(async (image: any) => {
               const url = await this.s3Service.getUrlObject(image + ".jpg");

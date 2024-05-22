@@ -56,6 +56,7 @@ export class BranchOfficeController extends ResponseData {
         try {
             // Obtener la información de las sucursales
             const response = await this.branchOfficeUseCase.getInfoBranchOffices();
+            console.log(response,'dasd');
             
             this.invoke(response, 200, res, "", next);
             

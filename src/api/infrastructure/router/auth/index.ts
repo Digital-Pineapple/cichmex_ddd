@@ -13,6 +13,7 @@ import { TypeUsersRepository } from '../../repository/typeUser/TypeUsersReposito
 import TypeUserModel from '../../models/TypeUserModel';
 import UserModel from '../../models/UserModel';
 import { MPService } from '../../../../shared/infrastructure/mercadopago/MPService';
+import { UserValidations } from '../../../../shared/infrastructure/validation/User/UserValidation';
 
 const authRouter = Router();
 
@@ -26,6 +27,7 @@ const s3Service = new S3Service();
 const mpService = new MPService()
 const twilioService = new TwilioService();
 const authValidations = new AuthValidations();
+const userValidations = new UserValidations()
 const authController = new AuthController(authUseCase, typeUserUseCase, s3Service, twilioService, mpService);
 
 authRouter

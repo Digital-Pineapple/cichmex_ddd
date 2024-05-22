@@ -44,10 +44,7 @@ export class AuthUseCase extends Authentication {
         try {
             const user = await this.authRepository.findUser({ email: email, status: true }, TypeUserPopulateConfig, PhonePopulateConfig, PopulatePointStore);
     
-            if (user) {
-                if (user.type_user?.name !== 'Partner') {
-                    return new ErrorHandler('No es un socio', 400);
-                }
+            if (!(user instanceof ErrorHandler) && user !== null ) {
     
                 const validatePassword = this.decryptPassword(password, user.password);
     

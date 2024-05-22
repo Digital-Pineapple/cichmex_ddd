@@ -231,7 +231,6 @@ export class AuthController extends ResponseData {
             const  url  = await this.s3Service.getUrlObject(find.profile_image + ".jpg")
            find.profile_image = url
             const response = await this.authUseCase.generateToken(find);
-            
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al generar el token', 500));

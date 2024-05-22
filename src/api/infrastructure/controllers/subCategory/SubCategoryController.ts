@@ -25,12 +25,16 @@ export class SubCategoryController extends ResponseData {
     public async getAllSubCategories(req: Request, res: Response, next: NextFunction) {
         try {
             const response = await this.subCategoryUseCase.getSubCategories();
-            await Promise.all(response.map(async (res) => {
-                const url = await this.s3Service.getUrlObject(res.typeCar_image + ".jpg");
-                res.subCategory_image = url;
-            }));
-            this.invoke(response, 200, res, '', next);
-            
+            if (!(response instanceof ErrorHandler) && response !== null) {
+                await Promise.all(response.map(async (res) => {
+                    const url = await this.s3Service.getUrlObject(res.subCategory_image + ".jpg");
+                    res.subCategory_image = url;
+                }));
+                this.invoke(response, 200, res, '', next);
+            }
+            else{
+                this.invoke(response, 200, res, '', next);
+            }
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }

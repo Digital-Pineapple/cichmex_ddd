@@ -106,6 +106,7 @@ export class MPService {
                                 quantity:1,
                                 unit_price:membership.price_standard,
                                 description:membership.description,
+
                             }
                         ]
                     },
@@ -125,4 +126,39 @@ export class MPService {
             return { success: false, message: `Error: ${error}` };
         }
     }
+
+    async createPaymentProductsMP(products: any, user:any, uuid:any, values:any) {   
+        
+        const path_notification =`${process.env.URL_NOTIFICATION}/api/payments/Mem-Payment-success`
+        
+        try {
+            const response = await this.payment.create({
+                requestOptions:{idempotencyKey:`${uuid}`},
+                body: {
+                    transaction_amount:values.transaction_amount,
+                    payment_method_id:values.payment_method_id,
+                    payer:{
+                        email:values.payer.email,
+                        first_name:user.user_id  
+                    },
+                    additional_info:{
+                        items:products,
+                        payer:user,
+                    },
+                    token:values.token,
+                    issuer_id:values.issuer_id,
+                    installments:values.installments,
+                    notification_url:path_notification,
+
+     
+                }
+            });
+
+            return { response, success: true, message: 'Pago realizado correctamente' };
+        } catch (error) {
+           console.log(error);
+           
+            return { success: false, message: `Error: ${error}` };
+        }
+}
 }

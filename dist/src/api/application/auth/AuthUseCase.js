@@ -46,14 +46,10 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
         });
     }
     signInPartner(email, password) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const user = yield this.authRepository.findUser({ email: email, status: true }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
-                if (user) {
-                    if (((_a = user.type_user) === null || _a === void 0 ? void 0 : _a.name) !== 'Partner') {
-                        return new ErrorHandler_1.ErrorHandler('No es un socio', 400);
-                    }
+                if (!(user instanceof ErrorHandler_1.ErrorHandler) && user !== null) {
                     const validatePassword = this.decryptPassword(password, user.password);
                     if (!validatePassword) {
                         return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son válidos', 400);

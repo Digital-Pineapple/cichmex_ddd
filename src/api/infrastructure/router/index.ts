@@ -20,6 +20,7 @@ import paymentRouter from './payments';
 import shoppingCartRouter from './shoppingCart.ts';
 import stockStoreHouseRouter from './stockStoreHouse';
 import storeHouseRouter from './storeHouse';
+import productOrderRouter from './productOrder';
 
 export const apiRouter = (): Router => {
 
@@ -35,11 +36,12 @@ export const apiRouter = (): Router => {
     apiRouter.use('/sub-category', subCategoryRouter)
     apiRouter.use('/commission', commissionRouter)
     apiRouter.use('/documentation', documentationRouter)
-    apiRouter.use('/car_detail', carDetailRouter)
+    apiRouter.use('/car-detail', carDetailRouter)
     apiRouter.use('/memberships', membershipRouter)
     apiRouter.use('/membership-benefits', membershipBenefitRouter)
     apiRouter.use('/branch-offices', branchOfficeRouter)
     apiRouter.use('/product', productRouter)
+    apiRouter.use('/product-order', productOrderRouter)
     apiRouter.use('/stock-branch', stockBranchRouter)
     apiRouter.use('/payments', paymentRouter)
     apiRouter.use('/shopping-cart', shoppingCartRouter)
@@ -66,6 +68,7 @@ apiRouterx.use('/memberships', membershipRouter)
 apiRouterx.use('/membership-benefit', membershipBenefitRouter)
 apiRouterx.use('/branch-offices', branchOfficeRouter)
 apiRouterx.use('/product', productRouter)
+apiRouterx.use('/product-order', productOrderRouter)
 apiRouterx.use('/stock-branch', stockBranchRouter)
 apiRouterx.use('/payments', paymentRouter)
 apiRouterx.use('/shopping-cart', shoppingCartRouter)

@@ -4,7 +4,7 @@ import { ProductRepository } from "../../repository/product/ProductRepository";
 import { ProductUseCase } from "../../../application/product/productUseCase";
 import { ProductController } from "../../controllers/Product/ProductController";
 import { S3Service } from "../../../../shared/infrastructure/aws/S3Service";
-import ProductModel from "../../models/ProductModel";
+import ProductModel from "../../models/products/ProductModel";
 import { ProductValidations } from "../../../../shared/infrastructure/validation/Product/ProductValidation";
 import { UserValidations } from "../../../../shared/infrastructure/validation/User/UserValidation";
 import { CategoryRepository } from "../../repository/Category/CategoryRepository";

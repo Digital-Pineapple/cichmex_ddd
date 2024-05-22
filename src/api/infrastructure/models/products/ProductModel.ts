@@ -1,8 +1,5 @@
 import mongoose, { model, Schema } from "mongoose";
-
-import MongooseDelete = require("mongoose-delete");
-import { ProductEntity, ProductImage } from "../../domain/product/ProductEntity";
-
+import { ProductEntity } from "../../../domain/product/ProductEntity";
 
 
 const ProductSchema = new Schema<ProductEntity>(
@@ -62,7 +59,7 @@ const ProductSchema = new Schema<ProductEntity>(
 
 
 const ProductModel = model<ProductEntity>(
-  'Products',
+  'Product',
   ProductSchema
 );
 
