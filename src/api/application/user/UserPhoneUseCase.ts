@@ -13,7 +13,8 @@ export class UserPhoneUseCase extends Authentication {
     return await this.phoneRepository.findAll()
   }
   public async getOnePhone(id: string): Promise<IPhone | ErrorHandler | null> {
-     return await this.phoneRepository.findById(id)
+     const phone = await this.phoneRepository.findOneItem({_id:id})
+     return phone
   }
   public async getPhone(id: string): Promise< IPhoneResponse | ErrorHandler | null> {
     const phone = await this.phoneRepository.findById(id);
