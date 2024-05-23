@@ -113,7 +113,7 @@ export class UserController extends ResponseData {
             const phoneString = phoneC.toString()
             const noRepeat = await this.phoneUserUseCase.findOnePhone(phone_number)
             if (noRepeat == null) {
-                // await this.twilioService.sendSMS(phoneString, `CarWash autolavado y más. Código de verificación - ${code}`)
+                await this.twilioService.sendSMS(phoneString, `CarWash autolavado y más. Código de verificación - ${code}`)
                 const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
                 this.invoke(newPhone, 200, res, '', next);
 
