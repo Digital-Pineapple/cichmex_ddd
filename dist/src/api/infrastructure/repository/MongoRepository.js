@@ -42,7 +42,7 @@ class MongoRepository {
     }
     findById(_id, populateConfig, populateConfig2) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findById(_id, { status: true }).populate(populateConfig).populate(populateConfig2);
+            return yield this.MODEL.findById({ _id, status: true }).populate(populateConfig).populate(populateConfig2);
         });
     }
     findByIdPupulate(_id, populateConfig) {
@@ -168,7 +168,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiphistories",
+                        from: "membershiphistories", // (hijo)--memberHistory
                         let: {
                             id: "$_id",
                         },
@@ -202,7 +202,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiphistories",
+                        from: "membershiphistories", // (hijo)--memberHistory
                         let: {
                             id: "$_id",
                         },
