@@ -137,6 +137,13 @@ export class PaymentController extends ResponseData {
     }
     public async createPaymentProductMP(req: Request, res: Response, next: NextFunction) {
         const { products, user, branch_id, infoPayment } = req.body;
+        console.log(products);
+        console.log(user);
+        console.log(infoPayment);
+        console.log(branch_id);
+        
+        
+        
         const uuid4 = uuidv4()
         try {
             const response1 = await this.paymentUseCase.createNewPayment({uuid:uuid4}) //crea un pago en base de datos
