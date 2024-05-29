@@ -9,6 +9,11 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       required: true,
       ref:'Payment'
     },
+    user_id:{
+      type: mongoose.Types.ObjectId,
+      required:true,
+      ref:'Users'
+    },
     products: {
       type: Array,
       required:false

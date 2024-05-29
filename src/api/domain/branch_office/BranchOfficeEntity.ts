@@ -32,6 +32,7 @@ export interface ILocation {
   direction: string;
 }
 
+
 export interface BranchOfficeEntityICR {
   images?: string[];
 }

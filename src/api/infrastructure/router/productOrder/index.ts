@@ -25,6 +25,7 @@ productOrderRouter
 
   .get("/", productOrderController.getAllProductOrders)
   .get("/:id", productOrderController.getOneProductOrder)
+  .get("/user/:id", productOrderController.getOneProductOrderByUser)
   .post('/', productOrderController.createProductOrder)
   .post("/:id", productOrderController.updateProductOrder )
   .delete("/:id",productOrderController.deleteProductOrder);

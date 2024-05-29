@@ -34,7 +34,7 @@ const userValidations = new UserValidations();
 
 stockStoreHouseRouter
 
-    .get('/: id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.getAllStock)
+    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.getAllStock)
     .get('/online/:id', stockStoreHouseController.getAllStock)
     .get('/available', stockStoreHouseController.getAvailableStock)
     .post('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.createStock)

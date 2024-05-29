@@ -24,6 +24,7 @@ storeHouseRouter
     .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']),storeHouseController.getAllStoreHouses)
     .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']),storeHouseController.getOneStoreHouse)
     .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), storeHouseController.createStoreHouse)
+    .patch('/update/:id', storeHouseController.updateStoreHouse)
     .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), storeHouseController.deleteStoreHouse)
     
 

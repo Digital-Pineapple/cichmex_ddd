@@ -17,6 +17,7 @@ export class ProductOrderController extends ResponseData {
     super();
     this.getAllProductOrders = this.getAllProductOrders.bind(this);
     this.getOneProductOrder = this.getOneProductOrder.bind(this);
+    this.getOneProductOrderByUser = this.getOneProductOrderByUser.bind(this);
     this.createProductOrder = this.createProductOrder.bind(this);
     this.updateProductOrder = this.updateProductOrder.bind(this);
     this.deleteProductOrder  = this.deleteProductOrder.bind(this);
@@ -38,6 +39,16 @@ export class ProductOrderController extends ResponseData {
     const { id } = req.params;
     try {
       const response = await this.productOrderUseCase.getOneProductOrder(id)
+  
+      this.invoke(response, 200, res, "", next);
+    } catch (error) {
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+  public async getOneProductOrderByUser(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    try {
+      const response = await this.productOrderUseCase.ProductOrdersByUser(id)
   
       this.invoke(response, 200, res, "", next);
     } catch (error) {

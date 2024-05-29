@@ -138,4 +138,11 @@ export const PopulateMembershipInSC : IStockPopulateConfig={
     model: MembershipModel
 }
 
+export const InfoBranchOrder : IStockPopulateConfig={
+    path: 'branch',
+    select: ["name",'opening_time', 'closing_time', 'location' ,],
+    model:BranchOfficeModel
+}
+
+
 

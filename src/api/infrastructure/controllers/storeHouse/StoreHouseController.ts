@@ -15,6 +15,7 @@ export class StoreHouseController extends ResponseData {
         ) {
         super();
         this.getAllStoreHouses = this.getAllStoreHouses.bind(this);
+        this.updateStoreHouse = this.updateStoreHouse.bind(this);
         this.createStoreHouse = this.createStoreHouse.bind(this);
         this.deleteStoreHouse = this.deleteStoreHouse.bind(this);
         this.getOneStoreHouse = this.getOneStoreHouse.bind(this);
@@ -56,6 +57,20 @@ export class StoreHouseController extends ResponseData {
         }
 
     }
+    public async updateStoreHouse(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        const {  values  } = req.body;
+
+        try{ 
+           const response = await this.storeHouseUseCase.updateStoreHouse(id,values)
+           this.invoke(response, 200, res, '', next);
+       }
+       catch (error) {
+           next(new ErrorHandler('Hubo un error al editar', 500));
+       }
+
+   }
+
     public async deleteStoreHouse(req: Request, res: Response, next: NextFunction) {
         const {  id  } = req.params;
         try{ 
