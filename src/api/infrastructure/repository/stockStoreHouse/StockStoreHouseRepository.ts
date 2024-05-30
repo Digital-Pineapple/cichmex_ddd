@@ -13,7 +13,7 @@ import ProductModel from '../../models/products/ProductModel';
 
 const PopulateProduct : IPopulateProducts={
   path: 'product_id',
-  select: ["name" ],
+  select: ["name", "price", "tag", "size" ],
   model: ProductModel
 }
 
