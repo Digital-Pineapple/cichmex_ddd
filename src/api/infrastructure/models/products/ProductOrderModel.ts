@@ -40,6 +40,10 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       required: false,
       default: false
     },
+    deliveryLocation:{
+      type:Array,
+      required:false,
+    },
     status:{
       type:Boolean,
       required:false,

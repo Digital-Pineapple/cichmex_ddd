@@ -45,20 +45,7 @@ export interface ProductImage  {
     subTotal?: number;
     total?: number;
     branch?: BranchOfficeEntity;
-    deliveryStatus: boolean;
-    status?:boolean;
-    createdAt        :   NativeDate;
-    updatedAt        :   NativeDate;
-  }
-  export interface ProductOrderLocationEntity{
-
-    payment: PaymentEntity;
-    user_id:UserEntity
-    products?: [ProductEntity];
-    discount?: number;
-    subTotal?: number;
-    total?: number;
-    branch?: ILocation;
+    deliveryLocation?:ILocation;
     deliveryStatus: boolean;
     status?:boolean;
     createdAt        :   NativeDate;

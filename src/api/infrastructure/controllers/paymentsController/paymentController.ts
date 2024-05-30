@@ -199,12 +199,12 @@ export class PaymentController extends ResponseData {
                             discount: infoPayment.discount,
                             subTotal: infoPayment.subtotal,
                             total: infoPayment.transaction_amount,
-                            location: location,
+                            deliveryLocation: location,
                             user_id: user.user_id 
                         }
                         try {
                             const order = await this.productOrderUseCase.createProductOrder(values1)
-                            this.invoke(order, 200, res, 'Ya puedes recoger tu producto en tienda', next)
+                            this.invoke(order, 200, res, 'Proceso exitoso', next)
                         } catch (error) {
                             next(new ErrorHandler('Error no se pudo crear su orden por favor contacte con servicio al cliente', 500)) //  
                         }
