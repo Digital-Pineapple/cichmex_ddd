@@ -44,6 +44,7 @@ paymentRouter
     .post('/',paymentValidation.paymentValidation, paymentController.createLMP)
     .post('/Membership-Pay', paymentController.createPaymentMP)
     .post('/Products-Pay', paymentController.createPaymentProductMP)
+    .post('/Products-Pay.Location', paymentController.createPaymentProductMPLocation)
     .post('/success',paymentController.createTicket )
     .post('/Mem-Payment-success',paymentController.PaymentSuccess)
     // .post('/ticket', paymentController)
