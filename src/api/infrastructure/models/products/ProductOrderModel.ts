@@ -41,7 +41,7 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       default: false
     },
     deliveryLocation:{
-      type:Array,
+      type:Object,
       required:false,
     },
     status:{
