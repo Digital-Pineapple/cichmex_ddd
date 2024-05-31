@@ -20,7 +20,7 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
     }
 
      async getProductOrdersByUser( _id: string, populateConfig1?:any): Promise<ProductOrderEntity[] | ErrorHandler| null > {
-        return await this.MODEL.find({user_id:_id}).populate(populateConfig1)
+        return await this.MODEL.find({user_id:_id}).populate(populateConfig1).sort({ createdAt: -1 })
         
       }
 
