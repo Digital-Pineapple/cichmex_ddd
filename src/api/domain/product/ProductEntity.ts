@@ -46,6 +46,7 @@ export interface ProductImage  {
     total?: number;
     branch?: BranchOfficeEntity;
     deliveryLocation?:ILocation;
+    storeHouseStatus?:boolean;
     deliveryStatus: boolean;
     status?:boolean;
     createdAt        :   NativeDate;

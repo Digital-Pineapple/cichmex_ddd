@@ -16,7 +16,7 @@ class MongoRepository {
     }
     findAll(populateOne, populateTwo) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.find({ status: true }).populate(populateOne).populate(populateTwo);
+            return yield this.MODEL.find({ status: true }).populate(populateOne).populate(populateTwo).sort({ createdAt: -1 });
         });
     }
     findAllAll(id, populateOne, populateTwo, populateThree) {

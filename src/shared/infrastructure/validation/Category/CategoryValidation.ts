@@ -12,7 +12,6 @@ export class CategoryValidations {
 
 
     readonly categoryPhotoValidation = [
-        validateAuthentication,
         this.upload.single('image'),
     ]
 
