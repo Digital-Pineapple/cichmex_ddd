@@ -15,6 +15,10 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
         return await this.findOneItem(query);
     }
 
+    async findAllProductOrders(populateConfig1?:any): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+        return await this.MODEL.find({}).populate(populateConfig1).sort({ createdAt: -1 })
+    }
+
      async getProductOrdersByUser( _id: string, populateConfig1?:any): Promise<ProductOrderEntity[] | ErrorHandler| null > {
         return await this.MODEL.find({user_id:_id}).populate(populateConfig1)
         

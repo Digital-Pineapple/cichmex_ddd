@@ -35,6 +35,11 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       required:false,
       ref:'BranchOffices'
     },
+    storeHouseStatus:{
+      type:Boolean,
+      required:false,
+      default:false,
+    },
     deliveryStatus: {
       type: Boolean,
       required: false,
