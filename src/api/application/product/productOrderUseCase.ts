@@ -1,4 +1,5 @@
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
+import { InfoBranchOrder } from "../../../shared/domain/PopulateInterfaces";
 import {  ProductOrderEntity } from "../../domain/product/ProductEntity";
 import { ProductOrderRepository } from "../../domain/product/ProductOrderRepository";
 
@@ -7,11 +8,15 @@ export class ProductOrderUseCase {
   constructor(private readonly productOrderRepository: ProductOrderRepository) {}
 
   public async getProductOrders(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-    return await this.productOrderRepository.findAll()
+    return await this.productOrderRepository.findAllProductOrders(InfoBranchOrder)
   }
 
   public async getOneProductOrder( _id: string): Promise<ProductOrderEntity | ErrorHandler| null > {
-    const response =  await this.productOrderRepository.findById(_id)
+    const response =  await this.productOrderRepository.findById(_id, InfoBranchOrder)
+    return response
+  }
+  public async ProductOrdersByUser( _id: string): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+    const response =  await this.productOrderRepository.getProductOrdersByUser(_id, InfoBranchOrder)
     return response
   }
 

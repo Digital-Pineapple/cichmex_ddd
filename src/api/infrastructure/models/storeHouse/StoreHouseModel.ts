@@ -39,7 +39,7 @@ const StoreHouseSchema = new mongoose.Schema<storeHouseEntity>(
     {
         user_id: {
             type: mongoose.Types.ObjectId,
-            required: true,
+            required: false,
             ref: 'User'
         },
         name: {

@@ -132,5 +132,17 @@ export const PopulateProductSubCategory : IStockPopulateConfig={
     select: ["name"],
     model: SubCategoryModel
 }
+export const PopulateMembershipInSC : IStockPopulateConfig={
+    path: 'memberships',
+    select: ["name", "discount_products"],
+    model: MembershipModel
+}
+
+export const InfoBranchOrder : IStockPopulateConfig={
+    path: 'branch',
+    select: ["name",'opening_time', 'closing_time', 'location' ,],
+    model:BranchOfficeModel
+}
+
 
 

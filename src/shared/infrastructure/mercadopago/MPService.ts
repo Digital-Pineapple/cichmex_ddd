@@ -127,8 +127,7 @@ export class MPService {
         }
     }
 
-    async createPaymentProductsMP(products: any, user:any, uuid:any, values:any) {   
-        
+    async createPaymentProductsMP(products: any, user:any, uuid:any, values:any) {         
         const path_notification =`${process.env.URL_NOTIFICATION}/api/payments/Mem-Payment-success`
         
         try {
@@ -143,7 +142,9 @@ export class MPService {
                     },
                     additional_info:{
                         items:products,
-                        payer:user,
+                        payer:{
+                            first_name:user.user_id
+                        }
                     },
                     token:values.token,
                     issuer_id:values.issuer_id,
@@ -153,12 +154,12 @@ export class MPService {
      
                 }
             });
-
+            
             return { response, success: true, message: 'Pago realizado correctamente' };
         } catch (error) {
 
            
-            return { success: false, message: `Error: ${error}` };
+            return { success: false, message: `Error: ${error?.message}` };
         }
 }
 }

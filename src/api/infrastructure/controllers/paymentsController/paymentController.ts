@@ -16,12 +16,12 @@ export class PaymentController extends ResponseData {
     protected path = '/payment'
 
     constructor(private paymentUseCase: PaymentUseCase,
-        private readonly productOrderUseCase : ProductOrderUseCase,
+        private readonly productOrderUseCase: ProductOrderUseCase,
         private readonly mpService: MPService,
         private readonly membershipBenefitUseCAse: MembershipBenefitsUseCase,
         private readonly membershipUseCase: MembershipUseCase,
         private readonly membershipHistoryUseCase: MembershipHistoryUseCase,
-       
+
     ) {
         super();
         this.getAllPayments = this.getAllPayments.bind(this);
@@ -30,7 +30,8 @@ export class PaymentController extends ResponseData {
         this.createTicket = this.createTicket.bind(this);
         this.deletePayment = this.deletePayment.bind(this);
         this.createPaymentMP = this.createPaymentMP.bind(this)
-        this.PaymentSuccess  = this.PaymentSuccess.bind(this)
+        this.createPaymentProductMPLocation = this.createPaymentProductMPLocation.bind(this);
+        this.PaymentSuccess = this.PaymentSuccess.bind(this)
         this.createPaymentProductMP = this.createPaymentProductMP.bind(this)
 
 
@@ -59,7 +60,7 @@ export class PaymentController extends ResponseData {
 
         try {
             const { response, success, message } = await this.mpService.createLinkMP(values, user_id);
-            
+
             if (success === true) {
                 this.invoke(response?.init_point, 201, res, '', next);
             } else {
@@ -76,9 +77,9 @@ export class PaymentController extends ResponseData {
         const { values, user, membership } = req.body;
         const uuid4 = uuidv4()
         try {
-            const response1 = await this.paymentUseCase.createNewPayment({uuid:uuid4}) //crea un pago en base de datos
-            const { response, success, message } = await this.mpService.createPaymentMP(values, user, {uuid:response1?.uuid}, membership); //respuesta de mercado libre
-            const createPayment = await this.paymentUseCase.updateOnePayment(response1?._id,{MP_info:response, user_id:user.user_id}) // se actualiza la informacion en base de datos
+            const response1 = await this.paymentUseCase.createNewPayment({ uuid: uuid4 }) //crea un pago en base de datos
+            const { response, success, message } = await this.mpService.createPaymentMP(values, user, { uuid: response1?.uuid }, membership); //respuesta de mercado libre
+            const createPayment = await this.paymentUseCase.updateOnePayment(response1?._id, { MP_info: response, user_id: user.user_id }) // se actualiza la informacion en base de datos
             if (success === true && response?.status === 'approved') { // si la respuesta del pago es aprobada 
                 if (!(createPayment instanceof ErrorHandler)) {
                     const client_id = createPayment.user_id;
@@ -90,7 +91,7 @@ export class PaymentController extends ResponseData {
                         let services = membership_info?.service_quantity;
                         let mem_id = membership_info?.id
                         if (services !== undefined) {
-                            await Promise.all(services.map(async (item) => { 
+                            await Promise.all(services.map(async (item) => {
                                 try {
                                     const ok = await this.membershipBenefitUseCAse.createNewMembershipBenefit(
                                         mem_id,
@@ -118,71 +119,122 @@ export class PaymentController extends ResponseData {
                             }));
                         }
                     }
-                   
 
-                    this.invoke(success,200,res,'Se pago correctamente', next)
+
+                    this.invoke(success, 200, res, 'Se pago correctamente', next)
                 }
 
             } else {
                 next(new ErrorHandler(`Error: ${message}`, 500)); // Si la respuesta de pago es negativa 
             }
-            
+
         } catch (error) {
            
             next(new ErrorHandler('Error', 500)); //
         }
 
-    
+
     }
     public async createPaymentProductMP(req: Request, res: Response, next: NextFunction) {
-        const { products, user, branch_id, infoPayment } = req.body;
+        const { products, user, branch_id, infoPayment, productsOrder } = req.body;
+        
         const uuid4 = uuidv4()
         try {
-            const response1 = await this.paymentUseCase.createNewPayment({uuid:uuid4}) //crea un pago en base de datos
-            const { response, success, message } = await this.mpService.createPaymentProductsMP(products, user, {uuid:response1?.uuid}, infoPayment); //respuesta de mercado libre
-            const createPayment = await this.paymentUseCase.updateOnePayment(response1?._id,{MP_info:response, user_id:user.user_id}) // se actualiza la informacion en base de datos
+            const response1 = await this.paymentUseCase.createNewPayment({ uuid: uuid4 }) //crea un pago en base de datos
+            const { response, success, message } = await this.mpService.createPaymentProductsMP(products, user, { uuid: response1?.uuid }, infoPayment); //respuesta de mercado libre
             if (success === true && response?.status === 'approved') { // si la respuesta del pago es aprobada 
-                if (!(createPayment instanceof ErrorHandler)) {
-                    const values1 = {
-                        paymet: createPayment.uuid,
-                        products: products,
-                        discount: infoPayment.discount,
-                        subTotal: infoPayment.subtotal,
-                        total: infoPayment.transaction_amount,
-                        branch: branch_id
+                try {
+                    const createPayment = await this.paymentUseCase.updateOnePayment(response1?._id, { MP_info: response, user_id: user.user_id })
+                    if (!(createPayment instanceof ErrorHandler)) {
+                        const values1 = {
+                            payment: createPayment?._id,
+                            uuid: createPayment?.uuid,
+                            products: productsOrder,
+                            discount: infoPayment.discount,
+                            subTotal: infoPayment.subtotal,
+                            total: infoPayment.transaction_amount,
+                            branch: branch_id,
+                            user_id: user.user_id 
+                        }
+                        try {
+                            const order = await this.productOrderUseCase.createProductOrder(values1)
+                            this.invoke(order, 200, res, 'Ya puedes recoger tu producto en tienda', next)
+                        } catch (error) {
+                            next(new ErrorHandler('Error no se pudo crear su orden por favor contacte con servicio al cliente', 500)) //  
+                        }
                     }
-                    try {
-                        const order = await this.productOrderUseCase.createProductOrder(values1)
-                        this.invoke(order,200,res,'Ya puedes recoger tu producto en tienda', next)
-                    } catch (error) {
-                        next(new ErrorHandler('Error no se pudo crear su orden por favor contacte con servicio al cliente', 500)); //  
-                    }
-                    this.invoke(success,200,res,'Se pago correctamente', next)
+
+
+                } catch (error) {
+                    next(new ErrorHandler(`Error:${error}`, 500))
                 }
 
             } else {
                 next(new ErrorHandler(`Error: ${message}`, 500)); // Si la respuesta de pago es negativa 
             }
-            
+
         } catch (error) {
-        
             next(new ErrorHandler('Error', 500)); //
         }
 
-    
+
+    }
+
+    public async createPaymentProductMPLocation(req: Request, res: Response, next: NextFunction) {
+        const { products, user, location, infoPayment, productsOrder } = req.body;
+        
+        const uuid4 = uuidv4()
+        try {
+            const response1 = await this.paymentUseCase.createNewPayment({ uuid: uuid4 }) //crea un pago en base de datos
+            const { response, success, message } = await this.mpService.createPaymentProductsMP(products, user, { uuid: response1?.uuid }, infoPayment); //respuesta de mercado libre
+            if (success === true && response?.status === 'approved') { // si la respuesta del pago es aprobada 
+                try {
+                    const createPayment = await this.paymentUseCase.updateOnePayment(response1?._id, { MP_info: response, user_id: user.user_id })
+                    if (!(createPayment instanceof ErrorHandler)) {
+                        const values1 = {
+                            payment: createPayment?._id,
+                            uuid: createPayment?.uuid,
+                            products: productsOrder,
+                            discount: infoPayment.discount,
+                            subTotal: infoPayment.subtotal,
+                            total: infoPayment.transaction_amount,
+                            deliveryLocation: location,
+                            user_id: user.user_id 
+                        }
+                        try {
+                            const order = await this.productOrderUseCase.createProductOrder(values1)
+                            this.invoke(order, 200, res, 'Proceso exitoso', next)
+                        } catch (error) {
+                            next(new ErrorHandler('Error no se pudo crear su orden por favor contacte con servicio al cliente', 500)) //  
+                        }
+                    }
+
+
+                } catch (error) {
+                    next(new ErrorHandler(`Error:${error}`, 500))
+                }
+
+            } else {
+                next(new ErrorHandler(`Error: ${message}`, 500)); // Si la respuesta de pago es negativa 
+            }
+
+        } catch (error) {
+            next(new ErrorHandler('Error', 500)); //
+        }
+
+
     }
 
 
     public async createTicket(req: Request, res: Response, next: NextFunction) {
-        
+
         try {
             const info = await this.mpService.reciveWebHook(req);
 
             if (info !== undefined && info.status === 'approved') {
-                
+
                 const response = await this.paymentUseCase.createNewPayment({ MP_info: info });
                 if (!(response instanceof ErrorHandler)) {
-
                     const id_client = response?.MP_info.additional_info.payer.first_name;
                     const idMembership = response?.MP_info.additional_info.items[0].id;
                     const membership_info = await this.membershipUseCase.getInfoMembership(idMembership);
@@ -231,7 +283,7 @@ export class PaymentController extends ResponseData {
     }
 
     public async PaymentSuccess(req: Request, res: Response, next: NextFunction) {
-        
+
         try {
             const info = await this.mpService.reciveWebHook(req);
             res.status(200).send('OK');

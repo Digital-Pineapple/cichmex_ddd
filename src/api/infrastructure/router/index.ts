@@ -48,8 +48,6 @@ export const apiRouter = (): Router => {
     apiRouter.use('/stock-StoreHouse', stockStoreHouseRouter)
     apiRouter.use('/storehouse', storeHouseRouter)
 
-
-
     return apiRouter;
 }
 const apiRouterx = Router();

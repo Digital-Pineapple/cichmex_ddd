@@ -52,10 +52,15 @@ export class StockStoreHouseController extends ResponseData {
     }
 
     public async getAvailableStock(req: Request, res: Response, next: NextFunction) {
-            const response = await this.stockStoreHouseUseCase.getStock({id:"662fe69b9ba1d8b3cfcd3634"})            
+            const response = await this.stockStoreHouseUseCase.getStock("662fe69b9ba1d8b3cfcd3634")            
             this.invoke(response, 200, res, '', next);
         
     }
+    public async getAvailableStockById(req: Request, res: Response, next: NextFunction) {
+        const response = await this.stockStoreHouseUseCase.getStock("662fe69b9ba1d8b3cfcd3634")            
+        this.invoke(response, 200, res, '', next);
+    
+}
 
     public async createStock(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params
