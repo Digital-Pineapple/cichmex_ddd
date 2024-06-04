@@ -129,6 +129,7 @@ export class MPService {
 
     async createPaymentProductsMP(products: any, user:any, uuid:any, values:any) {         
         const path_notification =`${process.env.URL_NOTIFICATION}/api/payments/Mem-Payment-success`
+
         
         try {
             const response = await this.payment.create({

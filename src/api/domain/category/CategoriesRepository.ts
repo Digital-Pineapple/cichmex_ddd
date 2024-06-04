@@ -4,6 +4,8 @@ import { Category } from "./CategoryEntity"
 
 export interface CategoriesRepository extends MongoRepository {
 
+     findCategoriesAndSubCategories(): Promise<Category[] | null>
+
     
 
 

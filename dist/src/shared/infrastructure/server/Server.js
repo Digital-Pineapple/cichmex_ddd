@@ -16,8 +16,10 @@ exports.Server = void 0;
 const express_1 = __importDefault(require("express"));
 const config_1 = require("../../../../config");
 const swagger_output_json_1 = __importDefault(require("../../../../swagger_output.json"));
+const socket_io_1 = require("socket.io");
 const http_1 = require("http");
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
+const socketsController_1 = __importDefault(require("../../../api/infrastructure/controllers/sockets/socketsController"));
 class Server {
     constructor(router) {
         this.router = router;
@@ -38,6 +40,33 @@ class Server {
         this.httpServer = (0, http_1.createServer)(this.express);
         this.express.use("/api-docs", this.router, swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_output_json_1.default, this.swaggerUiOptions));
         this.express.use(this.router);
+        this.io = new socket_io_1.Server(this.httpServer, {
+            path: '/socket/',
+            cors: {
+                origin: "https://localhost:4000",
+                methods: ["GET", "POST"]
+            },
+        });
+        this.sockets();
+    }
+    sockets() {
+        this.io.on('connection', (socket) => {
+            console.log('A user connected:', socket.id);
+            socket.on('disconnect', (reason) => {
+                console.log('User disconnected:', socket.id, 'Reason:', reason);
+            });
+            socket.on('error', (error) => {
+                console.error('Socket error:', error);
+            });
+            this.io.on('connect_error', (error) => {
+                console.error('Connection error:', error);
+            });
+            // Aquí puedes llamar a tu socketController para manejar eventos específicos
+            (0, socketsController_1.default)(socket);
+        });
+        this.io.on('connect_error', (error) => {
+            console.error('Connection error:', error);
+        });
     }
 }
 exports.Server = Server;

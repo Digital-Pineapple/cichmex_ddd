@@ -6,6 +6,7 @@ import { ResponseData } from "../../../../shared/infrastructure/validation/Respo
 import { ProductUseCase } from "../../../application/product/productUseCase";
 import { S3Service } from "../../../../shared/infrastructure/aws/S3Service";
 import { stringify } from 'uuid';
+import { errorMonitor } from 'nodemailer/lib/xoauth2';
 
 export class ProductController extends ResponseData {
   protected path = "/product";
@@ -28,24 +29,26 @@ export class ProductController extends ResponseData {
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
     try {
       const response = await this.productUseCase.getProducts();
-
-      const updatedResponse = await Promise.all(
-        response.map(async (item: any) => {
-          const images = item.images;
-          const updatedImages = await Promise.all(
-            images.map(async (image: any) => {
-              const url = await this.s3Service.getUrlObject(
-                image + ".jpg"
-              );
-              return url;
-            })
-          );
-          item.images = updatedImages;
-          return item;
-        })
-      );
-
-      this.invoke(updatedResponse, 200, res, "", next);
+      if (!(response instanceof ErrorHandler)) {
+        const updatedResponse = await Promise.all(
+          response.map(async (item: any) => {
+            const images = item.images;
+            const updatedImages = await Promise.all(
+              images.map(async (image: any) => {
+                const url = await this.s3Service.getUrlObject(
+                  image + ".jpg"
+                );
+                return url;
+              })
+            );
+            item.images = updatedImages;
+            return item;
+          })
+        );
+  
+        this.invoke(updatedResponse, 200, res, "", next);
+      }
+     
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }

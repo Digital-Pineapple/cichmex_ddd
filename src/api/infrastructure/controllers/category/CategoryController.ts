@@ -11,6 +11,7 @@ export class CategoryController extends ResponseData {
         super();
         this.getAllCategories = this.getAllCategories.bind(this);
         this.getCategory = this.getCategory.bind(this);
+        this.getAllCategoriesAndSC = this.getAllCategoriesAndSC.bind(this);
         this.createCategory = this.createCategory.bind(this);
         this.updateCategory = this.updateCategory.bind(this);
         this.deleteCategory = this.deleteCategory.bind(this);
@@ -34,6 +35,24 @@ export class CategoryController extends ResponseData {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
+
+    public async getAllCategoriesAndSC(req: Request, res: Response, next: NextFunction) {
+        try {
+            const response = await this.categoryUseCase.getCategoriesAndSubcategories();
+            if (!(response instanceof ErrorHandler) && response !==null) {     
+                await Promise.all(response.map(async(res)=> {
+                    const url = await this.s3Service.getUrlObject(res.category_image + ".jpg");
+                    res.category_image = url
+                }))
+                this.invoke(response, 200, res, '', next);
+            }
+        } catch (error) {
+            console.log(error);
+            
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+
 
    
 
