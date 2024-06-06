@@ -153,9 +153,10 @@ export class PaymentController extends ResponseData {
                             products: productsOrder,
                             discount: infoPayment.discount,
                             subTotal: infoPayment.subtotal,
-                            total: infoPayment.transaction_amount,
+                            total: infoPayment.formData.transaction_amount,
                             branch: branch_id,
-                            user_id: user.user_id 
+                            user_id: user.user_id,
+                            paymentType: infoPayment.paymentType 
                         }
                         try {
                             const order = await this.productOrderUseCase.createProductOrder(values1)
@@ -180,7 +181,6 @@ export class PaymentController extends ResponseData {
 
 
     }
-
     public async createPaymentProductMPLocation(req: Request, res: Response, next: NextFunction) {
         const { products, user, location, infoPayment, productsOrder } = req.body;
         
@@ -198,9 +198,10 @@ export class PaymentController extends ResponseData {
                             products: productsOrder,
                             discount: infoPayment.discount,
                             subTotal: infoPayment.subtotal,
-                            total: infoPayment.transaction_amount,
+                            total: infoPayment.formData.transaction_amount,
                             deliveryLocation: location,
-                            user_id: user.user_id 
+                            user_id: user.user_id,
+                            paymentType: infoPayment.paymentType 
                         }
                         try {
                             const order = await this.productOrderUseCase.createProductOrder(values1)
@@ -225,6 +226,51 @@ export class PaymentController extends ResponseData {
 
 
     }
+    // public async createPaymentProductMP(req: Request, res: Response, next: NextFunction) {
+    //     const { products, user, branch_id, infoPayment, productsOrder } = req.body;
+        
+    //     const uuid4 = uuidv4()
+    //     try {
+    //         const response1 = await this.paymentUseCase.createNewPayment({ uuid: uuid4 }) //crea un pago en base de datos
+    //         const { response, success, message } = await this.mpService.createPaymentProductsMP(products, user, { uuid: response1?.uuid }, infoPayment); //respuesta de mercado libre
+    //         if (success === true && response?.status === 'approved') { // si la respuesta del pago es aprobada 
+    //             try {
+    //                 const createPayment = await this.paymentUseCase.updateOnePayment(response1?._id, { MP_info: response, user_id: user.user_id })
+    //                 if (!(createPayment instanceof ErrorHandler)) {
+    //                     const values1 = {
+    //                         payment: createPayment?._id,
+    //                         uuid: createPayment?.uuid,
+    //                         products: productsOrder,
+    //                         discount: infoPayment.discount,
+    //                         subTotal: infoPayment.subtotal,
+    //                         total: infoPayment.transaction_amount,
+    //                         branch: branch_id,
+    //                         user_id: user.user_id 
+    //                     }
+    //                     try {
+    //                         const order = await this.productOrderUseCase.createProductOrder(values1)
+    //                         this.invoke(order, 200, res, 'Ya puedes recoger tu producto en tienda', next)
+    //                     } catch (error) {
+    //                         next(new ErrorHandler('Error no se pudo crear su orden por favor contacte con servicio al cliente', 500)) //  
+    //                     }
+    //                 }
+
+
+    //             } catch (error) {
+    //                 next(new ErrorHandler(`Error:${error}`, 500))
+    //             }
+
+    //         } else {
+    //             next(new ErrorHandler(`Error: ${message}`, 500)); // Si la respuesta de pago es negativa 
+    //         }
+
+    //     } catch (error) {
+    //         next(new ErrorHandler('Error', 500)); //
+    //     }
+
+
+    // }
+
 
 
     public async createTicket(req: Request, res: Response, next: NextFunction) {
