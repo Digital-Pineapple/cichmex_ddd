@@ -223,13 +223,14 @@ export class UserController extends ResponseData {
 
     public async signUpByPhone(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
         const { fullname, email, password, phone_id } = req.body
+        
         try {
 
             const responsedefault = await this.typeUserUseCase.getTypeUsers()
             const def = responsedefault?.filter(item => item.name === 'Customer')
             const TypeUser_id = def?.map(item => item._id)
             const response = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser_id })
-            await sendMail(email, fullname)
+            // await sendMail(email, fullname)
             this.invoke(response, 200, res, '', next);
 
         } catch (error) {

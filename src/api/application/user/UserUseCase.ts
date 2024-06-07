@@ -51,7 +51,7 @@ export class UserUseCase extends Authentication {
 
   }
   public async createUser(body:any): Promise<UserEntity | IAuth |  ErrorHandler | null> {
-    let user = await this.userRepository.findOneItem({ email: body.email }, TypeUserPopulateConfig);
+    let user = await this.userRepository.findOneItem({ email: body.email });
         if (user) return new ErrorHandler('El usuario ya existe',400);
         const password = await this.encryptPassword(body.password);
         const user1 = await this.userRepository.createOne({ ...body, password });
