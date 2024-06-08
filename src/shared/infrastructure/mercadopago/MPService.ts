@@ -158,7 +158,7 @@ export class MPService {
         } catch (error) {
            console.log(error);
            
-            return { success: false, message: `Error: ${error?.message}` };
+            return { success: false, message: `Error: ${error}` };
         }
 }
 }

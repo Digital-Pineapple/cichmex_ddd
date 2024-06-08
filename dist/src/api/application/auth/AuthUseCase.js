@@ -14,7 +14,6 @@ const AuthenticationService_1 = require("../authentication/AuthenticationService
 const ErrorHandler_1 = require("../../../shared/domain/ErrorHandler");
 const MomentService_1 = require("../../../shared/infrastructure/moment/MomentService");
 const PopulateInterfaces_1 = require("../../../shared/domain/PopulateInterfaces");
-const emailer_1 = require("../../../shared/infrastructure/nodemailer/emailer");
 class AuthUseCase extends AuthenticationService_1.Authentication {
     constructor(authRepository) {
         super();
@@ -128,7 +127,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const newUser = yield this.authRepository.createOne(Object.assign({}, body));
-                yield (0, emailer_1.sendVerifyMail)(newUser.email, newUser.fullname, newUser.accountVerify);
+                // await sendVerifyMail(newUser.email, newUser.fullname, newUser.accountVerify);
                 const newUserResponse = { user_id: newUser._id, verified: newUser.email_verified, email: newUser.email };
                 return newUserResponse;
             }
@@ -205,6 +204,25 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             return yield this.authRepository.updateOne(customer._id, { password: newPass });
         });
     }
+    restorePassword(user_id, newPassword) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield this.authRepository.findById(user_id);
+            const newPass = this.encryptPassword(newPassword);
+            return yield this.authRepository.updateOne(user._id, { password: newPass, verify_code: '' });
+        });
+    }
+    ValidateCodeEmail(email, code) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield this.authRepository.verifyUserCode(email, code);
+            if (user) {
+                const { token, verify } = yield this.generateJWTRP(user._id);
+                return { token, verify };
+            }
+            else {
+                return new ErrorHandler_1.ErrorHandler('No coincide el código', 500);
+            }
+        });
+    }
     updateProfilePhoto(photo, customer_id) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.authRepository.updateOne(customer_id, { profile_image: photo });
@@ -213,6 +231,11 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     updateCustomer(customer_id, email, fullname) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.authRepository.updateOne(customer_id, { email, fullname });
+        });
+    }
+    updateCodeUser(user_id, code, attemps) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.authRepository.updateOne(user_id, { verify_code: { code: code, attemps: attemps } });
         });
     }
     generateToken(user) {

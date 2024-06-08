@@ -9,7 +9,7 @@ import { MomentService } from '../../../shared/infrastructure/moment/MomentServi
 import { IFileKeys, IPhoneRequest } from './interfaces';
 import { UserEntity } from '../../domain/user/UserEntity';
 import { BranchPopulateConfig, PhonePopulateConfig, PopulatePointStore, TypeUserPopulateConfig, UserPopulateConfig } from '../../../shared/domain/PopulateInterfaces'
-import {  sendVerifyMail } from '../../../shared/infrastructure/nodemailer/emailer';
+import { TokenEntity, TokenRPEntity } from '../../domain/auth/authEntities';
 
 export class AuthUseCase extends Authentication {
 
@@ -121,7 +121,7 @@ export class AuthUseCase extends Authentication {
     async signUpPlatform(body: any): Promise<UserEntity | IGoogleResponse | ErrorHandler | null> {
         try {
             const newUser = await this.authRepository.createOne({ ...body });
-            await sendVerifyMail(newUser.email, newUser.fullname, newUser.accountVerify);
+            // await sendVerifyMail(newUser.email, newUser.fullname, newUser.accountVerify);
             const newUserResponse = { user_id: newUser._id, verified: newUser.email_verified, email: newUser.email };
             return newUserResponse;
         } catch (error) {
@@ -204,12 +204,32 @@ export class AuthUseCase extends Authentication {
         return await this.authRepository.updateOne(customer._id, { password: newPass });
     }
 
+    async restorePassword(user_id: string, newPassword: string): Promise<ErrorHandler | UserEntity | null> {
+        const user = await this.authRepository.findById(user_id)
+        const newPass = this.encryptPassword(newPassword);
+        return await this.authRepository.updateOne(user._id, { password: newPass, verify_code:'' });
+    }
+
+    async ValidateCodeEmail(email: string, code: number): Promise<TokenRPEntity| ErrorHandler| null> {
+        const user = await this.authRepository.verifyUserCode(email,code)
+        
+        if (user) {
+            const {token, verify} = await this.generateJWTRP(user._id)
+            return {token,verify}
+        } else {
+            return new ErrorHandler('No coincide el código', 500)
+        }
+    }
+
     async updateProfilePhoto(photo: string, customer_id: string): Promise<UserEntity> {
         return await this.authRepository.updateOne(customer_id, { profile_image: photo });
     }
 
     async updateCustomer(customer_id: string, email: string, fullname: string): Promise<UserEntity> {
         return await this.authRepository.updateOne(customer_id, { email, fullname });
+    }
+    async updateCodeUser(user_id: string, code:number, attemps: number): Promise<UserEntity> {
+        return await this.authRepository.updateOne(user_id, { verify_code: {code: code, attemps: attemps} });
     }
 
     async generateToken(user: UserEntity) {
