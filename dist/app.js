@@ -21,5 +21,6 @@ server
     .then(() => __awaiter(void 0, void 0, void 0, function* () {
     yield container.invoke().resolve('db');
     console.log(`Env: ${config.NODE_ENV}`);
-}));
-// serverSocket.startSocketServer();
+})).catch((err) => {
+    console.error('Error starting server:', err);
+});

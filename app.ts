@@ -22,7 +22,7 @@ server
         await container.invoke().resolve('db')
         console.log(`Env: ${config.NODE_ENV}`);
 
+    }).catch((err)=>{
+        console.error('Error starting server:', err);
     });
-
-    // serverSocket.startSocketServer();
-    
+ 

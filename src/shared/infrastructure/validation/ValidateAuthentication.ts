@@ -8,7 +8,6 @@ import { UserEntity } from '../../../api/domain/user/UserEntity';
 import { ErrorHandler } from '../../domain/ErrorHandler';
 import UserModel from '../../../api/infrastructure/models/UserModel';
 import { verifyToken } from '../helpers/verifyToken';
-import { ObjectId } from 'mongodb';
 
 export const validateAuthentication = (req: Request, res: Response, next: NextFunction) => {
         const token = req.header('token');
@@ -17,6 +16,26 @@ export const validateAuthentication = (req: Request, res: Response, next: NextFu
             const { user } = Jwt.verify(token, config.SECRET_JWT_KEY) as { user: UserEntity };
             if (!user) return next(new ErrorHandler('El usuario no es valido', 400));
             req.user = user;
+            next();
+        } catch (error) {
+            next(new ErrorHandler('Token no valido', 400));
+        }
+    }
+
+    export const validateTokenRestorePassword = async(req: Request, res: Response, next: NextFunction) => {
+        const token = req.headers.authorization?.split(' ').pop();
+        if (!token) return next(new ErrorHandler('Token is required', 401));     
+        try {
+            const {data} = Jwt.verify(token, config.SECRET_JWT_KEY) as { data: UserEntity } ;
+
+            console.log( data,'verify');
+            
+             const userData = await UserModel.findById(data);
+           
+            if (!userData) {
+                throw new ErrorHandler('Usuario no encontrado', 404);
+            }
+            req.user = data;
             next();
         } catch (error) {
             next(new ErrorHandler('Token no valido', 400));

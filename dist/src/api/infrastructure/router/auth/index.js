@@ -1,10 +1,29 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const ValidateAuthentication_1 = __importDefault(require("../../../../shared/infrastructure/validation/ValidateAuthentication"));
+const ValidateAuthentication_1 = __importStar(require("../../../../shared/infrastructure/validation/ValidateAuthentication"));
 const AuthUseCase_1 = require("../../../application/auth/AuthUseCase");
 const TypeUserUseCase_1 = require("../../../application/typeUser/TypeUserUseCase");
 const AuthController_1 = require("../../controllers/auth/AuthController");
@@ -39,7 +58,10 @@ authRouter
     .post('/google', authValidations.googleLoginValidations, authController.loginWithGoogle)
     .post('/google-Partner', authValidations.googleLoginValidations, authController.loginWithGooglePartner)
     .post('/registerByGoogle', authValidations.googleLoginValidations, authController.registerByGoogle)
+    .post('/send-email-restore', authController.restorePasswordByEmail)
+    .post('/verifyCodeRP', authController.verifyCodeByEmail)
     .post('/change-password/:id', ValidateAuthentication_1.default, authController.changePassword)
+    .post('/restore-password', ValidateAuthentication_1.validateTokenRestorePassword, authController.restorePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', ValidateAuthentication_1.default, authController.verifyCode)
     .post('/verify-phone', authController.savePhone);

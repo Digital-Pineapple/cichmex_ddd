@@ -128,16 +128,15 @@ export class MPService {
     }
 
     async createPaymentProductsMP(products: any, user:any, uuid:any, values:any) {         
-        const path_notification =`${process.env.URL_NOTIFICATION}/api/payments/Mem-Payment-success`
-        
+        const path_notification =`${process.env.URL_NOTIFICATION}/api/payments/Mem-Payment-success`        
         try {
             const response = await this.payment.create({
                 requestOptions:{idempotencyKey:`${uuid}`},
                 body: {
-                    transaction_amount:values.transaction_amount,
-                    payment_method_id:values.payment_method_id,
+                    transaction_amount: values.formData.transaction_amount,
+                    payment_method_id: values.formData.payment_method_id,
                     payer:{
-                        email:values.payer.email,
+                        email:values.formData.payer.email,
                         first_name:user.user_id  
                     },
                     additional_info:{
@@ -146,9 +145,9 @@ export class MPService {
                             first_name:user.user_id
                         }
                     },
-                    token:values.token,
-                    issuer_id:values.issuer_id,
-                    installments:values.installments,
+                    token:values.formData.token,
+                    issuer_id:values.formData.issuer_id,
+                    installments:values.formData.installments,
                     notification_url:path_notification,
 
      
@@ -159,7 +158,7 @@ export class MPService {
         } catch (error) {
 
            
-            return { success: false, message: `Error: ${error?.message}` };
+            return { success: false, message: `Error: ${error}` };
         }
 }
 }

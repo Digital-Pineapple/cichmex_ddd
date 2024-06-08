@@ -3,6 +3,7 @@ import Bcrypt from 'bcrypt';
 import Generator from 'generate-password';
 import { OAuth2Client } from 'google-auth-library';
 import { UserEntity } from '../../domain/user/UserEntity';
+import { TokenEntity, TokenRPEntity } from '../../domain/auth/authEntities';
 
 export interface IGoogle {
     fullname    : string | undefined;
@@ -62,6 +63,18 @@ export class Authentication {
                 resolve({ token, user });
             })
 
+        });
+    }
+    protected async generateJWTRP(data: any): Promise<TokenRPEntity> {
+        return new Promise((resolve, reject) => {
+            const payload: string | object | Buffer = {data};
+
+            Jwt.sign(payload, process.env.SECRET_JWT_KEY || '', {
+                expiresIn: '1h',
+            }, (error, token) => {
+                if (error)  return reject('Error to generate JWT');
+                resolve({token});
+            })
         });
     }
 

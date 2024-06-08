@@ -143,6 +143,10 @@ export const InfoBranchOrder : IStockPopulateConfig={
     select: ["name",'opening_time', 'closing_time', 'location' ,],
     model:BranchOfficeModel
 }
+export const InfoPayment = {
+    path: 'payment',
+    select: ["MP_info"],
+}
 
 
 

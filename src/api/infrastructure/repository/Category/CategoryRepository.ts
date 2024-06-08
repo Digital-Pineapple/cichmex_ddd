@@ -37,6 +37,12 @@ export class CategoryRepository extends MongoRepository implements CategoryConfi
     async searchCategory(body: Object): Promise<Category| null> {
         return await this.createOne(body);
     }
+    async findCategoriesAndSubCategories (): Promise<Category[]  | null>{
+        const result = await this.MODEL.aggregate([
+            { $lookup: { from: "subcategories", localField: "_id", foreignField: "category_id", as: "SubCategories" } },
+          ]);
+          return result;
+    }
    
 
 }

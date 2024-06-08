@@ -36,6 +36,20 @@ class Authentication {
             });
         });
     }
+    generateJWTRP(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                const payload = { data };
+                jsonwebtoken_1.default.sign(payload, process.env.SECRET_JWT_KEY || '', {
+                    expiresIn: '1h',
+                }, (error, token) => {
+                    if (error)
+                        return reject('Error to generate JWT');
+                    resolve({ token });
+                });
+            });
+        });
+    }
     validateGoogleToken(token) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {

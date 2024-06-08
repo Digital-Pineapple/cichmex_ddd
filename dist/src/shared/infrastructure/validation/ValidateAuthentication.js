@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkTypeUserAuth = exports.validateAuthentication = void 0;
+exports.checkTypeUserAuth = exports.validateTokenRestorePassword = exports.validateAuthentication = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = require("../../../../config");
 const ErrorHandler_1 = require("../../domain/ErrorHandler");
@@ -34,10 +34,30 @@ const validateAuthentication = (req, res, next) => {
     }
 };
 exports.validateAuthentication = validateAuthentication;
-const checkTypeUserAuth = (type_user) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+const validateTokenRestorePassword = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ').pop();
+    if (!token)
+        return next(new ErrorHandler_1.ErrorHandler('Token is required', 401));
     try {
-        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ').pop();
+        const { data } = jsonwebtoken_1.default.verify(token, config_1.config.SECRET_JWT_KEY);
+        console.log(data, 'verify');
+        const userData = yield UserModel_1.default.findById(data);
+        if (!userData) {
+            throw new ErrorHandler_1.ErrorHandler('Usuario no encontrado', 404);
+        }
+        req.user = data;
+        next();
+    }
+    catch (error) {
+        next(new ErrorHandler_1.ErrorHandler('Token no valido', 400));
+    }
+});
+exports.validateTokenRestorePassword = validateTokenRestorePassword;
+const checkTypeUserAuth = (type_user) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b, _c, _d;
+    try {
+        const token = (_b = req.headers.authorization) === null || _b === void 0 ? void 0 : _b.split(' ').pop();
         if (!token) {
             throw new ErrorHandler_1.ErrorHandler('Token es requerido', 401);
         }
@@ -48,7 +68,7 @@ const checkTypeUserAuth = (type_user) => (req, res, next) => __awaiter(void 0, v
         }
         const userTypes = Array.isArray(type_user) ? type_user : [type_user];
         // Convertir userData.type_user a ObjectId si es un string
-        const userTypeString = ((_b = userData.type_user) === null || _b === void 0 ? void 0 : _b._id) ? (_c = userData.type_user._id) === null || _c === void 0 ? void 0 : _c.toString() : '';
+        const userTypeString = ((_c = userData.type_user) === null || _c === void 0 ? void 0 : _c._id) ? (_d = userData.type_user._id) === null || _d === void 0 ? void 0 : _d.toString() : '';
         if (!userTypes.includes(userTypeString)) {
             throw new ErrorHandler_1.ErrorHandler('No tiene permisos necesarios', 403);
         }
