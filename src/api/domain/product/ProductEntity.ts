@@ -49,6 +49,7 @@ export interface ProductImage  {
     storeHouseStatus?:boolean;
     deliveryStatus: boolean;
     status?:boolean;
+    paymentType: string;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;
   }
