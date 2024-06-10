@@ -41,7 +41,6 @@ const validateTokenRestorePassword = (req, res, next) => __awaiter(void 0, void 
         return next(new ErrorHandler_1.ErrorHandler('Token is required', 401));
     try {
         const { data } = jsonwebtoken_1.default.verify(token, config_1.config.SECRET_JWT_KEY);
-        console.log(data, 'verify');
         const userData = yield UserModel_1.default.findById(data);
         if (!userData) {
             throw new ErrorHandler_1.ErrorHandler('Usuario no encontrado', 404);

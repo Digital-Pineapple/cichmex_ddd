@@ -204,8 +204,6 @@ export class AuthController extends ResponseData {
 
             const newCode = parseInt(generateRandomCode())
             const NoAttempts  = 2
-            console.log(response.verify_code);
-            
             if (response.verify_code ) {
                 
                 const {attemps}:any=(response.verify_code);  
@@ -213,11 +211,10 @@ export class AuthController extends ResponseData {
                     const newAttemps = attemps -1
                     try {
                         await this.authUseCase.updateCodeUser(response._id,newCode, newAttemps)
-                        const {success, message} = await sendCodeMail(response.email, response.fullname, newCode)
+                         const {success, message} = await sendCodeMail(response.email, response.fullname, newCode)
                         this.invoke(success, 200, res, `${message}`, next)
                     } catch (error) {
-                        console.log(error);
-                        
+                        next(new ErrorHandler('Error', 500));   
                     }
                 }
                 if (attemps === 0) {
@@ -230,7 +227,7 @@ export class AuthController extends ResponseData {
                      const {success, message} = await sendCodeMail(response.email, response.fullname, newCode)
                         this.invoke(success, 201, res, `${message}`, next)
                 } catch (error) {
-                    console.log(error);
+                    next(new ErrorHandler('Error', 500));  
                     
                 }
             }    
@@ -245,6 +242,7 @@ export class AuthController extends ResponseData {
         
         try {
             const response = await this.authUseCase.ValidateCodeEmail(email,code)
+            
             this.invoke(response,200,res,'Código valido', next)
         } catch (error) {
             next(new ErrorHandler(`No existe el usuario: ${email}`, 500));
@@ -337,14 +335,16 @@ export class AuthController extends ResponseData {
     public async restorePassword(req: Request, res: Response, next: NextFunction) {
         const { user } = req;
         const { password } = req.body;
+        console.log(user,password);
+        
         const id = user.toString()
         
         try {
-            const response = await this.authUseCase.restorePassword(id, password)
-            this.invoke(response, 200, res, 'Cambio la contraseña exitosamente', next);
+             await this.authUseCase.restorePassword(id, password)
+            this.invoke('', 200, res, 'Cambio la contraseña exitosamente', next);
         } catch (error) {
             
-            next(new ErrorHandler('Cambio de contraseña éxitoso', 500));
+            next(new ErrorHandler('Error al cambiar contraseña', 500));
         }
     }
 

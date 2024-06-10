@@ -192,7 +192,6 @@ class AuthController extends ResponseData_1.ResponseData {
                 const response = yield this.authUseCase.findUser(email);
                 const newCode = parseInt((0, Utils_1.generateRandomCode)());
                 const NoAttempts = 2;
-                console.log(response.verify_code);
                 if (response.verify_code) {
                     const { attemps } = (response.verify_code);
                     if (attemps >= 1) {
@@ -203,7 +202,7 @@ class AuthController extends ResponseData_1.ResponseData {
                             this.invoke(success, 200, res, `${message}`, next);
                         }
                         catch (error) {
-                            console.log(error);
+                            next(new ErrorHandler_1.ErrorHandler('Error', 500));
                         }
                     }
                     if (attemps === 0) {
@@ -217,7 +216,7 @@ class AuthController extends ResponseData_1.ResponseData {
                         this.invoke(success, 201, res, `${message}`, next);
                     }
                     catch (error) {
-                        console.log(error);
+                        next(new ErrorHandler_1.ErrorHandler('Error', 500));
                     }
                 }
             }
@@ -316,13 +315,14 @@ class AuthController extends ResponseData_1.ResponseData {
         return __awaiter(this, void 0, void 0, function* () {
             const { user } = req;
             const { password } = req.body;
+            console.log(user, password);
             const id = user.toString();
             try {
-                const response = yield this.authUseCase.restorePassword(id, password);
-                this.invoke(response, 200, res, 'Cambio la contraseña exitosamente', next);
+                yield this.authUseCase.restorePassword(id, password);
+                this.invoke('', 200, res, 'Cambio la contraseña exitosamente', next);
             }
             catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Cambio de contraseña éxitoso', 500));
+                next(new ErrorHandler_1.ErrorHandler('Error al cambiar contraseña', 500));
             }
         });
     }
