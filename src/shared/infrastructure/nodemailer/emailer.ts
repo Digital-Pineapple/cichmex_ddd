@@ -1,12 +1,13 @@
-import nodemaler from 'nodemailer'
+import nodemailer from 'nodemailer'
 import fs from 'fs'
+import { google } from 'googleapis';
+const OAuth2 = google.auth.OAuth2
 
 const dirname   = process.env.DIR_NODEMAILER;
 const dirEmail  = process.env.EMAIL_SEND_MESSAGES
 const password  = process.env.PASSWORD_EMAIL_MESSAGES
 
 const htmlContent = fs.readFileSync(dirname + '/WelcomeEmail.html', 'utf-8');
-
 //  export const createTrans = () =>{
 //     const transport = nodemaler.createTransport({
 //       host: "sandbox.smtp.mailtrap.io",
@@ -19,19 +20,20 @@ const htmlContent = fs.readFileSync(dirname + '/WelcomeEmail.html', 'utf-8');
 //     return transport
 // }
 
-export const createTrans = () =>{
-  const transport = nodemaler.createTransport({
-    service: "gmail",
-    auth: {
-      user: dirEmail,
-      pass: password
+
+// Create a transporter object
+const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, 
+  auth: {
+    user: dirEmail,
+    pass: password,
   }
-  })
-  return transport
-}
+});
+
  export const sendMail = async(email:string, fullname:string) =>{
     
-    const transporter = createTrans()
     const info = await transporter.sendMail({
         from:'"CarWash autolavado y más","<CarWash@gmail.com.mx"', //Correo que envia el mensaje,
         to:email,   //Correo que recibe
@@ -44,14 +46,13 @@ export const createTrans = () =>{
     return 
 }
 
+
 export const sendCodeMail = async(email:any, fullname:any, code:any) =>{
 
-    
-    const transporter = createTrans()
 
     try {
 
-      const info = await transporter.sendMail({
+         await transporter.sendMail({
         from:dirEmail, //Correo que envia el mensaje,
         to:email,   //Correo que recibe
         subject:`Restablecer Contraseña ${fullname} a CICHMEX`,
