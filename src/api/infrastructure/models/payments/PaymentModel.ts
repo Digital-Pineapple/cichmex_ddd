@@ -20,6 +20,10 @@ const PaymentSchema = new Schema<PaymentEntity>({
         type:Boolean,
         required:false,
         default:true,
+    },
+    payment_status:{
+        type:String,
+        required:false,
     }
    
 }, {
