@@ -174,7 +174,7 @@ export class MPService {
 
         try {
             const response = await this.payment.create({
-                requestOptions: { idempotencyKey: uuid, timeout: 5000 },
+                requestOptions: { idempotencyKey: `${uuid}`, timeout: 5000 },
                 body,
             });
 
