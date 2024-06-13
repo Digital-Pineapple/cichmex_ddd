@@ -156,7 +156,8 @@ export class PaymentController extends ResponseData {
                             total: infoPayment.formData.transaction_amount,
                             branch: branch_id,
                             user_id: user.user_id,
-                            paymentType: infoPayment.paymentType 
+                            paymentType: infoPayment.paymentType, 
+                            payment_status : response?.status
                         }
                         try {
                             const order = await this.productOrderUseCase.createProductOrder(values1)
@@ -283,8 +284,8 @@ export class PaymentController extends ResponseData {
 
                 const response = await this.paymentUseCase.createNewPayment({ MP_info: info });
                 if (!(response instanceof ErrorHandler)) {
-                    const id_client = response?.MP_info.additional_info.payer.first_name;
-                    const idMembership = response?.MP_info.additional_info.items[0].id;
+                    const id_client = response.MP_info?.additional_info.payer.first_name;
+                    const idMembership = response.MP_info?.additional_info.items[0].id;
                     const membership_info = await this.membershipUseCase.getInfoMembership(idMembership);
                     if (!(membership_info instanceof ErrorHandler)) {
                         let start_date1 = moment().format('L');

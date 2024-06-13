@@ -39,6 +39,7 @@ export interface ProductImage  {
   export interface ProductOrderEntity{
 
     payment: PaymentEntity;
+    payment_status ?: string; 
     user_id:UserEntity
     products?: [ProductEntity];
     discount?: number;
