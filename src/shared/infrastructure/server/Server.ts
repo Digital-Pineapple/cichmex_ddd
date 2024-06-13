@@ -28,7 +28,7 @@ export class Server {
         this.io = new ServerSocket(this.httpServer, {
             path: '/socket/',
             cors: {
-                origin: "https://localhost:4000",
+                origin: process.env.SOCKET_URL_CORS,
                 methods: ["GET", "POST"]
             },
         });
