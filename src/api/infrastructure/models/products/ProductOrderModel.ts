@@ -57,6 +57,10 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       type:Boolean,
       required:false,
       default:true,
+     },
+     download_ticket:{
+      type:String,
+      required:false,
      }
 
   },
