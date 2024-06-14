@@ -30,6 +30,7 @@ export interface ILocation {
   lat?: number;
   lgt?: number;
   direction: string;
+  neighborhood?: string;
   cp?:number;
 }
 
