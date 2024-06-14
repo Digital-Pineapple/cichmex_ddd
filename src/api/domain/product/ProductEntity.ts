@@ -50,7 +50,8 @@ export interface ProductImage  {
     storeHouseStatus?:boolean;
     deliveryStatus: boolean;
     status?:boolean;
-    paymentType: string;
+    paymentType?: string;
+    download_ticket?:string;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;
   }
