@@ -39,6 +39,7 @@ export interface ProductImage  {
   export interface ProductOrderEntity{
 
     payment: PaymentEntity;
+    payment_status ?: string; 
     user_id:UserEntity
     products?: [ProductEntity];
     discount?: number;
@@ -49,7 +50,8 @@ export interface ProductImage  {
     storeHouseStatus?:boolean;
     deliveryStatus: boolean;
     status?:boolean;
-    paymentType: string;
+    paymentType?: string;
+    download_ticket?:string;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;
   }
