@@ -150,7 +150,7 @@ export class PaymentController extends ResponseData {
             const response1 = await this.paymentUseCase.createNewPayment({ uuid: uuid4 });
 
             const { formData, selectedPaymentMethod } = infoPayment;
-            const { metadata } = formData
+            const  metadata  = formData?.metadata
 
             const path_notification = `${process.env.URL_NOTIFICATION}api/payments/Mem-Payment-success`;
 
@@ -169,7 +169,7 @@ export class PaymentController extends ResponseData {
                     },
                 },
                 notification_url: path_notification,
-                metadata: { payment_point: metadata.payment_point }
+                metadata: { payment_point: metadata?.payment_point }
             };
 
 
@@ -181,12 +181,12 @@ export class PaymentController extends ResponseData {
             }
 
 
-
             try {
                 const payment = await payment1.create({
                     requestOptions: { idempotencyKey: response1.uuid },
                     body: body1
                 });
+
 
 
                 if (payment) {
@@ -236,6 +236,7 @@ export class PaymentController extends ResponseData {
                 next(new ErrorHandler('Error al crear el pago con MercadoPago', 500));
             }
         } catch (error) {
+            
             next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }
     }
