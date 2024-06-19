@@ -61,8 +61,16 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
      download_ticket:{
       type:String,
       required:false,
+     },
+     route_status:{
+      type:Boolean,
+      default:false,
+      required:false,
+     },
+     point_pickup_status:{
+      type:Boolean,
+      required:false,
      }
-
   },
   {
     versionKey: false,

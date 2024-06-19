@@ -213,9 +213,11 @@ export class PaymentController extends ResponseData {
                             };
                             if (typeDelivery === 'homedelivery') {
                                 values1['deliveryLocation'] = location;
+                               
                             }
                             if (typeDelivery === 'pickup') {
                                 values1['branch'] = branch_id
+                                values1['point_pickup_status'] = false
                             }
 
                             try {
