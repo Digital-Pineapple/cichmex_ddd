@@ -1,3 +1,5 @@
+import { BranchOfficeEntity } from "../branch_office/BranchOfficeEntity";
+import { storeHouseEntity } from "../storehouse/storeHouseEntity";
 import { TypeUserEntity } from "../typeUser/TypeUserEntity";
 import mongoose from "mongoose";
 export interface IPhone  {
@@ -30,6 +32,7 @@ export interface UserEntity {
     facebook        ?:   Boolean;
     phone_id        ?:   IPhone;
     accountVerify   ?:   boolean;
+    employee_detail ?:   EmployeeDetail;
     verify_code     ?:   UserVerifyCodeEntity;
     facturapi_id    ?:   string;
     status          ?:   boolean;
@@ -41,4 +44,13 @@ export interface UserEntity {
 export interface UserVerifyCodeEntity{
     attempts    ?: number,
     code        ?:number,
+ }
+
+ export interface EmployeeDetail{
+    salary                         ?: number,
+    sales_commission_porcent       ?:number,
+    branch_office                  ?: [BranchOfficeEntity],
+    store_house                    ?: [storeHouseEntity]
+
+
  }

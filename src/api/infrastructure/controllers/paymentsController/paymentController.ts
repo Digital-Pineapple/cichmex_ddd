@@ -140,9 +140,10 @@ export class PaymentController extends ResponseData {
     public async createPaymentProductMP(req: Request, res: Response, next: NextFunction) {
         const { products, user, branch_id, infoPayment, productsOrder, location, typeDelivery } = req.body;
         const access_token = config.MERCADOPAGO_TOKEN;
-        const client = new MercadoPagoConfig({ accessToken: access_token });
+        const client = new MercadoPagoConfig({ accessToken: access_token, options:{timeout:5000} });
         const payment1 = new Payment(client);
         const uuid4 = uuidv4();
+        
 
 
         try {
@@ -150,7 +151,10 @@ export class PaymentController extends ResponseData {
             const response1 = await this.paymentUseCase.createNewPayment({ uuid: uuid4 });
 
             const { formData, selectedPaymentMethod } = infoPayment;
-            const  metadata  = formData?.metadata
+            const  metadata1  = formData?.metadata
+            const point = metadata1.payment_point
+            
+            
 
             const path_notification = `${process.env.URL_NOTIFICATION}api/payments/Mem-Payment-success`;
 
@@ -159,35 +163,41 @@ export class PaymentController extends ResponseData {
                 payment_method_id: formData.payment_method_id,
                 payer: {
                     email: formData.payer.email,
-                    first_name: formData.payer.first_name,
-                    last_name: formData.payer.last_name,
+                    first_name:formData.payer.first_name,
+                    last_name:formData.payer.last_name,
+                    // id:user.user_id,
+
+                    
                 },
                 additional_info: {
                     items: products,
                     payer: {
                         first_name: user.user_id,
+                        
                     },
                 },
+                token : formData.token,
+                issuer_id:formData.issuer,
+                installments: formData.installments,
                 notification_url: path_notification,
-                metadata: { payment_point: metadata?.payment_point }
+                metadata: {payment_point: point}
             };
 
 
 
-            if (selectedPaymentMethod !== "ticket") {
-                body1['token'] = formData.token;
-                body1['issuer_id'] = formData.issuer;
-                body1['installments'] = formData.installments;
-            }
-
+            // if (selectedPaymentMethod !== "ticket") {
+            //     body1['token'] = formData.token;
+            //     body1['issuer_id'] = formData.issuer;
+            //     body1['installments'] = formData.installments;
+            // }
+            
 
             try {
                 const payment = await payment1.create({
-                    requestOptions: { idempotencyKey: response1.uuid },
+                    requestOptions: { idempotencyKey: response1.uuid,  },
                     body: body1
                 });
-
-
+                
 
                 if (payment) {
                     try {
@@ -235,10 +245,10 @@ export class PaymentController extends ResponseData {
                     next(new ErrorHandler('Error en la respuesta de pago', 500));
                 }
             } catch (error) {
+                
                 next(new ErrorHandler('Error al crear el pago con MercadoPago', 500));
             }
         } catch (error) {
-            
             next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }
     }

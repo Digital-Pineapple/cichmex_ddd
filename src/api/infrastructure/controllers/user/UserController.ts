@@ -43,7 +43,8 @@ export class UserController extends ResponseData {
         this.physicalDeletePhone = this.physicalDeletePhone.bind(this);
         this.validateUser = this.validateUser.bind(this);
         this.updateCollectionPoint  = this.updateCollectionPoint.bind(this);
-
+        this.RegisterCarrierDriver  = this.RegisterCarrierDriver.bind(this);
+        this.getAllCarrierDrivers  = this.getAllCarrierDrivers.bind(this);
     }
 
 
@@ -91,6 +92,7 @@ export class UserController extends ResponseData {
     }
     public async getUser(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
         const { id } = req.params
+
         try {
             const response = await this.userUseCase.getOneUser(id)
             if (!(response instanceof ErrorHandler) && response?.profile_image !== undefined) {
@@ -100,6 +102,19 @@ export class UserController extends ResponseData {
             }
             this.invoke(response, 200, res, '', next);
         } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+
+    public async getAllCarrierDrivers(req: Request, res: Response, next: NextFunction): Promise<void> {
+        
+        try {
+            const response = await this.userUseCase.allCarrierDrivers()
+
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error);
+            
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
@@ -399,5 +414,22 @@ export class UserController extends ResponseData {
         next(new ErrorHandler("Hubo un error al editar la información", 500));
     }
 }
+
+public async RegisterCarrierDriver(req: Request, res: Response, next: NextFunction) {
+    const { values } = req.body
+
+    try {
+        const responsedefault = await this.typeUserUseCase.getTypeUsers()
+        const def = responsedefault?.filter(item => item.name === 'CarrierDriver')
+        const TypeUser_id = def?.map(item => item._id)
+        const response = await this.userUseCase.createUser({ ...values, type_user: TypeUser_id })
+        this.invoke(response, 200, res, 'Creado con éxito', next);
+    } catch (error) {
+        next(new ErrorHandler("Hubo un error al crear", 500));
+    }
+}
+
+
+
 
 }

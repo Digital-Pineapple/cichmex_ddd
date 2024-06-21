@@ -68,11 +68,16 @@ const UserSchema = new Schema<UserEntity>({
         type: Object,
         requred:false,
     },
+    employee_detail:{
+        type: Object,
+        required:false
+    },
     status:{
         type:Boolean,
         required:false,
         default:true,
        }
+
 }, {
     timestamps: true,
     versionKey: false,

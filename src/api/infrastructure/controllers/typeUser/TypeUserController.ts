@@ -39,12 +39,12 @@ export class TypeUserController extends ResponseData {
     }
 
     public async createTypeUser(req: Request, res: Response, next: NextFunction) {
-        const { name, type } = req.body;
+        const { name } = req.body;
+        
         try {
-            const response = await this.typeUserUseCase.createNewTypeUser(name,type)
+            const response = await this.typeUserUseCase.createNewTypeUser(name)
             this.invoke(response, 200, res, '', next)
         } catch (error) {
-            console.log(error)
             next(new ErrorHandler('Hubo un error al dar de alta', 500));
         }
     }
