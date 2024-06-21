@@ -180,7 +180,11 @@ export class PaymentController extends ResponseData {
                 issuer_id:formData.issuer,
                 installments: formData.installments,
                 notification_url: path_notification,
-                metadata: {payment_point: point}
+                metadata: {payment_point: point},
+                external_reference:response1?._id,
+                statement_descriptor:formData.statement_descriptor,
+                
+                
             };
 
 
@@ -195,7 +199,9 @@ export class PaymentController extends ResponseData {
             try {
                 const payment = await payment1.create({
                     requestOptions: { idempotencyKey: response1.uuid,  },
-                    body: body1
+                    body: {
+                        statement_descriptor:
+                    }
                 });
                 
 
