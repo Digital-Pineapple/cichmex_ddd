@@ -25,6 +25,7 @@ shoppingCartRouter
     .delete('/products/:id', shoppingCartController.deleteProductsInShoppingCart)
     .put('/products/:id', shoppingCartController.updateShoppingCartProducts)
     .put('/product/quantity/:id', shoppingCartController.updateProductQuantity)
+    .put ('/merge/ok', shoppingCartController.mergeCart)
     
 
 export default shoppingCartRouter;
