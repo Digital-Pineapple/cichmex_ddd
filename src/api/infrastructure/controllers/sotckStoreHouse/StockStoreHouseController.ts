@@ -43,12 +43,12 @@ export class StockStoreHouseController extends ResponseData {
         } else {
             next(new ErrorHandler('No tiene los permisos necesarios', 500));
         }
-        try {
-            const response = await this.stockStoreHouseUseCase.getStock(id)            
-            this.invoke(response, 200, res, '', next);
-        } catch (error) {
-            next(new ErrorHandler('Hubo un error al consultar la información', 500));
-        }
+        // try {
+        //     const response = await this.stockStoreHouseUseCase.getStock(id)            
+        //     this.invoke(response, 200, res, '', next);
+        // } catch (error) {
+        //     next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        // }
     }
 
     public async getAvailableStock(req: Request, res: Response, next: NextFunction) {
