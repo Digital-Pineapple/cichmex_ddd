@@ -8,7 +8,7 @@ export interface IPhone  {
     phone_number     :   number;
     expiration_date  ?:   NativeDate;
     verified         ?:   boolean;
-    status?: boolean;
+    status           ?: boolean;
     createdAt       ?:   NativeDate;
     updatedAt       ?:   NativeDate;
 }
@@ -17,6 +17,9 @@ export interface IPhoneResponse  {
     phone_id              :   string;
     phone_number     :   number;
     verified         ?:   boolean;
+}
+export interface IEmployeeResponse  {
+    _id ?: string
 }
 export interface UserEntity {
     _id              :   string;

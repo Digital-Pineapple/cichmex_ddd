@@ -43,7 +43,6 @@ class S3Service {
                 return { success: true, message: 'Archivo subido correctamente', key };
             }
             catch (error) {
-                console.log(error);
                 return { success: false, message: 'No se ha podido subir el archivo', key: '' };
             }
         });

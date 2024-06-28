@@ -1,6 +1,6 @@
 import { Authentication } from '../authentication/AuthenticationService';
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
-import { IPhone, IPhoneResponse } from '../../domain/user/UserEntity';
+import { IEmployeeResponse, IPhone, IPhoneResponse } from '../../domain/user/UserEntity';
 import { PhoneRepository } from '../../domain/user/PhoneRepository';
 import { IPhoneRequest } from '../auth/interfaces';
 export class UserPhoneUseCase extends Authentication {
@@ -48,6 +48,11 @@ export class UserPhoneUseCase extends Authentication {
     return phoneResponse;
     }
   }
+
+  public async createEmployeePhone(phone: IPhone): Promise<IPhone| ErrorHandler> {
+    return await this.phoneRepository.createOne({...phone})
+  }
+
   public async updateUserPhone(id: string, updated:object): Promise<IPhone | ErrorHandler | null> {
     return await this.phoneRepository.updateOne(id,updated)
   }

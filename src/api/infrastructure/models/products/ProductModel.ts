@@ -48,6 +48,10 @@ const ProductSchema = new Schema<ProductEntity>(
       type:Boolean,
       required:false,
       default:true,
+     },
+     weight:{
+      type:String,
+      required:false,
      }
 
   },

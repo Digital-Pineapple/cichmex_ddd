@@ -41,7 +41,7 @@ export class MembershipBenefitsController extends ResponseData {
       const response = await this.membershipBenefitsUseCase.getDetailMembershipBenefitHistory(id);
       this.invoke(response, 200, res, "ok", next);
     } catch (error) {
-      console.log(error);
+
     }
   }
   
@@ -69,7 +69,7 @@ export class MembershipBenefitsController extends ResponseData {
       const response = await this.membershipBenefitsUseCase.getMembershipBenefitsUser(_id);
       this.invoke(response, 200, res, "", next);
     } catch (error) {
-      console.log(error);
+      
       
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
@@ -115,7 +115,7 @@ export class MembershipBenefitsController extends ResponseData {
       const response =  await this.membershipBenefitsUseCase.getDetailMembershipBenefitHistory(idMembership)
       this.invoke(response, 201, res, "Creado con éxito alta con éxito", next);
     } catch (error) {
-      console.log(error);
+  
       next(new ErrorHandler("Hubo un error al crear", 500))
     }
 
@@ -148,7 +148,7 @@ export class MembershipBenefitsController extends ResponseData {
       const resp = await this.memberHistoryUseCase.deleteHistoryMembership(id,  date_service)
       this.invoke(resp,200,res,'Servicio pagado con éxito',next)
     } catch (error) {
-      console.log(error);
+   
       next(new ErrorHandler("Hubo un error eliminar", 500));
       
       
@@ -165,7 +165,7 @@ export class MembershipBenefitsController extends ResponseData {
       const resp = await this.memberHistoryUseCase.getHistoryMembership()
       this.invoke(resp,200,res,'Servicio pagado con éxito',next)
     } catch (error) {
-      console.log(error);
+    
       next(new ErrorHandler("Hubo un error ", 500));
       
       
@@ -192,7 +192,7 @@ export class MembershipBenefitsController extends ResponseData {
         next(validateActivated)
       }
     } catch (error) {
-      console.log(error);
+  
       next(new ErrorHandler("Servicio ya consumido", 500));
       
       
@@ -223,7 +223,7 @@ const trimmedId = idH.trim();
     }
     
    } catch (error) {
-    console.log(error);
+  
     
     next(new ErrorHandler("Hubo un error ", 500));
    }

@@ -17,6 +17,7 @@ export interface ProductEntity {
   subCategory?: SubCategory;
   images?: string[];
   status?:boolean;
+  weight ? : string;
   createdAt        :   NativeDate;
   updatedAt        :   NativeDate;
 }

@@ -82,7 +82,7 @@ export class TypeUserController extends ResponseData {
           this.invoke(todos, 201, res, "Alta con éxito", next);
           
         } catch (error) {
-           console.log(error);
+           
             
           // Ajusta el código de estado y mensaje de error según tus necesidades.
           next(new ErrorHandler('Hubo un error al consultar la información', 500));

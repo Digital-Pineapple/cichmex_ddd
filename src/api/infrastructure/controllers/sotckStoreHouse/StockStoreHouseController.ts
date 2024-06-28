@@ -83,7 +83,7 @@ export class StockStoreHouseController extends ResponseData {
             }
         }
         catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
 
@@ -98,7 +98,7 @@ export class StockStoreHouseController extends ResponseData {
             this.invoke(response, 201, res, 'Se actualizó con éxito', next);
 
         } catch (error) {
-            console.log(error);
+          
             next(new ErrorHandler('Hubo un error al actualizar', 500));
         }
     }
@@ -123,7 +123,7 @@ export class StockStoreHouseController extends ResponseData {
             }
 
         } catch (error) {
-            console.log(error);
+          
             next(new ErrorHandler('Hubo un error al actualizar', 500));
         }
     }
@@ -153,7 +153,7 @@ export class StockStoreHouseController extends ResponseData {
           
 
         } catch (error) {
-            console.log(error);
+          
             next(new ErrorHandler('Hubo un error al actualizar', 500));
         }
     }
@@ -174,7 +174,7 @@ export class StockStoreHouseController extends ResponseData {
             this.invoke(allData, 201, res, 'Se actualizó con éxito', next);
 
         } catch (error) {
-            console.log(error);
+          
             next(new ErrorHandler('Hubo un error al actualizar', 500));
         }
     }
@@ -197,7 +197,6 @@ export class StockStoreHouseController extends ResponseData {
 
 
         } catch (error) {
-            console.log(error);
             next(new ErrorHandler('Hubo un error al actualizar', 500));
         }
     }

@@ -1,13 +1,7 @@
-import { CategoryUseCase } from './../../../application/category/CategoryUseCase';
-import { body } from 'express-validator';
 import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
-import { ProductUseCase } from "../../../application/product/productUseCase";
-import { S3Service } from "../../../../shared/infrastructure/aws/S3Service";
-import { stringify } from 'uuid';
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
-import moment from 'moment';
 
 export class ProductOrderController extends ResponseData {
   protected path = "/productOrder";

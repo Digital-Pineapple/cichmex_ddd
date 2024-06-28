@@ -31,8 +31,6 @@ export class MembershipHistoryUseCase {
     }
     public async consumeBenefit(id:any, membershipBenefit_id:any, date_service:string, typeCar_id:any, car_color:string, plate_number:string, branch_office_id:any, service:any ): Promise<MembershipHistory | ErrorHandler> {
         const item = await this.membershipHistoryRepository.getOneMemHistory({_id:id})
-        console.log(item);
-        
         
      if (item.status === false) {
         return new ErrorHandler('Beneficio ya consumido',500)

@@ -78,7 +78,7 @@ export class DocumentationController extends ResponseData {
 
         }
         catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Hubo un error al crear el documento', 500));
         }
 
@@ -98,7 +98,7 @@ export class DocumentationController extends ResponseData {
                documentation.url = url
                this.invoke(documentation, 200, res, 'La documentacion se actualizó con éxito', next);
         } catch (error) {
-            console.log(error);
+          
             next(new ErrorHandler('Hubo un error al actualizar la documentación', 500));
         }
     }
@@ -112,7 +112,7 @@ export class DocumentationController extends ResponseData {
             const documentation = await this.documentationUseCase.updateOneDocumentation(id, { status: false });
             this.invoke(documentation, 200, res, 'La documentación ha sido eliminado', next);
         } catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Hubo un error al eliminar la documentación', 500));
         }
 
@@ -133,7 +133,7 @@ export class DocumentationController extends ResponseData {
             return this.invoke(response,200,res,'', next)
              
         } catch (error) {
-            console.log(error);
+  
             
 
             next(new ErrorHandler(`Hubo un error: ${error}`, 500));

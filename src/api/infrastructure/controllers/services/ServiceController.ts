@@ -71,7 +71,7 @@ export class ServicesController extends ResponseData {
                 this.invoke(response, 201, res, 'El servicio se actualizó con éxito', next);
             }
         } catch (error) {
-            console.log(error);
+          
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
 
         }
@@ -93,7 +93,7 @@ export class ServicesController extends ResponseData {
             const response = await this.servicesUseCase.getServices();
             this.invoke(response, 201, res, 'Categoria encontrada', next);
         } catch (error) {
-            console.log(error);
+            
 
             next(new ErrorHandler('', 500));
         }

@@ -58,14 +58,14 @@ export class CarDetailController extends ResponseData {
             await Promise.all(response?.map(async(res)=> {
                 const url = await this.s3Service.getUrlObject(res.carDetail_image + ".jpg");
                 const nameTypeCar = await this.carDetailUseCase.getDetailNameCar( res.typeCar_id );
-                console.log(nameTypeCar);
+            
                 
                 res.carDetail_image = url
 
             }))
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-            console.log(error);
+           
             
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
@@ -94,7 +94,7 @@ export class CarDetailController extends ResponseData {
             }
         }
         catch (error) {
-            console.log(error);
+          
             next(new ErrorHandler('Hubo un error al crear el auto', 500));
         }
 
@@ -125,7 +125,7 @@ export class CarDetailController extends ResponseData {
                 this.invoke(response, 201, res, 'Se actualizó con éxito', next);     
             }
         } catch (error) {
-            console.log(error);
+       
             next(new ErrorHandler('Hubo un error al actualizar la categoría', 500));
         }
     }
@@ -153,7 +153,7 @@ export class CarDetailController extends ResponseData {
         }
             this.invoke(response, 200, res, message, next);
         } catch (error) {
-            console.log(error)
+           
             next(new ErrorHandler(`Hubo un error al subir la foto ${error}`, 500));
         }
     }

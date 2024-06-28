@@ -9,12 +9,11 @@ const PhoneSchema = new Schema<IPhone>  ({
     },
     prefix: {
         type    : String,
-        required: false,
+        required: true,
     },
     phone_number: {
         type    : Number,
-        required: false,
-        unique: true,
+        required: true,
     },
     expiration_date: {
         type    : Date,

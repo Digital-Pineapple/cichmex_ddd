@@ -44,7 +44,7 @@ export class ShoppingCartController extends ResponseData {
             const response = await this.shoppingCartUseCase.getShoppingCartByUser(id)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-            console.log(error);
+           
 
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
@@ -58,8 +58,7 @@ export class ShoppingCartController extends ResponseData {
             const response = await this.shoppingCartUseCase.createShoppingCart({ user_id, products, memberships: membership })
             this.invoke(response, 200, res, '', next)
         } catch (error) {
-            console.log(error);
-
+           
             next(new ErrorHandler('Error', 500));
         }
     }
@@ -87,7 +86,7 @@ export class ShoppingCartController extends ResponseData {
                 this.invoke({}, 404, res, 'Shopping cart not found', next);
             }
         } catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Error', 500));
         }
     }
@@ -107,11 +106,11 @@ export class ShoppingCartController extends ResponseData {
 
         try {
             const response = await this.shoppingCartUseCase.updateShoppingCart(id, { memberships: [] })
-            console.log(response);
+          
 
             this.invoke(response, 201, res, 'Eliminado con exito', next);
         } catch (error) {
-            console.log(error);
+          
 
             next(new ErrorHandler('Hubo un error eliminar', 500));
         }
@@ -131,8 +130,7 @@ export class ShoppingCartController extends ResponseData {
 
             this.invoke(response2, 201, res, 'Eliminado con exito', next);
         } catch (error) {
-            console.log(error);
-
+            
             next(new ErrorHandler('Hubo un error eliminar', 500));
         }
     }
@@ -144,7 +142,7 @@ export class ShoppingCartController extends ResponseData {
             const response = await this.shoppingCartUseCase.updateShoppingCart(id, { products: [] });
             this.invoke(response, 201, res, 'Carrito de compras vaciado', next);
         } catch (error) {
-            console.log(error);
+          
             next(new ErrorHandler('Hubo un error eliminar', 500));
         }
     }
@@ -172,7 +170,7 @@ export class ShoppingCartController extends ResponseData {
             
             this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
         } catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Hubo un error al actualizar el carrito', 500));
         }
     }

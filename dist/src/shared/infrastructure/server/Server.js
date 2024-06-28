@@ -43,7 +43,7 @@ class Server {
         this.io = new socket_io_1.Server(this.httpServer, {
             path: '/socket/',
             cors: {
-                origin: "https://localhost:4000",
+                origin: process.env.SOCKET_URL_CORS,
                 methods: ["GET", "POST"]
             },
         });

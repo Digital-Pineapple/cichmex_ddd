@@ -35,7 +35,7 @@ export class S3Service {
             await this.s3.upload(params).promise();
             return { success: true, message: 'Archivo subido correctamente', key};
         } catch (error) {
-            console.log(error);
+          
             
             return { success: false, message: 'No se ha podido subir el archivo', key: '' };
         }

@@ -35,7 +35,7 @@ export class UserUseCase extends Authentication {
     return await this.userRepository.updateOne(id,{...updated})
   }
   public async updateStore(id: string, updated:object): Promise<UserEntity | ErrorHandler | null> {
-   console.log(updated);
+  
    
     return await this.userRepository.updateOne(id,{updated})
   }
@@ -49,7 +49,7 @@ export class UserUseCase extends Authentication {
     return await this.userRepository.PhysicalDelete(id)
   }
   public async findUser(email:string): Promise<UserEntity | ErrorHandler | null> {
-    return await this.userRepository.findOneItem({email:email})
+    return await this.userRepository.findOneItem({email:email, status:true})
 
   }
   public async findUserByPhone(phone_id:string): Promise<UserEntity | ErrorHandler | null> {
@@ -66,9 +66,7 @@ export class UserUseCase extends Authentication {
   }
 
   public async createCarrierDriver(body:any): Promise<UserEntity | IAuth |  ErrorHandler | null> {
-    let user = await this.userRepository.findOneItem({ email: body.email });
-        if (user) return new ErrorHandler('El usuario ya existe',400);
-        const password = await this.encryptPassword(body.password);
+        const password = this.encryptPassword(body.password);
         const user1 = await this.userRepository.createOne({ ...body, password });
         return await this.generateJWT(user1);
     

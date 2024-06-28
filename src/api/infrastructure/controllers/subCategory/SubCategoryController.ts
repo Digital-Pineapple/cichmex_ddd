@@ -59,7 +59,7 @@ export class SubCategoryController extends ResponseData {
             const response = await this.subCategoryUseCase.createNewSubCategory(name, category);
             this.invoke(response, 201, res, 'La subcategoria se creo con exito', next);
         } catch (error) {
-            console.log(error);
+          
             
             next(new ErrorHandler('Hubo un error al crear la subcategoria', 500));
         }
@@ -82,7 +82,7 @@ export class SubCategoryController extends ResponseData {
             }
 
         } catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Hubo un error al actualizar la categoría', 500));
         }
     }
@@ -99,13 +99,13 @@ export class SubCategoryController extends ResponseData {
     }
     // public async searchSubCategory(req: Request, res: Response, next: NextFunction) {
     //     const {search} = req.query;
-    //     console.log(req.query);
+    //    
         
     //     try {
     //         const response = await this.subCategoryUseCase.searchSubCategory(search);
     //         this.invoke(response, 201, res, 'Subcategoria encontrada', next);
     //     } catch (error) {
-    //         console.log(error);
+    //       
             
     //         next(new ErrorHandler('No se encontro la Subcategoria', 500));   
     //     }
@@ -117,7 +117,7 @@ export class SubCategoryController extends ResponseData {
             const response = await this.subCategoryUseCase.getSubCtegoriesByCategoryId(id)
             this.invoke(response, 201, res, 'Subcategoria encontrada', next);
         } catch (error) {
-            console.log(error);
+          
             
             next(new ErrorHandler('No se encontro la Subcategoria', 500));   
         }

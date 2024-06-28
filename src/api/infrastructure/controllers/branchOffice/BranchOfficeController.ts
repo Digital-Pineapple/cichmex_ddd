@@ -56,13 +56,13 @@ export class BranchOfficeController extends ResponseData {
         try {
             // Obtener la información de las sucursales
             const response = await this.branchOfficeUseCase.getInfoBranchOffices();
-            console.log(response,'dasd');
+          
             
             this.invoke(response, 200, res, "", next);
             
 
         } catch (error) {
-            console.log(error);
+
 
         }
     }
@@ -162,7 +162,7 @@ export class BranchOfficeController extends ResponseData {
 
 
         } catch (error) {
-            console.log(error);
+           
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
 
@@ -188,8 +188,8 @@ export class BranchOfficeController extends ResponseData {
 
 
         } catch (error) {
-            console.log(error);
-            console.log("tu objeto location es: " + location);
+     
+         
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
 
@@ -277,24 +277,24 @@ export class BranchOfficeController extends ResponseData {
 
 
         try {
-            const documents = await this.documentationUseCase.getDocumentationByUserAndVerify(user_id)
+            // const documents = await this.documentationUseCase.getDocumentationByUserAndVerify(user_id)
 
-            const nameFiles = ['csf'];
-            if (!(documents instanceof ErrorHandler) && documents !== null) {
-                const resultado = documents.map((documento: any) =>
-                    nameFiles.some(nombre => documento.name === nombre)
-                );
+            // const nameFiles = ['csf'];
+            // if (!(documents instanceof ErrorHandler) && documents !== null) {
+            //     const resultado = documents.map((documento: any) =>
+            //         nameFiles.some(nombre => documento.name === nombre)
+            //     );
 
-                if (resultado.length === 1) {
+            //     if (resultado.length === 1) {
                     const response = await this.branchOfficeUseCase.validateBranchOffice(id, { activated: true })
                     this.invoke(response, 201, res, 'Activación exitosa', next);
-                } else {
-                    next(new ErrorHandler('Documentos incompletos o no verificados', 500));
-                }
-            }
+                // } else {
+                //     next(new ErrorHandler('Documentos incompletos o no verificados', 500));
+                // }
+            //}
 
         } catch (error) {
-            console.log(error);
+           
 
             next(new ErrorHandler('Error', 500));
         }
