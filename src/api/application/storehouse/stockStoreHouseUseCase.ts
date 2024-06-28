@@ -11,6 +11,9 @@ export class StockStoreHouseUseCase {
     public async getStock(id:any): Promise<StockStoreHouseEntity[] | ErrorHandler | null> {
         return await this.stockStoreHouseRepository.findStockByStoreHouse(id);
     }
+    public async getStockNoDetail(id:any): Promise<StockStoreHouseEntity[] | ErrorHandler | null> {
+        return await this.stockStoreHouseRepository.findStockByStoreHouseNoDetail(id);
+    }
     
     public async getProductStock(product_id: string,StoreHouse_id?:any, populateConfig?:any,   ) : Promise <StockStoreHouseEntity > { 
           return await this.stockStoreHouseRepository.findOneItem({product_id: product_id, StoreHouse_id:StoreHouse_id, status:true}) 

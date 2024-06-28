@@ -8,6 +8,7 @@ import { S3Service } from "../../../../shared/infrastructure/aws/S3Service";
 import { stringify } from 'uuid';
 import { errorMonitor } from 'nodemailer/lib/xoauth2';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
+import { ProductEntity } from '../../../domain/product/ProductEntity';
 
 export class ProductController extends ResponseData {
   protected path = "/product";
@@ -25,6 +26,7 @@ export class ProductController extends ResponseData {
     this.updateProduct = this.updateProduct.bind(this);
     this.deleteProduct = this.deleteProduct.bind(this);
     this.searchProduct = this.searchProduct.bind(this);
+    this.getNoStockProducts = this.getNoStockProducts.bind(this);
     this.getProductsByCategory = this.getProductsByCategory.bind(this);
   }
 
@@ -80,6 +82,35 @@ export class ProductController extends ResponseData {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
+
+  async getNoStockProducts(req: Request, res: Response, next: NextFunction) {
+    try {
+      const products: any[] = await this.productUseCase.getProducts(); // Asegúrate de definir el tipo correcto para getProducts()
+      const stock: any[] = await this.stockStoreHouseUseCase.getStockNoDetail('662fe69b9ba1d8b3cfcd3634'); // Asegúrate de definir el tipo correcto para getStockNoDetail()
+
+      // Obtener los IDs de productos y stock
+      const productIds = new Set(products.map((product) => product._id.toString()));
+      const stockProductIds = new Set(stock.map((item) => item.product_id.toString()));
+
+      // Filtrar productos que no tienen stock asociado
+      const productsNotInStock = products.filter((product) => !stockProductIds.has(product._id.toString()));
+
+      // Filtrar elementos de stock que no están asociados a productos
+      const stockNotInProducts = stock.filter((item) => !productIds.has(item.product_id.toString()));
+
+      // Combinar ambos resultados
+      const uniqueElements = [...productsNotInStock, ...stockNotInProducts];
+
+
+      this.invoke(uniqueElements, 200, res, "", next);
+    } catch (error) {
+     
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+  
+  
+
 
 
   public async createProduct(req: Request, res: Response, next: NextFunction) {

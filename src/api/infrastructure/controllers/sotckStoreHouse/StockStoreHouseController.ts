@@ -64,8 +64,7 @@ export class StockStoreHouseController extends ResponseData {
 
     public async createStock(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params
-        const { product_id, stock } = req.body;
-        
+        const { product_id, stock } = req.body;        
         
         try {
             const available = await this.stockStoreHouseUseCase.getProductStock(product_id,id, PopulateProductCS, )
@@ -105,11 +104,10 @@ export class StockStoreHouseController extends ResponseData {
 
     public async addStock(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params
-
         const { stock } = req.body;
-
         try {
             const response = await this.stockStoreHouseUseCase.getDetailStock(id)
+
             if (response) {
                 
                 const num1 = response?.stock || 0

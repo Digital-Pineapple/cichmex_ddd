@@ -13,7 +13,7 @@ import ProductModel from '../../models/products/ProductModel';
 
 const PopulateProduct : IPopulateProducts={
   path: 'product_id',
-  select: ["name", "price", "tag", "size" ],
+  select: ["name", "price", "tag", "size", "weight" ],
   model: ProductModel
 }
 
@@ -27,8 +27,11 @@ export class StockStoreHouseRepository extends MongoRepository implements  Stock
     async findStockByStoreHouse(branchId: string, populateConfig1?:any): Promise<any[]> {
       return await this.StockBranchModel.find({StoreHouse_id:branchId}).populate(PopulateProduct)
     }
+
+    async findStockByStoreHouseNoDetail(branchId: string): Promise<any[]> {
+      return await this.StockBranchModel.find({StoreHouse_id:branchId})
   
-    // Implementa otros métodos requeridos por la interfaz
+    }
   }
   
   
