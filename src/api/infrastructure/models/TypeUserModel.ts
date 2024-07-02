@@ -12,7 +12,8 @@ const TypeUserSchema = new Schema<TypeUserEntity> ({
     }, 
     type :{
         type:Number,
-        required : true,
+        required : false,
+ 
     },
     status:{
         type:Boolean,

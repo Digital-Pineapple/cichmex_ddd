@@ -43,7 +43,8 @@ export class UserController extends ResponseData {
         this.physicalDeletePhone = this.physicalDeletePhone.bind(this);
         this.validateUser = this.validateUser.bind(this);
         this.updateCollectionPoint  = this.updateCollectionPoint.bind(this);
-
+        this.RegisterCarrierDriver  = this.RegisterCarrierDriver.bind(this);
+        this.getAllCarrierDrivers  = this.getAllCarrierDrivers.bind(this);
     }
 
 
@@ -91,6 +92,7 @@ export class UserController extends ResponseData {
     }
     public async getUser(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
         const { id } = req.params
+
         try {
             const response = await this.userUseCase.getOneUser(id)
             if (!(response instanceof ErrorHandler) && response?.profile_image !== undefined) {
@@ -100,6 +102,19 @@ export class UserController extends ResponseData {
             }
             this.invoke(response, 200, res, '', next);
         } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+
+    public async getAllCarrierDrivers(req: Request, res: Response, next: NextFunction): Promise<void> {
+        
+        try {
+            const response = await this.userUseCase.allCarrierDrivers()
+
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error);
+            
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
@@ -399,5 +414,52 @@ export class UserController extends ResponseData {
         next(new ErrorHandler("Hubo un error al editar la información", 500));
     }
 }
+
+public async RegisterCarrierDriver(req: Request, res: Response, next: NextFunction) {
+    const { values } = req.body;
+    const p = values.phone.split(' ');
+    const prefix = p[0];
+    const phone_number = JSON.parse(p[1] + p[2] + p[3]);
+    const info_phone = {
+        prefix,
+        phone_number,
+        code: generateRandomCode()
+    };
+
+    let response: any = '';
+
+    const noRepeatPhone = await this.phoneUserUseCase.findOnePhone(phone_number)
+    if (noRepeatPhone ) return next( new ErrorHandler('El telefono ya ha sido registrado',400));
+
+    const noRepeatUser = await this.userUseCase.findUser(values.email)
+    
+    if (noRepeatUser ) return next( new ErrorHandler('El usuario ya ha sido registrado',400));
+
+    try {
+        const r_phone = await this.phoneUserUseCase.createEmployeePhone(info_phone);
+        
+            try {
+                const responsedefault = await this.typeUserUseCase.getTypeUsers();
+                const def = responsedefault?.find(item => item.name === 'CarrierDriver');
+                if (def) {
+                    const TypeUser_id = def._id; // Extraer el _id del objeto encontrado
+                    const response1 = await this.userUseCase.createUser({ ...values, type_user: TypeUser_id, phone_id: r_phone?._id });
+                    response = response1;
+                    this.invoke(response, 200, res, 'Creado con éxito', next);
+                } else {
+                    next(new ErrorHandler("Tipo de usuario 'CarrierDriver' no encontrado", 400));
+                }
+            } catch (error) {
+                next(new ErrorHandler("Correo existente", 500));
+            }
+        
+    } catch (error) {
+        next(new ErrorHandler("Error al crear telefono", 500));
+    }
+}
+
+
+
+
 
 }

@@ -20,7 +20,7 @@ export class PaymentUseCase {
         return  await this.paymentRepository.findById(_id);
           
     } 
-    public async createNewPayment(object:any): Promise<PaymentEntity | ErrorHandler | null> {
+    public async createNewPayment(object:any): Promise<PaymentEntity > {
             return await this.paymentRepository.createOne({...object});
     }
 

@@ -17,6 +17,7 @@ export interface ProductEntity {
   subCategory?: SubCategory;
   images?: string[];
   status?:boolean;
+  weight ? : string;
   createdAt        :   NativeDate;
   updatedAt        :   NativeDate;
 }
@@ -39,6 +40,7 @@ export interface ProductImage  {
   export interface ProductOrderEntity{
 
     payment: PaymentEntity;
+    payment_status ?: string; 
     user_id:UserEntity
     products?: [ProductEntity];
     discount?: number;
@@ -47,9 +49,12 @@ export interface ProductImage  {
     branch?: BranchOfficeEntity;
     deliveryLocation?:ILocation;
     storeHouseStatus?:boolean;
+    route_status?: boolean;
+    point_pickup_status?: boolean;
     deliveryStatus: boolean;
     status?:boolean;
-    paymentType: string;
+    paymentType?: string;
+    download_ticket?:string;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;
   }
@@ -67,4 +72,11 @@ export interface ProductImage  {
     references?:string;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;
+  }
+
+  export interface ProductOrderResume {
+    ordersDay ?: number
+    ordersMonth?: number
+    cashDay ?: number,
+    cashMonth ?: number
   }

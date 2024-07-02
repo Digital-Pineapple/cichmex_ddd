@@ -24,9 +24,13 @@ const userValidations = new UserValidations();
 productOrderRouter
 
   .get("/", productOrderController.getAllProductOrders)
+  .get('/resume', productOrderController.gerProductOrderResume)
+
   .get("/:id", productOrderController.getOneProductOrder)
   .get("/user/:id", productOrderController.getOneProductOrderByUser)
+
   .post('/', productOrderController.createProductOrder)
+  .post('/fill-order/:id', productOrderController.fillProductOrder)
   .post("/:id", productOrderController.updateProductOrder )
   .delete("/:id",productOrderController.deleteProductOrder);
 

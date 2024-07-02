@@ -9,25 +9,32 @@ import { ProductValidations } from "../../../../shared/infrastructure/validation
 import { UserValidations } from "../../../../shared/infrastructure/validation/User/UserValidation";
 import { CategoryRepository } from "../../repository/Category/CategoryRepository";
 import CategoryModel from "../../models/CategoryModel";
+import StockStoreHouseModel from '../../models/stockStoreHouse/StockStoreHouseModel';
+import { StockStoreHouseRepository } from '../../repository/stockStoreHouse/StockStoreHouseRepository';
+import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 
 const productRouter = Router();
 
 const productRepository = new ProductRepository(ProductModel);
 const categoryRepository = new CategoryRepository(CategoryModel)
 
+const stockStoreHouseRepository    = new StockStoreHouseRepository(StockStoreHouseModel);
+
 const productUseCase = new ProductUseCase(productRepository);
 const categoryUseCase = new CategoryUseCase(categoryRepository)
+const stockStoreHouseUseCase      = new StockStoreHouseUseCase(stockStoreHouseRepository);
 
 const s3Service = new S3Service();
 const productvalidations = new ProductValidations()
 
-const productController = new ProductController(productUseCase, categoryUseCase,  s3Service);
+const productController = new ProductController(productUseCase, categoryUseCase,stockStoreHouseUseCase,  s3Service);
 const userValidations = new UserValidations();
 
 productRouter
 
   .get("/", productController.getAllProducts)
   .get("/:id", productController.getProduct)
+  .get('/non-existent/get', productController.getNoStockProducts)
   .post('/search-category', productController.getProductsByCategory)
   .post("/", productvalidations.productValidation, userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.createProduct)
   .post("/:id", productvalidations.productValidation,userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.updateProduct)

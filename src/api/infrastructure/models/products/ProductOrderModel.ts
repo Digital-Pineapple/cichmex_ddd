@@ -9,6 +9,10 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       required: true,
       ref:'Payment'
     },
+    payment_status:{
+      type: String,
+      required:false,
+    },
     user_id:{
       type: mongoose.Types.ObjectId,
       required:true,
@@ -53,8 +57,20 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       type:Boolean,
       required:false,
       default:true,
+     },
+     download_ticket:{
+      type:String,
+      required:false,
+     },
+     route_status:{
+      type:Boolean,
+      default:false,
+      required:false,
+     },
+     point_pickup_status:{
+      type:Boolean,
+      required:false,
      }
-
   },
   {
     versionKey: false,

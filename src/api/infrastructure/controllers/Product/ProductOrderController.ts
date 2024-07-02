@@ -1,11 +1,6 @@
-import { CategoryUseCase } from './../../../application/category/CategoryUseCase';
-import { body } from 'express-validator';
 import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
-import { ProductUseCase } from "../../../application/product/productUseCase";
-import { S3Service } from "../../../../shared/infrastructure/aws/S3Service";
-import { stringify } from 'uuid';
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
 
 export class ProductOrderController extends ResponseData {
@@ -16,12 +11,14 @@ export class ProductOrderController extends ResponseData {
   ) {
     super();
     this.getAllProductOrders = this.getAllProductOrders.bind(this);
+    this.gerProductOrderResume = this.gerProductOrderResume.bind(this);
     this.getOneProductOrder = this.getOneProductOrder.bind(this);
     this.getOneProductOrderByUser = this.getOneProductOrderByUser.bind(this);
     this.createProductOrder = this.createProductOrder.bind(this);
     this.updateProductOrder = this.updateProductOrder.bind(this);
-    this.deleteProductOrder  = this.deleteProductOrder.bind(this);
-   
+    this.deleteProductOrder = this.deleteProductOrder.bind(this);
+    this.fillProductOrder  = this.fillProductOrder.bind(this);
+
   }
 
   public async getAllProductOrders(req: Request, res: Response, next: NextFunction) {
@@ -34,12 +31,21 @@ export class ProductOrderController extends ResponseData {
     }
   }
 
+  public async gerProductOrderResume(req: Request, res: Response, next: NextFunction) {
+    try {
+      const response = await this.productOrderUseCase.getProductOrdersResume()
+      this.invoke(response, 200, res, "", next);
+    } catch (error) {
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+
 
   public async getOneProductOrder(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
       const response = await this.productOrderUseCase.getOneProductOrder(id)
-  
+
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
@@ -49,23 +55,23 @@ export class ProductOrderController extends ResponseData {
     const { id } = req.params;
     try {
       const response = await this.productOrderUseCase.ProductOrdersByUser(id)
-  
+
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
-  
+
 
   public async createProductOrder(req: Request, res: Response, next: NextFunction) {
-    const { values } = req.body; 
+    const { values } = req.body;
     try {
-        const response = await this.productOrderUseCase.createProductOrder({...values}  )
-        this.invoke(response, 201, res, 'Creado con éxito', next);
+      const response = await this.productOrderUseCase.createProductOrder({ ...values })
+      this.invoke(response, 201, res, 'Creado con éxito', next);
     } catch (error) {
-        next(new ErrorHandler('Hubo un error al actualizar', 500));
+      next(new ErrorHandler('Hubo un error al actualizar', 500));
     }
-    
+
   }
 
 
@@ -73,26 +79,39 @@ export class ProductOrderController extends ResponseData {
     const { id } = req.params;
     const { values } = req.body;
     try {
-        const response = await this.productOrderUseCase.updateProductOrder(id, {...values}  )
-        this.invoke(response, 201, res, 'Se actualizó con éxito', next);
+      const response = await this.productOrderUseCase.updateProductOrder(id, { ...values })
+      this.invoke(response, 201, res, 'Se actualizó con éxito', next);
     } catch (error) {
-        next(new ErrorHandler("Hubo un error ", 500));
+      next(new ErrorHandler("Hubo un error ", 500));
     }
+  }
+
+  public async fillProductOrder(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const { storeHouse } = req.body;
+    
+    try {
+      const response = await this.productOrderUseCase.startFillProductOrder(id,{storeHouseStatus :storeHouse})
+      this.invoke(response, 201, res, 'Se actualizó con éxito', next);
+    } catch (error) {
+      
+      next(new ErrorHandler("Hubo un error ", 500));
     }
+  }
 
-    public async deleteProductOrder(req: Request, res: Response, next: NextFunction) {
-        const { id } = req.params;
-        try {
-            const response = await this.productOrderUseCase.updateProductOrder(id, {status:false}  )
-            this.invoke(response, 201, res, 'Se eliminó con éxito', next);
-        } catch (error) {
-            next(new ErrorHandler("Hubo un error ", 500));
-        }
-        }
-
-
-     
+  public async deleteProductOrder(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    try {
+      const response = await this.productOrderUseCase.updateProductOrder(id, { status: false })
+      this.invoke(response, 201, res, 'Se eliminó con éxito', next);
+    } catch (error) {
+      next(new ErrorHandler("Hubo un error ", 500));
+    }
   }
 
 
- 
+
+}
+
+
+

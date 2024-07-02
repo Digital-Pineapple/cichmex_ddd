@@ -12,6 +12,12 @@ export class UserUseCase extends Authentication {
   public async allUsers(): Promise<UserEntity[] | ErrorHandler | null> {
     return await this.userRepository.findAll(TypeUserPopulateConfig,PhonePopulateConfig)
   }
+
+  public async allCarrierDrivers(): Promise<UserEntity[] | ErrorHandler | null> {
+    const allUsers = await this.userRepository.findAll(TypeUserPopulateConfig,PhonePopulateConfig)
+    const carrier_drivers = allUsers.filter((item:any) => item.type_user.name === 'CarrierDriver')
+    return carrier_drivers
+  }
   public async getUser(id: string): Promise<UserEntity | ErrorHandler | null > {
     return await this.userRepository.findAllAll(id)
  }
@@ -43,7 +49,7 @@ export class UserUseCase extends Authentication {
     return await this.userRepository.PhysicalDelete(id)
   }
   public async findUser(email:string): Promise<UserEntity | ErrorHandler | null> {
-    return await this.userRepository.findOneItem({email:email})
+    return await this.userRepository.findOneItem({email:email, status:true})
 
   }
   public async findUserByPhone(phone_id:string): Promise<UserEntity | ErrorHandler | null> {
@@ -59,11 +65,18 @@ export class UserUseCase extends Authentication {
     
   }
 
+  public async createCarrierDriver(body:any): Promise<UserEntity | IAuth |  ErrorHandler | null> {
+        const password = this.encryptPassword(body.password);
+        const user1 = await this.userRepository.createOne({ ...body, password });
+        return await this.generateJWT(user1);
+    
+  }
+
   async signInByPhone(phone_id: string, password: string): Promise<ErrorHandler | IAuth> {
     const user = await this.userRepository.findOneItem({phone_id}, TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore)
-    if (user.type_user.name !== 'Partner') {
-      return new ErrorHandler('No es un socio', 400);
-    }
+    // if (user.type_user.name !== 'Partner') {
+    //   return new ErrorHandler('No es un socio', 400);
+    // }
     
     if (!user) return new ErrorHandler('No exite este usuario', 400);
     const validatePassword = this.decryptPassword(password, user.password)

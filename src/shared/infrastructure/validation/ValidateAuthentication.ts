@@ -11,6 +11,8 @@ import { verifyToken } from '../helpers/verifyToken';
 
 export const validateAuthentication = (req: Request, res: Response, next: NextFunction) => {
         const token = req.header('token');
+        
+        
         if (!token) return next(new ErrorHandler('Token is required', 401));
         try {
             const { user } = Jwt.verify(token, config.SECRET_JWT_KEY) as { user: UserEntity };
@@ -28,7 +30,6 @@ export const validateAuthentication = (req: Request, res: Response, next: NextFu
         try {
             const {data} = Jwt.verify(token, config.SECRET_JWT_KEY) as { data: UserEntity } ;
 
-            console.log( data,'verify');
             
              const userData = await UserModel.findById(data);
            
@@ -38,6 +39,7 @@ export const validateAuthentication = (req: Request, res: Response, next: NextFu
             req.user = data;
             next();
         } catch (error) {
+            
             next(new ErrorHandler('Token no valido', 400));
         }
     }

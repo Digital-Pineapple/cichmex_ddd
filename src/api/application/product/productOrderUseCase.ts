@@ -1,6 +1,6 @@
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
 import { InfoBranchOrder } from "../../../shared/domain/PopulateInterfaces";
-import {  ProductOrderEntity } from "../../domain/product/ProductEntity";
+import {  ProductOrderEntity, ProductOrderResume } from "../../domain/product/ProductEntity";
 import { ProductOrderRepository } from "../../domain/product/ProductOrderRepository";
 
 
@@ -9,6 +9,9 @@ export class ProductOrderUseCase {
 
   public async getProductOrders(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
     return await this.productOrderRepository.findAllProductOrders(InfoBranchOrder)
+  }
+  public async getProductOrdersResume(): Promise<ProductOrderResume> {
+    return await this.productOrderRepository.ResumeProductOrders()
   }
 
   public async getOneProductOrder( _id: string): Promise<ProductOrderEntity | ErrorHandler| null > {
@@ -30,6 +33,15 @@ export class ProductOrderUseCase {
   ): Promise<ProductOrderEntity> {
     
     return await this.productOrderRepository.updateOne(_id, updated);
+  }
+
+  public async startFillProductOrder(
+    _id: string,
+    updated: any
+  ): Promise<ProductOrderEntity> {
+    
+    return await this.productOrderRepository.updateOne(_id, updated);
+    
   }
   
   public async deleteProductOrder(_id: string): Promise<ProductOrderEntity| ErrorHandler | null> {

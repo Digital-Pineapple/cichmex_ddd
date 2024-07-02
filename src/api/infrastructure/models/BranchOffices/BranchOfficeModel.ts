@@ -22,6 +22,10 @@ const locationSchema = new mongoose.Schema<ILocation>(
       type: String,
       required: false
     },
+    neighborhood:{
+      type: String,
+      required: false
+    },
     lat: {
       type: Number,
       required: false
@@ -33,6 +37,10 @@ const locationSchema = new mongoose.Schema<ILocation>(
     direction: {
       type: String,
       required: true
+    },    
+    cp:{
+      type:String,
+      required:false
     }
   },
   {
