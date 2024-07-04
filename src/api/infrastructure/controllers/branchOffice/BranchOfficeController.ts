@@ -6,12 +6,14 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { BranchOfficeResponse, ILocation } from '../../../domain/branch_office/BranchOfficeEntity';
 import { DocumentationUseCase } from '../../../application/documentation/DocumentationUseCase';
 import mongoose from 'mongoose';
+import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
 
 export class BranchOfficeController extends ResponseData {
     protected path = '/branch_office';
 
     constructor(private branchOfficeUseCase: BranchOfficeUseCase,
         private documentationUseCase: DocumentationUseCase,
+        private productOrderUseCase : ProductOrderUseCase,
         private s3Service: S3Service
     ) {
         super();
@@ -261,13 +263,25 @@ export class BranchOfficeController extends ResponseData {
 
     public async deleteBranchOffice(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
+        
         try {
-            const response = await this.branchOfficeUseCase.deleteOneBranchOffice(id)
-            this.invoke(response, 201, res, 'Se elimino con exito', next);
+            const noProductOrders = await this.productOrderUseCase.ProductOrdersByBranch(id);
+            
+            if (noProductOrders!== null ) {
+                try {
+                    const response = await this.branchOfficeUseCase.deleteOneBranchOffice(id);
+                    this.invoke(response, 201, res, 'Se eliminó con éxito', next);
+                } catch (error) {
+                    next(new ErrorHandler('Hubo un error al eliminar la sucursal', 500));
+                }
+            } else {
+                next(new ErrorHandler('No se puede eliminar la sucursal porque tiene pedidos asociados', 400));
+            }
         } catch (error) {
-            next(new ErrorHandler('Hubo un error eliminar', 500));
+            next(new ErrorHandler('Hubo un error al verificar los pedidos de la sucursal', 500));
         }
     }
+    
 
 
     public async verifyBranchOffice(req: Request, res: Response, next: NextFunction) {
