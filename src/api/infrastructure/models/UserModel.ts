@@ -10,10 +10,12 @@ const UserSchema = new Schema<UserEntity>({
     email: {
         type: String,
         required: true,
+        unique:false,
     },
     password: {
         type: String,
         required: false,
+
     },
     privacity: {
         type: String,

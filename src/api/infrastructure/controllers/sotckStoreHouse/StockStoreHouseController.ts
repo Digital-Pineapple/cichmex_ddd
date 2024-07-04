@@ -105,6 +105,15 @@ export class StockStoreHouseController extends ResponseData {
     public async addStock(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params
         const { stock } = req.body;
+        const user = req.user
+        
+        const UserInfo ={
+            _id : user._id,
+            fullname: user.fullname,
+            email:user.email,
+            type_user: user.type_user
+        }
+        
         try {
             const response = await this.stockStoreHouseUseCase.getDetailStock(id)
 
@@ -113,7 +122,7 @@ export class StockStoreHouseController extends ResponseData {
                 const num1 = response?.stock || 0
                 const num2 = parseInt(stock)
                 const newQuantity = num1 + num2
-                const update = await this.stockSHinputUseCase.createInput({ newQuantity: newQuantity, quantity: stock, SHStock_id: response?._id })
+                const update = await this.stockSHinputUseCase.createInput({ newQuantity: newQuantity, quantity: stock, SHStock_id: response?._id, responsible:UserInfo })
                 const allData = await this.stockStoreHouseUseCase.updateStock(response?._id, { stock: update?.newQuantity })                
                 this.invoke(allData, 201, res, 'Se actualizó con éxito', next);
             } else {

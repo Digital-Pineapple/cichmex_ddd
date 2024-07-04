@@ -106,15 +106,14 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     signUp2(body) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const user = yield this.authRepository.findOneItem({ email: body.email });
+                const user = yield this.authRepository.findOneItem({ email: body.email, status: true });
                 if (user) {
                     return new ErrorHandler_1.ErrorHandler('Este correo ya se encuentra registrado', 409);
                 }
                 else {
-                    const newPassword = yield this.encryptPassword(body.password);
-                    const newUser = yield this.authRepository.createOne(Object.assign(Object.assign({}, body), { password: newPassword }));
-                    const newUserResponse = { user_id: newUser._id, email: newUser.email, fullname: newUser.fullname, profile_image: newUser.profile_image };
-                    const user = this.generateJWT(newUserResponse);
+                    const newUser = yield this.authRepository.createOne(Object.assign({}, body));
+                    const userDetail = yield this.authRepository.findByIdPupulate(newUser._id, PopulateInterfaces_1.TypeUserPopulateConfig);
+                    const user = this.generateJWT(userDetail);
                     return user;
                 }
             }
@@ -184,7 +183,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     signUpWithGoogle(idToken) {
         return __awaiter(this, void 0, void 0, function* () {
             let { email, fullname, picture } = yield this.validateGoogleToken(idToken);
-            let user = yield this.authRepository.findOneItem({ email: email, deleted: false }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig);
+            let user = yield this.authRepository.findOneItem({ email: email, status: false }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig);
             if (user) {
                 return new ErrorHandler_1.ErrorHandler('El usuario ya exite favor de iniciar sesión', 401);
             }

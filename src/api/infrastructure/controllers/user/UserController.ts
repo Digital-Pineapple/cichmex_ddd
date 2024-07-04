@@ -95,11 +95,18 @@ export class UserController extends ResponseData {
 
         try {
             const response = await this.userUseCase.getOneUser(id)
-            if (!(response instanceof ErrorHandler) && response?.profile_image !== undefined) {
-                response?.profile_image ?
-                    response.profile_image = await this.s3Service.getUrlObject(response.profile_image + ".jpg") :
+            if (!(response instanceof ErrorHandler) && response?.profile_image !== undefined ) {
+                if (response.google === true) {
+                    response.profile_image = response.profile_image
+                    
+                }else{
+                    const url = await this.s3Service.getUrlObject(response.profile_image + ".jpg") 
+                    response.profile_image = url
                     'No hay imagen de perfil'
+                }
+                    
             }
+            
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
@@ -328,18 +335,19 @@ export class UserController extends ResponseData {
         const { id } = req.params
         try {
             const response = await this.userUseCase.deleteUser(id)
-            this.invoke(response, 200, res, '', next);
+            this.invoke(response, 200, res, 'Se eliminó con éxito', next);
         } catch (error) {
             next(new ErrorHandler(`Error: ${error}`, 500));
         }
     }
     public async updateUser(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { fullname } = req.body;
+        const { fullname, type_user } = req.body;
+        
         try {
             if (req.file) {
                 const pathObject = `${this.path}/${id}/${fullname}`;
-                const response = await this.userUseCase.updateUser(id, { fullname, profile_image: pathObject })
+                const response = await this.userUseCase.updateUser(id, { fullname, profile_image: pathObject, type_user:type_user })
                 if (!(response instanceof ErrorHandler)) {
                     const { url, success } = await this.s3Service.uploadToS3AndGetUrl(
                         pathObject + ".jpg",
@@ -352,6 +360,7 @@ export class UserController extends ResponseData {
                         response.profile_image = url;
                     }
                 }
+                
                 this.invoke(
                     response,
                     201,
@@ -450,6 +459,8 @@ public async RegisterCarrierDriver(req: Request, res: Response, next: NextFuncti
                     next(new ErrorHandler("Tipo de usuario 'CarrierDriver' no encontrado", 400));
                 }
             } catch (error) {
+                console.log(error);
+                
                 next(new ErrorHandler("Correo existente", 500));
             }
         

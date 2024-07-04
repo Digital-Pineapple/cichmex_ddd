@@ -71,6 +71,7 @@ const checkTypeUserAuth = (type_user) => (req, res, next) => __awaiter(void 0, v
         if (!userTypes.includes(userTypeString)) {
             throw new ErrorHandler_1.ErrorHandler('No tiene permisos necesarios', 403);
         }
+        req.user = userData;
         next();
     }
     catch (error) {

@@ -81,8 +81,11 @@ export class BranchOfficeUseCase {
 
   public async deleteOneBranchOffice(
     _id: string
-  ): Promise<BranchOfficeEntity | null> {
+  ): Promise<BranchOfficeEntity | ErrorHandler | null> {
+    const {activated} = await this.branchOfficeRepository.findById(_id)
+    if (activated === true) return new ErrorHandler('La sucursal se encuentra activa',400)
     return this.branchOfficeRepository.updateOne(_id, { status: false });
+
   }
   public async validateBranchOffice(
     _id: string,

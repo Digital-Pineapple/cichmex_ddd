@@ -182,10 +182,7 @@ export class AuthController extends ResponseData {
                 const responsedefault = await this.typeUserUseCase.getTypeUsers();
                 const def = responsedefault?.filter(item => item.name === 'Customer');
                 const TypeUser_id = def?.map(item => item._id);
-                // const code = generateRandomCode();
                 const resp = await this.authUseCase.signUp2({email: response?.email, fullname:response?.fullname, type_user: TypeUser_id, google: true, profile_image : response?.picture })
-                // const resp = await this.authUseCase.signUpPlatform({ email: response?.email, fullname: response?.fullname, accountVerify: code, type_user: TypeUser_id, google: true });
-
                 this.invoke(resp, 200, res, '', next);
             } else {
                 this.invoke(response, 200, res, '', next);
@@ -251,12 +248,6 @@ export class AuthController extends ResponseData {
 
 
     }
-
-
-
-
-    
-
 
     public async changePassword(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { password, new_password } = req.body;

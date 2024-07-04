@@ -70,7 +70,8 @@ export const checkTypeUserAuth = (type_user: string | string[]) => async (req: R
         if (!userTypes.includes(userTypeString)) {
             throw new ErrorHandler('No tiene permisos necesarios', 403);
         }
-
+        
+        req.user= userData
         next();
     } catch (error) {
         next(error); // Pasar el error original para una mejor depuración

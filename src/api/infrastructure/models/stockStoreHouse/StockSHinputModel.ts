@@ -21,7 +21,12 @@ const StockSHinputSchema = new Schema<SHProductInput>({
     type:Boolean,
     required:false,
     default:true,
-   }
+   },
+   responsible:{
+    type: Object,
+    required:true,
+
+   },
 },
   {
     timestamps: true,

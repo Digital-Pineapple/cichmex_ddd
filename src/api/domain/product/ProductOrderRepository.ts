@@ -6,6 +6,8 @@ export interface ProductOrderRepository extends MongoRepository {
 
      getProductOrdersByUser( _id: string, populateConfig1?:any): Promise<ProductOrderEntity[] | ErrorHandler| null > 
      
+     getProductOrdersByBranch( _id: string, populateConfig1?:any): Promise<ProductOrderEntity[] | ErrorHandler| null > 
+     
      findAllProductOrders(populateConfig1?:any): Promise<ProductOrderEntity[] | ErrorHandler | null> 
 
      ResumeProductOrders(): Promise<ProductOrderResume> 
