@@ -204,7 +204,7 @@ export class AuthController extends ResponseData {
 
             const newCode = parseInt(generateRandomCode())
             const NoAttempts  = 2
-            if (response.verify_code ) {
+            if (!response.verify_code ) {
                 
                 const {attemps}:any=(response.verify_code);  
                 if (attemps >= 1 ) {
