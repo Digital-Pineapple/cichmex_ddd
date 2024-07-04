@@ -23,6 +23,7 @@ export class ServicesController extends ResponseData {
             
             const response = await this.servicesUseCase.getServices();
             await Promise.all(response.map(async (res) => {
+                
                 const url = await this.s3Service.getUrlObject(res.image + ".jpg");
                 res.image = url;
             }));
@@ -47,9 +48,21 @@ export class ServicesController extends ResponseData {
 
     public async createService(req: Request, res: Response, next: NextFunction) {
         const { name, description, subCategory } = req.body;
+        
         try {
-            const response = await this.servicesUseCase.createNewService(name, description, subCategory);
+            if (req.file) {
+                const response = await this.servicesUseCase.createNewService({name, description, subCategory});
+                const pathObject = `${this.path}/${response._id}/${name}`;
+                const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
+                if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400) 
+                    const response2 = await this.servicesUseCase.updateOneService(response._id{image:pathObject});
+                    response2.image= url            
+                this.invoke(response2, 201, res, 'El servicio se creo con exito', next);
+            }
+           else{
+            const response = await this.servicesUseCase.createNewService({name, description, subCategory});
             this.invoke(response, 201, res, 'El servicio se creo con exito', next);
+           }
         } catch (error) {
             next(new ErrorHandler('Hubo un error al crear el servicio', 500));
         }
@@ -57,14 +70,16 @@ export class ServicesController extends ResponseData {
 
     public async updateService(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { name, description, status, subCategory } = req.body;
+        const { name, description, subCategory } = req.body;
+        
         try {
             if (req.file) {
                 const pathObject = `${this.path}/${id}/${name}`;
-                const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
+                const { url, success, key } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/*");
+                
                 if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-                const response = await this.servicesUseCase.updateOneService(id, { name, description, subCategory, service_image: pathObject, directory: pathObject });
-                response.service_image = url;
+                const response = await this.servicesUseCase.updateOneService(id, { name, description, subCategory, image: pathObject, directory: pathObject });
+                response.image = url;
                 this.invoke(response, 201, res, 'El servicio se actualizó con éxito', next);
             } else {
                 const response = await this.servicesUseCase.updateOneService(id, { name, description, subCategory });
