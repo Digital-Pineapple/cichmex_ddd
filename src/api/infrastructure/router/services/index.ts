@@ -20,8 +20,8 @@ const userValidations = new UserValidations();
 serviceRouter
     .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), servicesController.getAllServices)
     .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), servicesController.getService)
-    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57']), servicesController.createService)
-    .post('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), serviceValidations.servicePhotoValidation, servicesController.updateService )
+    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57']),serviceValidations.servicePhotoValidation, servicesController.createService)
+    .post('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']),serviceValidations.servicePhotoValidation, servicesController.updateService )
     .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), servicesController.deleteService)
     .get('/search/search', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), servicesController.searchService)
     

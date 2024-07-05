@@ -53,15 +53,34 @@ export class SubCategoryController extends ResponseData {
     }
 
     public async createSubCategory(req: Request, res: Response, next: NextFunction) {
-        const { name, category } = req.body;
-        
+        const { name, category_id } = req.body;
+    
         try {
-            const response = await this.subCategoryUseCase.createNewSubCategory(name, category);
-            this.invoke(response, 201, res, 'La subcategoria se creo con exito', next);
+            const response = await this.subCategoryUseCase.createNewSubCategory(name, category_id)
+    
+            if (response instanceof ErrorHandler || response === null) {
+                return this.invoke(response, 400, res, 'Hubo un error al crear la Subcategoría', next);
+            }
+    
+            if (req.file) {
+                const pathObject = `${this.path}/${response._id}/${name}`;
+                const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/*");
+    
+                if (!success) {
+                    return next(new ErrorHandler('Hubo un error al subir la imagen', 400));
+                }
+    
+                const update = await this.subCategoryUseCase.updateOneSubCategory(response._id,{subCategory_image:pathObject})
+                if (update !== null) {
+                    update.subCategory_image = url;
+                    return this.invoke(update, 201, res, 'La subcategoría se creó con éxito', next);
+                }
+            }
+    
+            return this.invoke(response, 201, res, 'La subcategoría se creó con éxito', next);
+    
         } catch (error) {
-          
-            
-            next(new ErrorHandler('Hubo un error al crear la subcategoria', 500));
+            return next(new ErrorHandler('Hubo un error al crear la subcategoría', 500));
         }
     }
 
