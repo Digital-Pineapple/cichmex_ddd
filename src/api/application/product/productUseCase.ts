@@ -14,7 +14,7 @@ export class ProductUseCase {
   public async getProduct(
     _id: string
   ): Promise<ProductEntity | ErrorHandler| null > {
-    const response =  await this.productRepository.findDetailProductById(_id)
+    const response =  await this.productRepository.findDetailProductById(_id, PopulateProductCategory, PopulateProductSubCategory)
     return response
   }
 

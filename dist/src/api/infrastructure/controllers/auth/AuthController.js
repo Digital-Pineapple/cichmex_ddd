@@ -190,7 +190,7 @@ class AuthController extends ResponseData_1.ResponseData {
                 const response = yield this.authUseCase.findUser(email);
                 const newCode = parseInt((0, Utils_1.generateRandomCode)());
                 const NoAttempts = 2;
-                if (response.verify_code) {
+                if (!response.verify_code) {
                     const { attemps } = (response.verify_code);
                     if (attemps >= 1) {
                         const newAttemps = attemps - 1;

@@ -22,6 +22,10 @@ export class ProductOrderUseCase {
     const response =  await this.productOrderRepository.getProductOrdersByBranch(_id)
     return response
   }
+  public async ProductOrdersByUser( _id: string): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+    const response =  await this.productOrderRepository.getProductOrdersByUser(_id, InfoBranchOrder)
+    return response
+  }
 
   public async createProductOrder(body:any): Promise<ProductOrderEntity | ErrorHandler | null> {
     return await this.productOrderRepository.createOne({...body})
