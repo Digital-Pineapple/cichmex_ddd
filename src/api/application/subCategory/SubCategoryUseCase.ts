@@ -26,8 +26,8 @@ export class SubCategoryUseCase {
         return await this.subCategoriesRepository.createOne({ name, category_id });
     }
 
-    public async updateOneSubCategory(_id: string,updated: SubCategory): Promise<SubCategory> {
-        return await this.subCategoriesRepository.updateOne(_id,updated);
+    public async updateOneSubCategory(_id: string,updated: any): Promise<SubCategory> {
+        return await this.subCategoriesRepository.updateOne(_id,{...updated});
     }
     public async deleteOneSubCategory(_id: string): Promise<SubCategory | null> {
         return this.subCategoriesRepository.updateOne(_id, {status: false})

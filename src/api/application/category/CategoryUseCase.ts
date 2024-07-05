@@ -27,8 +27,8 @@ export class CategoryUseCase {
     }
 
     public async createNewCategory(name: string): Promise<Category | ErrorHandler | null> {
-        const category = await this.categoriesRepository.findOneItem({name});
-        if (category) return new ErrorHandler('La categoria ya ha sido registrado',400);
+        const category = await this.categoriesRepository.findOneItem({name, status:true});
+        if (category) return new ErrorHandler('La categoria se encuentra registrada',400);
         return await this.categoriesRepository.createOne({name});
     }
 

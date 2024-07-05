@@ -13,7 +13,7 @@ export class SubCategoryValidations {
 
     readonly subCategoryPhotoValidation = [
         validateAuthentication,
-        this.upload.single('image'),
+        this.upload.single('subCategory_image'),
     ]
 
 }

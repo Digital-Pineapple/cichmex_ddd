@@ -20,7 +20,7 @@ subCategoryRouter
     .get('/', subCategoryController.getAllSubCategories)
     .get('/:id', subCategoryController.getSubCategory)
     .get('/subCategory/:id', subCategoryController.findSubCategoriesByCategory)
-    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), subCategoryController.createSubCategory)
+    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']),subCategoryValidations.subCategoryPhotoValidation, subCategoryController.createSubCategory)
     .post('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), subCategoryValidations.subCategoryPhotoValidation, subCategoryController.updateSubCategory)
     .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), subCategoryController.deleteSubCategory)
     // .get('/search/search', subCategoryController.searchSubCategory)

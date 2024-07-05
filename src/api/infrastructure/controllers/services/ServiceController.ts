@@ -50,21 +50,32 @@ export class ServicesController extends ResponseData {
         const { name, description, subCategory } = req.body;
         
         try {
-            if (req.file) {
-                const response = await this.servicesUseCase.createNewService({name, description, subCategory});
-                const pathObject = `${this.path}/${response._id}/${name}`;
-                const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
-                if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400) 
-                    const response2 = await this.servicesUseCase.updateOneService(response._id{image:pathObject});
-                    response2.image= url            
-                this.invoke(response2, 201, res, 'El servicio se creo con exito', next);
+            const response = await this.servicesUseCase.createNewService({name:name,description:description,subCategory:subCategory});
+    
+            if (response instanceof ErrorHandler || response === null) {
+                return this.invoke(response, 400, res, 'Hubo un error al crear ', next);
             }
-           else{
-            const response = await this.servicesUseCase.createNewService({name, description, subCategory});
-            this.invoke(response, 201, res, 'El servicio se creo con exito', next);
-           }
+    
+            if (req.file) {
+                const pathObject = `${this.path}/${response._id}/${name}`;
+                const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/*");
+    
+                if (!success) {
+                    return next(new ErrorHandler('Hubo un error al subir la imagen', 400));
+                }
+    
+                const update = await this.servicesUseCase.updateOneService(response._id ,{image:pathObject})
+    
+                if (update !== null) {
+                    update.image = url;
+                    return this.invoke(update, 201, res, 'Se creó con éxito - imagen', next);
+                }
+            }
+    
+            return this.invoke(response, 201, res, 'Se creó con éxito', next);
+    
         } catch (error) {
-            next(new ErrorHandler('Hubo un error al crear el servicio', 500));
+            return next(new ErrorHandler('Hubo un error al crear', 500));
         }
     }
 

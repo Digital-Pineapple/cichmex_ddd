@@ -28,7 +28,7 @@ categoryRouter
     .get('/', categoryController.getAllCategories)
     .get('/SC', categoryController.getAllCategoriesAndSC)
     .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), categoryController.getCategory)
-    .post('/',categoryValidations.categoryPhotoValidation, userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), categoryController.createCategory)
+    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']),categoryValidations.categoryPhotoValidation, categoryController.createCategory)
     .patch('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), categoryValidations.categoryPhotoValidation, categoryController.updateCategory)
     .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), categoryController.deleteCategory)
     .get('/search/search', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), categoryController.searchCategory)
