@@ -151,7 +151,10 @@ export class PaymentController extends ResponseData {
 
             const { formData, selectedPaymentMethod } = infoPayment;
             const  metadata1  = formData?.metadata
-            const point = metadata1.payment_point
+            console.log(selectedPaymentMethod, formData);
+            
+            
+            const point = metadata1?.payment_point ? metadata1.payment_point :null
             
             
 
@@ -179,7 +182,6 @@ export class PaymentController extends ResponseData {
                 issuer_id:formData.issuer,
                 installments: formData.installments,
                 notification_url: path_notification,
-                metadata: {payment_point: point},
                 external_reference:response1?._id,
                 statement_descriptor:formData.statement_descriptor,
                 
@@ -188,11 +190,10 @@ export class PaymentController extends ResponseData {
 
 
 
-            // if (selectedPaymentMethod !== "ticket") {
-            //     body1['token'] = formData.token;
-            //     body1['issuer_id'] = formData.issuer;
-            //     body1['installments'] = formData.installments;
-            // }
+            if (selectedPaymentMethod === "ticket") {
+                body1['metadata'] = {payment_point: point};
+               
+            }
             
 
             try {
@@ -252,6 +253,9 @@ export class PaymentController extends ResponseData {
                 next(new ErrorHandler('Error al crear el pago con MercadoPago', 500));
             }
         } catch (error) {
+            console.log(error);
+            
+
             next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }
     }

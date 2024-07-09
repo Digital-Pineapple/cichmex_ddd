@@ -1,6 +1,5 @@
 import { IPhone } from '../../domain/user/UserEntity';
 import { Mongoose, Schema,model } from 'mongoose';
-import MongooseDelete = require("mongoose-delete");
 
 const PhoneSchema = new Schema<IPhone>  ({
     code: {
