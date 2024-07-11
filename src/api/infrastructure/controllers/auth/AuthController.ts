@@ -50,8 +50,6 @@ export class AuthController extends ResponseData {
 
     public async login(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { email, password } = req.body;
-  ;
-        
         try {
             const response = await this.authUseCase.signIn(email, password);
         
@@ -279,14 +277,14 @@ export class AuthController extends ResponseData {
 
 
     public async revalidateToken(req: Request, res: Response, next: NextFunction) {
-
-        const { user } = req;
-
+        const user = req.user;
         try {
-            const find = await this.authUseCase.findUser(user.email);
-            const  url  = await this.s3Service.getUrlObject(find.profile_image + ".jpg")
-           find.profile_image = url
-            const response = await this.authUseCase.generateToken(find);
+            const userInfo = await this.authUseCase.findUser({email:user.email, status:true});
+            console.log(userInfo);
+            
+            const  url  = await this.s3Service.getUrlObject(userInfo.profile_image + ".jpg")
+            userInfo.profile_image = url
+            const response = await this.authUseCase.generateToken(userInfo,userInfo.uuid);
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al generar el token', 500));

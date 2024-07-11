@@ -1,4 +1,5 @@
 import mongoose, { Schema, model } from 'mongoose';import { TypeUserEntity } from '../../domain/typeUser/TypeUserEntity';
+import { generateUUID } from '../../../shared/infrastructure/validation/Utils';
 
 
 const TypeUserSchema = new Schema<TypeUserEntity> ({
@@ -6,13 +7,21 @@ const TypeUserSchema = new Schema<TypeUserEntity> ({
         type: Schema.Types.ObjectId,
         default: () => new mongoose.Types.ObjectId()
       },
-    name: {
-        type   : String,
-        required: true
+    uuid:{
+        type:String,
+        unique:true,
+    },
+    system: {
+        type   : [] ,
+        required:true
+      
+
     }, 
-    type :{
-        type:Number,
-        required : false,
+    role :{
+        type:[],
+        required:true
+       
+        
  
     },
     status:{

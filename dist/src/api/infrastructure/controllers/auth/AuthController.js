@@ -44,7 +44,6 @@ class AuthController extends ResponseData_1.ResponseData {
     login(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { email, password } = req.body;
-            ;
             try {
                 const response = yield this.authUseCase.signIn(email, password);
                 if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image !== undefined) {
@@ -268,12 +267,13 @@ class AuthController extends ResponseData_1.ResponseData {
     }
     revalidateToken(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { user } = req;
+            const user = req.user;
             try {
-                const find = yield this.authUseCase.findUser(user.email);
-                const url = yield this.s3Service.getUrlObject(find.profile_image + ".jpg");
-                find.profile_image = url;
-                const response = yield this.authUseCase.generateToken(find);
+                const userInfo = yield this.authUseCase.findUser({ email: user.email, status: true });
+                console.log(userInfo);
+                const url = yield this.s3Service.getUrlObject(userInfo.profile_image + ".jpg");
+                userInfo.profile_image = url;
+                const response = yield this.authUseCase.generateToken(userInfo, userInfo.uuid);
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {

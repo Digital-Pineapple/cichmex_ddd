@@ -1,8 +1,9 @@
 export interface TypeUserEntity  {
-    _id  ?: string;
-    name : string;
-    type ?: number;
-    status?: boolean;
+    _id    ?: string;
+    uuid   ?: string;
+    system  : string[] | string;
+    role   : string[] | string;
+    status ?: boolean;
     
 }
 

@@ -18,21 +18,22 @@ const config_1 = require("../../../../config");
 const ErrorHandler_1 = require("../../domain/ErrorHandler");
 const UserModel_1 = __importDefault(require("../../../api/infrastructure/models/UserModel"));
 const verifyToken_1 = require("../helpers/verifyToken");
-const validateAuthentication = (req, res, next) => {
+const validateAuthentication = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const token = req.header('token');
     if (!token)
         return next(new ErrorHandler_1.ErrorHandler('Token is required', 401));
     try {
-        const { user } = jsonwebtoken_1.default.verify(token, config_1.config.SECRET_JWT_KEY);
-        if (!user)
+        const { uuid } = jsonwebtoken_1.default.verify(token, config_1.config.SECRET_JWT_KEY);
+        const userData = yield UserModel_1.default.findOne({ uuid: uuid, status: true });
+        if (!userData)
             return next(new ErrorHandler_1.ErrorHandler('El usuario no es valido', 400));
-        req.user = user;
+        req.user = userData;
         next();
     }
     catch (error) {
         next(new ErrorHandler_1.ErrorHandler('Token no valido', 400));
     }
-};
+});
 exports.validateAuthentication = validateAuthentication;
 const validateTokenRestorePassword = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -54,21 +55,19 @@ const validateTokenRestorePassword = (req, res, next) => __awaiter(void 0, void 
 });
 exports.validateTokenRestorePassword = validateTokenRestorePassword;
 const checkTypeUserAuth = (type_user) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c, _d;
+    var _b, _c;
     try {
         const token = (_b = req.headers.authorization) === null || _b === void 0 ? void 0 : _b.split(' ').pop();
         if (!token) {
             throw new ErrorHandler_1.ErrorHandler('Token es requerido', 401);
         }
-        const tokenData = yield (0, verifyToken_1.verifyToken)(token);
-        const userData = yield UserModel_1.default.findById(tokenData.user._id);
+        const { uuid } = yield (0, verifyToken_1.verifyToken)(token);
+        const userData = yield UserModel_1.default.findOne({ uuid: uuid });
         if (!userData) {
             throw new ErrorHandler_1.ErrorHandler('Usuario no encontrado', 404);
         }
         const userTypes = Array.isArray(type_user) ? type_user : [type_user];
-        // Convertir userData.type_user a ObjectId si es un string
-        const userTypeString = ((_c = userData.type_user) === null || _c === void 0 ? void 0 : _c._id) ? (_d = userData.type_user._id) === null || _d === void 0 ? void 0 : _d.toString() : '';
-        if (!userTypes.includes(userTypeString)) {
+        if (!userTypes.includes((_c = userData.type_user) === null || _c === void 0 ? void 0 : _c.role)) {
             throw new ErrorHandler_1.ErrorHandler('No tiene permisos necesarios', 403);
         }
         req.user = userData;

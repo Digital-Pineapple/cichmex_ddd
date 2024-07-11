@@ -5,6 +5,8 @@ import { ResponseData } from "../../../../shared/infrastructure/validation/Respo
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
 import typeUser from '../../../../seeders/TypeUsers'
+import { generate } from 'generate-password';
+import { generateUUID } from '../../../../shared/infrastructure/validation/Utils';
 
 export class TypeUserController extends ResponseData {
     protected path = '/type-user'
@@ -39,10 +41,10 @@ export class TypeUserController extends ResponseData {
     }
 
     public async createTypeUser(req: Request, res: Response, next: NextFunction) {
-        const { name } = req.body;
-        
+        const { system, roles } = req.body;
+        const uuid =  generateUUID()
         try {
-            const response = await this.typeUserUseCase.createNewTypeUser(name)
+            const response = await this.typeUserUseCase.createNewTypeUser({system:system, roles:roles}, uuid)
             this.invoke(response, 200, res, '', next)
         } catch (error) {
             next(new ErrorHandler('Hubo un error al dar de alta', 500));
@@ -74,8 +76,11 @@ export class TypeUserController extends ResponseData {
     public async TypeUserSeed(req: Request, res: Response, next: NextFunction) {
         
         try {
-          const historyPromises = typeUser.map(item =>
-            this.typeUserUseCase.createNewTypeUser( item.name , item.type )
+
+          const historyPromises = typeUser.map(async item =>{
+              const uuid =  generateUUID()
+              await this.typeUserUseCase.createNewTypeUser( {...item}, uuid)
+          }
           );
           const todos = await Promise.all(historyPromises);
           
@@ -85,7 +90,7 @@ export class TypeUserController extends ResponseData {
            
             
           // Ajusta el código de estado y mensaje de error según tus necesidades.
-          next(new ErrorHandler('Hubo un error al consultar la información', 500));
+          next(new ErrorHandler('Hubo un error al crear tipos de usuario', 500));
         }
       }
 

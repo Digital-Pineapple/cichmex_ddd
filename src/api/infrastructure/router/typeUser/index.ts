@@ -16,9 +16,9 @@ const userValidations = new UserValidations();
 typeUserRouter
     .get('/', typeUserController.getAllTypeUser)
     .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), typeUserController.getTypeUser)
-    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), typeUserController.createTypeUser)
-    .post('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), typeUserController.updateTypeUser)
+    .post('/', typeUserController.createTypeUser)
+    .post('/:id', typeUserController.updateTypeUser)
     .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']),  typeUserController.deleteTypeUser)
-    .get ('/seed/ok', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), typeUserController.TypeUserSeed)
+    .get ('/seed/ok', typeUserController.TypeUserSeed)
 
 export default typeUserRouter;

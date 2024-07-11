@@ -27,7 +27,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             const validatePassword = this.decryptPassword(password, user.password);
             if (!validatePassword)
                 return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son validos', 400);
-            return yield this.generateJWT(user);
+            return yield this.generateJWT(user, user.uuid);
         });
     }
     signInAdmin(email, password) {
@@ -41,19 +41,19 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             }
             if (!validatePassword)
                 return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son validos', 400);
-            return yield this.generateJWT(user);
+            return yield this.generateJWT(user, user.uuid);
         });
     }
     signInPartner(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const user = yield this.authRepository.findUser({ email: email, status: true }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
+                const user = yield this.authRepository.findOneItem({ email: email, status: true }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
                 if (!(user instanceof ErrorHandler_1.ErrorHandler) && user !== null) {
                     const validatePassword = this.decryptPassword(password, user.password);
                     if (!validatePassword) {
                         return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son válidos', 400);
                     }
-                    return yield this.generateJWT(user);
+                    return yield this.generateJWT(user, user.uuid);
                 }
                 else {
                     return new ErrorHandler_1.ErrorHandler('No existe este usuario', 400);
@@ -65,10 +65,10 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             }
         });
     }
-    findUser(email) {
+    findUser(body) {
         return __awaiter(this, void 0, void 0, function* () {
-            let customer = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PopulatePointStore);
-            return yield (customer);
+            const user = yield this.authRepository.findOneItem(Object.assign({}, body), PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.TypeUserPopulateConfig);
+            return yield (user);
         });
     }
     findPhone(phone) {
@@ -113,7 +113,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
                 else {
                     const newUser = yield this.authRepository.createOne(Object.assign({}, body));
                     const userDetail = yield this.authRepository.findByIdPupulate(newUser._id, PopulateInterfaces_1.TypeUserPopulateConfig);
-                    const user = this.generateJWT(userDetail);
+                    const user = this.generateJWT(userDetail, userDetail.uuid);
                     return user;
                 }
             }
@@ -141,7 +141,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             if (user)
                 return new ErrorHandler_1.ErrorHandler('El usuario ya ha sido registrado', 400);
             user = yield this.authRepository.createOne({});
-            return yield this.generateJWT(user);
+            return yield this.generateJWT(user, user.uuid);
         });
     }
     signInWithGoogle(idToken) {
@@ -162,7 +162,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             if (!user)
                 return new ErrorHandler_1.ErrorHandler('No existe usuario', 409);
             user.profile_image = picture;
-            user = yield this.generateJWT(user);
+            user = yield this.generateJWT(user, user.uuid);
             return user;
         });
     }
@@ -176,7 +176,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             if (!user)
                 return new ErrorHandler_1.ErrorHandler('No existe usuario', 409);
             user.profile_image = picture;
-            user = yield this.generateJWT(user);
+            user = yield this.generateJWT(user, user.uuid);
             return user;
         });
     }
@@ -237,9 +237,9 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             return yield this.authRepository.updateOne(user_id, { verify_code: { code: code, attemps: attemps } });
         });
     }
-    generateToken(user) {
+    generateToken(user, infoToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.generateJWT(user);
+            return yield this.generateJWT(user, infoToken);
         });
     }
     registerPhoneNumber(user, phone, code) {
