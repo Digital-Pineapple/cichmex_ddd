@@ -14,6 +14,8 @@ export interface BranchOfficeEntity  {
   opening_time?: string;
   closing_time?: string;
   location ?: ILocation;
+  schedules?: ISchedules[];
+  type?: string;
   services?: string[];
   status?:boolean;
   createdAt        :   NativeDate;
@@ -32,6 +34,12 @@ export interface ILocation {
   direction: string;
   neighborhood?: string;
   cp?:number;
+}
+
+export interface ISchedules{
+  day: string;
+  open: string;
+  close: string;
 }
 
 
