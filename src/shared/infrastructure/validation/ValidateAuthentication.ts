@@ -11,7 +11,8 @@ import { verifyToken } from '../helpers/verifyToken';
 import { Iuuid } from '../../../api/application/authentication/AuthenticationService';
 
 export const validateAuthentication = async(req: Request, res: Response, next: NextFunction) => {
-        const token = req.header('token');
+    const token = req.headers.authorization?.split(' ').pop();
+       
         if (!token) return next(new ErrorHandler('Token is required', 401));
         try {
             const { uuid } = Jwt.verify(token, config.SECRET_JWT_KEY) as { uuid: Iuuid };

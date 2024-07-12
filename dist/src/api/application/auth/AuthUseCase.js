@@ -148,17 +148,6 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
         return __awaiter(this, void 0, void 0, function* () {
             let { email, picture } = yield this.validateGoogleToken(idToken);
             let user = yield this.authRepository.findOneItem({ email }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
-            if (user.type_user.name !== 'Customer') {
-                return new ErrorHandler_1.ErrorHandler('No es un cliente', 400);
-            }
-            // if (user.email_verified === true) {
-            //     user.profile_image === picture
-            //     user = await this.generateJWT(user);
-            // }
-            // if (user.email_verified === false) {
-            //     const user2: IGoogleResponseLogin = { user_id: user?._id, verified: user?.email_verified, email: user?.email, profile_image: picture }
-            //     user = user2
-            // }
             if (!user)
                 return new ErrorHandler_1.ErrorHandler('No existe usuario', 409);
             user.profile_image = picture;

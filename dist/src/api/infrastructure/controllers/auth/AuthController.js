@@ -15,10 +15,11 @@ const ResponseData_1 = require("../../../../shared/infrastructure/validation/Res
 const Utils_1 = require("../../../../shared/infrastructure/validation/Utils");
 const emailer_1 = require("../../../../shared/infrastructure/nodemailer/emailer");
 class AuthController extends ResponseData_1.ResponseData {
-    constructor(authUseCase, typeUserUseCase, s3Service, twilioService, mpService) {
+    constructor(authUseCase, typeUserUseCase, shoppingCartUseCase, s3Service, twilioService, mpService) {
         super();
         this.authUseCase = authUseCase;
         this.typeUserUseCase = typeUserUseCase;
+        this.shoppingCartUseCase = shoppingCartUseCase;
         this.s3Service = s3Service;
         this.twilioService = twilioService;
         this.mpService = mpService;
@@ -109,12 +110,17 @@ class AuthController extends ResponseData_1.ResponseData {
     }
     registerAndPay(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { email, password, fullname } = req.body;
+            const { email, password, fullname, system } = req.body;
+            const uuid = (0, Utils_1.generateUUID)();
             try {
-                const responsedefault = yield this.typeUserUseCase.getTypeUsers();
-                const def = responsedefault === null || responsedefault === void 0 ? void 0 : responsedefault.filter(item => item.name === 'Customer');
-                const TypeUser_id = def === null || def === void 0 ? void 0 : def.map(item => item._id);
-                const response = yield this.authUseCase.signUp2({ fullname, email, password, type_user: TypeUser_id });
+                const typeUser = yield this.typeUserUseCase.findTypeUser({ system: system, role: "CUSTOMER" });
+                if (!(typeUser === null || typeUser === void 0 ? void 0 : typeUser._id)) {
+                    return next(new ErrorHandler_1.ErrorHandler('No existe tipo de usuario', 500));
+                }
+                const response = yield this.authUseCase.signUp2({ fullname, email, password, type_user: typeUser === null || typeUser === void 0 ? void 0 : typeUser._id, uuid: uuid });
+                if (response === null || response === void 0 ? void 0 : response.user._id) {
+                    yield this.shoppingCartUseCase.createShoppingCart({ user_id: response === null || response === void 0 ? void 0 : response.user._id });
+                }
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {
@@ -162,16 +168,31 @@ class AuthController extends ResponseData_1.ResponseData {
         });
     }
     registerByGoogle(req, res, next) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            const { idToken } = req.body;
+            const { idToken, system } = req.body;
             try {
                 const response = yield this.authUseCase.signUpWithGoogle(idToken);
+                const uuid = (0, Utils_1.generateUUID)();
                 if (!(response instanceof ErrorHandler_1.ErrorHandler)) {
-                    const responsedefault = yield this.typeUserUseCase.getTypeUsers();
-                    const def = responsedefault === null || responsedefault === void 0 ? void 0 : responsedefault.filter(item => item.name === 'Customer');
-                    const TypeUser_id = def === null || def === void 0 ? void 0 : def.map(item => item._id);
-                    const resp = yield this.authUseCase.signUp2({ email: response === null || response === void 0 ? void 0 : response.email, fullname: response === null || response === void 0 ? void 0 : response.fullname, type_user: TypeUser_id, google: true, profile_image: response === null || response === void 0 ? void 0 : response.picture });
-                    this.invoke(resp, 200, res, '', next);
+                    const typeUser = yield this.typeUserUseCase.findTypeUser({ system: system, role: "CUSTOMER" });
+                    if (!(typeUser === null || typeUser === void 0 ? void 0 : typeUser._id)) {
+                        return next(new ErrorHandler_1.ErrorHandler('No existe tipo de usuario', 500));
+                    }
+                    const response2 = yield this.authUseCase.signUp2({
+                        fullname: response === null || response === void 0 ? void 0 : response.fullname,
+                        email: response === null || response === void 0 ? void 0 : response.email,
+                        type_user: typeUser === null || typeUser === void 0 ? void 0 : typeUser._id,
+                        uuid: uuid,
+                        google: true
+                    });
+                    if ((_a = response2 === null || response2 === void 0 ? void 0 : response2.user) === null || _a === void 0 ? void 0 : _a._id) {
+                        yield this.shoppingCartUseCase.createShoppingCart({ user_id: response2.user._id });
+                        this.invoke(response2, 201, res, 'Registro Exitoso', next);
+                    }
+                    else {
+                        next(new ErrorHandler_1.ErrorHandler("correo existente", 500));
+                    }
                 }
                 else {
                     this.invoke(response, 200, res, '', next);
@@ -270,7 +291,6 @@ class AuthController extends ResponseData_1.ResponseData {
             const user = req.user;
             try {
                 const userInfo = yield this.authUseCase.findUser({ email: user.email, status: true });
-                console.log(userInfo);
                 const url = yield this.s3Service.getUrlObject(userInfo.profile_image + ".jpg");
                 userInfo.profile_image = url;
                 const response = yield this.authUseCase.generateToken(userInfo, userInfo.uuid);

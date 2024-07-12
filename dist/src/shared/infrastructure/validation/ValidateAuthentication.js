@@ -19,7 +19,8 @@ const ErrorHandler_1 = require("../../domain/ErrorHandler");
 const UserModel_1 = __importDefault(require("../../../api/infrastructure/models/UserModel"));
 const verifyToken_1 = require("../helpers/verifyToken");
 const validateAuthentication = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const token = req.header('token');
+    var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ').pop();
     if (!token)
         return next(new ErrorHandler_1.ErrorHandler('Token is required', 401));
     try {
@@ -36,8 +37,8 @@ const validateAuthentication = (req, res, next) => __awaiter(void 0, void 0, voi
 });
 exports.validateAuthentication = validateAuthentication;
 const validateTokenRestorePassword = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ').pop();
+    var _b;
+    const token = (_b = req.headers.authorization) === null || _b === void 0 ? void 0 : _b.split(' ').pop();
     if (!token)
         return next(new ErrorHandler_1.ErrorHandler('Token is required', 401));
     try {
@@ -55,9 +56,9 @@ const validateTokenRestorePassword = (req, res, next) => __awaiter(void 0, void 
 });
 exports.validateTokenRestorePassword = validateTokenRestorePassword;
 const checkTypeUserAuth = (type_user) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c;
+    var _c, _d;
     try {
-        const token = (_b = req.headers.authorization) === null || _b === void 0 ? void 0 : _b.split(' ').pop();
+        const token = (_c = req.headers.authorization) === null || _c === void 0 ? void 0 : _c.split(' ').pop();
         if (!token) {
             throw new ErrorHandler_1.ErrorHandler('Token es requerido', 401);
         }
@@ -67,7 +68,7 @@ const checkTypeUserAuth = (type_user) => (req, res, next) => __awaiter(void 0, v
             throw new ErrorHandler_1.ErrorHandler('Usuario no encontrado', 404);
         }
         const userTypes = Array.isArray(type_user) ? type_user : [type_user];
-        if (!userTypes.includes((_c = userData.type_user) === null || _c === void 0 ? void 0 : _c.role)) {
+        if (!userTypes.includes((_d = userData.type_user) === null || _d === void 0 ? void 0 : _d.role)) {
             throw new ErrorHandler_1.ErrorHandler('No tiene permisos necesarios', 403);
         }
         req.user = userData;

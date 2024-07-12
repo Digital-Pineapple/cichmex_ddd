@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 import { PaymentUseCase } from '../../../application/payment/paymentUseCase';
@@ -69,80 +69,145 @@ export class PaymentController extends ResponseData {
                 next(new ErrorHandler(`Error: ${message}`, 500)); // Enviar error al siguiente middleware
             }
         } catch (error) {
-         
+
             next(new ErrorHandler('Error', 500)); // Enviar error al siguiente middleware
         }
     }
 
 
     public async createPaymentMP(req: Request, res: Response, next: NextFunction) {
-        const { values, user, membership } = req.body;
-        const uuid4 = uuidv4()
+        const { membership, user, values } = req.body;
+        const access_token = config.MERCADOPAGO_TOKEN;
+        const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
+        const payment1 = new Payment(client);
+        const uuid4 = uuidv4();
+
         try {
-            const response1 = await this.paymentUseCase.createNewPayment({ uuid: uuid4 }) //crea un pago en base de datos
-            const { response, success, message } = await this.mpService.createPaymentMP(values, user, { uuid: response1?.uuid }, membership); //respuesta de mercado libre
-            const createPayment = await this.paymentUseCase.updateOnePayment(response1?._id, { MP_info: response, user_id: user.user_id }) // se actualiza la informacion en base de datos
-            if (success === true && response?.status === 'approved') { // si la respuesta del pago es aprobada 
-                if (!(createPayment instanceof ErrorHandler)) {
-                    const client_id = createPayment.user_id;
-                    const idMembership = response.additional_info?.items[0].id;
-                    const membership_info = await this.membershipUseCase.getInfoMembership(idMembership);
-                    if (!(membership_info instanceof ErrorHandler)) {
-                        let start_date1 = moment().format('L');
-                        let end_date1 = moment().add(30, 'days').calendar();
-                        let services = membership_info?.service_quantity;
-                        let mem_id = membership_info?.id
-                        if (services !== undefined) {
-                            await Promise.all(services.map(async (item) => {
-                                try {
-                                    const ok = await this.membershipBenefitUseCAse.createNewMembershipBenefit(
-                                        mem_id,
-                                        item.service_id._id,
-                                        client_id,
-                                        item.quantity,
-                                        start_date1,
-                                        end_date1
-                                    );
-                                    if (!(ok instanceof ErrorHandler)) {
-                                        let m_id = ok?._id
-                                        let quantity = parseInt(ok?.quantity)
+            // Crea un pago en la base de datos
+            const response1 = await this.paymentUseCase.createNewPayment({ uuid: uuid4 });
 
-                                        const historyPromises = Array.from({ length: quantity }, async () => {
-                                            return this.membershipHistoryUseCase.createOneHistoryMembership(
-                                                m_id
-                                            );
-                                        });
-                                        await Promise.all(historyPromises);
-                                    }
-                                } catch (error) {
-                                    next(new ErrorHandler(`Error: ${error}`, 500));
-                                }
+            const path_notification = `${process.env.URL_NOTIFICATION}api/payments/Mem-Payment-success`;
 
-                            }));
+            const body1: any = {
+                transaction_amount: values.transaction_amount,
+                payment_method_id: values.payment_method_id,
+                payer: {
+                    email: values.payer.email,
+                },
+                additional_info: {
+                    items: [
+                        {
+                            id: membership._id,
+                            title: membership.name,
+                            description: membership.service_quantity[0].service_id.description,
+                            quantity: 1,
+                            unit_price: membership.price_discount,
                         }
+                    ],
+                    payer: {
+                        first_name: user.user_id,
+
+                    },
+                },
+                token: values.token,
+                issuer_id: values.issuer_id,
+                installments: values.installments,
+                notification_url: path_notification,
+                external_reference: response1?._id,
+
+
+            };
+
+            try {
+                const payment = await payment1.create({
+                    requestOptions: { idempotencyKey: response1.uuid, },
+                    body: body1
+                });
+             
+                
+
+
+                if (payment?.status === 'approved') {
+                    try {
+                        const {user_id} = await this.paymentUseCase.updateOnePayment(response1?._id, {
+                            MP_info: payment,
+                            user_id: user._id,
+                            payment_status: payment?.status
+
+                        });
+                        const client_id = user_id;
+                    
+                        
+                        const idMembership = membership._id
+                        const membership_info = await this.membershipUseCase.getInfoMembership(idMembership);
+                        if (!(membership_info instanceof ErrorHandler)) {
+                            let start_date1 = moment().format('L');
+                            let end_date1 = moment().add(30, 'days').calendar();
+                            let services = membership_info?.service_quantity;
+                            let mem_id = membership_info?.id
+                            if (services !== undefined) {
+                                await Promise.all(services.map(async (item) => {
+                                    try {
+                                        const ok = await this.membershipBenefitUseCAse.createNewMembershipBenefit(
+                                            mem_id,
+                                            item.service_id._id,
+                                            client_id,
+                                            item.quantity,
+                                            start_date1,
+                                            end_date1
+                                        );
+                                        if (!(ok instanceof ErrorHandler)) {
+                                            let m_id = ok?._id
+                                            let quantity = parseInt(ok?.quantity)
+
+                                            const historyPromises = Array.from({ length: quantity }, async () => {
+                                                return this.membershipHistoryUseCase.createOneHistoryMembership(
+                                                    m_id
+                                                );
+                                            });
+                                            await Promise.all(historyPromises);
+                    
+                                        
+                                        }
+                                        
+                                    } catch (error) {
+                                        next(new ErrorHandler(`Error: ${error}`, 500));
+                                    }
+
+                                }));
+                            }
+                        }
+                        this.invoke(response, 200,res,'Se pago correctamente', next)
+
+
+
+                    } catch (error) {
+                        next(new ErrorHandler(`Error al actualizar el pago: ${error}`, 500));
                     }
-
-
-                    this.invoke(success, 200, res, 'Se pago correctamente', next)
+                } else {
+                    next(new ErrorHandler('No se aprobó el pago', 500));
                 }
 
-            } else {
-                next(new ErrorHandler(`Error: ${message}`, 500)); // Si la respuesta de pago es negativa 
-            }
+            } catch (error) {
 
+                next(new ErrorHandler('Error al crear el pago con MercadoPago', 500));
+            }
         } catch (error) {
-           
-            next(new ErrorHandler('Error', 500)); //
+            console.log(error);
+
+
+            next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }
 
     }
+
     public async createPaymentProductMP(req: Request, res: Response, next: NextFunction) {
         const { products, user, branch_id, infoPayment, productsOrder, location, typeDelivery } = req.body;
         const access_token = config.MERCADOPAGO_TOKEN;
-        const client = new MercadoPagoConfig({ accessToken: access_token, options:{timeout:5000} });
+        const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
         const payment1 = new Payment(client);
         const uuid4 = uuidv4();
-        
+
 
 
         try {
@@ -150,13 +215,12 @@ export class PaymentController extends ResponseData {
             const response1 = await this.paymentUseCase.createNewPayment({ uuid: uuid4 });
 
             const { formData, selectedPaymentMethod } = infoPayment;
-            const  metadata1  = formData?.metadata
-            console.log(selectedPaymentMethod, formData);
-            
-            
-            const point = metadata1?.payment_point ? metadata1.payment_point :null
-            
-            
+            const metadata1 = formData?.metadata
+
+
+            const point = metadata1?.payment_point ? metadata1.payment_point : null
+
+
 
             const path_notification = `${process.env.URL_NOTIFICATION}api/payments/Mem-Payment-success`;
 
@@ -165,43 +229,43 @@ export class PaymentController extends ResponseData {
                 payment_method_id: formData.payment_method_id,
                 payer: {
                     email: formData.payer.email,
-                    first_name:formData.payer.first_name,
-                    last_name:formData.payer.last_name,
+                    first_name: formData.payer.first_name,
+                    last_name: formData.payer.last_name,
                     // id:user.user_id,
 
-                    
+
                 },
                 additional_info: {
                     items: products,
                     payer: {
                         first_name: user.user_id,
-                        
+
                     },
                 },
-                token : formData.token,
-                issuer_id:formData.issuer,
+                token: formData.token,
+                issuer_id: formData.issuer,
                 installments: formData.installments,
                 notification_url: path_notification,
-                external_reference:response1?._id,
-                statement_descriptor:formData.statement_descriptor,
-                
-                
+                external_reference: response1?._id,
+                statement_descriptor: formData.statement_descriptor,
+
+
             };
 
 
 
             if (selectedPaymentMethod === "ticket") {
-                body1['metadata'] = {payment_point: point};
-               
+                body1['metadata'] = { payment_point: point };
+
             }
-            
+
 
             try {
                 const payment = await payment1.create({
-                    requestOptions: { idempotencyKey: response1.uuid,  },
+                    requestOptions: { idempotencyKey: response1.uuid, },
                     body: body1
                 });
-                
+
 
                 if (payment) {
                     try {
@@ -227,7 +291,7 @@ export class PaymentController extends ResponseData {
                             };
                             if (typeDelivery === 'homedelivery') {
                                 values1['deliveryLocation'] = location;
-                               
+
                             }
                             if (typeDelivery === 'pickup') {
                                 values1['branch'] = branch_id
@@ -249,12 +313,12 @@ export class PaymentController extends ResponseData {
                     next(new ErrorHandler('Error en la respuesta de pago', 500));
                 }
             } catch (error) {
-                
+
                 next(new ErrorHandler('Error al crear el pago con MercadoPago', 500));
             }
         } catch (error) {
             console.log(error);
-            
+
 
             next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }

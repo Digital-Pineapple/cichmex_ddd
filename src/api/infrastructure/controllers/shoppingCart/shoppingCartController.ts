@@ -71,6 +71,9 @@ export class ShoppingCartController extends ResponseData {
         }
     }
 
+
+
+    
     public async updateShoppingCart(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { products, membership } = req.body;

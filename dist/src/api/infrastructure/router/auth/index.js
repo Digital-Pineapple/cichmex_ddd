@@ -36,17 +36,22 @@ const TypeUserModel_1 = __importDefault(require("../../models/TypeUserModel"));
 const UserModel_1 = __importDefault(require("../../models/UserModel"));
 const MPService_1 = require("../../../../shared/infrastructure/mercadopago/MPService");
 const UserValidation_1 = require("../../../../shared/infrastructure/validation/User/UserValidation");
+const ShoppingCartUseCase_1 = require("../../../application/shoppingCart.ts/ShoppingCartUseCase");
+const ShoppingCartRepository_1 = require("../../repository/shoppingCart/ShoppingCartRepository");
+const ShoppingCartModel_1 = __importDefault(require("../../models/ShoppingCartModel"));
 const authRouter = (0, express_1.Router)();
 const authRepository = new AuthRepository_1.AuthRepository(UserModel_1.default);
 const authUseCase = new AuthUseCase_1.AuthUseCase(authRepository);
+const shoppingCartRepository = new ShoppingCartRepository_1.ShoppingCartRepository(ShoppingCartModel_1.default);
 const typeUserRepository = new TypeUsersRepository_1.TypeUsersRepository(TypeUserModel_1.default);
 const typeUserUseCase = new TypeUserUseCase_1.TypeUserUseCase(typeUserRepository);
+const shoppingCartUseCase = new ShoppingCartUseCase_1.ShoppingCartUseCase(shoppingCartRepository);
 const s3Service = new S3Service_1.S3Service();
 const mpService = new MPService_1.MPService();
 const twilioService = new TwilioService_1.TwilioService();
 const authValidations = new AuthValidatons_1.AuthValidations();
 const userValidations = new UserValidation_1.UserValidations();
-const authController = new AuthController_1.AuthController(authUseCase, typeUserUseCase, s3Service, twilioService, mpService);
+const authController = new AuthController_1.AuthController(authUseCase, typeUserUseCase, shoppingCartUseCase, s3Service, twilioService, mpService);
 authRouter
     .get('/user', ValidateAuthentication_1.default, authController.revalidateToken)
     .post('/login', authValidations.loginValidation, authController.login)

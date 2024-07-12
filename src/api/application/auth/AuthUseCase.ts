@@ -147,21 +147,9 @@ export class AuthUseCase extends Authentication {
         let { email, picture } = await this.validateGoogleToken(idToken);
         
         let user = await this.authRepository.findOneItem({ email },TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
-        if (user.type_user.name !== 'Customer') {
-            return new ErrorHandler('No es un cliente', 400);
-        }
-        // if (user.email_verified === true) {
-        //     user.profile_image === picture
-        //     user = await this.generateJWT(user);
-        // }
-        // if (user.email_verified === false) {
-        //     const user2: IGoogleResponseLogin = { user_id: user?._id, verified: user?.email_verified, email: user?.email, profile_image: picture }
-        //     user = user2
-        // }
         if (!user) return new ErrorHandler('No existe usuario', 409)
         user.profile_image = picture
         user = await this.generateJWT(user, user.uuid)
-        
         return user
     }
 
@@ -183,7 +171,7 @@ export class AuthUseCase extends Authentication {
     async signUpWithGoogle(idToken: string): Promise<IGoogle | ErrorHandler | null> {
 
         let {email,fullname,picture} = await this.validateGoogleToken(idToken);
-    
+        
         
         let user = await this.authRepository.findOneItem({ email: email, status:false }, TypeUserPopulateConfig,PhonePopulateConfig)
         if (user) {
