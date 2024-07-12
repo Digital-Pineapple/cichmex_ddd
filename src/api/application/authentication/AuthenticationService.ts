@@ -23,7 +23,7 @@ export interface IGoogleResponse {
 
 }
 export interface IGoogleReg {
-    user_id    : string ;
+    _id    : string ;
     email : string;
     fullname : string;
     profile_image :string |undefined;

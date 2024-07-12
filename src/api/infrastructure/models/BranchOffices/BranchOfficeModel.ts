@@ -1,6 +1,10 @@
 import mongoose, { model, Mongoose, Schema } from "mongoose";
-import { BranchOfficeEntity, ILocation } from '../../../domain/branch_office/BranchOfficeEntity';
+import { BranchOfficeEntity, ILocation, ISchedules } from '../../../domain/branch_office/BranchOfficeEntity';
 
+enum TypeBranch {
+  CARWASH = "carwash",
+  DELIVERYPOINT = "deliverypoint",
+}
 
 const locationSchema = new mongoose.Schema<ILocation>(
 
@@ -75,6 +79,15 @@ const BranchOfficeSchema = new mongoose.Schema<BranchOfficeEntity>(
     },
     images: {
       type: Array,
+      required: false,
+    },
+    type: {
+      type: String,
+      enum: [TypeBranch.CARWASH, TypeBranch.DELIVERYPOINT],  
+      required: true,
+    },
+    schedules: {
+      type: Array,      
       required: false,
     },
     opening_time: {

@@ -53,9 +53,17 @@ export class ShoppingCartController extends ResponseData {
 
     public async createShoppingCart(req: Request, res: Response, next: NextFunction) {
         const { user_id, products, membership } = req.body;
-
         try {
-            const response = await this.shoppingCartUseCase.createShoppingCart({ user_id, products, memberships: membership })
+            let myproducts = products
+            let response ;
+            if(!products){
+                myproducts = []
+            }
+            if(membership){
+                 response = await this.shoppingCartUseCase.createShoppingCart({ user_id, products : myproducts, memberships: membership })
+            }else{
+                 response = await this.shoppingCartUseCase.createShoppingCart({ user_id, products : myproducts })
+            }
             this.invoke(response, 200, res, '', next)
         } catch (error) {
            
@@ -214,6 +222,7 @@ export class ShoppingCartController extends ResponseData {
     public async mergeCart(req: Request, res: Response, next: NextFunction) {        
         const { user_id, products } = req.body;
         try {
+            
             const parseProducts = JSON.parse(products);
             if (!parseProducts || parseProducts.length === 0) {
                 return next(new ErrorHandler('No se encontraron productos', 404));                                            
@@ -239,6 +248,8 @@ export class ShoppingCartController extends ResponseData {
                 const response = await this.shoppingCartUseCase.updateShoppingCart(responseShoppingCart?._id, { products: productsCart });                   
                 this.invoke(response, 200, res, '', next);
             }else{
+        // console.log(user_id,"cffgfg");
+
                 next(new ErrorHandler('Carrito de compras no encontrado', 404));
             }
                         

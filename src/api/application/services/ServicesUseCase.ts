@@ -17,10 +17,10 @@ export class ServicesUseCase {
         return this.servicesRepository.findById(_id);
     }
 
-    public async createNewService(name: string, description: string, subCategory:SubCategory): Promise<ServicesEntity | ErrorHandler | null> {
-        const service = await this.servicesRepository.findOneItem({name:name , status:true});
+    public async createNewService(body:any): Promise<ServicesEntity | ErrorHandler | null> {
+        const service = await this.servicesRepository.findOneItem({name:body.name , status:true});
         if (service) return new ErrorHandler('El servicio ha sido registrado',400);
-        return await this.servicesRepository.createOne({ name, description, subCategory });
+        return await this.servicesRepository.createOne({...body });
     }
 
     public async updateOneService(_id: string, updated: any): Promise<ServicesEntity> {

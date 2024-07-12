@@ -28,7 +28,6 @@ productOrderRouter
 
   .get("/:id", productOrderController.getOneProductOrder)
   .get("/user/:id", productOrderController.getOneProductOrderByUser)
-
   .post('/', productOrderController.createProductOrder)
   .post('/fill-order/:id', productOrderController.fillProductOrder)
   .post("/:id", productOrderController.updateProductOrder )

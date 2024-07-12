@@ -26,6 +26,13 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
         
       }
 
+      async getProductOrdersByBranch( _id: string): Promise<ProductOrderEntity[] | ErrorHandler| null >  {
+        return await this.ProductOrderModel.find({branch:_id}).sort({ createdAt: -1 })
+        
+      }
+
+
+
       async ResumeProductOrders(): Promise< ProductOrderResume > {
    
             // Obtener el inicio y el fin del día actual

@@ -6,12 +6,14 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { BranchOfficeResponse, ILocation } from '../../../domain/branch_office/BranchOfficeEntity';
 import { DocumentationUseCase } from '../../../application/documentation/DocumentationUseCase';
 import mongoose from 'mongoose';
+import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
 
 export class BranchOfficeController extends ResponseData {
     protected path = '/branch_office';
 
     constructor(private branchOfficeUseCase: BranchOfficeUseCase,
         private documentationUseCase: DocumentationUseCase,
+        private productOrderUseCase : ProductOrderUseCase,
         private s3Service: S3Service
     ) {
         super();
@@ -30,6 +32,7 @@ export class BranchOfficeController extends ResponseData {
         const response = await this.branchOfficeUseCase.getAllBranchOffices()
         try {
             const updatedResponse = await Promise.all(
+                
                 response.map(async (item: any) => {
                     const images = item.images;
                     const updatedImages = await Promise.all(
@@ -115,8 +118,9 @@ export class BranchOfficeController extends ResponseData {
     }
 
     public async createBranchOffice(req: Request, res: Response, next: NextFunction) {
-        const { user_id, name, description, location, opening_time, closing_time } = req.body;
+        const { user_id, name, description, phone_number, location, schedules, type } = req.body;
          const location1 = JSON.parse(location)
+         const parseSchedules = JSON.parse(schedules)
         try {
             if (req.files) {
                 const paths: string[] = [];
@@ -133,7 +137,18 @@ export class BranchOfficeController extends ResponseData {
                     urls.push(url)
                     if (!success) return new ErrorHandler("Hubo un error al subir la imagen", 400)
                         
-                    const response = await this.branchOfficeUseCase.createBranchOffice({  user_id, name, description, location, opening_time, closing_time, images: paths, status:true }, location1)
+                    const response = await this.branchOfficeUseCase.createBranchOffice(
+                        {  
+                            user_id, 
+                            name, 
+                            description, 
+                            phone_number: phone_number,
+                            location, 
+                            schedules: parseSchedules, 
+                            type,                             
+                            images: paths, 
+                            status:true 
+                        }, location1)
                     if (!(response instanceof ErrorHandler)) {
                         response.images = urls;
                     }
@@ -147,8 +162,16 @@ export class BranchOfficeController extends ResponseData {
                 }))
             }
 
-            const response = await this.branchOfficeUseCase.createBranchOffice({ user_id, name, description, location, opening_time, closing_time, }, location1)
-
+            const response = await this.branchOfficeUseCase.createBranchOffice(
+                { 
+                    user_id, 
+                    name, 
+                    description, 
+                    phone_number: phone_number,
+                    location, 
+                    schedules: parseSchedules, 
+                    type 
+                }, location1)
 
             this.invoke(
                 response,
@@ -198,8 +221,9 @@ export class BranchOfficeController extends ResponseData {
     public async updateBranchOffice(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            const { user_id, description, location, opening_time, closing_time, name } = req.body;
-
+            const { user_id, description, phone_number, location, name, schedules, type } = req.body;
+            const parsedSchedules = JSON.parse(schedules);
+           
             // Verificar si existen archivos adjuntos
             if (req.files && req.files.length > 0) {
                 const paths: string[] = [];
@@ -224,12 +248,13 @@ export class BranchOfficeController extends ResponseData {
 
                 // Actualizar la sucursal de la oficina con las URLs de las imágenes
                 const response = await this.branchOfficeUseCase.updateBranchOffice(id, {
+                    name: name,
+                    type: type,
                     description: description,
-                    location: location,
-                    opening_time: opening_time,
-                    closing_time: closing_time,
+                    phone_number: phone_number,
+                    schedules: parsedSchedules,                  
+                    location: location, 
                     images: paths, // Se usan las rutas de los archivos en S3
-                    name: name
                 });
 
                 // Asignar las URLs de las imágenes a la respuesta
@@ -242,11 +267,12 @@ export class BranchOfficeController extends ResponseData {
             } else {
                 // Si no hay archivos adjuntos, simplemente actualizar la sucursal de la oficina
                 const response = await this.branchOfficeUseCase.updateBranchOffice(id, {
-                    description: description,
+                    name: name,
+                    type: type,
+                    description: description,  
+                    phone_number: phone_number,                  
+                    schedules: parsedSchedules,
                     location: location,
-                    opening_time: opening_time,
-                    closing_time: closing_time,
-                    name: name
                 });
 
                 // Enviar la respuesta al cliente
@@ -261,13 +287,25 @@ export class BranchOfficeController extends ResponseData {
 
     public async deleteBranchOffice(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
+        
         try {
-            const response = await this.branchOfficeUseCase.deleteOneBranchOffice(id)
-            this.invoke(response, 201, res, 'Se elimino con exito', next);
+            const noProductOrders = await this.productOrderUseCase.ProductOrdersByBranch(id);
+            
+            if (noProductOrders!== null ) {
+                try {
+                    const response = await this.branchOfficeUseCase.deleteOneBranchOffice(id);
+                    this.invoke(response, 201, res, 'Se eliminó con éxito', next);
+                } catch (error) {
+                    next(new ErrorHandler('Hubo un error al eliminar la sucursal', 500));
+                }
+            } else {
+                next(new ErrorHandler('No se puede eliminar la sucursal porque tiene pedidos asociados', 400));
+            }
         } catch (error) {
-            next(new ErrorHandler('Hubo un error eliminar', 500));
+            next(new ErrorHandler('Hubo un error al verificar los pedidos de la sucursal', 500));
         }
     }
+    
 
 
     public async verifyBranchOffice(req: Request, res: Response, next: NextFunction) {

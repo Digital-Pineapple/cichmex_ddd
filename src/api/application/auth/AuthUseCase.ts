@@ -101,19 +101,19 @@ export class AuthUseCase extends Authentication {
 
     async signUp2(body: any): Promise<IGoogleReg | IAuth | ErrorHandler | null> {
         try {
-            const user = await this.authRepository.findOneItem({ email: body.email });
+            const user = await this.authRepository.findOneItem({ email: body.email, status:true });
+            
             if (user) {
                     return new ErrorHandler('Este correo ya se encuentra registrado', 409);
                 
             } else {
-                 const newPassword = await this.encryptPassword(body.password)
-                const newUser = await this.authRepository.createOne({ ...body, password:newPassword});
-                const newUserResponse = { user_id: newUser._id,email: newUser.email, fullname:newUser.fullname, profile_image:newUser.profile_image };
-                const user = this.generateJWT(newUserResponse)
+                const newUser = await this.authRepository.createOne({ ...body});
+                const userDetail = await this.authRepository.findByIdPupulate(newUser._id, TypeUserPopulateConfig)                
+                const user = this.generateJWT(userDetail)
                 return user;
             }
         } catch (error) {
-
+            
             throw new ErrorHandler('Error en el proceso de registro', 500);
         }
     }
@@ -183,7 +183,7 @@ export class AuthUseCase extends Authentication {
         let {email,fullname,picture} = await this.validateGoogleToken(idToken);
     
         
-        let user = await this.authRepository.findOneItem({ email: email, deleted:false }, TypeUserPopulateConfig,PhonePopulateConfig)
+        let user = await this.authRepository.findOneItem({ email: email, status:false }, TypeUserPopulateConfig,PhonePopulateConfig)
         if (user) {
             return new ErrorHandler('El usuario ya exite favor de iniciar sesión', 401)
         }

@@ -24,6 +24,7 @@ export interface SHProductInput extends MongooseDelete.SoftDeleteInterface{
     newQuantity: number
     createdAt: NativeDate;
     status?:boolean;
+    responsible?:  UserEntity,
   }
   export interface SHProductOutput extends MongooseDelete.SoftDeleteInterface{
     SHStock_id ?: string,

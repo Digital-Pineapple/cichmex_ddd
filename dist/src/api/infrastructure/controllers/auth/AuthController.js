@@ -171,9 +171,7 @@ class AuthController extends ResponseData_1.ResponseData {
                     const responsedefault = yield this.typeUserUseCase.getTypeUsers();
                     const def = responsedefault === null || responsedefault === void 0 ? void 0 : responsedefault.filter(item => item.name === 'Customer');
                     const TypeUser_id = def === null || def === void 0 ? void 0 : def.map(item => item._id);
-                    // const code = generateRandomCode();
                     const resp = yield this.authUseCase.signUp2({ email: response === null || response === void 0 ? void 0 : response.email, fullname: response === null || response === void 0 ? void 0 : response.fullname, type_user: TypeUser_id, google: true, profile_image: response === null || response === void 0 ? void 0 : response.picture });
-                    // const resp = await this.authUseCase.signUpPlatform({ email: response?.email, fullname: response?.fullname, accountVerify: code, type_user: TypeUser_id, google: true });
                     this.invoke(resp, 200, res, '', next);
                 }
                 else {
@@ -192,7 +190,7 @@ class AuthController extends ResponseData_1.ResponseData {
                 const response = yield this.authUseCase.findUser(email);
                 const newCode = parseInt((0, Utils_1.generateRandomCode)());
                 const NoAttempts = 2;
-                if (response.verify_code) {
+                if (!response.verify_code) {
                     const { attemps } = (response.verify_code);
                     if (attemps >= 1) {
                         const newAttemps = attemps - 1;
