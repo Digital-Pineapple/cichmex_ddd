@@ -77,6 +77,8 @@ export class PaymentController extends ResponseData {
 
     public async createPaymentMP(req: Request, res: Response, next: NextFunction) {
         const { membership, user, values } = req.body;
+    
+
         const access_token = config.MERCADOPAGO_TOKEN;
         const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
         const payment1 = new Payment(client);
@@ -123,21 +125,15 @@ export class PaymentController extends ResponseData {
                     requestOptions: { idempotencyKey: response1.uuid, },
                     body: body1
                 });
-             
-                
-
-
                 if (payment?.status === 'approved') {
                     try {
-                        const {user_id} = await this.paymentUseCase.updateOnePayment(response1?._id, {
+                        const { user_id } = await this.paymentUseCase.updateOnePayment(response1?._id, {
                             MP_info: payment,
                             user_id: user._id,
                             payment_status: payment?.status
 
                         });
                         const client_id = user_id;
-                    
-                        
                         const idMembership = membership._id
                         const membership_info = await this.membershipUseCase.getInfoMembership(idMembership);
                         if (!(membership_info instanceof ErrorHandler)) {
@@ -166,10 +162,10 @@ export class PaymentController extends ResponseData {
                                                 );
                                             });
                                             await Promise.all(historyPromises);
-                    
-                                        
+
+
                                         }
-                                        
+
                                     } catch (error) {
                                         next(new ErrorHandler(`Error: ${error}`, 500));
                                     }
@@ -177,7 +173,7 @@ export class PaymentController extends ResponseData {
                                 }));
                             }
                         }
-                        this.invoke(response, 200,res,'Se pago correctamente', next)
+                        this.invoke(response, 200, res, 'Se pago correctamente', next)
 
 
 
