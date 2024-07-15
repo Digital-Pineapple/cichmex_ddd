@@ -4,7 +4,7 @@ import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { TwilioService } from '../../../../shared/infrastructure/twilio/TwilioService';
 
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
-import { generateRandomCode } from '../../../../shared/infrastructure/validation/Utils';
+import { generateRandomCode, generateUUID } from '../../../../shared/infrastructure/validation/Utils';
 import { UserPhoneUseCase } from '../../../application/user/UserPhoneUseCase';
 import { IPhone, UserEntity } from '../../../domain/user/UserEntity';
 import { UserUseCase } from '../../../application/user/UserUseCase';
@@ -12,6 +12,7 @@ import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { sendMail } from '../../../../shared/infrastructure/nodemailer/emailer';
 import { IGoogleResponse } from '../../../application/authentication/AuthenticationService';
+import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 
 
 export class UserController extends ResponseData {
@@ -20,6 +21,7 @@ export class UserController extends ResponseData {
     constructor(private readonly phoneUserUseCase: UserPhoneUseCase,
         private readonly userUseCase: UserUseCase,
         private readonly typeUserUseCase: TypeUserUseCase,
+        private readonly shoppingCartUseCase: ShoppingCartUseCase,
         private readonly twilioService: TwilioService,
         private readonly s3Service: S3Service,
     ) {
@@ -135,7 +137,7 @@ export class UserController extends ResponseData {
             const phoneString = phoneC.toString()
             const noRepeat = await this.phoneUserUseCase.findOnePhone(phone_number)
             if (noRepeat == null) {
-                await this.twilioService.sendSMS(phoneString, `CICHMEX. Código de verificación - ${code}`)
+                // await this.twilioService.sendSMS(phoneString, `CICHMEX. Código de verificación - ${code}`)
                 const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
                 this.invoke(newPhone, 200, res, '', next);
 
@@ -244,32 +246,44 @@ export class UserController extends ResponseData {
     }
 
     public async signUpByPhone(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
-        const { fullname, email, password, phone_id } = req.body
+        const { fullname, email, password, phone_id, system  } = req.body
+
+        
+        const uuid = generateUUID()
+   
         
         try {
 
-            const responsedefault = await this.typeUserUseCase.getTypeUsers()
-            const def = responsedefault?.filter(item => item.name === 'Customer')
-            const TypeUser_id = def?.map(item => item._id)
-            const response = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser_id })
-            // await sendMail(email, fullname)
+            const TypeUser = await this.typeUserUseCase.findTypeUser({system:system, role:"CUSTOMER"})
+            
+            if (!(TypeUser?._id)) {
+                next (new ErrorHandler('No existe tipo de usuario', 500))
+            }
+            const response = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser?._id, uuid:uuid })
+            if (response?.user._id) {     
+                await this.shoppingCartUseCase.createShoppingCart({user_id: response?.user._id})
+            }
+
             this.invoke(response, 200, res, '', next);
 
         } catch (error) {
           
-            next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
+            next(new ErrorHandler('Hubo un error ', 500));
         }
     }
 
     public async signUpPartnerByPhone(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
-        const { fullname, email, password, phone_id } = req.body
+        const { fullname, email, password, phone_id, system } = req.body
+        const uuid = generateUUID()
         try {
 
-            const responsedefault = await this.typeUserUseCase.getTypeUsers()
-            const def = responsedefault?.filter(item => item.name === 'Partner')
-            const TypeUser_id = def?.map(item => item._id)
-            const response = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser_id })
-            // await sendMail(email, fullname)
+            const TypeUser = await this.typeUserUseCase.findTypeUser({system:system, role:"PARTNER"})
+            console.log(TypeUser);
+            
+            if (!(TypeUser?._id)) {
+                next (new ErrorHandler('No existe tipo de usuario', 500))
+            }
+            const response = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser?._id, uuid:uuid })
             this.invoke(response, 200, res, '', next);
 
         } catch (error) {
@@ -294,9 +308,13 @@ export class UserController extends ResponseData {
                 this.invoke(response, 200, res, '', next);
 
             }
+            else{
+                next(new ErrorHandler('No existe el telefono', 500));
+            }
 
 
         } catch (error) {
+          console.log(error);
           
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }

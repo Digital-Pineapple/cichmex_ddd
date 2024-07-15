@@ -22,7 +22,8 @@ export interface IEmployeeResponse  {
     _id ?: string
 }
 export interface UserEntity {
-    _id              :   string;
+    _id              :   mongoose.Types.ObjectId;
+    uuid             :  string;
     fullname        ?:   string;
     privacity       ?:   boolean;
     email           ?:   string;
@@ -54,6 +55,4 @@ export interface UserVerifyCodeEntity{
     sales_commission_porcent       ?:number,
     branch_office                  ?: [BranchOfficeEntity],
     store_house                    ?: [storeHouseEntity]
-
-
  }

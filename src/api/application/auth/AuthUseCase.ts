@@ -25,8 +25,9 @@ export class AuthUseCase extends Authentication {
         const validatePassword = this.decryptPassword(password, user.password)
 
         if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);
-        return await this.generateJWT(user);
+        return await this.generateJWT(user,user.uuid);
     }
+
     async signInAdmin(email: string, password: string): Promise<ErrorHandler | IAuth> {
 
         const user = await this.authRepository.findOneItem({ email }, TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
@@ -38,11 +39,11 @@ export class AuthUseCase extends Authentication {
         }
 
         if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);
-        return await this.generateJWT(user);
+        return await this.generateJWT(user, user.uuid);
     }
     async signInPartner(email: string, password: string): Promise<ErrorHandler | IAuth> {
         try {
-            const user = await this.authRepository.findUser({ email: email, status: true }, TypeUserPopulateConfig, PhonePopulateConfig, PopulatePointStore);
+            const user = await this.authRepository.findOneItem({ email: email, status: true }, TypeUserPopulateConfig, PhonePopulateConfig, PopulatePointStore);
     
             if (!(user instanceof ErrorHandler) && user !== null ) {
     
@@ -52,7 +53,7 @@ export class AuthUseCase extends Authentication {
                     return new ErrorHandler('El usuario o contraseña no son válidos', 400);
                 }
     
-                return await this.generateJWT(user);
+                return await this.generateJWT(user, user.uuid);
             } else {
                 return new ErrorHandler('No existe este usuario', 400);
             }
@@ -64,9 +65,10 @@ export class AuthUseCase extends Authentication {
     
 
 
-    async findUser(email: string): Promise<  UserEntity> {
-        let customer = await this.authRepository.findOneItem({ email },PhonePopulateConfig, TypeUserPopulateConfig,PopulatePointStore);
-        return await (customer);
+    async findUser(body:any): Promise<UserEntity> {
+        const user = await this.authRepository.findOneItem({ ...body },PhonePopulateConfig, TypeUserPopulateConfig);
+        
+        return await (user);
     }
 
     async findPhone(phone: number): Promise<ErrorHandler | UserEntity> {
@@ -109,7 +111,7 @@ export class AuthUseCase extends Authentication {
             } else {
                 const newUser = await this.authRepository.createOne({ ...body});
                 const userDetail = await this.authRepository.findByIdPupulate(newUser._id, TypeUserPopulateConfig)                
-                const user = this.generateJWT(userDetail)
+                const user = this.generateJWT(userDetail, userDetail.uuid)
                 return user;
             }
         } catch (error) {
@@ -138,28 +140,16 @@ export class AuthUseCase extends Authentication {
 
         user = await this.authRepository.createOne({});
 
-        return await this.generateJWT(user);
+        return await this.generateJWT(user, user.uuid);
     }
 
     async signInWithGoogle(idToken: string): Promise<IGoogleResponseLogin | IAuth | ErrorHandler | null> {
         let { email, picture } = await this.validateGoogleToken(idToken);
         
         let user = await this.authRepository.findOneItem({ email },TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
-        if (user.type_user.name !== 'Customer') {
-            return new ErrorHandler('No es un cliente', 400);
-        }
-        // if (user.email_verified === true) {
-        //     user.profile_image === picture
-        //     user = await this.generateJWT(user);
-        // }
-        // if (user.email_verified === false) {
-        //     const user2: IGoogleResponseLogin = { user_id: user?._id, verified: user?.email_verified, email: user?.email, profile_image: picture }
-        //     user = user2
-        // }
         if (!user) return new ErrorHandler('No existe usuario', 409)
         user.profile_image = picture
-        user = await this.generateJWT(user)
-        
+        user = await this.generateJWT(user, user.uuid)
         return user
     }
 
@@ -173,7 +163,7 @@ export class AuthUseCase extends Authentication {
         }
         if (!user) return new ErrorHandler('No existe usuario', 409)
         user.profile_image = picture
-        user = await this.generateJWT(user)
+        user = await this.generateJWT(user, user.uuid)
         
         return user
     }
@@ -181,7 +171,7 @@ export class AuthUseCase extends Authentication {
     async signUpWithGoogle(idToken: string): Promise<IGoogle | ErrorHandler | null> {
 
         let {email,fullname,picture} = await this.validateGoogleToken(idToken);
-    
+        
         
         let user = await this.authRepository.findOneItem({ email: email, status:false }, TypeUserPopulateConfig,PhonePopulateConfig)
         if (user) {
@@ -232,8 +222,8 @@ export class AuthUseCase extends Authentication {
         return await this.authRepository.updateOne(user_id, { verify_code: {code: code, attemps: attemps} });
     }
 
-    async generateToken(user: UserEntity) {
-        return await this.generateJWT(user)
+    async generateToken(user: UserEntity, infoToken:any) {
+        return await this.generateJWT(user, infoToken)
     }
 
     async registerPhoneNumber(user: UserEntity | UserEntity, phone: IPhoneRequest, code: number) {

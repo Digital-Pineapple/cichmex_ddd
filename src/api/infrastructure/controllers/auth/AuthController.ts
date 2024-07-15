@@ -9,13 +9,15 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { TwilioService } from '../../../../shared/infrastructure/twilio/TwilioService';
 
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
-import { generateRandomCode } from '../../../../shared/infrastructure/validation/Utils';
+import { generateRandomCode, generateUUID } from '../../../../shared/infrastructure/validation/Utils';
 
 
 import { IPhoneRequest } from '../../../application/auth/interfaces';
 import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
 import { MPService } from '../../../../shared/infrastructure/mercadopago/MPService';
 import { sendCodeMail } from '../../../../shared/infrastructure/nodemailer/emailer';
+import { google } from 'googleapis';
+import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 
 
 export class AuthController extends ResponseData {
@@ -23,6 +25,7 @@ export class AuthController extends ResponseData {
 
     constructor(private readonly authUseCase: AuthUseCase,
         private readonly typeUserUseCase: TypeUserUseCase,
+        private readonly shoppingCartUseCase : ShoppingCartUseCase,
         private readonly s3Service: S3Service,
         private readonly twilioService: TwilioService,
         private readonly mpService : MPService
@@ -50,8 +53,6 @@ export class AuthController extends ResponseData {
 
     public async login(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { email, password } = req.body;
-  ;
-        
         try {
             const response = await this.authUseCase.signIn(email, password);
         
@@ -122,12 +123,20 @@ export class AuthController extends ResponseData {
     }
 
     public async registerAndPay(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
-        const { email, password, fullname } = req.body;
+        const { email, password, fullname, system } = req.body;
+        const uuid = generateUUID()
+        
         try {
-            const responsedefault = await this.typeUserUseCase.getTypeUsers()
-            const def = responsedefault?.filter(item => item.name === 'Customer')
-            const TypeUser_id = def?.map(item => item._id)
-            const response = await this.authUseCase.signUp2({ fullname, email, password, type_user: TypeUser_id });
+            const typeUser = await this.typeUserUseCase.findTypeUser({ system: system, role: "CUSTOMER" });
+                
+            if (!typeUser?._id) {
+                return next(new ErrorHandler('No existe tipo de usuario', 500));
+            }
+            const response = await this.authUseCase.signUp2({ fullname, email, password, type_user:typeUser?._id, uuid:uuid });
+            if (response?.user._id) {     
+                await this.shoppingCartUseCase.createShoppingCart({user_id: response?.user._id})
+            }
+            
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler(`Error:${error}`, 500));
@@ -171,19 +180,35 @@ export class AuthController extends ResponseData {
         }
     }
 
-    public async registerByGoogle(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
-        const { idToken } = req.body;
+    public async registerByGoogle(req: Request, res: Response, next: NextFunction): Promise<void> {
+        const { idToken, system } = req.body;
         
     
         try {
             const response = await this.authUseCase.signUpWithGoogle(idToken);
+            const uuid = generateUUID();
             
             if (!(response instanceof ErrorHandler)) {
-                const responsedefault = await this.typeUserUseCase.getTypeUsers();
-                const def = responsedefault?.filter(item => item.name === 'Customer');
-                const TypeUser_id = def?.map(item => item._id);
-                const resp = await this.authUseCase.signUp2({email: response?.email, fullname:response?.fullname, type_user: TypeUser_id, google: true, profile_image : response?.picture })
-                this.invoke(resp, 200, res, '', next);
+                const typeUser = await this.typeUserUseCase.findTypeUser({ system: system, role: "CUSTOMER" });
+                
+                if (!typeUser?._id) {
+                    return next(new ErrorHandler('No existe tipo de usuario', 500));
+                }
+                
+                const response2 = await this.authUseCase.signUp2({
+                    fullname: response?.fullname,
+                    email: response?.email,
+                    type_user: typeUser?._id,
+                    uuid: uuid,
+                    google: true
+                });
+    
+                if (response2?.user?._id) {     
+                    await this.shoppingCartUseCase.createShoppingCart({ user_id: response2.user._id });
+                   this.invoke(response2, 201, res,'Registro Exitoso', next)
+                } else {
+                    next(new ErrorHandler("correo existente", 500));
+                }
             } else {
                 this.invoke(response, 200, res, '', next);
             }
@@ -191,6 +216,7 @@ export class AuthController extends ResponseData {
             next(new ErrorHandler('Hubo un error al registrar', 500));
         }
     }
+    
 
     public async restorePasswordByEmail(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
 
@@ -279,14 +305,13 @@ export class AuthController extends ResponseData {
 
 
     public async revalidateToken(req: Request, res: Response, next: NextFunction) {
-
-        const { user } = req;
-
+        const user = req.user;
         try {
-            const find = await this.authUseCase.findUser(user.email);
-            const  url  = await this.s3Service.getUrlObject(find.profile_image + ".jpg")
-           find.profile_image = url
-            const response = await this.authUseCase.generateToken(find);
+            const userInfo = await this.authUseCase.findUser({email:user.email, status:true});
+            
+            const  url  = await this.s3Service.getUrlObject(userInfo.profile_image + ".jpg")
+            userInfo.profile_image = url
+            const response = await this.authUseCase.generateToken(userInfo,userInfo.uuid);
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al generar el token', 500));

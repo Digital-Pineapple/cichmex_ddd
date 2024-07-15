@@ -14,21 +14,26 @@ import TypeUserModel from '../../models/TypeUserModel';
 import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { UserValidations } from '../../../../shared/infrastructure/validation/User/UserValidation';
+import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
+import { ShoppingCartRepository } from '../../repository/shoppingCart/ShoppingCartRepository';
+import ShoppingCartModel from '../../models/ShoppingCartModel';
 
 const userRouter = Router();
 
 const userPhoneRepository = new UserPhoneRepository(PhoneModel);
 const userRepository = new UserRepository(UserModel)
 const typeUserRepository = new TypeUsersRepository(TypeUserModel)
+const shoppingCartRepository = new ShoppingCartRepository(ShoppingCartModel)
 
 const userPhoneserUseCase = new UserPhoneUseCase(userPhoneRepository);
 const userUseCase = new UserUseCase(userRepository);
 const typeUserUseCase = new TypeUserUseCase(typeUserRepository)
+const shoppingCartUseCase = new ShoppingCartUseCase(shoppingCartRepository)
 const s3Service = new S3Service()
 const userValidations = new UserValidations()
 
 const twilioService = new TwilioService();
-const userController = new UserController(userPhoneserUseCase, userUseCase, typeUserUseCase, twilioService, s3Service)
+const userController = new UserController(userPhoneserUseCase, userUseCase, typeUserUseCase,shoppingCartUseCase, twilioService, s3Service)
 
 userRouter
     .get('/',userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), userController.allUsers)

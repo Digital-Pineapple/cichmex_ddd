@@ -1,8 +1,18 @@
-import { Mongoose, Schema, model } from 'mongoose';
+import mongoose, { Mongoose, Schema, model } from 'mongoose';
 import { IPhone, UserEntity } from '../../domain/user/UserEntity';
+import { generateUUID } from '../../../shared/infrastructure/validation/Utils';
 
 
 const UserSchema = new Schema<UserEntity>({
+    _id: {
+        type: Schema.Types.ObjectId,
+        default: () => new mongoose.Types.ObjectId()
+      },
+    uuid:{
+        type:String,
+        required:true,
+        unique:true,
+    },
     fullname: {
         type: String,
         required: true,
@@ -26,7 +36,7 @@ const UserSchema = new Schema<UserEntity>({
         required: false,
     },
     type_user: {
-        type: Schema.Types.ObjectId,
+        type: Object,
         ref: 'TypeUser',
         required: true
 

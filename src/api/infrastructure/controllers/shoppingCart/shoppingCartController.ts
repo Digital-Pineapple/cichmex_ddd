@@ -71,6 +71,9 @@ export class ShoppingCartController extends ResponseData {
         }
     }
 
+
+
+    
     public async updateShoppingCart(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { products, membership } = req.body;
@@ -157,6 +160,7 @@ export class ShoppingCartController extends ResponseData {
 
     public async updateShoppingCartProducts(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params; // shopping_carid
+        
         const { user_id, cart_id, quantity } = req.body;
         
         

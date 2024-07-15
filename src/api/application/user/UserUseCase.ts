@@ -2,7 +2,7 @@ import { Authentication, IAuth, IGoogleResponse } from '../authentication/Authen
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { IPhone, UserEntity } from '../../domain/user/UserEntity';
 import { UserRepository } from '../../domain/user/UserRepository';
-import { TypeUserPopulateConfig, PhonePopulateConfig, PopulatePointStore } from '../../../shared/domain/PopulateInterfaces';
+import { TypeUserPopulateConfig, PhonePopulateConfig, PopulatePointStore, PopulateProductCS } from '../../../shared/domain/PopulateInterfaces';
 export class UserUseCase extends Authentication {
 
   constructor(private readonly userRepository: UserRepository) {
@@ -41,8 +41,10 @@ export class UserUseCase extends Authentication {
   }
 
   public async updateRegisterUser(id: string, updated:object): Promise<IAuth | ErrorHandler | null> {
-     let user = await this.userRepository.updateOne(id,updated)
-     return await this.generateJWT(user);
+    const user = await this.userRepository.updateOne(id,updated)
+    const {uuid,fullname,email,type_user} = await this.userRepository.findOneItem({ email: user.email, status:true });
+    const infoToken ={uuid:uuid,fullname:fullname,email:email,type_user:type_user}
+     return await this.generateJWT(user,infoToken );
   }
 
   public async deleteUser(id: string): Promise<UserEntity | ErrorHandler | null> {
@@ -58,38 +60,38 @@ export class UserUseCase extends Authentication {
 
   }
   public async createUser(body:any): Promise<UserEntity | IAuth |  ErrorHandler | null> {
-    let user = await this.userRepository.findOneItem({ email: body.email, status:true });
+    const user = await this.userRepository.findOneItem({ email: body.email, status:true });
         if (user) return new ErrorHandler('El usuario ya existe',400);
         const password = await this.encryptPassword(body.password);
-        const user1 = await this.userRepository.createOne({ ...body, password });
-        return await this.generateJWT(user1);
+        const {uuid} = await this.userRepository.createOne({ ...body, password });
+        const userInfo = await this.userRepository.findOneItem({uuid: uuid}, TypeUserPopulateConfig, PhonePopulateConfig )
+        return await this.generateJWT(userInfo,uuid);
     
   }
 
   public async createCarrierDriver(body:any): Promise<UserEntity | IAuth |  ErrorHandler | null> {
+        const user = await this.userRepository.findOneItem({ email: body.email, status:true });
+        if (user) return new ErrorHandler('El usuario ya existe',400);
         const password = this.encryptPassword(body.password);
-        const user1 = await this.userRepository.createOne({ ...body, password });
-        return await this.generateJWT(user1);
+        const {uuid} = await this.userRepository.createOne({ ...body, password });
+        const userInfo = await this.userRepository.findOneItem({uuid: uuid}, TypeUserPopulateConfig, PhonePopulateConfig, )
+        return await this.generateJWT(userInfo,uuid);
     
   }
 
   async signInByPhone(phone_id: string, password: string): Promise<ErrorHandler | IAuth> {
     const user = await this.userRepository.findOneItem({phone_id}, TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore)
-    // if (user.type_user.name !== 'Partner') {
-    //   return new ErrorHandler('No es un socio', 400);
-    // }
-    
     if (!user) return new ErrorHandler('No exite este usuario', 400);
     const validatePassword = this.decryptPassword(password, user.password)
     if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);
-    return await this.generateJWT(user);
+    return await this.generateJWT(user, user.uuid);
 }
 async signInByPhonePartner(phone_id: string, password: string): Promise<ErrorHandler | IAuth> {
   const user = await this.userRepository.findOneItem({phone_id}, TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore)
   if (!user) return new ErrorHandler('No exite este usuario', 400);
   const validatePassword = this.decryptPassword(password, user.password)
   if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);
-  return await this.generateJWT(user);
+  return await this.generateJWT(user, user.uuid);
 }
 
 

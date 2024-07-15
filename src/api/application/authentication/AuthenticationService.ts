@@ -42,9 +42,15 @@ export interface IdUserAndVerified {
     verified   : string |undefined;
 }
 export interface IAuth {
-    user    :  UserEntity | IGoogleReg;
+    user    :  UserEntity | IGoogleReg | Iuuid;
     token?  : string;
 }
+
+export interface Iuuid {
+    uuid : string;
+
+}
+
 
 
 export class Authentication {
@@ -52,10 +58,9 @@ export class Authentication {
     private googleKey   = process.env.GOOGLE_CLIENT_ID;
     private client      = new OAuth2Client(this.googleKey);
 
-    protected async generateJWT(user: UserEntity | IGoogleReg  ): Promise<IAuth> {
+    protected async generateJWT(user: UserEntity | IGoogleReg , uuid: Iuuid ): Promise<IAuth> {
         return new Promise((resolve, reject) => {
-            const payload: string | object | Buffer = {user};
-
+            const payload: string | object | Buffer = {uuid};
             Jwt.sign(payload, process.env.SECRET_JWT_KEY || '', {
                 expiresIn: '24h',
             }, (error, token) => {

@@ -67,7 +67,7 @@ export const SubCategoriesPopulateConfig : IStockPopulateConfig ={
 }
 export const TypeUserPopulateConfig : IUserPopulateConfig ={
     path: 'type_user',
-    select: ["name", "type" ],
+    select: ["system", "role"],
   
 }
 export const PhonePopulateConfig : IUserPopulateConfig ={
