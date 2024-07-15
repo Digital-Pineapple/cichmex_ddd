@@ -61,7 +61,8 @@ export class AuthController extends ResponseData {
                     response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image+".jpg") :
                     'No hay imagen de perfil'
             }
-
+            console.log(response);
+            
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
@@ -145,15 +146,13 @@ export class AuthController extends ResponseData {
 
 
     public async registerAdmin(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
-        const { email, password, fullname, phone } = req.body;
-
+        const { email, password, fullname, phone, type_user } = req.body;
+        const uuid = generateUUID()
         try {
-            const responsedefault = await this.typeUserUseCase.getTypeUsers()
-            const def = responsedefault?.filter(item => item.name === 'Admin')
-            const TypeUser_id = def?.map(item => item._id)
-            const response = await this.authUseCase.signUp({ fullname, email, password, phone, type_user: TypeUser_id });
+            const response = await this.authUseCase.signUp({ fullname, email, password, phone, type_user: type_user, uuid: uuid });
             this.invoke(response, 200, res, '', next);
         } catch (error) {
+          console.log(error);
           
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }
