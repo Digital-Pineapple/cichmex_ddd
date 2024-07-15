@@ -18,6 +18,7 @@ const config_1 = require("../../../../config");
 const ErrorHandler_1 = require("../../domain/ErrorHandler");
 const UserModel_1 = __importDefault(require("../../../api/infrastructure/models/UserModel"));
 const verifyToken_1 = require("../helpers/verifyToken");
+const PopulateInterfaces_1 = require("../../domain/PopulateInterfaces");
 const validateAuthentication = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ').pop();
@@ -56,19 +57,20 @@ const validateTokenRestorePassword = (req, res, next) => __awaiter(void 0, void 
 });
 exports.validateTokenRestorePassword = validateTokenRestorePassword;
 const checkTypeUserAuth = (type_user) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d;
+    var _c;
     try {
         const token = (_c = req.headers.authorization) === null || _c === void 0 ? void 0 : _c.split(' ').pop();
         if (!token) {
             throw new ErrorHandler_1.ErrorHandler('Token es requerido', 401);
         }
         const { uuid } = yield (0, verifyToken_1.verifyToken)(token);
-        const userData = yield UserModel_1.default.findOne({ uuid: uuid });
+        const userData = yield UserModel_1.default.findOne({ uuid: uuid }).populate(PopulateInterfaces_1.TypeUserPopulateConfig);
         if (!userData) {
             throw new ErrorHandler_1.ErrorHandler('Usuario no encontrado', 404);
         }
         const userTypes = Array.isArray(type_user) ? type_user : [type_user];
-        if (!userTypes.includes((_d = userData.type_user) === null || _d === void 0 ? void 0 : _d.role)) {
+        const go = userTypes.some(e => { var _a; return (_a = userData.type_user) === null || _a === void 0 ? void 0 : _a.role.includes(e); });
+        if (!go) {
             throw new ErrorHandler_1.ErrorHandler('No tiene permisos necesarios', 403);
         }
         req.user = userData;

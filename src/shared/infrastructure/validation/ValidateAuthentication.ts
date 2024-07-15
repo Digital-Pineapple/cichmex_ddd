@@ -9,6 +9,7 @@ import { ErrorHandler } from '../../domain/ErrorHandler';
 import UserModel from '../../../api/infrastructure/models/UserModel';
 import { verifyToken } from '../helpers/verifyToken';
 import { Iuuid } from '../../../api/application/authentication/AuthenticationService';
+import { TypeUserPopulateConfig } from '../../domain/PopulateInterfaces';
 
 export const validateAuthentication = async(req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.authorization?.split(' ').pop();
@@ -50,26 +51,19 @@ export const validateAuthentication = async(req: Request, res: Response, next: N
 export const checkTypeUserAuth = (type_user: string | string[]) => async (req: Request, res: Response, next: NextFunction) => {
     try {
         const token = req.headers.authorization?.split(' ').pop();
-        
         if (!token) {
             throw new ErrorHandler('Token es requerido', 401);
-        }
-        
+        }  
         const {uuid} = await verifyToken(token);
-
-        const userData = await UserModel.findOne({uuid:uuid})
-       
+        const userData = await UserModel.findOne({uuid:uuid}).populate(TypeUserPopulateConfig)
         if (!userData) {
             throw new ErrorHandler('Usuario no encontrado', 404);
         }
-
         const userTypes = Array.isArray(type_user) ? type_user : [type_user];
-        
-        
-        if (!userTypes.includes(userData.type_user?.role)) {
+        const go = userTypes.some(e => userData.type_user?.role.includes(e))  
+        if (!go) {
             throw new ErrorHandler('No tiene permisos necesarios', 403);
         }
-        
         req.user= userData
         next();
     } catch (error) {

@@ -21,11 +21,11 @@ const userValidations = new UserValidations();
 
 storeHouseRouter
 
-    .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']),storeHouseController.getAllStoreHouses)
-    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']),storeHouseController.getOneStoreHouse)
-    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), storeHouseController.createStoreHouse)
+    .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']),storeHouseController.getAllStoreHouses)
+    .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']),storeHouseController.getOneStoreHouse)
+    .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), storeHouseController.createStoreHouse)
     .patch('/update/:id', storeHouseController.updateStoreHouse)
-    .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), storeHouseController.deleteStoreHouse)
+    .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), storeHouseController.deleteStoreHouse)
     
 
 export default storeHouseRouter;

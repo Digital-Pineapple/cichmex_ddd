@@ -34,13 +34,13 @@ const userValidations = new UserValidations();
 
 stockBranchRouter
 
-    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockBranchController.getAllStockInBranch)
-    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockBranchController.createStockBranch)
-    .get('/one/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockBranchController.getOneStockBranchDetail)
-    .patch('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockBranchController.updateStockBranch)
-    .patch('/add/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockBranchController.addStocInkBranch)
-    .patch('/remove/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockBranchController.removeStocInkBranch)
-    .patch('/return/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), stockBranchController.returnStocInkBranch)
+    .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockBranchController.getAllStockInBranch)
+    .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockBranchController.createStockBranch)
+    .get('/one/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockBranchController.getOneStockBranchDetail)
+    .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockBranchController.updateStockBranch)
+    .patch('/add/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockBranchController.addStocInkBranch)
+    .patch('/remove/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockBranchController.removeStocInkBranch)
+    .patch('/return/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockBranchController.returnStocInkBranch)
 
     
 

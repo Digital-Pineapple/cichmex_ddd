@@ -38,8 +38,8 @@ branchOfficeRouter
 .get('/:id', branchOfficeController.getBranchOfficeDetail)
 .get('/user/:id', branchOfficeController.getBranchesByUser)
 .post('/', branchOfficeController.createBranchOffice)
-.post('/verify/:id',userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']),branchOfficeController.verifyBranchOffice)
-.patch('/:id', branchValidations.ImageValidation,userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57']), branchOfficeController.updateBranchOffice)
-.delete('/:id',userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57']), branchOfficeController.deleteBranchOffice)
+.post('/verify/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),branchOfficeController.verifyBranchOffice)
+.patch('/:id', branchValidations.ImageValidation,userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER']), branchOfficeController.updateBranchOffice)
+.delete('/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER']), branchOfficeController.deleteBranchOffice)
 
 export default branchOfficeRouter;
