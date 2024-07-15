@@ -109,25 +109,32 @@ export class AuthUseCase extends Authentication {
                     return new ErrorHandler('Este correo ya se encuentra registrado', 409);
                 
             } else {
+                const password = await this.encryptPassword(body.password);
+                const newUser = await this.authRepository.createOne({ ...body, password});
+                const userDetail = await this.authRepository.findByIdPupulate(newUser._id, TypeUserPopulateConfig)                
+                const user = this.generateJWT(userDetail, userDetail.uuid)
+                return user;
+            }
+        } catch (error) {
+            throw new ErrorHandler('Error en el proceso de registro', 500);
+        }
+    }
+
+    async signUpPlatform(body: any): Promise<IGoogleReg | IAuth | ErrorHandler | null>  {
+        try {
+            const user = await this.authRepository.findOneItem({ email: body.email, status:true })
+            
+            if (user) {
+                    return new ErrorHandler('Este correo ya se encuentra registrado', 409);
+                
+            } else {
                 const newUser = await this.authRepository.createOne({ ...body});
                 const userDetail = await this.authRepository.findByIdPupulate(newUser._id, TypeUserPopulateConfig)                
                 const user = this.generateJWT(userDetail, userDetail.uuid)
                 return user;
             }
         } catch (error) {
-            
             throw new ErrorHandler('Error en el proceso de registro', 500);
-        }
-    }
-
-    async signUpPlatform(body: any): Promise<UserEntity | IGoogleResponse | ErrorHandler | null> {
-        try {
-            const newUser = await this.authRepository.createOne({ ...body });
-            // await sendVerifyMail(newUser.email, newUser.fullname, newUser.accountVerify);
-            const newUserResponse = { user_id: newUser._id, verified: newUser.email_verified, email: newUser.email };
-            return newUserResponse;
-        } catch (error) {
-            return new ErrorHandler('Error en el proceso de registro', 500); //  500 (Internal Server Error)
         }
     }
 
@@ -173,7 +180,7 @@ export class AuthUseCase extends Authentication {
         let {email,fullname,picture} = await this.validateGoogleToken(idToken);
         
         
-        let user = await this.authRepository.findOneItem({ email: email, status:false }, TypeUserPopulateConfig,PhonePopulateConfig)
+        let user = await this.authRepository.findOneItem({ email: email, status:true }, TypeUserPopulateConfig,PhonePopulateConfig)
         if (user) {
             return new ErrorHandler('El usuario ya exite favor de iniciar sesión', 401)
         }

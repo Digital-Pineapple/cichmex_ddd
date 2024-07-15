@@ -179,7 +179,7 @@ class AuthController extends ResponseData_1.ResponseData {
                     if (!(typeUser === null || typeUser === void 0 ? void 0 : typeUser._id)) {
                         return next(new ErrorHandler_1.ErrorHandler('No existe tipo de usuario', 500));
                     }
-                    const response2 = yield this.authUseCase.signUp2({
+                    const response2 = yield this.authUseCase.signUpPlatform({
                         fullname: response === null || response === void 0 ? void 0 : response.fullname,
                         email: response === null || response === void 0 ? void 0 : response.email,
                         type_user: typeUser === null || typeUser === void 0 ? void 0 : typeUser._id,

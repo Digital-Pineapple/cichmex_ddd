@@ -182,10 +182,10 @@ export class AuthController extends ResponseData {
 
     public async registerByGoogle(req: Request, res: Response, next: NextFunction): Promise<void> {
         const { idToken, system } = req.body;
-        
     
         try {
             const response = await this.authUseCase.signUpWithGoogle(idToken);
+            
             const uuid = generateUUID();
             
             if (!(response instanceof ErrorHandler)) {
@@ -195,7 +195,7 @@ export class AuthController extends ResponseData {
                     return next(new ErrorHandler('No existe tipo de usuario', 500));
                 }
                 
-                const response2 = await this.authUseCase.signUp2({
+                const response2 = await this.authUseCase.signUpPlatform({
                     fullname: response?.fullname,
                     email: response?.email,
                     type_user: typeUser?._id,
@@ -213,6 +213,7 @@ export class AuthController extends ResponseData {
                 this.invoke(response, 200, res, '', next);
             }
         } catch (error) {
+            
             next(new ErrorHandler('Hubo un error al registrar', 500));
         }
     }

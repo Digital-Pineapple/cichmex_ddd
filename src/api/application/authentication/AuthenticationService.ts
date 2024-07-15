@@ -91,9 +91,8 @@ export class Authentication {
                 audience: this.googleKey,
             });
             if(!ticket) reject('El token de google no es valido');
-            
             const payload = ticket.getPayload();
-            resolve({ fullname: payload?.name, email: payload?.email, picture: payload?.picture});
+            resolve({ fullname: payload?.name, email: payload?.email, picture: payload?.picture, });
         })
         
     }
