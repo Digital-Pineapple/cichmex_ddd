@@ -4,13 +4,15 @@ import ShoppingCartModel from '../../models/ShoppingCartModel';
 import { UserValidations } from '../../../../shared/infrastructure/validation/User/UserValidation';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import { ShoppingCartController } from '../../controllers/shoppingCart/shoppingCartController';
+import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 
 const shoppingCartRouter = Router();
 
 const shoppingCartRepository    = new ShoppingCartRepository(ShoppingCartModel);
 const shoppingCartUseCase      = new ShoppingCartUseCase(shoppingCartRepository);
+const s3Service = new S3Service();
 
-const shoppingCartController   = new ShoppingCartController(shoppingCartUseCase);
+const shoppingCartController   = new ShoppingCartController(shoppingCartUseCase, s3Service);
 
 const userValidations = new UserValidations();
 
