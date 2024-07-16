@@ -21,6 +21,7 @@ import shoppingCartRouter from './shoppingCart.ts';
 import stockStoreHouseRouter from './stockStoreHouse';
 import storeHouseRouter from './storeHouse';
 import productOrderRouter from './productOrder';
+import shippingCostRouter from './shippingCost';
 
 export const apiRouter = (): Router => {
 
@@ -44,6 +45,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/product-order', productOrderRouter)
     apiRouter.use('/stock-branch', stockBranchRouter)
     apiRouter.use('/payments', paymentRouter)
+    apiRouter.use('/shipping-cost', shippingCostRouter)
     apiRouter.use('/shopping-cart', shoppingCartRouter)
     apiRouter.use('/stock-StoreHouse', stockStoreHouseRouter)
     apiRouter.use('/storehouse', storeHouseRouter)
@@ -69,6 +71,7 @@ apiRouterx.use('/product', productRouter)
 apiRouterx.use('/product-order', productOrderRouter)
 apiRouterx.use('/stock-branch', stockBranchRouter)
 apiRouterx.use('/payments', paymentRouter)
+apiRouterx.use('/shipping-cost', shippingCostRouter)
 apiRouterx.use('/shopping-cart', shoppingCartRouter)
 apiRouterx.use('/stock-StoreHouse', stockStoreHouseRouter )
 apiRouterx.use('/storehouse', storeHouseRouter)
