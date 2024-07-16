@@ -18,7 +18,7 @@ const productOrderUseCase = new ProductOrderUseCase(productOrderRepository);
 const s3Service = new S3Service();
 const productvalidations = new ProductValidations()
 
-const productOrderController = new ProductOrderController(productOrderUseCase);
+const productOrderController = new ProductOrderController(productOrderUseCase, s3Service);
 const userValidations = new UserValidations();
 
 productOrderRouter
@@ -26,8 +26,8 @@ productOrderRouter
   .get("/",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.getAllProductOrders)
   .get('/resume', productOrderController.gerProductOrderResume)
 
-  .get("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.getOneProductOrder)
-  .get("/user/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.getOneProductOrderByUser)
+  .get("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CUSTOMER"]), productOrderController.getOneProductOrder)
+  .get("/user/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CUSTOMER"]), productOrderController.getOneProductOrderByUser)
   .post('/', productOrderController.createProductOrder)
   .post('/fill-order/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.fillProductOrder)
   .post("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.updateProductOrder )

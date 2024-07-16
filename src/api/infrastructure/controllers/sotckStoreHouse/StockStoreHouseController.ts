@@ -208,4 +208,9 @@ export class StockStoreHouseController extends ResponseData {
         }
     }
 
+    public getProductsByCategory(req: Request, res: Response, next: NextFunction) {         
+        const { category } = req.body           
+        
+    }
+
 }
