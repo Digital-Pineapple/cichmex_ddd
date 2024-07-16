@@ -26,6 +26,7 @@ const shoppingCart_ts_1 = __importDefault(require("./shoppingCart.ts"));
 const stockStoreHouse_1 = __importDefault(require("./stockStoreHouse"));
 const storeHouse_1 = __importDefault(require("./storeHouse"));
 const productOrder_1 = __importDefault(require("./productOrder"));
+const shippingCost_1 = __importDefault(require("./shippingCost"));
 const apiRouter = () => {
     const apiRouter = (0, express_1.Router)();
     apiRouter.use('/auth', auth_1.default);
@@ -46,6 +47,7 @@ const apiRouter = () => {
     apiRouter.use('/product-order', productOrder_1.default);
     apiRouter.use('/stock-branch', StockBranch_1.default);
     apiRouter.use('/payments', payments_1.default);
+    apiRouter.use('/shipping-cost', shippingCost_1.default);
     apiRouter.use('/shopping-cart', shoppingCart_ts_1.default);
     apiRouter.use('/stock-StoreHouse', stockStoreHouse_1.default);
     apiRouter.use('/storehouse', storeHouse_1.default);
@@ -70,6 +72,7 @@ apiRouterx.use('/product', product_1.default);
 apiRouterx.use('/product-order', productOrder_1.default);
 apiRouterx.use('/stock-branch', StockBranch_1.default);
 apiRouterx.use('/payments', payments_1.default);
+apiRouterx.use('/shipping-cost', shippingCost_1.default);
 apiRouterx.use('/shopping-cart', shoppingCart_ts_1.default);
 apiRouterx.use('/stock-StoreHouse', stockStoreHouse_1.default);
 apiRouterx.use('/storehouse', storeHouse_1.default);
