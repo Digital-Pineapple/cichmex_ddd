@@ -1,10 +1,8 @@
-import { NextFunction, Request, Response } from 'express';
+import { json, NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
-import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
-import { DocumentationUseCase } from '../../../application/documentation/DocumentationUseCase';
-import { IRespFile } from '../../../domain/documentation/DocumentationsEntity';
 import { ShippingCostUseCase } from '../../../application/shippingCost/ShippingCostUseCase';
+import { generateUUID } from '../../../../shared/infrastructure/validation/Utils';
 
 
 export class ShippingCostController extends ResponseData {
@@ -15,6 +13,7 @@ export class ShippingCostController extends ResponseData {
         super();
         this.getAllShippingCost = this.getAllShippingCost.bind(this);
         this.getOneShippingCost = this.getOneShippingCost.bind(this);
+        this.getShippingCostByWeight = this.getShippingCostByWeight.bind(this);
         this.creteShippingCost  = this.creteShippingCost.bind(this);
         this.updateShippingCost = this.updateShippingCost.bind(this);
         this.deleteShippingCost = this.deleteShippingCost.bind(this);
@@ -35,16 +34,28 @@ export class ShippingCostController extends ResponseData {
             const documentation = await this.shippingCostUseCase.getShippingCost(id)
             return this.invoke(documentation,200,res,'',next)
         } catch (error) {
-            next(new ErrorHandler('Error al encontrar la documentacion', 404));
+            next(new ErrorHandler('Hubo un error al consultar la información', 404));
+        }
+    }
+
+    public async getShippingCostByWeight(req: Request, res: Response, next: NextFunction) {
+        const { weight } = req.query;
+        try {
+            const resp = await this.shippingCostUseCase.findShippingCost(weight)
+            const price_weight = resp?.price_weight
+            this.invoke({price_weight:price_weight}, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
 
     public async creteShippingCost(req: Request, res: Response, next: NextFunction) {
 
         const { values } = req.body;
-
+        const uuid = generateUUID()
+        
         try{
-            const response = await this.shippingCostUseCase.createShoppingCost({...values})
+            const response = await this.shippingCostUseCase.createShoppingCost({...values, uuid})
             this.invoke(response,200,res,'Se creó con éxito', next)
         }
         catch (error) {
@@ -58,12 +69,13 @@ export class ShippingCostController extends ResponseData {
     public async updateShippingCost(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { values } = req.body;
+        
 
         try {
-          const response = await this.shippingCostUseCase.updateShippingCostt(id,{...values})
+          const response = await this.shippingCostUseCase.updateShippingCost(id,values)
           this.invoke(response,200,res,'Se actualizó con éxito', next)
         } catch (error) {
-            next(new ErrorHandler('Hubo un error al actualizar la documentación', 500));
+            next(new ErrorHandler('Hubo un error al actualizar', 500));
         }
     }
 
@@ -73,9 +85,9 @@ export class ShippingCostController extends ResponseData {
 
         try {
             const response = await this.shippingCostUseCase.deleteShippingCost(id)
-            this.invoke(response, 200, res, 'La documentación ha sido eliminado', next);
+            this.invoke(response, 200, res, 'Se eliminó con éxito', next);
         } catch (error) {
-            next(new ErrorHandler('Hubo un error al eliminar la documentación', 500));
+            next(new ErrorHandler('Hubo un error al eliminar', 500));
         }
 
     }

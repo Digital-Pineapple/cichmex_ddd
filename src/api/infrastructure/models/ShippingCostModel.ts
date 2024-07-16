@@ -2,6 +2,10 @@ import { Schema, model } from 'mongoose';
 import { ShippingCostEntity } from '../../domain/shippingCost/ShippingCostEntity';
 
 const ShippingCostSchema = new Schema<ShippingCostEntity>({
+    uuid:{
+        type:String,
+        required:true,
+    },
     starting_weight: {
         type: Number,
         required: false,
