@@ -16,5 +16,8 @@ export class StockSHReturnRepository extends MongoRepository implements  StockIn
     async findStockByStoreHouse(branchId: string): Promise<any[] | null> {
       return await this.MODEL.findById(branchId)
     }
+    async findStockByStoreHouseNoDetail(branchId: string): Promise<any[] | null> {
+      return await this.MODEL.findById(branchId)
+    }
   
   }

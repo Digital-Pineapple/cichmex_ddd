@@ -35,7 +35,7 @@ const membershipUseCase = new MembershipUseCase(membershipRepository)
 
 const paymentUseCase = new PaymentUseCase(paymentRepository);
 const mpService = new MPService()
-const paymentController = new PaymentController(paymentUseCase, productOrderUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase);
+const paymentController = new PaymentController(paymentUseCase, productOrderUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase, );
 const paymentValidation = new PaymentValidations();
 
 paymentRouter

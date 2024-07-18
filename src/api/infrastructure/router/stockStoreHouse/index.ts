@@ -37,6 +37,7 @@ stockStoreHouseRouter
     .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.getAllStock)
     .get('/online/:id', stockStoreHouseController.getAllStock)
     .get('/available/ok', stockStoreHouseController.getAvailableStock)
+    .get('/available/products', stockStoreHouseController.getAvailableProducts)
     .post('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.createStock)
     .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.updateStock)
     .patch('/add/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.addStock)

@@ -17,7 +17,8 @@ export interface ProductEntity {
   subCategory?: SubCategory;
   images?: string[];
   status?:boolean;
-  weight ? : string;
+  weight ?: string;
+  video ?: string;
   createdAt        :   NativeDate;
   updatedAt        :   NativeDate;
 }
@@ -38,7 +39,7 @@ export interface ProductImage  {
   }
 
   export interface ProductOrderEntity{
-
+    order_id: string,
     payment: PaymentEntity;
     payment_status ?: string; 
     user_id:UserEntity

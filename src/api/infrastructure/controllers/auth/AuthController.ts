@@ -61,7 +61,6 @@ export class AuthController extends ResponseData {
                     response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image+".jpg") :
                     'No hay imagen de perfil'
             }
-            console.log(response);
             
             this.invoke(response, 200, res, '', next);
         } catch (error) {

@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
 import MercadoPagoConfig, { Payment } from 'mercadopago';
 import { config } from '../../../../../config';
+import { generateUUID } from '../../../../shared/infrastructure/validation/Utils';
 
 
 export class PaymentController extends ResponseData {
@@ -202,8 +203,7 @@ export class PaymentController extends ResponseData {
         const access_token = config.MERCADOPAGO_TOKEN;
         const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
         const payment1 = new Payment(client);
-        const uuid4 = uuidv4();
-
+        const uuid4 = generateUUID() 
 
 
         try {
