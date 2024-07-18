@@ -12,6 +12,8 @@ import { ProductOrderUseCase } from '../../../application/product/productOrderUs
 import MercadoPagoConfig, { Payment } from 'mercadopago';
 import { config } from '../../../../../config';
 import { generateUUID } from '../../../../shared/infrastructure/validation/Utils';
+import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHoutputUseCase';
+import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 
 
 export class PaymentController extends ResponseData {
@@ -23,6 +25,8 @@ export class PaymentController extends ResponseData {
         private readonly membershipBenefitUseCAse: MembershipBenefitsUseCase,
         private readonly membershipUseCase: MembershipUseCase,
         private readonly membershipHistoryUseCase: MembershipHistoryUseCase,
+        private readonly stockStoreHouseUseCase : StockStoreHouseUseCase,
+        private readonly stockSHoutputUseCase : StockSHoutputUseCase,
 
 
     ) {
@@ -203,23 +207,16 @@ export class PaymentController extends ResponseData {
         const access_token = config.MERCADOPAGO_TOKEN;
         const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
         const payment1 = new Payment(client);
-        const uuid4 = generateUUID() 
-
-
+        const uuid4 = generateUUID();
+    
         try {
             // Crea un pago en la base de datos
             const response1 = await this.paymentUseCase.createNewPayment({ uuid: uuid4 });
-
             const { formData, selectedPaymentMethod } = infoPayment;
-            const metadata1 = formData?.metadata
-
-
-            const point = metadata1?.payment_point ? metadata1.payment_point : null
-
-
-
+            const metadata1 = formData?.metadata;
+            const point = metadata1?.payment_point || null;
             const path_notification = `${process.env.URL_NOTIFICATION}api/payments/Mem-Payment-success`;
-
+    
             const body1: any = {
                 transaction_amount: formData.transaction_amount,
                 payment_method_id: formData.payment_method_id,
@@ -227,15 +224,11 @@ export class PaymentController extends ResponseData {
                     email: formData.payer.email,
                     first_name: formData.payer.first_name,
                     last_name: formData.payer.last_name,
-                    // id:user.user_id,
-
-
                 },
                 additional_info: {
                     items: products,
                     payer: {
                         first_name: user.user_id,
-
                     },
                 },
                 token: formData.token,
@@ -244,81 +237,79 @@ export class PaymentController extends ResponseData {
                 notification_url: path_notification,
                 external_reference: response1?._id,
                 statement_descriptor: formData.statement_descriptor,
-
-
             };
-
-
-
+    
             if (selectedPaymentMethod === "ticket") {
                 body1['metadata'] = { payment_point: point };
-
             }
-
-
-            try {
-                const payment = await payment1.create({
-                    requestOptions: { idempotencyKey: response1.uuid, },
-                    body: body1
+    
+            const payment = await payment1.create({
+                requestOptions: { idempotencyKey: response1.uuid },
+                body: body1,
+            });
+    
+            if (payment) {
+                const createPayment = await this.paymentUseCase.updateOnePayment(response1?._id, {
+                    MP_info: payment,
+                    user_id: user.user_id,
+                    payment_status: payment?.status,
                 });
-
-
-                if (payment) {
-                    try {
-                        const createPayment = await this.paymentUseCase.updateOnePayment(response1?._id, {
-                            MP_info: payment,
-                            user_id: user.user_id,
-                            payment_status: payment?.status
-                        });
-
-                        if (!(createPayment instanceof ErrorHandler)) {
-                            const values1: any = {
-                                payment: createPayment?._id,
-                                uuid: createPayment?.uuid,
-                                products: productsOrder,
-                                discount: infoPayment.discount,
-                                subTotal: infoPayment.subtotal,
-                                total: infoPayment.formData.transaction_amount,
-                                user_id: user.user_id,
-                                paymentType: infoPayment.paymentType,
-                                payment_status: payment?.status,
-                                download_ticket: payment?.transaction_details?.external_resource_url,
-
-                            };
-                            if (typeDelivery === 'homedelivery') {
-                                values1['deliveryLocation'] = location;
-
-                            }
-                            if (typeDelivery === 'pickup') {
-                                values1['branch'] = branch_id
-                                values1['point_pickup_status'] = false
-                            }
-
-                            try {
-                                const order = await this.productOrderUseCase.createProductOrder(values1);
-                                const responseOrder = { ...order, id: payment?.id };
-                                this.invoke(responseOrder, 200, res, '', next);
-                            } catch (error) {
-                                next(new ErrorHandler('Error: No se pudo crear su orden. Por favor, contacte con servicio al cliente', 500));
-                            }
-                        }
-                    } catch (error) {
-                        next(new ErrorHandler(`Error al actualizar el pago: ${error}`, 500));
+    
+                if (!(createPayment instanceof ErrorHandler)) {
+                    const values1: any = {
+                        payment: createPayment?._id,
+                        uuid: createPayment?.uuid,
+                        products: productsOrder,
+                        discount: infoPayment.discount,
+                        subTotal: infoPayment.subtotal,
+                        total: infoPayment.formData.transaction_amount,
+                        user_id: user.user_id,
+                        paymentType: infoPayment.paymentType,
+                        payment_status: payment?.status,
+                        download_ticket: payment?.transaction_details?.external_resource_url,
+                    };
+    
+                    if (typeDelivery === 'homedelivery') {
+                        values1['deliveryLocation'] = location;
                     }
-                } else {
-                    next(new ErrorHandler('Error en la respuesta de pago', 500));
+                    if (typeDelivery === 'pickup') {
+                        values1['branch'] = branch_id;
+                        values1['point_pickup_status'] = false;
+                    }
+                    if (payment?.status === 'approved') {
+                        await Promise.all(
+                            products.map(async (product: any) => {
+                                const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.id);                                
+                                if (available) {
+                                    const newQuantity = available.stock - parseInt(product.quantity);
+                                    const update = await this.stockSHoutputUseCase.createOutput({
+                                        newQuantity: newQuantity,
+                                        quantity: product.quantity,
+                                        SHStock_id: available._id,
+                                    });
+    
+                                    await this.stockStoreHouseUseCase.updateStock(available._id, { stock: update?.newQuantity });
+                                }
+                            })
+                        );
+                    }
+    
+                    try {
+                        const order = await this.productOrderUseCase.createProductOrder(values1);
+                        const responseOrder = { ...order, id: payment?.id };
+                        this.invoke(responseOrder, 200, res, 'Se pagó con éxito', next);
+                    } catch (error) {
+                        next(new ErrorHandler('Error: No se pudo crear su orden. Por favor, contacte con servicio al cliente', 500));
+                    }
                 }
-            } catch (error) {
-
-                next(new ErrorHandler('Error al crear el pago con MercadoPago', 500));
+            } else {
+                next(new ErrorHandler('Error en la respuesta de pago', 500));
             }
         } catch (error) {
-            console.log(error);
-
-
             next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }
     }
+    
 
 
 

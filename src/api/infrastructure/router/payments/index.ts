@@ -19,6 +19,12 @@ import { MembershipUseCase } from '../../../application/membership/membershipUse
 import { ProductOrderRepository } from '../../repository/product/ProductOrderRepository';
 import ProductOrderModel from '../../models/products/ProductOrderModel';
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
+import { StockSHOutputRepository } from '../../repository/stockStoreHouse/StockSHOutputRepository';
+import StockSHoutputModel from '../../models/stockStoreHouse/StockSHoutputModel';
+import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHoutputUseCase';
+import StockStoreHouseModel from '../../models/stockStoreHouse/StockStoreHouseModel';
+import { StockStoreHouseRepository } from '../../repository/stockStoreHouse/StockStoreHouseRepository';
+import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 
 const paymentRouter = Router();
 
@@ -26,16 +32,22 @@ const paymentRepository = new PaymentRepository(PaymentModel);
 const productOrderRepository = new ProductOrderRepository(ProductOrderModel)
 const membershipRepository = new MembershipRepository(MembershipModel)
 const membershipHistoryRepository = new MembershipHistoryRepository(MembershipHistoryModel)
+const stockStoreHouseRepository    = new StockStoreHouseRepository(StockStoreHouseModel);
+const stockSHOutputRepository = new StockSHOutputRepository(StockSHoutputModel)
+
+
 const membershipHistoryUseCase = new MembershipHistoryUseCase(membershipHistoryRepository)
 const productOrderUseCase = new ProductOrderUseCase(productOrderRepository)
 
 const membershipBenefitsRespository = new MembershipBenefitsRepository(MembershipBenefitsModel)
 const membershipBenefitsUseCase= new MembershipBenefitsUseCase(membershipBenefitsRespository)
 const membershipUseCase = new MembershipUseCase(membershipRepository)
+const stockStoreHouseUseCase      = new StockStoreHouseUseCase(stockStoreHouseRepository);
+const stockSHoutputUseCase = new StockSHoutputUseCase(stockSHOutputRepository)
 
 const paymentUseCase = new PaymentUseCase(paymentRepository);
 const mpService = new MPService()
-const paymentController = new PaymentController(paymentUseCase, productOrderUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase, );
+const paymentController = new PaymentController(paymentUseCase, productOrderUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase, stockStoreHouseUseCase, stockSHoutputUseCase );
 const paymentValidation = new PaymentValidations();
 
 paymentRouter

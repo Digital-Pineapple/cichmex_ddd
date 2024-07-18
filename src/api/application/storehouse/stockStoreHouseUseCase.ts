@@ -4,7 +4,7 @@ import { StockStoreHouseEntity } from '../../domain/storehouse/stockStoreHouseEn
 
 
 export class StockStoreHouseUseCase {
-    protected path = '/stock-branch'
+    protected path = '/stock-store-house'
 
     constructor(private readonly stockStoreHouseRepository: StockStoreHouseRepository) { }
 
@@ -18,6 +18,10 @@ export class StockStoreHouseUseCase {
     public async getProductStock(product_id: string,StoreHouse_id?:any, populateConfig?:any,   ) : Promise <StockStoreHouseEntity > { 
           return await this.stockStoreHouseRepository.findOneItem({product_id: product_id, StoreHouse_id:StoreHouse_id, status:true}) 
     }  
+
+    public async getProductStockPayment(product_id: string,StoreHouse_id?:any, populateConfig?:any,   ) : Promise <StockStoreHouseEntity > { 
+        return await this.stockStoreHouseRepository.findOneItem({product_id: product_id, StoreHouse_id:'662fe69b9ba1d8b3cfcd3634', status:true}) 
+  } 
 
     public async getDetailStock(_id: string): Promise<StockStoreHouseEntity | null> {
         return await this.stockStoreHouseRepository.findById(_id);
