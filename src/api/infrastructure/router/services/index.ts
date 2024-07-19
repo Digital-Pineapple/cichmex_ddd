@@ -18,12 +18,12 @@ const servicesController   = new ServicesController(servicesUseCase, s3Service);
 const userValidations = new UserValidations();
 
 serviceRouter
-    .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), servicesController.getAllServices)
-    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), servicesController.getService)
-    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57']),serviceValidations.servicePhotoValidation, servicesController.createService)
-    .post('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']),serviceValidations.servicePhotoValidation, servicesController.updateService )
-    .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), servicesController.deleteService)
-    .get('/search/search', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53','65a8193ae6f31eef3013bc57','65a8193ae6f31eef3013bc59']), servicesController.searchService)
+    .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER','CUSTOMER']), servicesController.getAllServices)
+    .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER','CUSTOMER']), servicesController.getService)
+    .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER']),serviceValidations.servicePhotoValidation, servicesController.createService)
+    .post('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']),serviceValidations.servicePhotoValidation, servicesController.updateService )
+    .delete('/:id', userValidations.authTypeUserValidation(['PARTNER']), servicesController.deleteService)
+    .get('/search/search', userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER','CUSTOMER']), servicesController.searchService)
     
 
 export default serviceRouter;

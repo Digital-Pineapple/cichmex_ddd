@@ -1,13 +1,16 @@
+import { S3Service } from './../../../../shared/infrastructure/aws/S3Service';
 import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
+import { ProductOrderEntity } from '../../../domain/product/ProductEntity';
 
 export class ProductOrderController extends ResponseData {
   protected path = "/productOrder";
 
   constructor(
     private productOrderUseCase: ProductOrderUseCase,
+    private readonly s3Service: S3Service
   ) {
     super();
     this.getAllProductOrders = this.getAllProductOrders.bind(this);
@@ -44,8 +47,8 @@ export class ProductOrderController extends ResponseData {
   public async getOneProductOrder(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
-      const response = await this.productOrderUseCase.getOneProductOrder(id)
-
+      const response: any | null = await this.productOrderUseCase.getOneProductOrder(id)  
+                 
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
@@ -54,10 +57,10 @@ export class ProductOrderController extends ResponseData {
   public async getOneProductOrderByUser(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
-      const response = await this.productOrderUseCase.ProductOrdersByUser(id)
-
+      const response: any  | null = await this.productOrderUseCase.ProductOrdersByUser(id)    
       this.invoke(response, 200, res, "", next);
     } catch (error) {
+      console.log(error);      
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }

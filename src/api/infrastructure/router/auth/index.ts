@@ -14,21 +14,25 @@ import TypeUserModel from '../../models/TypeUserModel';
 import UserModel from '../../models/UserModel';
 import { MPService } from '../../../../shared/infrastructure/mercadopago/MPService';
 import { UserValidations } from '../../../../shared/infrastructure/validation/User/UserValidation';
+import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
+import { ShoppingCartRepository } from '../../repository/shoppingCart/ShoppingCartRepository';
+import ShoppingCartModel from '../../models/ShoppingCartModel';
 
 const authRouter = Router();
 
 const authRepository = new AuthRepository(UserModel);
 const authUseCase = new AuthUseCase(authRepository);
-
+const shoppingCartRepository = new ShoppingCartRepository(ShoppingCartModel)
 const typeUserRepository = new TypeUsersRepository(TypeUserModel)
 const typeUserUseCase = new TypeUserUseCase(typeUserRepository)
+const shoppingCartUseCase = new ShoppingCartUseCase(shoppingCartRepository)
 
 const s3Service = new S3Service();
 const mpService = new MPService()
 const twilioService = new TwilioService();
 const authValidations = new AuthValidations();
 const userValidations = new UserValidations()
-const authController = new AuthController(authUseCase, typeUserUseCase, s3Service, twilioService, mpService);
+const authController = new AuthController(authUseCase, typeUserUseCase,shoppingCartUseCase, s3Service, twilioService, mpService);
 
 authRouter
 

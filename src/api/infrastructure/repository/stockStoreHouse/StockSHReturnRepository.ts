@@ -1,10 +1,10 @@
 import { Model } from 'mongoose';
-import {  StockBranchRepository as StockInventoryConfig } from '../../../domain/stockBranch/StockBranchRepository';
+import {  StockSHReturnRepository as StockSHReturnConfig } from '../../../domain/storehouse/stockStoreHouseRepository';
 import { MongoRepository } from '../MongoRepository';
 
 
 
-export class StockSHReturnRepository extends MongoRepository implements  StockInventoryConfig {
+export class StockSHReturnRepository extends MongoRepository implements  StockSHReturnConfig {
   
     constructor(protected StockBranchModel: Model<any>) {
       super (StockBranchModel)
@@ -14,6 +14,9 @@ export class StockSHReturnRepository extends MongoRepository implements  StockIn
       return await this.findStockByBranch(`branch_id : ${branchId}`);
     }
     async findStockByStoreHouse(branchId: string): Promise<any[] | null> {
+      return await this.MODEL.findById(branchId)
+    }
+    async findStockByStoreHouseNoDetail(branchId: string): Promise<any[] | null> {
       return await this.MODEL.findById(branchId)
     }
   

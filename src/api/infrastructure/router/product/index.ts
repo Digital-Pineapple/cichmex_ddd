@@ -32,13 +32,14 @@ const userValidations = new UserValidations();
 
 productRouter
 
+.post("/create-product/ok",productvalidations.productValidation, productController.createProduct)
   .get("/", productController.getAllProducts)
   .get("/:id", productController.getProduct)
   .get('/non-existent/get', productController.getNoStockProducts)
   .post('/search-category', productController.getProductsByCategory)
-  .post("/", productvalidations.productValidation, userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.createProduct)
-  .post("/:id", productvalidations.productValidation,userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.updateProduct)
+  .post("/:id", productvalidations.productValidation,userValidations.authTypeUserValidation(['SUPER-ADMIN']), productController.updateProduct)
   .post('/search/ok', productController.searchProduct)
-  .delete("/:id", userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), productController.deleteProduct);
+  .delete("/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN']), productController.deleteProduct)
+  .get("/productsByCategories/ok", productController.getProductsByCategories);
 
 export default productRouter;

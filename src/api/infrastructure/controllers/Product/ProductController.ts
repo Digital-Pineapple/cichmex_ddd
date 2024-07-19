@@ -9,14 +9,18 @@ import { stringify } from 'uuid';
 import { errorMonitor } from 'nodemailer/lib/xoauth2';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 import { ProductEntity } from '../../../domain/product/ProductEntity';
+import { StockBranchEntity } from '../../../domain/stockBranch/StockBranchEntity';
+import { StockStoreHouseEntity } from '../../../domain/storehouse/stockStoreHouseEntity';
+import { Category } from '../../../domain/category/CategoryEntity';
 
 export class ProductController extends ResponseData {
   protected path = "/product";
+  private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634" 
 
   constructor(
     private productUseCase: ProductUseCase,
     private categoryUseCase: CategoryUseCase,
-    private stockStoreHouseUseCase : StockStoreHouseUseCase,
+    private stockStoreHouseUseCase: StockStoreHouseUseCase,
     private readonly s3Service: S3Service
   ) {
     super();
@@ -28,6 +32,7 @@ export class ProductController extends ResponseData {
     this.searchProduct = this.searchProduct.bind(this);
     this.getNoStockProducts = this.getNoStockProducts.bind(this);
     this.getProductsByCategory = this.getProductsByCategory.bind(this);
+    this.getProductsByCategories = this.getProductsByCategories.bind(this);
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
@@ -45,7 +50,12 @@ export class ProductController extends ResponseData {
                 return url;
               })
             );
+            const video = item.video
+            const video_url = await this.s3Service.getUrlObject(
+              video + ".mp4"
+            )
             item.images = updatedImages;
+            item.video = video_url
             return item;
           })
         );
@@ -62,8 +72,19 @@ export class ProductController extends ResponseData {
   public async getProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
-      const response = await this.productUseCase.getProduct(id);
-
+      const responseStock = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse)            
+      const responseProduct: any | null = await this.productUseCase.getProduct(id);
+      const parsed = responseProduct.toJSON();
+      let response = null;
+      if(responseStock && responseStock.stock){
+         response  = {
+          ...parsed,
+          stock: responseStock.stock
+        }      
+      }else{
+        response = responseProduct
+      }
+      // console.log(response);      
       if (!(response instanceof ErrorHandler) && response !== null) {
         if (response.images) {
           const updatedImages = await Promise.all(
@@ -74,7 +95,6 @@ export class ProductController extends ResponseData {
           );
           response.images = updatedImages;
         }
-
       }
 
       this.invoke(response, 200, res, "", next);
@@ -85,11 +105,11 @@ export class ProductController extends ResponseData {
 
   async getNoStockProducts(req: Request, res: Response, next: NextFunction) {
     try {
-      const products: any[] = await this.productUseCase.getProducts(); // Asegúrate de definir el tipo correcto para getProducts()
-      const stock: any[] = await this.stockStoreHouseUseCase.getStockNoDetail('662fe69b9ba1d8b3cfcd3634'); // Asegúrate de definir el tipo correcto para getStockNoDetail()
+      const products = await this.productUseCase.getProducts(); // Asegúrate de definir el tipo correcto para getProducts()
+      const stock :StockStoreHouseEntity[] = await this.stockStoreHouseUseCase.getStockNoDetail('662fe69b9ba1d8b3cfcd3634'); // Asegúrate de definir el tipo correcto para getStockNoDetail()
 
       // Obtener los IDs de productos y stock
-      const productIds = new Set(products.map((product) => product._id.toString()));
+      const productIds = new Set(products?.map((product) => product._id.toString()));
       const stockProductIds = new Set(stock.map((item) => item.product_id.toString()));
 
       // Filtrar productos que no tienen stock asociado
@@ -104,12 +124,12 @@ export class ProductController extends ResponseData {
 
       this.invoke(uniqueElements, 200, res, "", next);
     } catch (error) {
-     
+
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
-  
-  
+
+
 
 
 
@@ -125,8 +145,6 @@ export class ProductController extends ResponseData {
 
       return processedSlug;
     };
-
-
     try {
       const slug = createSlug(name);
 
@@ -136,6 +154,8 @@ export class ProductController extends ResponseData {
       if (req.files && req.files.length > 0) {
         const paths: string[] = [];
         const urls: string[] = [];
+        let video_path: string = '';
+        let video_url: string = '';
 
         let response = await this.productUseCase.createProduct(
           name,
@@ -153,20 +173,35 @@ export class ProductController extends ResponseData {
 
           await Promise.all(
             req.files.map(async (item: any, index: number) => {
-              const pathObject = `${this.path}/${response?._id}/${index}`;
-              const { url } = await this.s3Service.uploadToS3AndGetUrl(
-                pathObject + '.jpg',
-                item,
-                'image/jpg'
-              );
-              paths.push(pathObject);
-              urls.push(url);
+              if (item.fieldname === 'images') {
+
+                const pathObject = `${this.path}/${response?._id}/${index}`;
+                const { url } = await this.s3Service.uploadToS3AndGetUrl(
+                  pathObject + '.jpg',
+                  item,
+                  'image/jpg'
+                );
+                paths.push(pathObject);
+                urls.push(url);
+              }
+              if (item.fieldname === 'video') {
+                const pathVideo  = `${this.path}/${response?._id}`;
+                const { url } = await this.s3Service.uploadToS3AndGetUrl(
+                  pathVideo + ".mp4",
+                  item,
+                  "video/mp4"
+                );
+                video_path = pathVideo
+                video_url = url
+              }
             })
           );
           response = await this.productUseCase.updateProduct(response?._id, {
             images: paths,
+            video: video_path
           });
           response.images = urls;
+          response.video = video_url
           response2 = response
         }
         else {
@@ -193,8 +228,6 @@ export class ProductController extends ResponseData {
       this.invoke(response2, 201, res, 'Producto creado con éxito', next);
 
     } catch (error) {
-
-
       next(new ErrorHandler('Hubo un error al crear el producto', 500));
     }
   }
@@ -202,23 +235,43 @@ export class ProductController extends ResponseData {
 
   public async updateProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const { name, price, description, slug, size, category, subCategory,weight } = req.body;
+    const { name, price, description, slug, size, category, subCategory, weight, images, video } = req.body;
 
     try {
 
       if (req.files && req.files.length > 0) {
         const paths: string[] = [];
         const urls: string[] = [];
-        await Promise.all(req.files.map(async (item: any, index: number) => {
-          const pathObject: string = `${this.path}/${id}/${index}`;
-          const { url } = await this.s3Service.uploadToS3AndGetUrl(
-            pathObject + ".jpg",
-            item,
-            "image/jpg"
-          );
-          paths.push(pathObject);
-          urls.push(url)
-        }));
+        let video_path: string = '';
+        let video_url: string = '';
+
+        await Promise.all(
+          req.files.map(async (item: any, index: number) => {
+            if (item.fieldname === 'images') {
+
+              const pathObject = `${this.path}/${id}/${index}`;
+              const { url } = await this.s3Service.uploadToS3AndGetUrl(
+                pathObject + '.jpg',
+                item,
+                'image/jpg'
+              );
+              paths.push(pathObject);
+              urls.push(url);
+            }
+            if (item.fieldname === 'video') {
+              const pathVideo  = `${this.path}/${id}`;
+              const { url } = await this.s3Service.uploadToS3AndGetUrl(
+                pathVideo + ".mp4",
+                item,
+                "video/mp4"
+              );
+              video_path = pathVideo
+              video_url = url
+            }
+          })
+        );
+
+       
 
         const response = await this.productUseCase.updateProduct(id, {
           slug,
@@ -229,10 +282,11 @@ export class ProductController extends ResponseData {
           category,
           subCategory,
           images: paths,
+          video: video_path,
           weight
         });
-        response.images = urls
-
+        response.images = urls,
+        response.video = video_url
         this.invoke(response, 201, res, 'Se actualizó con éxito', next);
       } else {
         const response = await this.productUseCase.updateProduct(id, {
@@ -258,9 +312,10 @@ export class ProductController extends ResponseData {
   public async deleteProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
-      const available = await this.stockStoreHouseUseCase.getProductStock(id,'662fe69b9ba1d8b3cfcd3634')
-      if (available?.stock > 0) {return  next(new ErrorHandler("No se puede eliminar hay existencias de este producto", 500));
-      }else{
+      const available = await this.stockStoreHouseUseCase.getProductStock(id, '662fe69b9ba1d8b3cfcd3634')
+      if (available?.stock > 0) {
+        return next(new ErrorHandler("No se puede eliminar hay existencias de este producto", 500));
+      } else {
         const response = await this.productUseCase.deleteProduct(id);
         this.invoke(response, 201, res, "Eliminado con exito", next);
       }
@@ -283,13 +338,76 @@ export class ProductController extends ResponseData {
   }
   public async getProductsByCategory(req: Request, res: Response, next: NextFunction) {
     const { category } = req.body
-
     try {
-      const categoria = await this.categoryUseCase.getDetailCategoryByName(category);
-      const response = await this.productUseCase.searchProductsByCategory(categoria._id);
+      const categoria: any | null = await this.categoryUseCase.getDetailCategoryByName(category);
+      const response: any | null = await this.categoryUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse); 
+      const resCategory = response[0]
+      resCategory.category_image = await this.s3Service.getUrlObject(resCategory.category_image + ".jpg");
+      await Promise.all(
+        resCategory.products.map(async (product: any) => {        
+          const parsed = await Promise.all(
+            product.images.map(async (image: any) => {
+              image = await this.s3Service.getUrlObject(image + ".jpg"); 
+              return image        
+            })                    
+          )
+          product.images = parsed;
+        })
+      )                
+      
       this.invoke(response, 201, res, '', next);
     } catch (error) {
+      console.log(error);      
 
+      next(new ErrorHandler("Hubo un error al obtener la información", 500));
+    }
+  }
+  public async getProductsBySubCategory(req: Request, res: Response, next: NextFunction) {
+    const { subcategory } = req.body
+    try {
+      const subcat: any | null = await this.categoryUseCase.getDetailCategoryByName(subcategory);
+      const response: any | null = await this.categoryUseCase.getProductsByCategory(subcat._id, this.onlineStoreHouse); 
+      const resCategory = response[0]
+      resCategory.subcategory_image = await this.s3Service.getUrlObject(resCategory.subcategory_image + ".jpg");
+      await Promise.all(
+        resCategory.products.map(async (product: any) => {        
+          const parsed = await Promise.all(
+            product.images.map(async (image: any) => {
+              image = await this.s3Service.getUrlObject(image + ".jpg"); 
+              return image        
+            })                    
+          )
+          product.images = parsed;
+        })
+      )                      
+      this.invoke(response, 201, res, '', next);
+    } catch (error) {
+      console.log(error);      
+      next(new ErrorHandler("Hubo un error al obtener la información", 500));
+    }
+  }
+  
+  public async getProductsByCategories(req: Request, res: Response, next: NextFunction){
+    try{
+      const response: any | null = await this.categoryUseCase.getCategoriesAndProducts(this.onlineStoreHouse);    
+      const updatedResponse = await Promise.all(response.map(async (category:any) => {
+          await Promise.all(
+            category.products.map(async(product: any) => {
+              const parsedImages = await Promise.all(product.images.map(async(image: any) => {
+                  const url = await this.s3Service.getUrlObject(image + ".jpg");
+                  return url              
+              }));
+              product.images = parsedImages;  
+              return product                   
+            }))          
+          return category
+        }));
+      
+      this.invoke(response, 201, res, '', next);
+
+    }catch(error){
+      console.log(error);
+      
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
     }
 

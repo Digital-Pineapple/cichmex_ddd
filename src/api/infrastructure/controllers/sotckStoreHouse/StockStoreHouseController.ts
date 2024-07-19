@@ -21,12 +21,15 @@ export class StockStoreHouseController extends ResponseData {
     ) {
         super();
         this.getAllStock = this.getAllStock.bind(this);
+        this.getAvailableProducts = this.getAvailableProducts.bind(this)
         this.createStock = this.createStock.bind(this);
         this.updateStock = this.updateStock.bind(this);
         this.addStock = this.addStock.bind(this);
         this.removeStock = this.removeStock.bind(this);
         this.returnStock = this.returnStock.bind(this);
         this.getAvailableStock = this.getAvailableStock.bind(this);
+        this.getProductsEntries = this.getProductsEntries.bind(this);
+        this.getProductsOutputs = this.getProductsOutputs.bind(this);
 
     }
 
@@ -43,12 +46,6 @@ export class StockStoreHouseController extends ResponseData {
         } else {
             next(new ErrorHandler('No tiene los permisos necesarios', 500));
         }
-        // try {
-        //     const response = await this.stockStoreHouseUseCase.getStock(id)            
-        //     this.invoke(response, 200, res, '', next);
-        // } catch (error) {
-        //     next(new ErrorHandler('Hubo un error al consultar la información', 500));
-        // }
     }
 
     public async getAvailableStock(req: Request, res: Response, next: NextFunction) {
@@ -56,10 +53,16 @@ export class StockStoreHouseController extends ResponseData {
             this.invoke(response, 200, res, '', next);
         
     }
+
     public async getAvailableStockById(req: Request, res: Response, next: NextFunction) {
         const response = await this.stockStoreHouseUseCase.getStock("662fe69b9ba1d8b3cfcd3634")            
-        this.invoke(response, 200, res, '', next);
-    
+        this.invoke(response, 200, res, '', next);   
+}
+
+public async getAvailableProducts(req: Request, res: Response, next: NextFunction) {
+    const response = await this.stockStoreHouseUseCase.getStock("662fe69b9ba1d8b3cfcd3634")            
+    this.invoke(response, 200, res, '', next);
+
 }
 
     public async createStock(req: Request, res: Response, next: NextFunction) {
@@ -207,5 +210,30 @@ export class StockStoreHouseController extends ResponseData {
             next(new ErrorHandler('Hubo un error al actualizar', 500));
         }
     }
+
+    public getProductsByCategory(req: Request, res: Response, next: NextFunction) {         
+        const { category } = req.body           
+        
+    }
+
+    public async getProductsEntries(req: Request, res: Response, next: NextFunction) {
+            try {
+                const response = await this.stockStoreHouseUseCase.getAllProductsEntries()
+                const response2 = response?.filter((item:any)=> item.Inputs.length > 0)   
+               this.invoke(response2, 200, res, '', next);        
+            } catch (error) {
+                next(new ErrorHandler('Hubo un error al consultar la información', 500));
+            }
+        
+    }
+    public async getProductsOutputs(req: Request, res: Response, next: NextFunction) {
+        try {
+            const response = await this.stockStoreHouseUseCase.getAllProductOutputs()   
+            const response2 = response?.filter((item:any)=> item.Outputs.length > 0)   
+            this.invoke(response2, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+}
 
 }

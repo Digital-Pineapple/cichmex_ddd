@@ -1,7 +1,5 @@
 
-import mongoose from "mongoose";
 import { UserEntity } from "../user/UserEntity";
-import MongooseDelete = require("mongoose-delete");
 
 export interface BranchOfficeEntity  {
 

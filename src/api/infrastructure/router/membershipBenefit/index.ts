@@ -7,6 +7,7 @@ import { MembershipBenefitsUseCase } from '../../../application/membership/membe
 import { MembershipHistoryUseCase } from '../../../application/membership/membershipHistoryUseCase';
 import { MembershipBenefitsController } from '../../controllers/memberships/membershipBenefitsController'
 import { UserValidations } from '../../../../shared/infrastructure/validation/User/UserValidation';
+import validateAuthentication from '../../../../shared/infrastructure/validation/ValidateAuthentication';
 
 
 const membershipBenefitRouter = Router();
@@ -23,15 +24,15 @@ const userValidations = new UserValidations();
 membershipBenefitRouter
     .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.getAllMembershipsBenefits)
     .get('/history', membershipBenefitsController.getHistory)
-    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.getMembershipHistory)
-    .get('/user/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc59','65a8193ae6f31eef3013bc57' ]), membershipBenefitsController.getAllMembershipsBenefitsByUser)
+    .get('/:id',validateAuthentication, membershipBenefitsController.getMembershipHistory)
+    .get('/user/:id', validateAuthentication, membershipBenefitsController.getAllMembershipsBenefitsByUser)
     .post('/Qr/Validate/:id', membershipBenefitsController.QrVerify)
-    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.createMembershipBenefit)
+    .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), membershipBenefitsController.createMembershipBenefit)
     .post('/sales-day', membershipBenefitsController.MembershipSales)
     // .patch('/:id', membershipBenefitsController.updateMembershipBenefit)
-    .post('/consumeBenefit/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc57']), membershipBenefitsController.consumeBenefit)
-    .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.deleteMembershipBenefit)
-    .delete('/useUp/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc59']), membershipBenefitsController.getUpOneBenefit)
+    .post('/consumeBenefit/:id', userValidations.authTypeUserValidation(['PARTNER']), membershipBenefitsController.consumeBenefit)
+    .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), membershipBenefitsController.deleteMembershipBenefit)
+    .delete('/useUp/:id', userValidations.authTypeUserValidation(['CUSTOMER']), membershipBenefitsController.getUpOneBenefit)
 
     
 

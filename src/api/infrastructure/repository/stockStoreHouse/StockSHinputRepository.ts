@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import {  StockStoreHouseRepository as StockInputConfig } from '../../../domain/storehouse/stockStoreHouseRepository';
+import {  SHProductInput as StockInputConfig } from '../../../domain/storehouse/stockStoreHouseEntity';
 import { MongoRepository } from '../MongoRepository';
 
 
@@ -14,6 +14,9 @@ export class StockSHinputRepository extends MongoRepository implements  StockInp
       return await this.findAll(branchId)
     }
     async findStockByStoreHouse(branchId: string): Promise<any[] | null> {
+      return await this.MODEL.findById(branchId)
+    }
+    async findStockByStoreHouseNoDetail(branchId: string): Promise<any[] | null> {
       return await this.MODEL.findById(branchId)
     }
   

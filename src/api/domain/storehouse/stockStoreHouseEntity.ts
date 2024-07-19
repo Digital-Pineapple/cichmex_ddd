@@ -5,7 +5,7 @@ import { BranchOfficeEntity } from "../branch_office/BranchOfficeEntity";
 import { UserEntity } from "../user/UserEntity";
 import { storeHouseEntity } from "./storeHouseEntity";
 
-export interface StockStoreHouseEntity extends MongooseDelete.SoftDeleteInterface {
+export interface StockStoreHouseEntity  {
   _id: string;
   StoreHouse_id : storeHouseEntity;
   product_id: ProductEntity;
@@ -18,7 +18,7 @@ export interface StockStoreHouseEntity extends MongooseDelete.SoftDeleteInterfac
   updatedAt: NativeDate;
 }
 
-export interface SHProductInput extends MongooseDelete.SoftDeleteInterface{
+export interface SHProductInput {
     SHStock_id ?: string,
     quantity: number,
     newQuantity: number
@@ -26,7 +26,7 @@ export interface SHProductInput extends MongooseDelete.SoftDeleteInterface{
     status?:boolean;
     responsible?:  UserEntity,
   }
-  export interface SHProductOutput extends MongooseDelete.SoftDeleteInterface{
+  export interface SHProductOutput {
     SHStock_id ?: string,
     quantity: number,
     newQuantity: number,
@@ -34,7 +34,7 @@ export interface SHProductInput extends MongooseDelete.SoftDeleteInterface{
     createdAt: NativeDate;
     status?:boolean;
   }
-  export interface SHProductReturn extends MongooseDelete.SoftDeleteInterface{
+  export interface SHProductReturn {
     SHStock_id ?: string,
     quantity: number,
     newQuantity: number,

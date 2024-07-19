@@ -4,23 +4,28 @@ import { ProductOrderEntity } from "../../../domain/product/ProductEntity";
 
 const ProductOrderSchema = new Schema<ProductOrderEntity>(
   {
+    order_id: {
+      type: String,
+      required: true,
+      unique: true
+    },
     payment: {
       type: mongoose.Types.ObjectId,
       required: true,
-      ref:'Payment'
+      ref: 'Payment'
     },
-    payment_status:{
+    payment_status: {
       type: String,
-      required:false,
+      required: false,
     },
-    user_id:{
+    user_id: {
       type: mongoose.Types.ObjectId,
-      required:true,
-      ref:'Users'
+      required: true,
+      ref: 'Users'
     },
     products: {
       type: Array,
-      required:false
+      required: false
     },
     discount: {
       type: Number,
@@ -34,43 +39,43 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       type: Number,
       required: false,
     },
-    branch:{
+    branch: {
       type: mongoose.Types.ObjectId,
-      required:false,
-      ref:'BranchOffices'
+      required: false,
+      ref: 'BranchOffices'
     },
-    storeHouseStatus:{
-      type:Boolean,
-      required:false,
-      default:false,
+    storeHouseStatus: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
     deliveryStatus: {
       type: Boolean,
       required: false,
       default: false
     },
-    deliveryLocation:{
-      type:Object,
-      required:false,
+    deliveryLocation: {
+      type: Object,
+      required: false,
     },
-    status:{
-      type:Boolean,
-      required:false,
-      default:true,
-     },
-     download_ticket:{
-      type:String,
-      required:false,
-     },
-     route_status:{
-      type:Boolean,
-      default:false,
-      required:false,
-     },
-     point_pickup_status:{
-      type:Boolean,
-      required:false,
-     }
+    status: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+    download_ticket: {
+      type: String,
+      required: false,
+    },
+    route_status: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
+    point_pickup_status: {
+      type: Boolean,
+      required: false,
+    }
   },
   {
     versionKey: false,

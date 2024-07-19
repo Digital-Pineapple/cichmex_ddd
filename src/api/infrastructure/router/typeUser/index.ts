@@ -14,11 +14,11 @@ const typeUserController     = new TypeUserController(typeUserUseCase);
 const userValidations = new UserValidations();
 
 typeUserRouter
-    .get('/', typeUserController.getAllTypeUser)
-    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), typeUserController.getTypeUser)
-    .post('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), typeUserController.createTypeUser)
-    .post('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), typeUserController.updateTypeUser)
-    .delete('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']),  typeUserController.deleteTypeUser)
-    .get ('/seed/ok', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), typeUserController.TypeUserSeed)
+    .get('/',userValidations.authTypeUserValidation(['SUPER-ADMIN']), typeUserController.getAllTypeUser)
+    .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), typeUserController.getTypeUser)
+    .post('/',userValidations.authTypeUserValidation(['SUPER-ADMIN']), typeUserController.createTypeUser)
+    .post('/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']), typeUserController.updateTypeUser)
+    .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']),  typeUserController.deleteTypeUser)
+    // .get ('/seed/ok', typeUserController.TypeUserSeed)
 
 export default typeUserRouter;

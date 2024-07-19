@@ -22,10 +22,10 @@ class Authentication {
         this.googleKey = process.env.GOOGLE_CLIENT_ID;
         this.client = new google_auth_library_1.OAuth2Client(this.googleKey);
     }
-    generateJWT(user) {
+    generateJWT(user, uuid) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
-                const payload = { user };
+                const payload = { uuid };
                 jsonwebtoken_1.default.sign(payload, process.env.SECRET_JWT_KEY || '', {
                     expiresIn: '24h',
                 }, (error, token) => {
@@ -60,7 +60,7 @@ class Authentication {
                 if (!ticket)
                     reject('El token de google no es valido');
                 const payload = ticket.getPayload();
-                resolve({ fullname: payload === null || payload === void 0 ? void 0 : payload.name, email: payload === null || payload === void 0 ? void 0 : payload.email, picture: payload === null || payload === void 0 ? void 0 : payload.picture });
+                resolve({ fullname: payload === null || payload === void 0 ? void 0 : payload.name, email: payload === null || payload === void 0 ? void 0 : payload.email, picture: payload === null || payload === void 0 ? void 0 : payload.picture, });
             }));
         });
     }

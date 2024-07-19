@@ -34,15 +34,18 @@ const userValidations = new UserValidations();
 
 stockStoreHouseRouter
 
-    .get('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.getAllStock)
+    .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.getAllStock)
     .get('/online/:id', stockStoreHouseController.getAllStock)
     .get('/available/ok', stockStoreHouseController.getAvailableStock)
-    .post('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.createStock)
-    .patch('/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.updateStock)
-    .patch('/add/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.addStock)
-    .patch('/remove/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.removeStock)
-    .patch('/return/:id', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.returnStock)
-    .delete('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), stockStoreHouseController.createStock)
+    .get('/available/products', stockStoreHouseController.getAvailableProducts)
+    .get('/product/entries',userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.getProductsEntries)
+    .get('/product/output',userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.getProductsOutputs)
+    .post('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.createStock)
+    .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.updateStock)
+    .patch('/add/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.addStock)
+    .patch('/remove/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.removeStock)
+    .patch('/return/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.returnStock)
+    .delete('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.createStock)
     
 
 export default stockStoreHouseRouter;

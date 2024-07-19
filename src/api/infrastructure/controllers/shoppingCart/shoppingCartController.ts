@@ -10,11 +10,14 @@ import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/Shoppi
 import { ProductShopping } from '../../../domain/product/ProductEntity';
 import mongoose from 'mongoose';
 import { ShoppingCartEntity } from '../../../domain/shoppingCart/shoppingCartEntity';
+import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 
 export class ShoppingCartController extends ResponseData {
     protected path = '/shoppingCart'
 
-    constructor(private shoppingCartUseCase: ShoppingCartUseCase,
+    constructor(
+        private shoppingCartUseCase: ShoppingCartUseCase,
+        private readonly s3Service: S3Service
     ) {
         super();
         this.getAllShoppingCarts = this.getAllShoppingCarts.bind(this);
@@ -41,7 +44,15 @@ export class ShoppingCartController extends ResponseData {
     public async getShoppingCart(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         try {
-            const response = await this.shoppingCartUseCase.getShoppingCartByUser(id)
+            const response: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(id)
+            const updatedResponse = await Promise.all(
+                response.products.map(async (product:any)=>{
+                    let parsedImages = await Promise.all(product.item.images.map(async (image: any) => {
+                        return await this.s3Service.getUrlObject(image + ".jpg");
+                    })) 
+                    product.item.images = parsedImages                
+                })
+            )                       
             this.invoke(response, 200, res, '', next);
         } catch (error) {
            
@@ -71,6 +82,9 @@ export class ShoppingCartController extends ResponseData {
         }
     }
 
+
+
+    
     public async updateShoppingCart(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { products, membership } = req.body;
@@ -157,6 +171,7 @@ export class ShoppingCartController extends ResponseData {
 
     public async updateShoppingCartProducts(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params; // shopping_carid
+        
         const { user_id, cart_id, quantity } = req.body;
         
         
