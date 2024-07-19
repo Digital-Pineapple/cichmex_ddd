@@ -7,7 +7,7 @@ import { ProductRepository } from "../../domain/product/ProductRepository";
 export class ProductUseCase {
   constructor(private readonly productRepository: ProductRepository) {}
 
-  public async getProducts(): Promise<ProductEntity[] | ErrorHandler> {
+  public async getProducts(): Promise<ProductEntity[]> {
     return await this.productRepository.findAll(PopulateProductCategory, PopulateProductSubCategory);
   }
 

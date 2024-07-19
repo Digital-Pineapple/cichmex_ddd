@@ -1,5 +1,6 @@
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
 import { InfoBranchOrder } from "../../../shared/domain/PopulateInterfaces";
+import { RandomCodeId } from "../../../shared/infrastructure/validation/Utils";
 import {  ProductOrderEntity, ProductOrderResume } from "../../domain/product/ProductEntity";
 import { ProductOrderRepository } from "../../domain/product/ProductOrderRepository";
 
@@ -28,7 +29,8 @@ export class ProductOrderUseCase {
   }
 
   public async createProductOrder(body:any): Promise<ProductOrderEntity | ErrorHandler | null> {
-    return await this.productOrderRepository.createOne({...body})
+    const order_id = RandomCodeId('CIC')
+    return await this.productOrderRepository.createOne({...body, order_id})
   }
 
   public async updateProductOrder(

@@ -1,14 +1,15 @@
-import {StockStoreHouseRepository } from '../../domain/storehouse/stockStoreHouseRepository';
+
 import { SHProductOutput } from '../../domain/storehouse/stockStoreHouseEntity';
+import { StockSHOutputRepository } from '../../domain/storehouse/stockStoreHouseRepository';
 
 
 export class StockSHoutputUseCase {
     protected path = '/stock-store-house'
 
-    constructor(private readonly stockStoreHouseRepository: StockStoreHouseRepository) { }
+    constructor(private readonly stockOutputSHRepository: StockSHOutputRepository) { }
 
     public async createOutput(body:object): Promise<SHProductOutput> {
-        return this.stockStoreHouseRepository.createOne({...body})
+        return this.stockOutputSHRepository.createOne({...body})
     }
     
     

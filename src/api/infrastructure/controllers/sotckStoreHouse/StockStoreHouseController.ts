@@ -21,6 +21,7 @@ export class StockStoreHouseController extends ResponseData {
     ) {
         super();
         this.getAllStock = this.getAllStock.bind(this);
+        this.getAvailableProducts = this.getAvailableProducts.bind(this)
         this.createStock = this.createStock.bind(this);
         this.updateStock = this.updateStock.bind(this);
         this.addStock = this.addStock.bind(this);
@@ -56,10 +57,16 @@ export class StockStoreHouseController extends ResponseData {
             this.invoke(response, 200, res, '', next);
         
     }
+
     public async getAvailableStockById(req: Request, res: Response, next: NextFunction) {
         const response = await this.stockStoreHouseUseCase.getStock("662fe69b9ba1d8b3cfcd3634")            
-        this.invoke(response, 200, res, '', next);
-    
+        this.invoke(response, 200, res, '', next);   
+}
+
+public async getAvailableProducts(req: Request, res: Response, next: NextFunction) {
+    const response = await this.stockStoreHouseUseCase.getStock("662fe69b9ba1d8b3cfcd3634")            
+    this.invoke(response, 200, res, '', next);
+
 }
 
     public async createStock(req: Request, res: Response, next: NextFunction) {

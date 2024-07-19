@@ -23,6 +23,7 @@ export class ErrorMiddleware {
     };
 
     public globalErrorHandler = (err: Error, req: Request, res: Response, next: NextFunction): Response => {
+        
         return res.status(this.defaultHttpErrorCode).json({
             status: this.defaultHttpErrorCode,
             message: 'Something wrong happened :`('

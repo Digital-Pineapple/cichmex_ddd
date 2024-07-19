@@ -1,7 +1,6 @@
 import { Model } from 'mongoose';
 import {  StockStoreHouseRepository as StockSHConfig } from '../../../domain/storehouse/stockStoreHouseRepository';
 import { MongoRepository } from '../MongoRepository';
-import { StockBranchEntity } from '../../../domain/stockBranch/StockBranchEntity';
 import ProductModel from '../../models/products/ProductModel';
 
 
