@@ -36,7 +36,12 @@ export class StockStoreHouseUseCase {
     public async deleteStock(_id: string): Promise<StockStoreHouseEntity | null> {
         return this.stockStoreHouseRepository.updateOne(_id, {status: false})
     }
-   
+    public async getAllProductsEntries(): Promise<StockStoreHouseEntity[]| null> {
+        return this.stockStoreHouseRepository.findAllInputs()
+    }
+    public async getAllProductOutputs(): Promise<StockStoreHouseEntity[]| null> {
+        return this.stockStoreHouseRepository.findAllOutputs()
+    }
     
     
 

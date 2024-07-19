@@ -28,6 +28,8 @@ export class StockStoreHouseController extends ResponseData {
         this.removeStock = this.removeStock.bind(this);
         this.returnStock = this.returnStock.bind(this);
         this.getAvailableStock = this.getAvailableStock.bind(this);
+        this.getProductsEntries = this.getProductsEntries.bind(this);
+        this.getProductsOutputs = this.getProductsOutputs.bind(this);
 
     }
 
@@ -44,12 +46,6 @@ export class StockStoreHouseController extends ResponseData {
         } else {
             next(new ErrorHandler('No tiene los permisos necesarios', 500));
         }
-        // try {
-        //     const response = await this.stockStoreHouseUseCase.getStock(id)            
-        //     this.invoke(response, 200, res, '', next);
-        // } catch (error) {
-        //     next(new ErrorHandler('Hubo un error al consultar la información', 500));
-        // }
     }
 
     public async getAvailableStock(req: Request, res: Response, next: NextFunction) {
@@ -219,5 +215,25 @@ public async getAvailableProducts(req: Request, res: Response, next: NextFunctio
         const { category } = req.body           
         
     }
+
+    public async getProductsEntries(req: Request, res: Response, next: NextFunction) {
+            try {
+                const response = await this.stockStoreHouseUseCase.getAllProductsEntries()
+                const response2 = response?.filter((item:any)=> item.Inputs.length > 0)   
+               this.invoke(response2, 200, res, '', next);        
+            } catch (error) {
+                next(new ErrorHandler('Hubo un error al consultar la información', 500));
+            }
+        
+    }
+    public async getProductsOutputs(req: Request, res: Response, next: NextFunction) {
+        try {
+            const response = await this.stockStoreHouseUseCase.getAllProductOutputs()   
+            const response2 = response?.filter((item:any)=> item.Outputs.length > 0)   
+            this.invoke(response2, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+}
 
 }

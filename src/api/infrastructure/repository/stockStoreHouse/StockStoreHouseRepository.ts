@@ -31,6 +31,23 @@ export class StockStoreHouseRepository extends MongoRepository implements  Stock
       return await this.StockBranchModel.find({StoreHouse_id:branchId})
   
     }
+    async findAllInputs(): Promise<any[]> {
+      const result = await this.MODEL.aggregate([
+        { $lookup: { from: "shstockinputs", localField: "_id", foreignField: "SHStock_id", as: "Inputs" } },
+        { $lookup: { from: "products", localField: "product_id", foreignField: "_id", as :'product' } },
+      ]);
+      return result;
+    }
+
+    async findAllOutputs(): Promise<any[]> {
+      const result = await this.MODEL.aggregate([
+        { $lookup: { from: "shstockoutputs", localField: "_id", foreignField: "SHStock_id", as: "Outputs" } },
+        { $lookup: { from: "products", localField: "product_id", foreignField: "_id", as :'product' } },
+      ]);
+      return result;
+    }
+
+
   }
   
   

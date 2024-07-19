@@ -137,7 +137,7 @@ export class UserController extends ResponseData {
             const phoneString = phoneC.toString()
             const noRepeat = await this.phoneUserUseCase.findOnePhone(phone_number)
             if (noRepeat == null) {
-                // await this.twilioService.sendSMS(phoneString, `CICHMEX. Código de verificación - ${code}`)
+                 await this.twilioService.sendSMS(phoneString, `CICHMEX. Código de verificación - ${code}`)
                 const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
                 this.invoke(newPhone, 200, res, '', next);
 
@@ -361,11 +361,13 @@ export class UserController extends ResponseData {
     public async updateUser(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { fullname, type_user } = req.body;
+        const uuid = generateUUID()
+        
         
         try {
-            if (req.file) {
+            if (req.file !== undefined || req.file !==null) {
                 const pathObject = `${this.path}/${id}/${fullname}`;
-                const response = await this.userUseCase.updateUser(id, { fullname, profile_image: pathObject, type_user:type_user })
+                const response = await this.userUseCase.updateUser(id, { fullname, profile_image: pathObject, type_user:type_user, uuid:uuid })
                 if (!(response instanceof ErrorHandler)) {
                     const { url, success } = await this.s3Service.uploadToS3AndGetUrl(
                         pathObject + ".jpg",
@@ -388,7 +390,7 @@ export class UserController extends ResponseData {
                 );
             } else {
                 const response = await this.userUseCase.updateUser(id, {
-                    fullname,
+                  fullname:fullname, type_user:type_user, uuid:uuid
                 });
                 this.invoke(
                     response,
