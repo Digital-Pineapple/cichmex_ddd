@@ -121,6 +121,8 @@ export class BranchOfficeController extends ResponseData {
         const { user_id, name, description, phone_number, location, schedules, type } = req.body;
          const location1 = JSON.parse(location)
          const parseSchedules = JSON.parse(schedules)
+         console.log(req.body);
+         
         try {
             if (req.files) {
                 const paths: string[] = [];
@@ -185,6 +187,8 @@ export class BranchOfficeController extends ResponseData {
 
 
         } catch (error) {
+            console.log(error);
+            
            
             next(new ErrorHandler('Hubo un error al crear', 500));
         }

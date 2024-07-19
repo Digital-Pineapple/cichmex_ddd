@@ -9,6 +9,6 @@ export class BranchOfficeValidations {
     private upload = multer(multerConfig); 
 
     readonly ImageValidation = [
-        this.upload.array("images", 3),
+        this.upload.any(),
     ]
 }
