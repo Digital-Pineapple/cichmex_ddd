@@ -36,6 +36,9 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     
    async  findDetailProductById(id:string, populateCofig1?:any, populateConfig2?:any, populateConfig3?:any): Promise<ProductEntity| ErrorHandler | null> {
     return await this.MODEL.findById(id).populate(populateCofig1).populate(populateConfig2).populate(populateConfig3)
+    // return await this.MODEL.aggregate([
+        
+    // ]).
    }
 
 }

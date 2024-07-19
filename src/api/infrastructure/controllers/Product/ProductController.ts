@@ -9,9 +9,11 @@ import { stringify } from 'uuid';
 import { errorMonitor } from 'nodemailer/lib/xoauth2';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 import { ProductEntity } from '../../../domain/product/ProductEntity';
+import { Category } from '../../../domain/category/CategoryEntity';
 
 export class ProductController extends ResponseData {
   protected path = "/product";
+  private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634" 
 
   constructor(
     private productUseCase: ProductUseCase,
@@ -28,6 +30,7 @@ export class ProductController extends ResponseData {
     this.searchProduct = this.searchProduct.bind(this);
     this.getNoStockProducts = this.getNoStockProducts.bind(this);
     this.getProductsByCategory = this.getProductsByCategory.bind(this);
+    this.getProductsByCategories = this.getProductsByCategories.bind(this);
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
@@ -62,8 +65,19 @@ export class ProductController extends ResponseData {
   public async getProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
-      const response = await this.productUseCase.getProduct(id);
-
+      const responseStock = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse)            
+      const responseProduct: any | null = await this.productUseCase.getProduct(id);
+      const parsed = responseProduct.toJSON();
+      let response = null;
+      if(responseStock && responseStock.stock){
+         response  = {
+          ...parsed,
+          stock: responseStock.stock
+        }      
+      }else{
+        response = responseProduct
+      }
+      // console.log(response);      
       if (!(response instanceof ErrorHandler) && response !== null) {
         if (response.images) {
           const updatedImages = await Promise.all(
@@ -74,7 +88,6 @@ export class ProductController extends ResponseData {
           );
           response.images = updatedImages;
         }
-
       }
 
       this.invoke(response, 200, res, "", next);
@@ -283,13 +296,76 @@ export class ProductController extends ResponseData {
   }
   public async getProductsByCategory(req: Request, res: Response, next: NextFunction) {
     const { category } = req.body
-
     try {
-      const categoria = await this.categoryUseCase.getDetailCategoryByName(category);
-      const response = await this.productUseCase.searchProductsByCategory(categoria._id);
+      const categoria: any | null = await this.categoryUseCase.getDetailCategoryByName(category);
+      const response: any | null = await this.categoryUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse); 
+      const resCategory = response[0]
+      resCategory.category_image = await this.s3Service.getUrlObject(resCategory.category_image + ".jpg");
+      await Promise.all(
+        resCategory.products.map(async (product: any) => {        
+          const parsed = await Promise.all(
+            product.images.map(async (image: any) => {
+              image = await this.s3Service.getUrlObject(image + ".jpg"); 
+              return image        
+            })                    
+          )
+          product.images = parsed;
+        })
+      )                
+      
       this.invoke(response, 201, res, '', next);
     } catch (error) {
+      console.log(error);      
 
+      next(new ErrorHandler("Hubo un error al obtener la información", 500));
+    }
+  }
+  public async getProductsBySubCategory(req: Request, res: Response, next: NextFunction) {
+    const { subcategory } = req.body
+    try {
+      const subcat: any | null = await this.categoryUseCase.getDetailCategoryByName(subcategory);
+      const response: any | null = await this.categoryUseCase.getProductsByCategory(subcat._id, this.onlineStoreHouse); 
+      const resCategory = response[0]
+      resCategory.subcategory_image = await this.s3Service.getUrlObject(resCategory.subcategory_image + ".jpg");
+      await Promise.all(
+        resCategory.products.map(async (product: any) => {        
+          const parsed = await Promise.all(
+            product.images.map(async (image: any) => {
+              image = await this.s3Service.getUrlObject(image + ".jpg"); 
+              return image        
+            })                    
+          )
+          product.images = parsed;
+        })
+      )                      
+      this.invoke(response, 201, res, '', next);
+    } catch (error) {
+      console.log(error);      
+      next(new ErrorHandler("Hubo un error al obtener la información", 500));
+    }
+  }
+  
+  public async getProductsByCategories(req: Request, res: Response, next: NextFunction){
+    try{
+      const response: any | null = await this.categoryUseCase.getCategoriesAndProducts(this.onlineStoreHouse);    
+      const updatedResponse = await Promise.all(response.map(async (category:any) => {
+          await Promise.all(
+            category.products.map(async(product: any) => {
+              const parsedImages = await Promise.all(product.images.map(async(image: any) => {
+                  const url = await this.s3Service.getUrlObject(image + ".jpg");
+                  return url              
+              }));
+              product.images = parsedImages;  
+              return product                   
+            }))          
+          return category
+        }));
+      
+      this.invoke(response, 201, res, '', next);
+
+    }catch(error){
+      console.log(error);
+      
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
     }
 

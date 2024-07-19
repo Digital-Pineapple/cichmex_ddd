@@ -29,7 +29,7 @@ export class BranchOfficeController extends ResponseData {
     }
 
     public async getAllBranchOffices(req: Request, res: Response, next: NextFunction) {
-        const response = await this.branchOfficeUseCase.getAllBranchOffices()
+        const response: any | null = await this.branchOfficeUseCase.getAllBranchOffices()
         try {
             const updatedResponse = await Promise.all(
                 
@@ -74,7 +74,7 @@ export class BranchOfficeController extends ResponseData {
         const { id } = req.params;
 
         try {
-            const response = await this.branchOfficeUseCase.getDetailBranchOffice(id);
+            const response: any| null = await this.branchOfficeUseCase.getDetailBranchOffice(id);
             const updatedResponse = await Promise.all(
                 response.images.map(async (image: any) => {
                     const url = await this.s3Service.getUrlObject(
@@ -95,7 +95,7 @@ export class BranchOfficeController extends ResponseData {
         const { id } = req.params;
 
         try {
-            const response = await this.branchOfficeUseCase.getBranchesUser(id)
+            const response: any | null = await this.branchOfficeUseCase.getBranchesUser(id)
             const updatedResponse = await Promise.all(
                 response.map(async (item: any) => {
                     const images = item.images;

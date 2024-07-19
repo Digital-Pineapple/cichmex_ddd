@@ -39,6 +39,7 @@ productRouter
   .post("/", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN']), productController.createProduct)
   .post("/:id", productvalidations.productValidation,userValidations.authTypeUserValidation(['SUPER-ADMIN']), productController.updateProduct)
   .post('/search/ok', productController.searchProduct)
-  .delete("/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN']), productController.deleteProduct);
+  .delete("/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN']), productController.deleteProduct)
+  .get("/productsByCategories/ok", productController.getProductsByCategories);
 
 export default productRouter;

@@ -47,19 +47,8 @@ export class ProductOrderController extends ResponseData {
   public async getOneProductOrder(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
-      const response: any | null = await this.productOrderUseCase.getOneProductOrder(id)
-      const updatedResponse = await Promise.all(
-        response.products.map(async (product: any) => {
-          const parsedImages = await Promise.all(
-              product.item.images.map(async (image: any) => {               
-                  return await this.s3Service.getUrlObject(image + ".jpg");
-              })
-          );
-          product.item.images = parsedImages;
-          return product;
-      }    
-    ));
-           
+      const response: any | null = await this.productOrderUseCase.getOneProductOrder(id)  
+                 
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
@@ -68,24 +57,8 @@ export class ProductOrderController extends ResponseData {
   public async getOneProductOrderByUser(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
-      const response: any  | null = await this.productOrderUseCase.ProductOrdersByUser(id)
-      const updatedResponse = await Promise.all(
-        response.map(async (order: any) => {
-        const updatedProducts = await Promise.all(
-          order.products.map(async (product: any) => {
-            const parsedImages = await Promise.all(
-                product.item.images.map(async (image: any) => {               
-                    return await this.s3Service.getUrlObject(image + ".jpg");
-                })
-            );
-            product.item.images = parsedImages;
-            return product;
-        }));
-        order.products = updatedProducts; // Asegúrate de asignar los productos actualizados
-        return order;
-    }));
-      // console.log(updatedResponse);      
-      this.invoke(updatedResponse, 200, res, "", next);
+      const response: any  | null = await this.productOrderUseCase.ProductOrdersByUser(id)    
+      this.invoke(response, 200, res, "", next);
     } catch (error) {
       console.log(error);      
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
