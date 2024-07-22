@@ -79,5 +79,8 @@ export interface ProductImage  {
     ordersDay ?: number
     ordersMonth?: number
     cashDay ?: number,
-    cashMonth ?: number
+    cashMonth ?: number,
+    MPTotalPaymentsMonth ?: number,
+    commissionPayedMonth?: number,
+    commissionPayedDay?: number,
   }
