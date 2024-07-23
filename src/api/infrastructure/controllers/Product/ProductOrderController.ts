@@ -61,7 +61,7 @@ export class ProductOrderController extends ResponseData {
       const response: any  | null = await this.productOrderUseCase.ProductOrdersByUser(id)    
       this.invoke(response, 200, res, "", next);
     } catch (error) {
-      console.log(error);      
+          
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
