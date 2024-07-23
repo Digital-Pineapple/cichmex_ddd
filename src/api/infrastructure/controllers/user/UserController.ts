@@ -119,10 +119,8 @@ export class UserController extends ResponseData {
         
         try {
             const response = await this.userUseCase.allCarrierDrivers()
-
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-            console.log(error);
             
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
@@ -454,7 +452,7 @@ public async RegisterCarrierDriver(req: Request, res: Response, next: NextFuncti
         phone_number,
         code: generateRandomCode()
     };
-
+    const uuid = generateUUID()
     let response: any = '';
 
     const noRepeatPhone = await this.phoneUserUseCase.findOnePhone(phone_number)
@@ -468,11 +466,11 @@ public async RegisterCarrierDriver(req: Request, res: Response, next: NextFuncti
         const r_phone = await this.phoneUserUseCase.createEmployeePhone(info_phone);
         
             try {
-                const responsedefault = await this.typeUserUseCase.getTypeUsers();
-                const def = responsedefault?.find(item => item.name === 'CarrierDriver');
-                if (def) {
-                    const TypeUser_id = def._id; // Extraer el _id del objeto encontrado
-                    const response1 = await this.userUseCase.createUser({ ...values, type_user: TypeUser_id, phone_id: r_phone?._id });
+                const responsedefault = await this.typeUserUseCase.findTypeUser({role:['CARRIER-DRIVER']})
+              
+                if (responsedefault) {
+                    const TypeUser_id = responsedefault._id; // Extraer el _id del objeto encontrado
+                    const response1 = await this.userUseCase.createUser({ ...values, type_user: TypeUser_id, phone_id: r_phone?._id, uuid:uuid });
                     response = response1;
                     this.invoke(response, 200, res, 'Creado con éxito', next);
                 } else {

@@ -55,7 +55,8 @@ export class ProductOrderController extends ResponseData {
     }
   }
   public async getOneProductOrderByUser(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;
+    const { id } = req.user;
+    
     try {
       const response: any  | null = await this.productOrderUseCase.ProductOrdersByUser(id)    
       this.invoke(response, 200, res, "", next);
