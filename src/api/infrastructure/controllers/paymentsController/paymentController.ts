@@ -260,6 +260,7 @@ export class PaymentController extends ResponseData {
                     MP_info: payment,
                     user_id: user.user_id,
                     payment_status: payment?.status,
+                    system:"CICHMEX"
                 });
     
                 if (!(createPayment instanceof ErrorHandler)) {

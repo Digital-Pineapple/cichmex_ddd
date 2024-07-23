@@ -10,6 +10,8 @@ export interface ProductOrderRepository extends MongoRepository {
      
      findAllProductOrders(populateConfig1?:any): Promise<ProductOrderEntity[] | ErrorHandler | null> 
 
+     getPaidProductOrders(): Promise<ProductOrderEntity[] | ErrorHandler | null> 
+
      ResumeProductOrders(): Promise<ProductOrderResume> 
       
 

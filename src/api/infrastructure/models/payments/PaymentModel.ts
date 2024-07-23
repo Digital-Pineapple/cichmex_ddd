@@ -24,7 +24,12 @@ const PaymentSchema = new Schema<PaymentEntity>({
     payment_status:{
         type:String,
         required:false,
+    },
+    system:{
+        type:String,
+        required:false,
     }
+
    
 }, {
     versionKey: false,

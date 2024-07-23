@@ -32,6 +32,10 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
 
     }
 
+    async getPaidProductOrders(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+        return await this.ProductOrderModel.find({payment_status:'approved'}).sort({ createdAt: -1 })
+
+    }
 
 
     async ResumeProductOrders(): Promise<ProductOrderResume> {

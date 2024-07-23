@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { UserEntity } from "../user/UserEntity";
 
 
@@ -9,7 +8,7 @@ import { UserEntity } from "../user/UserEntity";
   MP_info?: object;
   status?:boolean;
   payment_status?: string
-  
+  system?: string
 }
 
 

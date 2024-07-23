@@ -1,7 +1,4 @@
-import { response } from 'express';
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
-import { ServicesMembershipPopulateConfing, typeCarMembershipPopulateConfing } from '../../../shared/domain/PopulateInterfaces';
-import {  MembershipEntity, MembershipInfoResponse, ServiceQuantity } from '../../domain/membership/MembershipEntity';
 import { PaymentRepository } from '../../domain/payments/PaymentRepository'
 import {PaymentEntity }from '../../domain/payments/PaymentEntity';
 

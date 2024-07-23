@@ -14,6 +14,7 @@ export class ProductOrderController extends ResponseData {
   ) {
     super();
     this.getAllProductOrders = this.getAllProductOrders.bind(this);
+    this.paidProductOrders   = this.paidProductOrders.bind(this);
     this.gerProductOrderResume = this.gerProductOrderResume.bind(this);
     this.getOneProductOrder = this.getOneProductOrder.bind(this);
     this.getOneProductOrderByUser = this.getOneProductOrderByUser.bind(this);
@@ -28,6 +29,16 @@ export class ProductOrderController extends ResponseData {
     try {
       const response = await this.productOrderUseCase.getProductOrders()
 
+      this.invoke(response, 200, res, "", next);
+    } catch (error) {
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+
+  public async paidProductOrders(req: Request, res: Response, next: NextFunction) {
+   
+    try {
+      const response = await this.productOrderUseCase.ProductOrdersPaid()
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
@@ -55,10 +66,10 @@ export class ProductOrderController extends ResponseData {
     }
   }
   public async getOneProductOrderByUser(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.user;
+    const user = req.user;
     
     try {
-      const response: any  | null = await this.productOrderUseCase.ProductOrdersByUser(id)    
+      const response: any  | null = await this.productOrderUseCase.ProductOrdersByUser(user?.id)    
       this.invoke(response, 200, res, "", next);
     } catch (error) {
           
