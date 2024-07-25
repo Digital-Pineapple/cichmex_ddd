@@ -15,7 +15,7 @@ export class UserUseCase extends Authentication {
 
   public async allCarrierDrivers(): Promise<UserEntity[] | ErrorHandler | null> {
     const allUsers = await this.userRepository.findAll(TypeUserPopulateConfig,PhonePopulateConfig)
-    const carrier_drivers = allUsers.filter((item:any) => item.type_user.name === 'CarrierDriver')
+    const carrier_drivers = allUsers.filter((item:any)=> item.type_user.role.includes('CARRIER-DRIVER'))
     return carrier_drivers
   }
   public async getUser(id: string): Promise<UserEntity | ErrorHandler | null > {

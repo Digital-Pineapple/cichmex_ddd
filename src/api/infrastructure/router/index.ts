@@ -22,6 +22,7 @@ import stockStoreHouseRouter from './stockStoreHouse';
 import storeHouseRouter from './storeHouse';
 import productOrderRouter from './productOrder';
 import shippingCostRouter from './shippingCost';
+import discountCouponRouter from './discountCoupon';
 
 export const apiRouter = (): Router => {
 
@@ -49,6 +50,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/shopping-cart', shoppingCartRouter)
     apiRouter.use('/stock-StoreHouse', stockStoreHouseRouter)
     apiRouter.use('/storehouse', storeHouseRouter)
+    apiRouter.use('/coupons', discountCouponRouter)
 
     return apiRouter;
 }
@@ -75,6 +77,7 @@ apiRouterx.use('/shipping-cost', shippingCostRouter)
 apiRouterx.use('/shopping-cart', shoppingCartRouter)
 apiRouterx.use('/stock-StoreHouse', stockStoreHouseRouter )
 apiRouterx.use('/storehouse', storeHouseRouter)
+apiRouterx.use('/coupons', discountCouponRouter)
 
 
 

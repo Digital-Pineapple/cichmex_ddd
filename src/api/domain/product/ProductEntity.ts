@@ -50,6 +50,7 @@ export interface ProductImage  {
     branch?: BranchOfficeEntity;
     deliveryLocation?:ILocation;
     storeHouseStatus?:boolean;
+    supply_detail: ProductOrderSupply; 
     route_status?: boolean;
     point_pickup_status?: boolean;
     deliveryStatus: boolean;
@@ -79,5 +80,13 @@ export interface ProductImage  {
     ordersDay ?: number
     ordersMonth?: number
     cashDay ?: number,
-    cashMonth ?: number
+    cashMonth ?: number,
+    MPTotalPaymentsMonth ?: number,
+    commissionPayedMonth?: number,
+    commissionPayedDay?: number,
+  }
+  export interface ProductOrderSupply{
+    user: UserEntity,
+    date: string,
+
   }

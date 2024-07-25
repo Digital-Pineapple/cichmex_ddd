@@ -82,6 +82,8 @@ export class PaymentController extends ResponseData {
 
     public async createPaymentMP(req: Request, res: Response, next: NextFunction) {
         const { membership, user, values } = req.body;
+        console.log(req.body);
+        
     
 
         const access_token = config.MERCADOPAGO_TOKEN;
@@ -172,6 +174,8 @@ export class PaymentController extends ResponseData {
                                         }
 
                                     } catch (error) {
+                                        console.log(error);
+                                        
                                         next(new ErrorHandler(`Error: ${error}`, 500));
                                     }
 
@@ -183,6 +187,8 @@ export class PaymentController extends ResponseData {
 
 
                     } catch (error) {
+                        console.log(error);
+                        
                         next(new ErrorHandler(`Error al actualizar el pago: ${error}`, 500));
                     }
                 } else {
@@ -190,7 +196,8 @@ export class PaymentController extends ResponseData {
                 }
 
             } catch (error) {
-
+                console.log(error);
+                
                 next(new ErrorHandler('Error al crear el pago con MercadoPago', 500));
             }
         } catch (error) {
@@ -253,6 +260,7 @@ export class PaymentController extends ResponseData {
                     MP_info: payment,
                     user_id: user.user_id,
                     payment_status: payment?.status,
+                    system:"CICHMEX"
                 });
     
                 if (!(createPayment instanceof ErrorHandler)) {

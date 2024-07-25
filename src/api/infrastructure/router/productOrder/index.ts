@@ -24,9 +24,10 @@ const userValidations = new UserValidations();
 productOrderRouter
 
   .get("/",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.getAllProductOrders)
+  .get("/paid",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.paidProductOrders)
   .get('/resume', productOrderController.gerProductOrderResume)
   .get("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CUSTOMER"]), productOrderController.getOneProductOrder)
-  .get("/user/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CUSTOMER"]), productOrderController.getOneProductOrderByUser)
+  .get("/user/resume",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CUSTOMER"]), productOrderController.getOneProductOrderByUser)
   .post('/', productOrderController.createProductOrder)
   .post('/fill-order/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN",]), productOrderController.fillProductOrder)
   .post("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.updateProductOrder )

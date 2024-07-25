@@ -22,6 +22,7 @@ export const validateAuthentication = async(req: Request, res: Response, next: N
             req.user = userData;
             next();
         } catch (error) {
+            
             next(new ErrorHandler('Token no valido', 400));
         }
     }
@@ -64,7 +65,9 @@ export const checkTypeUserAuth = (type_user: string | string[]) => async (req: R
         if (!go) {
             throw new ErrorHandler('No tiene permisos necesarios', 403);
         }
-        req.user= userData
+        let id = userData._id.toHexString()
+        
+        req.user= {...userData, id:id}
         next();
     } catch (error) {
         next(error); // Pasar el error original para una mejor depuración

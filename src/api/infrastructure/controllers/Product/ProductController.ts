@@ -95,6 +95,12 @@ export class ProductController extends ResponseData {
           );
           response.images = updatedImages;
         }
+        if (response.video) {
+          const video_url = await this.s3Service.getUrlObject(
+            response.video + ".mp4"
+          );
+          response.video = video_url;
+        }
       }
 
       this.invoke(response, 200, res, "", next);
