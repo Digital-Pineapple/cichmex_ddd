@@ -25,14 +25,16 @@ const userValidations = new UserValidations();
 productOrderRouter
 
   .get("/",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.getAllProductOrders)
+  .get("/AssignedPO",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.getAssignedPO)
+  .get("/deliveries",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.getDeliveries)
   .get("/paid",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.paidProductOrders)
   .get("/paidAndSupplyToPoint",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.paidAndSupplyPOToPoint)
   .get("/paidAndSupply",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.paidAndSupplyPO)
-  .get("/",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.AssignRoute)
   .get('/resume', productOrderController.gerProductOrderResume)
   .get("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CUSTOMER"]), productOrderController.getOneProductOrder)
   .get("/user/resume",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CUSTOMER"]), productOrderController.getOneProductOrderByUser)
   .post('/', productOrderController.createProductOrder)
+  .post('/verifyStartRoute',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.verifyAndStartRoute)
   .post('/assignRoute',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.AssignRoute)
   .post('/fill-order/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN",]), productOrderController.fillProductOrder)
   .post("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.updateProductOrder )

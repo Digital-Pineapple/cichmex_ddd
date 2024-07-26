@@ -99,7 +99,7 @@ export interface ProductImage  {
   }
   export interface POVerificationDetail{
       verification_code   ?: string,
-      verification_status ?: string,
+      verification_status ?: boolean,
       verification_time   ?: string,
       signature           ?: string,
       photo_proof         ?: string,

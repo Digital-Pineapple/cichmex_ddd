@@ -28,10 +28,19 @@ export class ProductOrderUseCase {
     const response =  await this.productOrderRepository.getPaidProductOrders()
     return response
   }
+  public async POGetAssigned(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+    const response =  await this.productOrderRepository.getAssignedPO()
+    return response
+  }
   public async POPaidAndSupplyToPoint(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
     const response =  await this.productOrderRepository.getPaidAndSuplyToPointPO()
     return response
   }
+  public async PODeliveries(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+    const response =  await this.productOrderRepository.getDeliveriesPO()
+    return response
+  }
+
   public async POPickedUp(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
     const response =  await this.productOrderRepository.getPaidAndSuplyToPointPO()
     return response

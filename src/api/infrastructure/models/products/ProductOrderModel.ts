@@ -66,6 +66,11 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       type: Object,
       required: false,
     },
+    verification:{
+      type:Object,
+      required:false
+    },
+
     status: {
       type: Boolean,
       required: false,
