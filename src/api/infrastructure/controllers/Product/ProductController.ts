@@ -12,6 +12,7 @@ import { ProductEntity } from '../../../domain/product/ProductEntity';
 import { StockBranchEntity } from '../../../domain/stockBranch/StockBranchEntity';
 import { StockStoreHouseEntity } from '../../../domain/storehouse/stockStoreHouseEntity';
 import { Category } from '../../../domain/category/CategoryEntity';
+import { SubCategoryUseCase } from '../../../application/subCategory/SubCategoryUseCase';
 
 export class ProductController extends ResponseData {
   protected path = "/product";
@@ -21,7 +22,8 @@ export class ProductController extends ResponseData {
     private productUseCase: ProductUseCase,
     private categoryUseCase: CategoryUseCase,
     private stockStoreHouseUseCase: StockStoreHouseUseCase,
-    private readonly s3Service: S3Service
+    private readonly s3Service: S3Service,
+    private subCategoryUseCase: SubCategoryUseCase,
   ) {
     super();
     this.getAllProducts = this.getAllProducts.bind(this);
@@ -33,6 +35,7 @@ export class ProductController extends ResponseData {
     this.getNoStockProducts = this.getNoStockProducts.bind(this);
     this.getProductsByCategory = this.getProductsByCategory.bind(this);
     this.getProductsByCategories = this.getProductsByCategories.bind(this);
+    this.getProductsBySubCategory = this.getProductsBySubCategory.bind(this);
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
@@ -346,6 +349,9 @@ export class ProductController extends ResponseData {
     const { category } = req.body
     try {
       const categoria: any | null = await this.categoryUseCase.getDetailCategoryByName(category);
+      if(categoria == null){
+        return next(new ErrorHandler("La categoria no existe", 404));
+      }               
       const response: any | null = await this.categoryUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse); 
       const resCategory = response[0]
       resCategory.category_image = await this.s3Service.getUrlObject(resCategory.category_image + ".jpg");
@@ -371,12 +377,15 @@ export class ProductController extends ResponseData {
   public async getProductsBySubCategory(req: Request, res: Response, next: NextFunction) {
     const { subcategory } = req.body
     try {
-      const subcat: any | null = await this.categoryUseCase.getDetailCategoryByName(subcategory);
-      const response: any | null = await this.categoryUseCase.getProductsByCategory(subcat._id, this.onlineStoreHouse); 
-      const resCategory = response[0]
-      resCategory.subcategory_image = await this.s3Service.getUrlObject(resCategory.subcategory_image + ".jpg");
+      const subcat: any | null = await this.subCategoryUseCase.getDetailSubCategoryByName(subcategory);  
+      if(subcat == null){
+        return next(new ErrorHandler("La categoria no existe", 404));
+      }               
+      const response: any | null = await this.subCategoryUseCase.getProductsBySubCategory(subcat._id, this.onlineStoreHouse); 
+      const resSubCategory = response[0]
+      resSubCategory.subcategory_image = await this.s3Service.getUrlObject(resSubCategory.subcategory_image + ".jpg");
       await Promise.all(
-        resCategory.products.map(async (product: any) => {        
+        resSubCategory.products.map(async (product: any) => {        
           const parsed = await Promise.all(
             product.images.map(async (image: any) => {
               image = await this.s3Service.getUrlObject(image + ".jpg"); 
@@ -395,7 +404,8 @@ export class ProductController extends ResponseData {
   
   public async getProductsByCategories(req: Request, res: Response, next: NextFunction){
     try{
-      const response: any | null = await this.categoryUseCase.getCategoriesAndProducts(this.onlineStoreHouse);    
+      const categories = ["Ropa, Bolsas y Calzado","Hogar, Muebles y jardín", "Industrias y Oficinas"]
+      const response: any | null = await this.categoryUseCase.getCategoriesAndProducts(categories, this.onlineStoreHouse);    
       const updatedResponse = await Promise.all(response.map(async (category:any) => {
           await Promise.all(
             category.products.map(async(product: any) => {

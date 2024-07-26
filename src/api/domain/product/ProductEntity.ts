@@ -19,6 +19,7 @@ export interface ProductEntity {
   status?:boolean;
   weight ?: string;
   video ?: string;
+  product_key : string;
   createdAt        :   NativeDate;
   updatedAt        :   NativeDate;
 }

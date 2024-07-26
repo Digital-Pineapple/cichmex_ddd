@@ -39,8 +39,8 @@ export class CategoryUseCase {
         return this.categoriesRepository.updateOne(_id, {status: false})
     }
 
-    public async getCategoriesAndProducts(storehouse: any): Promise<Category[] | ErrorHandler | null> {
-        return await this.categoriesRepository.findCategoriesAndProducts(storehouse);
+    public async getCategoriesAndProducts(categoryNames: string[], storehouse: any): Promise<Category[] | ErrorHandler | null> {
+        return await this.categoriesRepository.findCategoriesAndProducts(categoryNames, storehouse);
     }
     public async getProductsByCategory(category_id: any, storehouse:any): Promise<Category | ErrorHandler | null> {
         return await this.categoriesRepository.findProductsByCategory(category_id, storehouse);

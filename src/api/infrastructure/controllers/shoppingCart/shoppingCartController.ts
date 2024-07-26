@@ -45,6 +45,11 @@ export class ShoppingCartController extends ResponseData {
         const { id } = req.params;
         try {
             const response: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(id)
+            if(response.products){
+                const products = response.products
+                response.products = products.filter((product:any)=>product.item !== null)
+                this.shoppingCartUseCase.createShoppingCart({user_id:id,products: response.products})
+            }
             const updatedResponse = await Promise.all(
                 response.products.map(async (product:any)=>{
                     let parsedImages = await Promise.all(product.item.images.map(async (image: any) => {

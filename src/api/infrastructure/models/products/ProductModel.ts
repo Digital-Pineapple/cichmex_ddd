@@ -56,6 +56,10 @@ const ProductSchema = new Schema<ProductEntity>(
      video:{
       type:String,
       required:false
+     },
+     product_key:{
+      type:String,
+      required:true
      }
 
   },
