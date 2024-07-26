@@ -51,14 +51,22 @@ export class DiscountCouponController extends ResponseData {
 
             if(response.fixed_amount) {
                 if(cart_amount > response.min_cart_amount) {
-                    response = {total: cart_amount - response.fixed_amount};
+                    response = {
+                        total: cart_amount - response.fixed_amount,
+                        discount_porcent: 0,
+                        discount_amount: response.fixed_amount                        
+                    };
                     this.invoke(response, 200, res, '', next);
                 }else{
                     return new ErrorHandler(`se requiere un monto de carrito arriba de ${response.min_cart_amount}`, 403);
                 }
             }else if(response.porcent) {
                 if(cart_amount > response.min_cart_amount && cart_amount < response.max_cart_amount) {
-                    response = {total: cart_amount - cart_amount*(response.porcent/100)};
+                    response = {
+                        total: cart_amount - cart_amount*(response.porcent/100),
+                        discount_porcent: response.porcent,  
+                        discount_amount: cart_amount*(response.porcent/100)                      
+                    };
                     this.invoke(response, 200, res, '', next);
                 }else{
                     return new ErrorHandler(`se requiere un monto de carrito arriba de ${response.min_cart_amount} y menor de ${response.max_cart_amount}`, 403);
