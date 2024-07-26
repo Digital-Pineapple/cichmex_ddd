@@ -49,6 +49,14 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       required: false,
       default: false,
     },
+    supply_detail:{
+      type:Object,
+      required:false,
+    },
+    route_detail:{
+      type:Object,
+      required:false,
+    },
     deliveryStatus: {
       type: Boolean,
       required: false,

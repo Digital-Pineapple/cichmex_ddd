@@ -4,6 +4,7 @@ import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
 import { ProductOrderEntity } from '../../../domain/product/ProductEntity';
+import moment, { ISO_8601 } from 'moment';
 
 export class ProductOrderController extends ResponseData {
   protected path = "/productOrder";
@@ -22,6 +23,9 @@ export class ProductOrderController extends ResponseData {
     this.updateProductOrder = this.updateProductOrder.bind(this);
     this.deleteProductOrder = this.deleteProductOrder.bind(this);
     this.fillProductOrder  = this.fillProductOrder.bind(this);
+    this.paidAndSupplyPOToPoint = this.paidAndSupplyPOToPoint.bind(this);
+    this.paidAndSupplyPO   = this.paidAndSupplyPO.bind(this);
+    this.AssignRoute   = this.AssignRoute.bind(this);
 
   }
 
@@ -39,9 +43,41 @@ export class ProductOrderController extends ResponseData {
    
     try {
       const response = await this.productOrderUseCase.ProductOrdersPaid()
+      
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+  public async paidAndSupplyPOToPoint(req: Request, res: Response, next: NextFunction) {
+   
+    try {
+      const response = await this.productOrderUseCase.POPaidAndSupplyToPoint()
+      const filteredResponse = response?.filter((item: any) => item.branch && item.branch);
+      this.invoke(filteredResponse, 200, res, "", next);
+    } catch (error) {
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+
+  public async paidAndSupplyPO(req: Request, res: Response, next: NextFunction) {
+    try {
+      const response = await this.productOrderUseCase.POPaidAndSupplyToPoint()
+      const filteredResponse = response?.filter((item: any) => item.branch && item.deliveryLocation);
+      this.invoke(filteredResponse, 200, res, "", next);
+    } catch (error) {
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+
+
+  public async AssignRoute(req: Request, res: Response, next: NextFunction) {
+   const {order_id, user_id } = req.body 
+    try {
+      const response = await this.productOrderUseCase.updateProductOrder(order_id,{route_detail:{user:user_id, route_status:'assigned'}})
+      this.invoke(response, 200, res, "Orden Asignada Correctamente", next);
+    } catch (error) {
+      next(new ErrorHandler("Hubo un error", 500));
     }
   }
 
@@ -113,11 +149,13 @@ export class ProductOrderController extends ResponseData {
 
   public async fillProductOrder(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
+    const {_id, uuid, email, fullname} = req.user._doc;
     const { storeHouse } = req.body;
-    
+    const date = new Date()
     try {
-      const response = await this.productOrderUseCase.startFillProductOrder(id,{storeHouseStatus :storeHouse})
-      this.invoke(response, 201, res, 'Se actualizó con éxito', next);
+      const response = await this.productOrderUseCase.startFillProductOrder(id,{storeHouseStatus :storeHouse, supply_detail:{user:{_id, uuid, email, fullname}, date:date}})
+      
+      this.invoke(response, 201, res, 'Orden surtida con éxito', next);
     } catch (error) {
       
       next(new ErrorHandler("Hubo un error ", 500));

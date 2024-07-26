@@ -67,7 +67,14 @@ public async getAvailableProducts(req: Request, res: Response, next: NextFunctio
 
     public async createStock(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params
-        const { product_id, stock } = req.body;        
+        const { product_id, stock } = req.body;   
+        const user = req.user._doc  
+        const UserInfo ={
+            _id : user._id,
+            fullname: user.fullname,
+            email:user.email,
+            type_user: user.type_user
+        }   
         
         try {
             const available = await this.stockStoreHouseUseCase.getProductStock(product_id,id, PopulateProductCS, )
@@ -76,7 +83,7 @@ public async getAvailableProducts(req: Request, res: Response, next: NextFunctio
             if (!available) {
                 const response = await this.stockStoreHouseUseCase.createStock({ product_id:product_id, stock:stock,StoreHouse_id:id })
                 const newQuantity = stock
-                const entry = await this.stockSHinputUseCase.createInput({ SHStock_id: response?._id, quantity: stock, newQuantity: newQuantity, })
+                const entry = await this.stockSHinputUseCase.createInput({ SHStock_id: response?._id, quantity: stock, newQuantity: newQuantity, responsible:UserInfo })
                 const allData = await this.stockStoreHouseUseCase.updateStock(response?._id, { stock: entry.newQuantity })
                 
                 this.invoke(allData, 201, res, 'Se creó con éxito', next);
@@ -85,6 +92,7 @@ public async getAvailableProducts(req: Request, res: Response, next: NextFunctio
             }
         }
         catch (error) {
+           console.log(error);
            
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
@@ -108,7 +116,7 @@ public async getAvailableProducts(req: Request, res: Response, next: NextFunctio
     public async addStock(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params
         const { stock } = req.body;
-        const user = req.user
+        const user = req.user._doc
         
         const UserInfo ={
             _id : user._id,

@@ -1,3 +1,4 @@
+
 import Moment from 'moment-timezone';
 
 export class MomentService {
@@ -17,4 +18,10 @@ export class MomentService {
         // Compara las fechas usando isAfter
         return expirationDate.isBefore(currentDate);
     }
+    newDate(): any {
+        const newDate = Moment().format()
+        return newDate
+    }
+
 }
+

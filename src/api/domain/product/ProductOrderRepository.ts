@@ -12,6 +12,8 @@ export interface ProductOrderRepository extends MongoRepository {
 
      getPaidProductOrders(): Promise<ProductOrderEntity[] | ErrorHandler | null> 
 
+     getPaidAndSuplyToPointPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> 
+
      ResumeProductOrders(): Promise<ProductOrderResume> 
       
 

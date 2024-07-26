@@ -33,10 +33,14 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
     }
 
     async getPaidProductOrders(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.ProductOrderModel.find({payment_status:'approved'}).sort({ createdAt: -1 })
+        return await this.ProductOrderModel.find({payment_status:'approved', storeHouseStatus:false, route_status:false, point_pickup_status:false,deliveryStatus:false}).sort({ createdAt: -1 })
 
     }
 
+    async getPaidAndSuplyToPointPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+        return await this.ProductOrderModel.find({payment_status:'approved', storeHouseStatus:true, route_status:false, point_pickup_status:false,deliveryStatus:false}).sort({ createdAt: -1 })
+
+    }
 
     async ResumeProductOrders(): Promise<ProductOrderResume> {
 
