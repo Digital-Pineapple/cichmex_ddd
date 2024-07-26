@@ -22,6 +22,7 @@ export class ProductOrderController extends ResponseData {
     this.updateProductOrder = this.updateProductOrder.bind(this);
     this.deleteProductOrder = this.deleteProductOrder.bind(this);
     this.fillProductOrder  = this.fillProductOrder.bind(this);
+    this.getProductOrderByBranch = this.getProductOrderByBranch.bind(this);
 
   }
 

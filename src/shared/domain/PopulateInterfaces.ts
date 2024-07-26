@@ -109,7 +109,7 @@ export const InfoBranch : IStockPopulateConfig={
 
 export const PopulateProductCS : IStockPopulateConfig={
     path: 'products.item',
-    select: ["name",'price', 'images' ],
+    select: ["name",'price', 'images', 'weight'],
     model:ProductModel
 }
 export const PopulateDetailMembership : IStockPopulateConfig={

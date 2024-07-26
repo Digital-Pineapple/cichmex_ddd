@@ -25,8 +25,8 @@ const userValidations = new UserValidations();
 
 discountCouponRouter
 
-    .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.getAllDiscountCoupons)
-    .get('/find',userValidations.authTypeUserValidation(['CUSTOMER']), discountCouponController.findCoupon )
+    .get('/', discountCouponController.getAllDiscountCoupons)
+    .post('/find',userValidations.authTypeUserValidation(['CUSTOMER']), discountCouponController.findCoupon )
     .post('/',  userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.createDiscountCoupon)
     .post('/consume',  userValidations.authTypeUserValidation(['CUSTOMER']), discountCouponController.consumeOneCoupon)
     .put('/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.updateDiscountCoupon)

@@ -31,6 +31,7 @@ productOrderRouter
   .post('/', productOrderController.createProductOrder)
   .post('/fill-order/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN",]), productOrderController.fillProductOrder)
   .post("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.updateProductOrder )
-  .delete("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN"]),productOrderController.deleteProductOrder);
+  .delete("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN"]),productOrderController.deleteProductOrder)
+  .get("/ordersByBranch/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER"]), productOrderController.getProductOrderByBranch);
 
 export default productOrderRouter;
