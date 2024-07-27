@@ -33,10 +33,23 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
     }
 
     async getPaidProductOrders(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.ProductOrderModel.find({payment_status:'approved'}).sort({ createdAt: -1 })
+        return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: false }).sort({ createdAt: -1 })
 
     }
 
+    async getPaidAndSuplyToPointPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+        return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: true, route_status: false, }).sort({ createdAt: -1 })
+
+    }
+
+    async getAssignedPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+        return await this.ProductOrderModel.find({ payment_status: 'approved', 'route_detail.route_status': 'assigned', storeHouseStatus: true, route_status: false }).sort({ createdAt: -1 })
+
+    }
+    async getDeliveriesPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+        return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: true, route_status: true, deliveryStatus: false }).sort({ createdAt: -1 })
+
+    }
 
     async ResumeProductOrders(): Promise<ProductOrderResume> {
 
@@ -56,9 +69,7 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
         const numDay = salesDay.length;
         const totalSumDay = salesDay.reduce((sum, item) => sum + item.total, 0);
         const SalesMoneyDayMP = salesDay.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount)
-        const totalPayMoneyDayMP = SalesMoneyDayMP.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-        const commissionPayed = totalSumMoth - totalPayMoneyMonthMP 
-
+        
 
         // Obtener el inicio y el fin del mes actual
         const startOfMonth = moment().startOf('month').toDate();
@@ -78,10 +89,19 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
 
         const SalesMoneyMonthMP = salesMonth.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount)
         const totalPayMoneyMonthMP = SalesMoneyMonthMP.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-        const commissionPayedMonth = totalSumMoth - totalPayMoneyMonthMP 
-        
+        const commissionPayedMonth = totalSumMoth - totalPayMoneyMonthMP
 
-        return { ordersDay: numDay, ordersMonth: numMonth, cashDay: totalSumDay, cashMonth: totalSumMoth, MPTotalPaymentsMonth: totalPayMoneyMonthMP, commissionPayedMonth:commissionPayedMonth };
+
+
+
+        return {
+            ordersDay: numDay,
+            ordersMonth: numMonth, 
+            cashDay: totalSumDay, 
+            cashMonth: totalSumMoth, 
+            MPTotalPaymentsMonth: totalPayMoneyMonthMP, 
+            commissionPayedMonth: commissionPayedMonth
+        };
 
 
     }

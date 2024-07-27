@@ -23,3 +23,9 @@ let data = prefix + '-' + code
 return data.toString()
 
 }
+export const RandomCodeShipping = () => Generator.generate({
+    length      : 4,
+    numbers     : true,
+    lowercase   : true,
+    uppercase   : true
+})

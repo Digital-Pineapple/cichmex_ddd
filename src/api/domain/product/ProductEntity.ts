@@ -54,8 +54,10 @@ export interface ProductImage  {
     storeHouseStatus?:boolean;
     supply_detail: ProductOrderSupply; 
     route_status?: boolean;
+    route_detail?:PORouteDetail
     point_pickup_status?: boolean;
-    deliveryStatus: boolean;
+    deliveryStatus?: boolean;
+    verification?: POVerificationDetail;
     status?:boolean;
     paymentType?: string;
     download_ticket?:string;
@@ -92,3 +94,17 @@ export interface ProductImage  {
     date: string,
 
   }
+  export interface PORouteDetail{
+    user: UserEntity,
+    route_status?: string,
+    deliveryDate?: string
+  }
+  export interface POVerificationDetail{
+      verification_code   ?: string,
+      verification_status ?: boolean,
+      verification_time   ?: string,
+      signature           ?: string,
+      photo_proof         ?: string,
+      notes               ?: string,
+  }
+

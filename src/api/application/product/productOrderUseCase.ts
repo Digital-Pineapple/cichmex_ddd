@@ -1,5 +1,6 @@
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
 import { InfoBranchOrder } from "../../../shared/domain/PopulateInterfaces";
+import { MomentService } from "../../../shared/infrastructure/moment/MomentService";
 import { RandomCodeId } from "../../../shared/infrastructure/validation/Utils";
 import {  ProductOrderEntity, ProductOrderResume } from "../../domain/product/ProductEntity";
 import { ProductOrderRepository } from "../../domain/product/ProductOrderRepository";
@@ -27,6 +28,23 @@ export class ProductOrderUseCase {
     const response =  await this.productOrderRepository.getPaidProductOrders()
     return response
   }
+  public async POGetAssigned(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+    const response =  await this.productOrderRepository.getAssignedPO()
+    return response
+  }
+  public async POPaidAndSupplyToPoint(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+    const response =  await this.productOrderRepository.getPaidAndSuplyToPointPO()
+    return response
+  }
+  public async PODeliveries(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+    const response =  await this.productOrderRepository.getDeliveriesPO()
+    return response
+  }
+
+  public async POPickedUp(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+    const response =  await this.productOrderRepository.getPaidAndSuplyToPointPO()
+    return response
+  }
   public async ProductOrdersByUser( _id: string): Promise<ProductOrderEntity[] | ErrorHandler| null > {
     const response =  await this.productOrderRepository.getProductOrdersByUser(_id, InfoBranchOrder)
     return response
@@ -49,8 +67,10 @@ export class ProductOrderUseCase {
     _id: string,
     updated: any
   ): Promise<ProductOrderEntity> {
+    console.log(updated.supply_detail,'dfvbjvhbj');
     
-    return await this.productOrderRepository.updateOne(_id, updated);
+    
+    return await this.productOrderRepository.updateOne(_id, {storeHouseStatus: updated.storeHouseStatus, supply_detail:updated.supply_detail});
     
   }
   

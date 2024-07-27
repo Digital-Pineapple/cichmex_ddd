@@ -68,6 +68,7 @@ export const checkTypeUserAuth = (type_user: string | string[]) => async (req: R
         let id = userData._id.toHexString()
         
         req.user= {...userData, id:id}
+        
         next();
     } catch (error) {
         next(error); // Pasar el error original para una mejor depuración
