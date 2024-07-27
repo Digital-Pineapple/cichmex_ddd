@@ -38,6 +38,7 @@ export class DiscountCouponController extends ResponseData {
     
         try {
             let response: any | null = await this.discountCouponUseCase.findOneDiscountCoupon(code);
+                        
     
             if (response instanceof ErrorHandler) {
                 return this.invoke(response, 400, res, 'Error al encontrar el cupón', next);
@@ -50,13 +51,16 @@ export class DiscountCouponController extends ResponseData {
             }
 
             if(response.fixed_amount) {
+                
                 if(cart_amount > response.min_cart_amount) {
                     response = {
                         total: cart_amount - response.fixed_amount,
                         discount_porcent: 0,
                         discount_amount: response.fixed_amount                        
                     };
-                    this.invoke(response, 200, res, '', next);
+                    console.log(response, "xxx");
+                     this.invoke(response, 200, res, '', next);
+                     return ;
                 }else{
                     return new ErrorHandler(`se requiere un monto de carrito arriba de ${response.min_cart_amount}`, 403);
                 }
@@ -68,11 +72,12 @@ export class DiscountCouponController extends ResponseData {
                         discount_amount: cart_amount*(response.porcent/100)                      
                     };
                     this.invoke(response, 200, res, '', next);
+                    return ;
                 }else{
                     return new ErrorHandler(`se requiere un monto de carrito arriba de ${response.min_cart_amount} y menor de ${response.max_cart_amount}`, 403);
                 }
             }
-    
+            
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Error al buscar el código', 500));

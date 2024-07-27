@@ -39,6 +39,10 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       type: Number,
       required: false,
     },
+    shipping_cost: {
+      type: Number,
+      required: false,
+    },
     branch: {
       type: mongoose.Types.ObjectId,
       required: false,
