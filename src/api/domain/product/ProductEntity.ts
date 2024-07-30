@@ -48,6 +48,7 @@ export interface ProductImage  {
     discount?: number;
     subTotal?: number;
     total?: number;
+    shipping_cost?: number;
     branch?: BranchOfficeEntity;
     deliveryLocation?:ILocation;
     storeHouseStatus?:boolean;

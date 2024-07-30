@@ -262,6 +262,9 @@ export class PaymentController extends ResponseData {
                     payment_status: payment?.status,
                     system:"CICHMEX"
                 });
+
+                console.log(infoPayment.shipping_cost);
+                
     
                 if (!(createPayment instanceof ErrorHandler)) {
                     const values1: any = {
@@ -272,6 +275,7 @@ export class PaymentController extends ResponseData {
                         subTotal: infoPayment.subtotal,
                         total: infoPayment.formData.transaction_amount,
                         user_id: user.user_id,
+                        shipping_cost: infoPayment.shipping_cost,
                         paymentType: infoPayment.paymentType,
                         payment_status: payment?.status,
                         download_ticket: payment?.transaction_details?.external_resource_url,
