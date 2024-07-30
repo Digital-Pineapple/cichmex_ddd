@@ -83,11 +83,18 @@ export interface ProductImage  {
   export interface ProductOrderResume {
     ordersDay ?: number
     ordersMonth?: number
+    ordersYear?: number,
     cashDay ?: number,
     cashMonth ?: number,
-    MPTotalPaymentsMonth ?: number,
-    commissionPayedMonth?: number,
+    cashYear?: number,
+    recivedCashDay?: number,
+    recivedCashMonth?: number,
+    recivedCashYear?: number,
     commissionPayedDay?: number,
+    commissionPayedMonth?: number,
+    commissionPayedYear?: number
+    salesDayByHour?: object
+
   }
   export interface ProductOrderSupply{
     user: UserEntity,

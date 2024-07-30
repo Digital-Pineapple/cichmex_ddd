@@ -1,3 +1,4 @@
+import { model } from 'mongoose';
 import BranchOfficeModel from '../../api/infrastructure/models/BranchOffices/BranchOfficeModel';
 import CategoryModel from '../../api/infrastructure/models/CategoryModel';
 import MembershipBenefitsModel from '../../api/infrastructure/models/Memberships/MembershipBenefitsModel';
@@ -148,5 +149,9 @@ export const InfoPayment = {
     select: ["MP_info"],
 }
 
-
+export const PopulateInfoUser = {
+    path: 'user_id',
+    select: ["fullname"],
+    model:UserModel
+}
 

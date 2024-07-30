@@ -1,5 +1,5 @@
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
-import { InfoBranchOrder } from "../../../shared/domain/PopulateInterfaces";
+import { InfoBranchOrder, PopulateInfoUser } from "../../../shared/domain/PopulateInterfaces";
 import { MomentService } from "../../../shared/infrastructure/moment/MomentService";
 import { RandomCodeId } from "../../../shared/infrastructure/validation/Utils";
 import {  ProductOrderEntity, ProductOrderResume } from "../../domain/product/ProductEntity";
@@ -15,9 +15,13 @@ export class ProductOrderUseCase {
   public async getProductOrdersResume(): Promise<ProductOrderResume> {
     return await this.productOrderRepository.ResumeProductOrders()
   }
+  public async getOnePO(body:any): Promise<ProductOrderEntity> {
+    
+    return await this.productOrderRepository.findOneItem({...body})
+  }
 
   public async getOneProductOrder( _id: string): Promise<ProductOrderEntity | ErrorHandler| null > {
-    const response =  await this.productOrderRepository.findById(_id, InfoBranchOrder)
+    const response =  await this.productOrderRepository.findById(_id, InfoBranchOrder, PopulateInfoUser)
     return response
   }
   public async ProductOrdersByBranch( _id: string): Promise<ProductOrderEntity[] | ErrorHandler| null > {
@@ -67,7 +71,6 @@ export class ProductOrderUseCase {
     _id: string,
     updated: any
   ): Promise<ProductOrderEntity> {
-    console.log(updated.supply_detail,'dfvbjvhbj');
     
     
     return await this.productOrderRepository.updateOne(_id, {storeHouseStatus: updated.storeHouseStatus, supply_detail:updated.supply_detail});

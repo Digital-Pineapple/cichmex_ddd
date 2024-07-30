@@ -3,9 +3,6 @@ import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
-import { ProductOrderEntity } from '../../../domain/product/ProductEntity';
-import moment, { ISO_8601 } from 'moment';
-import router from '../../../../shared/infrastructure/routes/Router';
 import { RandomCodeShipping } from '../../../../shared/infrastructure/validation/Utils';
 
 export class ProductOrderController extends ResponseData {
@@ -30,9 +27,12 @@ export class ProductOrderController extends ResponseData {
     this.AssignRoute = this.AssignRoute.bind(this);
     this.getAssignedPO = this.getAssignedPO.bind(this);
     this.verifyAndStartRoute = this.verifyAndStartRoute.bind(this);
-    this.getDeliveries  = this.getDeliveries.bind(this);
+    this.getDeliveries = this.getDeliveries.bind(this);
     this.getProductOrderByBranch = this.getProductOrderByBranch.bind(this);
-
+    this.verifyQr = this.verifyQr.bind(this);
+    this.verifyQrToPoint  = this.verifyQrToPoint.bind(this);
+    this.endShippingOrder = this.endShippingOrder.bind(this);
+    this.endShippingOrdertoPoint = this.endShippingOrdertoPoint.bind(this);
   }
 
   public async getAllProductOrders(req: Request, res: Response, next: NextFunction) {
@@ -50,7 +50,7 @@ export class ProductOrderController extends ResponseData {
     try {
       const response = await this.productOrderUseCase.ProductOrdersPaid()
       console.log(response);
-      
+
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
@@ -71,7 +71,7 @@ export class ProductOrderController extends ResponseData {
     try {
       const response = await this.productOrderUseCase.POPaidAndSupplyToPoint()
       console.log(response);
-      
+
       const filteredResponse = response?.filter((item: any) => item.deliveryLocation && item.deliveryLocation);
       this.invoke(filteredResponse, 200, res, "", next);
     } catch (error) {
@@ -129,7 +129,7 @@ export class ProductOrderController extends ResponseData {
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       console.log(error);
-      
+
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
@@ -144,6 +144,52 @@ export class ProductOrderController extends ResponseData {
       this.invoke(response, 200, res, "Comenzo el envio exitosamente", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+
+  public async verifyQr(req: Request, res: Response, next: NextFunction) {
+    const { order_id, user_id, v_code, branch_id } = req.body
+    
+
+    const date = new Date()
+
+    try {
+      const {verification, _id}: any | null = await this.productOrderUseCase.getOnePO({ order_id: order_id, user_id: user_id})
+
+     
+      if (verification.verification_code !== v_code) {
+       return   next(new ErrorHandler("El código no coincide", 500));
+     }
+     if (branch_id) {
+      const update = await this.productOrderUseCase.updateProductOrder(_id,{ point_pickup_status:true,'route_detail.route_status':'point_puckup'  } )
+      this.invoke(update, 200, res, "Paquete entregado punto de recolección", next);
+     }
+     else{
+       const update = await this.productOrderUseCase.updateProductOrder(_id, { verification: { verification_status: true, verification_time: date, verification_code: v_code } })
+       this.invoke(update, 200, res, "Código válido", next);
+     }
+    } catch (error) {
+
+      next(new ErrorHandler("Error en el codigo", 500));
+    }
+  }
+
+  public async verifyQrToPoint(req: Request, res: Response, next: NextFunction) {
+    const { order_id, user_id, branch_id, v_code } = req.body
+
+    try {
+      const {verification, _id}: any | null = await this.productOrderUseCase.getOnePO({ order_id: order_id, user_id: user_id})
+
+     
+      if (verification.verification_code !== v_code) {
+       return   next(new ErrorHandler("El código no coincide", 500));
+     }
+     if (branch_id) {
+      const update = await this.productOrderUseCase.updateProductOrder(_id,{ point_pickup_status:true,'route_detail.route_status':'point_puckup'  } )
+      this.invoke(update, 200, res, "Paquete entregado punto de recolección", next);
+     }
+    } catch (error) {
+      next(new ErrorHandler("Error en el codigo", 500));
     }
   }
 
@@ -176,6 +222,27 @@ export class ProductOrderController extends ResponseData {
       this.invoke(response, 201, res, 'Creado con éxito', next);
     } catch (error) {
       next(new ErrorHandler('Hubo un error al actualizar', 500));
+    }
+
+  }
+  public async endShippingOrder(req: Request, res: Response, next: NextFunction) {
+    const { _id, notes } = req.body;
+    try {
+      const response = await this.productOrderUseCase.updateProductOrder(_id,{deliveryStatus:true, 'verification.notes': notes})
+      this.invoke(response, 201, res, 'Se entregó con éxito', next);
+    } catch (error) {
+      next(new ErrorHandler('Hubo un error al entregar', 500));
+    }
+
+  }
+
+  public async endShippingOrdertoPoint(req: Request, res: Response, next: NextFunction) {
+    const { _id, notes } = req.body;
+    try {
+      const response = await this.productOrderUseCase.updateProductOrder(_id,{deliveryStatus:true, 'verification.notes': notes})
+      this.invoke(response, 201, res, 'Se entregó con éxito', next);
+    } catch (error) {
+      next(new ErrorHandler('Hubo un error al entregar', 500));
     }
 
   }
