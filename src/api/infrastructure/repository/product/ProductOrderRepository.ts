@@ -65,11 +65,6 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
             }
         };
 
-        const salesDay: ProductOrderEntity[] = await this.MODEL.find(queryDay).populate(InfoPayment);
-        const numDay = salesDay.length;
-        const totalSumDay = salesDay.reduce((sum, item) => sum + item.total, 0);
-        const SalesMoneyDayMP = salesDay.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount)
-        
 
         // Obtener el inicio y el fin del mes actual
         const startOfMonth = moment().startOf('month').toDate();
@@ -82,25 +77,69 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
                 $lt: endOfMonth
             }
         };
+        const startOfYear = moment().startOf('year').toDate();
+        const endOfYear = moment().endOf('year').toDate();
+
+        const queryYear = {
+            payment_status: "approved",
+            createdAt: {
+                $gte: startOfYear,
+                $lt: endOfYear
+            }
+        };
+
+
+        const salesDay: ProductOrderEntity[] = await this.MODEL.find(queryDay).populate(InfoPayment);
+
+        const hours = Array.from({ length: 24 }, (_, i) => i);
+        const salesDayByHour = hours.map(hour => ({
+            hour,
+            sales: salesDay.filter(sale => new Date(sale.createdAt).getUTCHours() === hour).length
+        }));
+
+        const numDay = salesDay.length;
+        const totalSumDay = salesDay.reduce((sum, item) => sum + item.total, 0);
+        const SalesMoneyDayMP = salesDay.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount)
+        const totalPayMoneyDayMP = SalesMoneyDayMP.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+        const commissionPayedDay = totalSumDay - totalPayMoneyDayMP
 
         const salesMonth: ProductOrderEntity[] = await this.MODEL.find(queryMonth).populate(InfoPayment);
         const numMonth = salesMonth.length;
         const totalSumMoth = salesMonth.reduce((sum, item) => sum + item.total, 0);
-
         const SalesMoneyMonthMP = salesMonth.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount)
         const totalPayMoneyMonthMP = SalesMoneyMonthMP.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
         const commissionPayedMonth = totalSumMoth - totalPayMoneyMonthMP
 
 
+        const salesYear: ProductOrderEntity[] = await this.MODEL.find(queryYear).populate(InfoPayment);
+        const numYear = salesYear.length;
+        const totalSumYear = salesYear.reduce((sum, item) => sum + item.total, 0);
+        const SalesMoneyYearMP = salesYear.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount)
+        const totalPayMoneyYearMP = SalesMoneyYearMP.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+        const commissionPayedYear = totalSumYear - totalPayMoneyYearMP
+
+        function roundToTwo(num: number) {
+            return Math.round(num * 100) / 100;
+        }
 
 
         return {
             ordersDay: numDay,
-            ordersMonth: numMonth, 
-            cashDay: totalSumDay, 
-            cashMonth: totalSumMoth, 
-            MPTotalPaymentsMonth: totalPayMoneyMonthMP, 
-            commissionPayedMonth: commissionPayedMonth
+            ordersMonth: numMonth,
+            ordersYear: numYear,
+
+            cashDay: totalSumDay,
+            cashMonth: totalSumMoth,
+            cashYear: totalSumYear,
+
+            recivedCashDay: roundToTwo(totalPayMoneyDayMP),
+            recivedCashMonth: roundToTwo(totalPayMoneyMonthMP),
+            recivedCashYear: roundToTwo(totalPayMoneyYearMP),
+
+            commissionPayedDay: roundToTwo(commissionPayedDay),
+            commissionPayedMonth: roundToTwo(commissionPayedMonth),
+            commissionPayedYear: roundToTwo(commissionPayedYear),
+            salesDayByHour: salesDayByHour
         };
 
 
