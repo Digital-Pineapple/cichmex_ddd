@@ -28,7 +28,7 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
     }
 
     async getProductOrdersByBranch(_id: string): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.ProductOrderModel.find({ branch: _id }).sort({ createdAt: -1 })
+        return await this.ProductOrderModel.find({ branch: _id}).sort({ createdAt: -1 })
 
     }
 
@@ -88,8 +88,26 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
             }
         };
 
+        const startOfWeek = moment().startOf('week').toDate();
+        const endOfWeek = moment().endOf('week').toDate();
+
+        const queryWeek = {
+            payment_status: "approved",
+            createdAt: {
+                $gte: startOfWeek,
+                $lt: endOfWeek
+            }
+        };
 
         const salesDay: ProductOrderEntity[] = await this.MODEL.find(queryDay).populate(InfoPayment);
+        
+        const salesWeek: ProductOrderEntity[] = await this.MODEL.find(queryWeek).populate(InfoPayment);
+        
+        const salesMonth: ProductOrderEntity[] = await this.MODEL.find(queryMonth).populate(InfoPayment);
+    
+        const salesYear: ProductOrderEntity[] = await this.MODEL.find(queryYear).populate(InfoPayment);
+
+        const lastTenSales: any = await this.MODEL.find({payment_status:'approved'}).populate(InfoPayment).sort({createdAt:-1}).limit(10).exec()
 
         const hours = Array.from({ length: 24 }, (_, i) => i);
         const salesDayByHour = hours.map(hour => ({
@@ -103,7 +121,12 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
         const totalPayMoneyDayMP = SalesMoneyDayMP.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
         const commissionPayedDay = totalSumDay - totalPayMoneyDayMP
 
-        const salesMonth: ProductOrderEntity[] = await this.MODEL.find(queryMonth).populate(InfoPayment);
+        const numWeek = salesWeek.length;
+        const totalSumWeek = salesWeek.reduce((sum, item) => sum + item.total, 0);
+        const SalesMoneyWeekMP = salesWeek.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount)
+        const totalPayMoneyWeekMP = SalesMoneyWeekMP.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+        const commissionPayedWeek = totalSumWeek - totalPayMoneyWeekMP
+
         const numMonth = salesMonth.length;
         const totalSumMoth = salesMonth.reduce((sum, item) => sum + item.total, 0);
         const SalesMoneyMonthMP = salesMonth.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount)
@@ -111,12 +134,26 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
         const commissionPayedMonth = totalSumMoth - totalPayMoneyMonthMP
 
 
-        const salesYear: ProductOrderEntity[] = await this.MODEL.find(queryYear).populate(InfoPayment);
         const numYear = salesYear.length;
         const totalSumYear = salesYear.reduce((sum, item) => sum + item.total, 0);
         const SalesMoneyYearMP = salesYear.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount)
         const totalPayMoneyYearMP = SalesMoneyYearMP.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
         const commissionPayedYear = totalSumYear - totalPayMoneyYearMP
+
+        const topProductsMonth = await this.MODEL.aggregate([
+            { $unwind: '$products' }, // Descomponemos el array de productos
+            { 
+                $group: {
+                  _id: "$products.item._id",
+                  totalQuantity: { $sum: "$products.quantity" },
+                  productName: { $first: "$products.item.name" }
+                }
+              },
+            { $sort: { totalQuantity: -1 } }, // Ordenamos por cantidad total en orden descendente
+            { $limit: 10 } // Seleccionamos los 10 primeros
+          ]);
+
+        
 
         function roundToTwo(num: number) {
             return Math.round(num * 100) / 100;
@@ -125,21 +162,27 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
 
         return {
             ordersDay: numDay,
+            ordersWeek:numWeek,
             ordersMonth: numMonth,
             ordersYear: numYear,
 
             cashDay: totalSumDay,
+            cashWeek : totalSumWeek,
             cashMonth: totalSumMoth,
             cashYear: totalSumYear,
 
             recivedCashDay: roundToTwo(totalPayMoneyDayMP),
+            recivedCashWeek: roundToTwo(totalPayMoneyWeekMP),
             recivedCashMonth: roundToTwo(totalPayMoneyMonthMP),
             recivedCashYear: roundToTwo(totalPayMoneyYearMP),
 
             commissionPayedDay: roundToTwo(commissionPayedDay),
+            commissionPayedWeek: roundToTwo(commissionPayedWeek),
             commissionPayedMonth: roundToTwo(commissionPayedMonth),
             commissionPayedYear: roundToTwo(commissionPayedYear),
-            salesDayByHour: salesDayByHour
+            salesDayByHour: salesDayByHour,
+            topProductsMonth: topProductsMonth,
+            lastTen: lastTenSales
         };
 
 

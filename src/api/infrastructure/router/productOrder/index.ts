@@ -30,7 +30,7 @@ productOrderRouter
   .get("/paid",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.paidProductOrders)
   .get("/paidAndSupplyToPoint",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.paidAndSupplyPOToPoint)
   .get("/paidAndSupply",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.paidAndSupplyPO)
-  .get('/resume', productOrderController.gerProductOrderResume)
+  .get('/resume',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.gerProductOrderResume)
   .get("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CUSTOMER"]), productOrderController.getOneProductOrder)
   .get("/user/resume",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CUSTOMER"]), productOrderController.getOneProductOrderByUser)
   .post('/', productOrderController.createProductOrder)

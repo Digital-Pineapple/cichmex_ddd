@@ -81,19 +81,25 @@ export interface ProductImage  {
   }
 
   export interface ProductOrderResume {
-    ordersDay ?: number
+    ordersDay ?: number,
+    ordersWeek?: number,
     ordersMonth?: number
     ordersYear?: number,
     cashDay ?: number,
+    cashWeek ?: number,
     cashMonth ?: number,
     cashYear?: number,
     recivedCashDay?: number,
+    recivedCashWeek?: number,
     recivedCashMonth?: number,
     recivedCashYear?: number,
     commissionPayedDay?: number,
+    commissionPayedWeek?: number,
     commissionPayedMonth?: number,
     commissionPayedYear?: number
-    salesDayByHour?: object
+    salesDayByHour?: object,
+    topProductsMonth?: any,
+    lastTen?: any
 
   }
   export interface ProductOrderSupply{
