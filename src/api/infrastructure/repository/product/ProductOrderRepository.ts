@@ -28,7 +28,7 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
     }
 
     async getProductOrdersByBranch(_id: string): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.ProductOrderModel.find({ branch: _id }).sort({ createdAt: -1 })
+        return await this.ProductOrderModel.find({ branch: _id, payment_status: 'approved' }).sort({ createdAt: -1 })
 
     }
 
