@@ -21,6 +21,7 @@ export class StockStoreHouseController extends ResponseData {
     ) {
         super();
         this.getAllStock = this.getAllStock.bind(this);
+        this.getAllInputs = this.getAllInputs.bind(this)
         this.getAvailableProducts = this.getAvailableProducts.bind(this)
         this.createStock = this.createStock.bind(this);
         this.updateStock = this.updateStock.bind(this);
@@ -34,19 +35,26 @@ export class StockStoreHouseController extends ResponseData {
     }
 
     public async getAllStock(req: Request, res: Response, next: NextFunction) {
-        const {id} = req.params
-        
-        if (id === '662fe69b9ba1d8b3cfcd3634') {
             try {
-                const response = await this.stockStoreHouseUseCase.getStock(id)            
+                const response = await this.stockStoreHouseUseCase.getStock('662fe69b9ba1d8b3cfcd3634')            
                 this.invoke(response, 200, res, '', next);
             } catch (error) {
                 next(new ErrorHandler('Hubo un error al consultar la información', 500));
             }
-        } else {
+        
             next(new ErrorHandler('No tiene los permisos necesarios', 500));
-        }
     }
+
+    public async getAllInputs(req: Request, res: Response, next: NextFunction) {
+        try {
+            const response = await this.stockSHinputUseCase.getInputs()   
+               
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+}
 
     public async getAvailableStock(req: Request, res: Response, next: NextFunction) {
             const response = await this.stockStoreHouseUseCase.getStock("662fe69b9ba1d8b3cfcd3634")            

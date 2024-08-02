@@ -103,6 +103,7 @@ export class ProductOrderController extends ResponseData {
   public async gerProductOrderResume(req: Request, res: Response, next: NextFunction) {
     try {
       const response = await this.productOrderUseCase.getProductOrdersResume()
+      
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
@@ -208,6 +209,7 @@ export class ProductOrderController extends ResponseData {
     const { id } = req.params;
     try {
       const response = await this.productOrderUseCase.ProductOrdersByBranch(id)
+   
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));

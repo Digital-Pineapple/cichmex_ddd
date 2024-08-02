@@ -10,9 +10,6 @@ export interface StockStoreHouseEntity  {
   StoreHouse_id : storeHouseEntity;
   product_id: ProductEntity;
   stock: number;
-  inputs?: SHProductInput[];
-  outputs?: SHProductOutput[];
-  returns?:SHProductReturn[];
   status?: boolean;
   createdAt: NativeDate;
   updatedAt: NativeDate;

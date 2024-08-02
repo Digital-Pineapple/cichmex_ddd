@@ -34,7 +34,8 @@ const userValidations = new UserValidations();
 
 stockStoreHouseRouter
 
-    .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.getAllStock)
+    .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.getAllStock)
+    .get('/all-Inputs',userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.getAllInputs)
     .get('/online/:id', stockStoreHouseController.getAllStock)
     .get('/available/ok', stockStoreHouseController.getAvailableStock)
     .get('/available/products', stockStoreHouseController.getAvailableProducts)

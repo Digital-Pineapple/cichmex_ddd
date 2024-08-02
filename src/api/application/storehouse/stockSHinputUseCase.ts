@@ -11,6 +11,9 @@ export class StockSHinputUseCase {
     public async getAllInputs(): Promise<SHProductInput[]> {
         return this.stockSHInputRepository.findAll()
     }
+    public async getInputs(): Promise<SHProductInput[]> {
+        return this.stockSHInputRepository.getAllSHInputs()
+    }
     
     public async createInput(body:object): Promise<SHProductInput> {
         return this.stockSHInputRepository.createOne({...body})
