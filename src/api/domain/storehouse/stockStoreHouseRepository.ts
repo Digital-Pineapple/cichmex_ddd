@@ -1,5 +1,5 @@
 import { MongoRepository } from "../../infrastructure/repository/MongoRepository"
-import { SHProductInput } from "./stockStoreHouseEntity"
+import { SHProductInput, SHProductOutput } from "./stockStoreHouseEntity"
 
 export interface StockStoreHouseRepository extends MongoRepository {
 
@@ -23,6 +23,8 @@ export interface StockSHOutputRepository extends MongoRepository {
     findStockByStoreHouse(id: any, populateOne?: any, populateTwo?: any): Promise<any>
 
     findStockByStoreHouseNoDetail(id: any, populateOne?: any, populateTwo?: any): Promise<any>
+
+    getAllSHOutputs(): Promise<SHProductOutput[]>
 
 }
 export interface StockSHReturnRepository extends MongoRepository {

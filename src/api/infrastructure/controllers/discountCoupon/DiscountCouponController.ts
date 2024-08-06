@@ -40,8 +40,6 @@ export class DiscountCouponController extends ResponseData {
     
         try {
             let response: any | null = await this.discountCouponUseCase.findOneDiscountCoupon(code);
-            console.log("resxd:", response);   
-
     
             if (response instanceof ErrorHandler) {
                 return this.invoke(response, 400, res, 'Error al encontrar el cupón', next);

@@ -11,6 +11,10 @@ export class StockSHoutputUseCase {
     public async createOutput(body:object): Promise<SHProductOutput> {
         return this.stockOutputSHRepository.createOne({...body})
     }
+
+    public async startGetAllOutputs(): Promise<SHProductOutput[]> {
+        return this.stockOutputSHRepository.getAllSHOutputs()
+    }
     
     
 

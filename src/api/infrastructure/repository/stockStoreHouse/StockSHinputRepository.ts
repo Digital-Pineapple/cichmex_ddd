@@ -41,17 +41,20 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
         }
       },
       { $unwind: "$product" },
+
       {
         $project: {
           _id: 0,  // Opcional: Excluye el _id del resultado
           product_name: "$product.name", // Cambiar 'producto' a 'product'
+          tag:"$product.tag",
+          folio:"$folio",
           quantity: "$quantity",
           newQuantity: "$newQuantity",
           nowStock: "$SHStock.stock",
           responsible: "$responsible.fullname",
           date: {
             $dateToString: {
-              format: "%Y-%m-%d %H:%M:%S.%L",
+              format: "%Y-%m-%d %H:%M:%S",
               date: "$createdAt",
               timezone: "America/Mexico_City"  // Convierte a la zona horaria de Ciudad de México
             }

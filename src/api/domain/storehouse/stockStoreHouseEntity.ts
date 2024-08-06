@@ -16,12 +16,16 @@ export interface StockStoreHouseEntity  {
 }
 
 export interface SHProductInput {
+    folio: string,
     SHStock_id ?: string,
     quantity: number,
     newQuantity: number
-    createdAt: NativeDate;
     status?:boolean;
     responsible?:  UserEntity,
+    user_received?: string,
+    user_delivery?: string,
+    product_detail:ProductEntity,
+    createdAt: NativeDate;
   }
   export interface SHProductOutput {
     SHStock_id ?: string,
@@ -35,7 +39,7 @@ export interface SHProductInput {
     SHStock_id ?: string,
     quantity: number,
     newQuantity: number,
-    responsible_id: UserEntity,
+    responsible: UserEntity,
     createdAt: NativeDate;
     status?:boolean;
   }
