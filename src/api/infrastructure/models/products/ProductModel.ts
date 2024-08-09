@@ -60,6 +60,10 @@ const ProductSchema = new Schema<ProductEntity>(
      product_key:{
       type:String,
       required:true
+     },
+     sku:{
+      type: String,
+      required: false
      }
 
   },

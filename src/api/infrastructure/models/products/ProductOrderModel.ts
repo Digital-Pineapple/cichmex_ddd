@@ -92,6 +92,14 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
     point_pickup_status: {
       type: Boolean,
       required: false,
+    },
+    voucher_img:{
+      type: String,
+      required:false
+    },
+    verifyVoucher:{
+      type: Object,
+      required:false
     }
   },
   {

@@ -192,7 +192,7 @@ export class PaymentController extends ResponseData {
                         next(new ErrorHandler(`Error al actualizar el pago: ${error}`, 500));
                     }
                 } else {
-                    next(new ErrorHandler('No se aprobó el pago', 500));
+                            next(new ErrorHandler('No se aprobó el pago', 500));
                 }
 
             } catch (error) {

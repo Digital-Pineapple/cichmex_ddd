@@ -20,6 +20,7 @@ export interface ProductEntity {
   weight ?: string;
   video ?: string;
   product_key : string;
+  sku: string;
   createdAt        :   NativeDate;
   updatedAt        :   NativeDate;
 }
@@ -61,6 +62,8 @@ export interface ProductImage  {
     status?:boolean;
     paymentType?: string;
     download_ticket?:string;
+    voucher_img?:string;
+    verifyVoucher?: OrderVerifyVoucher;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;
   }
@@ -106,6 +109,11 @@ export interface ProductImage  {
     user: UserEntity,
     date: string,
 
+  }
+  export interface OrderVerifyVoucher{
+    user: UserEntity,
+    verification_status: boolean,
+    verification_time: string
   }
   export interface PORouteDetail{
     user: UserEntity,
