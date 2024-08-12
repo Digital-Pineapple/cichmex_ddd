@@ -106,7 +106,6 @@ export class CategoryController extends ResponseData {
     public async updateCategory(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { name } = req.body;
-        console.log(name, 'category');
 
         try {
             if (req.file) {

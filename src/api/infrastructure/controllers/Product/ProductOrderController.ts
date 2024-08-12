@@ -49,8 +49,6 @@ export class ProductOrderController extends ResponseData {
 
     try {
       const response = await this.productOrderUseCase.ProductOrdersPaid()
-      console.log(response);
-
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
@@ -59,7 +57,7 @@ export class ProductOrderController extends ResponseData {
   public async paidAndSupplyPOToPoint(req: Request, res: Response, next: NextFunction) {
 
     try {
-      const response = await this.productOrderUseCase.POPaidAndSupplyToPoint()
+      const response: any = await this.productOrderUseCase.POPaidAndSupplyToPoint()
       const filteredResponse = response?.filter((item: any) => item.branch && item.branch);
       this.invoke(filteredResponse, 200, res, "", next);
     } catch (error) {
@@ -69,9 +67,7 @@ export class ProductOrderController extends ResponseData {
 
   public async paidAndSupplyPO(req: Request, res: Response, next: NextFunction) {
     try {
-      const response = await this.productOrderUseCase.POPaidAndSupplyToPoint()
-      console.log(response);
-
+      const response: any = await this.productOrderUseCase.POPaidAndSupplyToPoint()
       const filteredResponse = response?.filter((item: any) => item.deliveryLocation && item.deliveryLocation);
       this.invoke(filteredResponse, 200, res, "", next);
     } catch (error) {

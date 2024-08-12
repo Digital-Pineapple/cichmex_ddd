@@ -86,17 +86,18 @@ export class SubCategoryController extends ResponseData {
 
     public async updateSubCategory(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { name, category_id } = req.body;
+        const { name, category } = req.body;
+        
         try {
             if (req.file) {
                 const pathObject = `${this.path}/${id}/${name}`;
                 const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
                 if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-                const response = await this.subCategoryUseCase.updateOneSubCategory(id, { name, subCategory_image: pathObject, category_id });
+                const response = await this.subCategoryUseCase.updateOneSubCategory(id, { name:name, subCategory_image: pathObject, category_id:category });
                 response.subCategory_image = url;
                 this.invoke(response, 201, res, 'La categoría se actualizó con éxito', next);     
             } else {
-                const response = await this.subCategoryUseCase.updateOneSubCategory(id,{name, category_id})
+                const response = await this.subCategoryUseCase.updateOneSubCategory(id,{name:name, category_id: category})
                 this.invoke(response, 201, res, 'La categoría se actualizó con éxito', next);     
             }
 

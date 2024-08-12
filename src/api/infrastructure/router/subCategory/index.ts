@@ -20,9 +20,9 @@ subCategoryRouter
     .get('/', subCategoryController.getAllSubCategories)
     .get('/:id', subCategoryController.getSubCategory)
     .get('/subCategory/:id', subCategoryController.findSubCategoriesByCategory)
-    .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']),subCategoryValidations.subCategoryPhotoValidation, subCategoryController.createSubCategory)
-    .post('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), subCategoryValidations.subCategoryPhotoValidation, subCategoryController.updateSubCategory)
-    .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), subCategoryController.deleteSubCategory)
+    .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),subCategoryValidations.subCategoryPhotoValidation, subCategoryController.createSubCategory)
+    .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), subCategoryValidations.subCategoryPhotoValidation, subCategoryController.updateSubCategory)
+    .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), subCategoryController.deleteSubCategory)
     // .get('/search/search', subCategoryController.searchSubCategory)
 
 

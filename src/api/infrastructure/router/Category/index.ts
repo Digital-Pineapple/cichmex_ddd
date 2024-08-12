@@ -27,10 +27,10 @@ const userValidations = new UserValidations();
 categoryRouter
     .get('/', categoryController.getAllCategories)
     .get('/SC', categoryController.getAllCategoriesAndSC)
-    .get('/:id', userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER","CUSTOMER"]), categoryController.getCategory)
-    .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']),categoryValidations.categoryPhotoValidation, categoryController.createCategory)
-    .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), categoryValidations.categoryPhotoValidation, categoryController.updateCategory)
-    .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), categoryController.deleteCategory)
+    .get('/:id', userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER","CUSTOMER", "ADMIN"]), categoryController.getCategory)
+    .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),categoryValidations.categoryPhotoValidation, categoryController.createCategory)
+    .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), categoryValidations.categoryPhotoValidation, categoryController.updateCategory)
+    .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN"]), categoryController.deleteCategory)
     .get('/search/search', userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER","CUSTOMER"]), categoryController.searchCategory)
     
 

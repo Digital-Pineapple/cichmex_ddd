@@ -41,7 +41,7 @@ userRouter
     .get('/phone/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), userController.onePhone)
     .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "PARTNER", "CUSTOMER"]), userController.getUser)
     .get('/getVerifyEmail/:id', userController.getVerifyEmail)
-    .get('/carrier-driver/all',userValidations.authTypeUserValidation(['SUPER-ADMIN']), userController.getAllCarrierDrivers)
+    .get('/carrier-driver/all',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), userController.getAllCarrierDrivers)
     .post('/send-code', userController.sendCode)
     .put('/validate/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), userController.validateUser)
     .post ('/resend-code/:id', userController.resendCode)

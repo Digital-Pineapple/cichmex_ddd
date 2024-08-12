@@ -13,6 +13,7 @@ import { StockBranchEntity } from '../../../domain/stockBranch/StockBranchEntity
 import { StockStoreHouseEntity } from '../../../domain/storehouse/stockStoreHouseEntity';
 import { Category } from '../../../domain/category/CategoryEntity';
 import { SubCategoryUseCase } from '../../../application/subCategory/SubCategoryUseCase';
+import { RandomCodeId } from '../../../../shared/infrastructure/validation/Utils';
 
 export class ProductController extends ResponseData {
   protected path = "/product";
@@ -156,6 +157,7 @@ export class ProductController extends ResponseData {
     };
     try {
       const slug = createSlug(name);
+      const sku = RandomCodeId('PR')
 
       let response2: any = []
 
@@ -175,7 +177,8 @@ export class ProductController extends ResponseData {
           slug,
           category,
           subCategory,
-          weight
+          weight,
+          sku
 
         );
         if (!(response instanceof ErrorHandler)) {
@@ -228,7 +231,8 @@ export class ProductController extends ResponseData {
           slug,
           category,
           subCategory,
-          weight
+          weight,
+          sku
 
         );
         response2 = response
@@ -237,6 +241,7 @@ export class ProductController extends ResponseData {
       this.invoke(response2, 201, res, 'Producto creado con éxito', next);
 
     } catch (error) {
+      
       next(new ErrorHandler('Hubo un error al crear el producto', 500));
     }
   }

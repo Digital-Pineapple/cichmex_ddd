@@ -16,12 +16,12 @@ const shippingCostController   = new ShippingCostController(shippingCostUseCase)
 const userValidations = new UserValidations();
 
 shippingCostRouter
-    .get('/',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), shippingCostController.getAllShippingCost)
-    .get('/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN"]),  shippingCostController.getOneShippingCost)
+    .get('/',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), shippingCostController.getAllShippingCost)
+    .get('/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),  shippingCostController.getOneShippingCost)
     .get('/find/price',userValidations.authTypeUserValidation(["CUSTOMER", "SUPER-ADMIN"]), shippingCostController.getShippingCostByWeight )
-    .post('/',userValidations.authTypeUserValidation(["SUPER-ADMIN"]),  shippingCostController.creteShippingCost)
-    .put('/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN"]),  shippingCostController.updateShippingCost)
-    .delete('/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN"]),  shippingCostController.deleteShippingCost)
+    .post('/',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),  shippingCostController.creteShippingCost)
+    .put('/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),  shippingCostController.updateShippingCost)
+    .delete('/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),  shippingCostController.deleteShippingCost)
 
     
 

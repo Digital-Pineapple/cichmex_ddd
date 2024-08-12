@@ -42,7 +42,7 @@ stockStoreHouseRouter
     .get('/available/products', stockStoreHouseController.getAvailableProducts)
     .get('/product/entries',userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.getProductsEntries)
     .get('/product/output',userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.getProductsOutputs)
-    .post('/add/multiple-entries', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.createMultipleStock )
+    .post('/add/multiple-entries', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), stockStoreHouseController.createMultipleStock )
 
     .post('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.createStock)
     .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.updateStock)

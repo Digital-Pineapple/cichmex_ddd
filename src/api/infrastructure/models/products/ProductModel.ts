@@ -59,7 +59,7 @@ const ProductSchema = new Schema<ProductEntity>(
      },
      product_key:{
       type:String,
-      required:true
+      required:false
      },
      sku:{
       type: String,
