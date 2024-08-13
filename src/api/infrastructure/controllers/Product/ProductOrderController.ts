@@ -4,6 +4,8 @@ import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
 import { RandomCodeShipping } from '../../../../shared/infrastructure/validation/Utils';
+import { buildPDF } from '../../../../libs/pdfKit';
+import { BranchPopulateConfig, PopulateInfoUser, UserPopulateConfig } from '../../../../shared/domain/PopulateInterfaces';
 
 export class ProductOrderController extends ResponseData {
   protected path = "/productOrder";
@@ -33,6 +35,7 @@ export class ProductOrderController extends ResponseData {
     this.verifyQrToPoint  = this.verifyQrToPoint.bind(this);
     this.endShippingOrder = this.endShippingOrder.bind(this);
     this.endShippingOrdertoPoint = this.endShippingOrdertoPoint.bind(this);
+    this.pdfOrder = this.pdfOrder.bind(this)
   }
 
   public async getAllProductOrders(req: Request, res: Response, next: NextFunction) {
@@ -44,6 +47,33 @@ export class ProductOrderController extends ResponseData {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
+  public async pdfOrder(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    try {
+        const response : any = await this.productOrderUseCase.getOneProductOrder(id);
+        console.log(response);
+        
+        res.writeHead(200, {
+            "Content-Type": "application/pdf",
+            "Content-Disposition": `attachment; filename=order${response.order_id}.pdf`
+        });
+
+        const stream = res;
+
+        buildPDF(
+            response,
+            (data: any) => stream.write(data),
+            () => stream.end()
+        );
+
+    } catch (error) {
+      console.log(error);
+      
+        next(new ErrorHandler("Hubo un error al generar el PDF", 500));
+    }
+}
+
+
 
   public async paidProductOrders(req: Request, res: Response, next: NextFunction) {
 

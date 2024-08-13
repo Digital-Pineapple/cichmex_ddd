@@ -1,8 +1,7 @@
-
 import Moment from 'moment-timezone';
 
 export class MomentService {
-    protected timezone = process.env.TIME_ZONE || '';
+    protected timezone = process.env.TIME_ZONE || 'America/Mexico_City'; // Establece un valor por defecto
 
     addMinutesToDate(minutes: number): Date {
         return Moment.tz(this.timezone).add(minutes, 'minutes').toDate();
@@ -18,10 +17,15 @@ export class MomentService {
         // Compara las fechas usando isAfter
         return expirationDate.isBefore(currentDate);
     }
+
     newDate(): any {
-        const newDate = Moment().format()
-        return newDate
+        const newDate = Moment.tz(this.timezone).format(); // Usar la zona horaria definida
+        return newDate;
     }
 
+    convertUtcToLocal(utcDate: string): string {
+        // Convierte la fecha UTC a la hora local de la Ciudad de México
+        const localDate = Moment.utc(utcDate).tz(this.timezone);
+        return localDate.format('YYYY-MM-DD HH:mm:ss'); // Formatea según lo necesites
+    }
 }
-
