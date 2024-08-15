@@ -8,7 +8,8 @@ import { UserEntity } from "../user/UserEntity";
   MP_info?: object;
   status?:boolean;
   payment_status?: string
-  system?: string
+  system?: string,
+  products?: object,
 }
 
 

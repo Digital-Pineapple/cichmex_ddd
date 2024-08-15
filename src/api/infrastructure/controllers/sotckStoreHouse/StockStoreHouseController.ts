@@ -27,6 +27,7 @@ export class StockStoreHouseController extends ResponseData {
         this.getAvailableProducts = this.getAvailableProducts.bind(this)
         this.createStock = this.createStock.bind(this);
         this.createMultipleStock = this.createMultipleStock.bind(this);
+        this.createMultipleOutputs = this.createMultipleOutputs.bind(this);
         this.updateStock = this.updateStock.bind(this);
         this.addStock = this.addStock.bind(this);
         this.removeStock = this.removeStock.bind(this);
@@ -128,7 +129,6 @@ export class StockStoreHouseController extends ResponseData {
             email: user.email,
             type_user: user.type_user
         };
-        
         const SH_id = '662fe69b9ba1d8b3cfcd3634';
         const code_folio = RandomCodeId('FO');
     
@@ -136,6 +136,7 @@ export class StockStoreHouseController extends ResponseData {
             const operations = products.map(async (item: any) => {
                 const available = await this.stockStoreHouseUseCase.getProductStock(item._id, SH_id);
                 const available_id = available?._id;
+                
     
                 if (!available) {
                     const response = await this.stockStoreHouseUseCase.createStock({ product_id: item._id, StoreHouse_id: SH_id });
@@ -169,6 +170,49 @@ export class StockStoreHouseController extends ResponseData {
     
             await Promise.all(operations);
             this.invoke(code_folio, 200, res, 'Alta de stock exitosa', next);
+        } catch (error) {
+            console.error(error);
+            next(new ErrorHandler('Hubo un error', 500));
+        }
+    }
+
+    public async createMultipleOutputs(req: Request, res: Response, next: NextFunction) {
+        const { user_received, user_delivery, products } = req.body;
+        const user = req.user._doc;
+        const UserInfo = {
+            _id: user._id,
+            fullname: user.fullname,
+            email: user.email,
+            type_user: user.type_user
+        };
+        
+        const SH_id = '662fe69b9ba1d8b3cfcd3634';
+        const code_folio = RandomCodeId('FO');
+    
+        try {
+            const operations = products.map(async (item: any) => {
+                const available = await this.stockStoreHouseUseCase.getProductStock(item._id, SH_id);
+                const available_id = available?._id;
+    
+                if (!available) {
+                    return(new ErrorHandler(`Producto: ${item.name} no disponible`,500))
+                } else {
+                    const newQuantity = available.stock - item.quantity ;
+                    const output = await this.stockSHoutputUseCase.createOutput({
+                        SHStock_id: available?._id,
+                        quantity: item.quantity,
+                        newQuantity: newQuantity,
+                        responsible: UserInfo,
+                        folio: code_folio,
+                        product_detail: item,
+                        user_received:user_received,
+                        user_delivery:user_delivery
+                    });
+                    await this.stockStoreHouseUseCase.updateStock(available_id, { stock: output.newQuantity });
+                }
+            });
+            await Promise.all(operations);
+            this.invoke(code_folio, 200, res, 'Salida exitosa', next);
         } catch (error) {
             console.error(error);
             next(new ErrorHandler('Hubo un error', 500));

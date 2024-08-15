@@ -55,8 +55,7 @@ export class ProductOrderUseCase {
   }
 
   public async createProductOrder(body:any): Promise<ProductOrderEntity | ErrorHandler | null> {
-    const order_id = RandomCodeId('CIC')
-    return await this.productOrderRepository.createOne({...body, order_id})
+    return await this.productOrderRepository.createOne({...body})
   }
 
   public async updateProductOrder(

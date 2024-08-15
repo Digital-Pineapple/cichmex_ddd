@@ -4,6 +4,10 @@ import { SHProductOutput } from '../../../domain/storehouse/stockStoreHouseEntit
 
 
 const StockSHoutputChema = new Schema<SHProductOutput>({
+  folio :{
+    type:String,
+    required:false
+      },
   SHStock_id: {
     type: mongoose.Types.ObjectId, ref: 'StoreHouseStocks',
     required: true,
@@ -20,6 +24,27 @@ const StockSHoutputChema = new Schema<SHProductOutput>({
     type:Boolean,
     required:false,
     default:true,
+   },
+   responsible:{
+    type: Object,
+    required:false,
+
+   },
+   reason:{
+    type:String,
+    required:false,
+   },
+   user_received:{
+    type:String,
+    required:false,
+   },
+   user_delivery:{
+    type:String,
+    required:false
+   },
+   product_detail:{
+    type:Object,
+    required:true,
    }
 },
   {

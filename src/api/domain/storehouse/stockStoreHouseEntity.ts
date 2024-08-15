@@ -28,10 +28,15 @@ export interface SHProductInput {
     createdAt: NativeDate;
   }
   export interface SHProductOutput {
+    folio:string,
     SHStock_id ?: string,
     quantity: number,
     newQuantity: number,
+    user_received?: string,
+    user_delivery?: string,
     responsible?:  UserEntity,
+    product_detail:ProductEntity,
+    reason ?: string,
     createdAt: NativeDate;
     status?:boolean;
   }

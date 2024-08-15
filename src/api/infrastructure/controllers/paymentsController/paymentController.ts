@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
 import MercadoPagoConfig, { Payment } from 'mercadopago';
 import { config } from '../../../../../config';
-import { generateUUID } from '../../../../shared/infrastructure/validation/Utils';
+import { generateUUID, RandomCodeId } from '../../../../shared/infrastructure/validation/Utils';
 import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHoutputUseCase';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 
@@ -37,6 +37,7 @@ export class PaymentController extends ResponseData {
         this.createTicket = this.createTicket.bind(this);
         this.deletePayment = this.deletePayment.bind(this);
         this.createPaymentMP = this.createPaymentMP.bind(this)
+        this.transferPayment = this.transferPayment.bind(this)
         // this.createPaymentProductMPLocation = this.createPaymentProductMPLocation.bind(this);
         this.PaymentSuccess = this.PaymentSuccess.bind(this)
         this.createPaymentProductMP = this.createPaymentProductMP.bind(this)
@@ -215,6 +216,7 @@ export class PaymentController extends ResponseData {
         const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
         const payment1 = new Payment(client);
         const uuid4 = generateUUID();
+        const folio = RandomCodeId('CIC')
     
         try {
             // Crea un pago en la base de datos
@@ -276,6 +278,7 @@ export class PaymentController extends ResponseData {
                         paymentType: infoPayment.paymentType,
                         payment_status: payment?.status,
                         download_ticket: payment?.transaction_details?.external_resource_url,
+                        order_id : folio
                     };
     
                     if (typeDelivery === 'homedelivery') {
@@ -292,9 +295,12 @@ export class PaymentController extends ResponseData {
                                 if (available) {
                                     const newQuantity = available.stock - parseInt(product.quantity);
                                     const update = await this.stockSHoutputUseCase.createOutput({
+                                        folio: folio,
                                         newQuantity: newQuantity,
                                         quantity: product.quantity,
                                         SHStock_id: available._id,
+                                        product_detail: product,
+
                                     });
     
                                     await this.stockStoreHouseUseCase.updateStock(available._id, { stock: update?.newQuantity });
@@ -318,8 +324,59 @@ export class PaymentController extends ResponseData {
             next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }
     }
-    
 
+    public async transferPayment(req: Request, res: Response, next: NextFunction) {
+        const { user, branch_id, productsOrder, location, typeDelivery, shipping_cost, discount, subTotal, total } = req.body;
+        const uuid4 = generateUUID();
+        const folio = RandomCodeId('CIC');
+    
+        try {
+            // Create a payment in the database
+            const response1 = await this.paymentUseCase.createNewPayment({
+                uuid: uuid4,
+                user: user._id,
+                payment_status: 'pending',
+                system: "CICHMEX",
+                products: productsOrder,
+            });
+    
+            if (response1 instanceof ErrorHandler) {
+                return next(new ErrorHandler('Error en la respuesta de pago', 500));
+            }
+    
+            const values1: any = {
+                payment: response1._id,
+                uuid: response1.uuid,
+                products: productsOrder,
+                discount,
+                subTotal,
+                total,
+                user_id: user.user_id,
+                shipping_cost,
+                paymentType: 'transfer',
+                payment_status: response1.payment_status,
+                order_id: folio,
+            };
+    
+            if (typeDelivery === 'homedelivery') {
+                values1.deliveryLocation = location;
+            } else if (typeDelivery === 'pickup') {
+                values1.branch = branch_id;
+                values1.point_pickup_status = false;
+            }
+    
+            try {
+                const order = await this.productOrderUseCase.createProductOrder(values1);
+                return this.invoke(order, 200, res, 'Se pagó con éxito', next);
+            } catch (error) {
+                return next(new ErrorHandler('Error: No se pudo crear su orden. Por favor, contacte con servicio al cliente', 500));
+            }
+    
+        } catch (error) {
+            return next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
+        }
+    }
+    
 
 
 

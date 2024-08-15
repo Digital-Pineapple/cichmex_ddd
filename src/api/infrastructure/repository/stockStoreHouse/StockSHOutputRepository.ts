@@ -46,6 +46,7 @@ export class StockSHOutputRepository extends MongoRepository implements  StockSH
             _id: 0,  // Opcional: Excluye el _id del resultado
             product_name: "$product.name", // Cambiar 'producto' a 'product'
             tag:"$product.tag",
+            folio:"$folio",
             quantity: "$quantity",
             newQuantity: "$newQuantity",
             nowStock: "$SHStock.stock",
