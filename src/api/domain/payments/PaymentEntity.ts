@@ -16,6 +16,10 @@ import { UserEntity } from "../user/UserEntity";
 export interface ticketVerify {
   image?: string,
   verified?: boolean,
+  verifiedAt ?: string,
+  note?: string,
+  amount?: string,
+  reference?: string
 }
 
 

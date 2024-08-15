@@ -451,7 +451,7 @@ export class PaymentController extends ResponseData {
     }
 
     public async addTicket(req: Request, res: Response, next: NextFunction) {
-        const { id } = req.body;
+        const { id, reference, amount } = req.body;
     
         try {
             const payment = await this.paymentUseCase.getDetailPayment(id);
@@ -466,7 +466,7 @@ export class PaymentController extends ResponseData {
                     return next(new ErrorHandler('Hubo un error al subir la imagen', 400));
                 }
     
-                const response = await this.paymentUseCase.updateOnePayment(id, { ticket: { image: pathObject, verified: false } });
+                const response = await this.paymentUseCase.updateOnePayment(id, { ticket: { image: pathObject, verified: false, reference:reference, amount:amount } });
                 return this.invoke(response, 201, res, 'Se subió con éxito', next);
             } else {
                 return next(new ErrorHandler('No se subió imagen', 400));
