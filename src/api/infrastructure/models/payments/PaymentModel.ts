@@ -28,6 +28,14 @@ const PaymentSchema = new Schema<PaymentEntity>({
     system:{
         type:String,
         required:false,
+    },
+    products:{
+        type:Object,
+        required:false,
+    },
+    ticket:{
+        type:Object,
+        required:false,
     }
 
    
