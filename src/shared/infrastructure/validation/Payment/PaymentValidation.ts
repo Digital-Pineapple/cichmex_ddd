@@ -9,6 +9,9 @@ export class PaymentValidations {
     readonly paymentValidation = [
         this.upload.array('values')
     ]
+    readonly ImageValidation = [
+        this.upload.single('ticket_image')
+    ]
     
 
 }

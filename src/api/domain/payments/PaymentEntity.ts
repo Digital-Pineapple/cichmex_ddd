@@ -10,6 +10,12 @@ import { UserEntity } from "../user/UserEntity";
   payment_status?: string
   system?: string,
   products?: object,
+  ticket?: ticketVerify,
+}
+
+export interface ticketVerify {
+  image?: string,
+  verified?: boolean,
 }
 
 

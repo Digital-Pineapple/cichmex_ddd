@@ -25,6 +25,7 @@ import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHout
 import StockStoreHouseModel from '../../models/stockStoreHouse/StockStoreHouseModel';
 import { StockStoreHouseRepository } from '../../repository/stockStoreHouse/StockStoreHouseRepository';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
+import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 
 const paymentRouter = Router();
 
@@ -47,7 +48,8 @@ const stockSHoutputUseCase = new StockSHoutputUseCase(stockSHOutputRepository)
 
 const paymentUseCase = new PaymentUseCase(paymentRepository);
 const mpService = new MPService()
-const paymentController = new PaymentController(paymentUseCase, productOrderUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase, stockStoreHouseUseCase, stockSHoutputUseCase );
+const s3Service = new S3Service()
+const paymentController = new PaymentController(paymentUseCase, productOrderUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase, stockStoreHouseUseCase, stockSHoutputUseCase, s3Service );
 const paymentValidation = new PaymentValidations();
 
 paymentRouter
@@ -57,6 +59,7 @@ paymentRouter
     .post('/Membership-Pay', paymentController.createPaymentMP)
     .post('/Products-Pay', paymentController.createPaymentProductMP)
     .post('/transfer-payment', paymentController.createPaymentProductMP)
+    .post('/AddTicket', paymentValidation.ImageValidation, paymentController.addTicket)
     // .post('/Products-PayLocation', paymentController.createPaymentProductMPLocation)
     .post('/success',paymentController.createTicket )
     .post('/Mem-Payment-success',paymentController.PaymentSuccess)

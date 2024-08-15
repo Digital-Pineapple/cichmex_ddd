@@ -14,6 +14,7 @@ import { config } from '../../../../../config';
 import { generateUUID, RandomCodeId } from '../../../../shared/infrastructure/validation/Utils';
 import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHoutputUseCase';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
+import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 
 
 export class PaymentController extends ResponseData {
@@ -27,6 +28,7 @@ export class PaymentController extends ResponseData {
         private readonly membershipHistoryUseCase: MembershipHistoryUseCase,
         private readonly stockStoreHouseUseCase : StockStoreHouseUseCase,
         private readonly stockSHoutputUseCase : StockSHoutputUseCase,
+        private readonly s3Service : S3Service,
 
 
     ) {
@@ -41,6 +43,7 @@ export class PaymentController extends ResponseData {
         // this.createPaymentProductMPLocation = this.createPaymentProductMPLocation.bind(this);
         this.PaymentSuccess = this.PaymentSuccess.bind(this)
         this.createPaymentProductMP = this.createPaymentProductMP.bind(this)
+        this.addTicket = this.addTicket.bind(this);
 
 
     }
@@ -446,6 +449,33 @@ export class PaymentController extends ResponseData {
             next(new ErrorHandler('Error', 500));
         }
     }
+
+    public async addTicket(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.body;
+    
+        try {
+            const payment = await this.paymentUseCase.getDetailPayment(id);
+            if (!payment) {
+                return next (new ErrorHandler('No se encontro pago', 400))
+            }
+            if (req.file) {
+                const pathObject = `${this.path}/${id}`;
+                const { success } = await this.s3Service.uploadToS3AndGetUrl(`${pathObject}`, req.file, "image/jpeg");
+    
+                if (!success) {
+                    return next(new ErrorHandler('Hubo un error al subir la imagen', 400));
+                }
+    
+                const response = await this.paymentUseCase.updateOnePayment(id, { ticket: { image: pathObject, verified: false } });
+                return this.invoke(response, 201, res, 'Se subió con éxito', next);
+            } else {
+                return next(new ErrorHandler('No se subió imagen', 400));
+            }
+        } catch (error) {
+            return next(new ErrorHandler('Hubo un error al actualizar el pago', 500));
+        }
+    }
+    
 
 
 
