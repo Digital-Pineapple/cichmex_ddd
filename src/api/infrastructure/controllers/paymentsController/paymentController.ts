@@ -86,10 +86,6 @@ export class PaymentController extends ResponseData {
 
     public async createPaymentMP(req: Request, res: Response, next: NextFunction) {
         const { membership, user, values } = req.body;
-        console.log(req.body);
-        
-    
-
         const access_token = config.MERCADOPAGO_TOKEN;
         const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
         const payment1 = new Payment(client);
@@ -146,14 +142,14 @@ export class PaymentController extends ResponseData {
                         });
                         const client_id = user_id;
                         const idMembership = membership._id
-                        const membership_info = await this.membershipUseCase.getInfoMembership(idMembership);
+                        const membership_info : any = await this.membershipUseCase.getInfoMembership(idMembership);
                         if (!(membership_info instanceof ErrorHandler)) {
                             let start_date1 = moment().format('L');
                             let end_date1 = moment().add(30, 'days').calendar();
                             let services = membership_info?.service_quantity;
                             let mem_id = membership_info?.id
                             if (services !== undefined) {
-                                await Promise.all(services.map(async (item) => {
+                                await Promise.all(services.map(async (item: any) => {
                                     try {
                                         const ok = await this.membershipBenefitUseCAse.createNewMembershipBenefit(
                                             mem_id,
@@ -386,7 +382,7 @@ export class PaymentController extends ResponseData {
     public async createTicket(req: Request, res: Response, next: NextFunction) {
 
         try {
-            const info = await this.mpService.reciveWebHook(req);
+            const info:any = await this.mpService.reciveWebHook(req);
 
             if (info !== undefined && info.status === 'approved') {
 
