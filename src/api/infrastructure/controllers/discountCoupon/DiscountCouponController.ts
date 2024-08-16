@@ -55,6 +55,7 @@ export class DiscountCouponController extends ResponseData {
             if(response.fixed_amount) {                
                 if(cart_amount >= response.min_cart_amount) {
                     response = {
+                        uuid: response?.uuid,
                         isCouponFixedAmount: true,
                         isCouponPorcent: false,
                         free_shipping: false,                       
@@ -70,6 +71,7 @@ export class DiscountCouponController extends ResponseData {
             }else if(response.porcent) {
                 if(cart_amount >= response.min_cart_amount && cart_amount <= response.max_cart_amount) {
                     response = {
+                        uuid: response?.uuid,
                         isCouponFixedAmount: false,
                         isCouponPorcent: true,
                         free_shipping: false,                   
@@ -84,6 +86,7 @@ export class DiscountCouponController extends ResponseData {
                 }
             }else if(response.free_shipping) {
                 response = {
+                    uuid: response?.uuid,
                     isCouponFixedAmount: false,
                     isCouponPorcent: false,
                     free_shipping: true,                   

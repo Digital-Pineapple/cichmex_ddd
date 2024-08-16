@@ -41,4 +41,15 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     // ]).
    }
 
+   async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
+    const result = await this.MODEL.aggregate([
+        {$match: {
+            status: true,
+            videos: { $exists: true, $ne: [] } // Asegura que el campo "video" exista y no sea nulo
+        }},
+        {$limit: 10}
+    ])    
+    return result
+   }
+
 }

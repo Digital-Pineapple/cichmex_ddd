@@ -37,6 +37,7 @@ export class ProductController extends ResponseData {
     this.getProductsByCategory = this.getProductsByCategory.bind(this);
     this.getProductsByCategories = this.getProductsByCategories.bind(this);
     this.getProductsBySubCategory = this.getProductsBySubCategory.bind(this);
+    this.getVideos = this.getVideos.bind(this);
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
@@ -99,11 +100,14 @@ export class ProductController extends ResponseData {
           );
           response.images = updatedImages;
         }
-        if (response.video) {
-          const video_url = await this.s3Service.getUrlObject(
-            response.video + ".mp4"
+        if (response.videos) {
+          const updatedVideos = await Promise.all(
+            response.videos.map(async (video: any) => {
+              const url = await this.s3Service.getUrlObject(video + ".mp4");
+              return url;
+            })
           );
-          response.video = video_url;
+          response.videos = updatedVideos;         
         }
       }
 
@@ -479,4 +483,49 @@ export class ProductController extends ResponseData {
     }
 
   }
+
+  public async getVideos(req: Request, res: Response, next: NextFunction) {
+    try {            
+      const response: any | null = await this.productUseCase.getVideoProducts();
+      if (!(response instanceof ErrorHandler)) {
+        const updatedResponse = await Promise.all(
+          response.map(async (item: any) => {
+            const images = item.images;
+            const updatedImages = await Promise.all(
+              images.map(async (image: any) => {
+                const url = await this.s3Service.getUrlObject(
+                  image + ".jpg"
+                );
+                return url;
+              })
+            );
+
+
+            const videos = item.videos
+            const updatedVideos = await Promise.all(
+              videos.map(async (video: any) => {
+                const video_url = await this.s3Service.getUrlObject(
+                  video + ".mp4"
+                );
+                return video_url;
+              })
+            );           
+            item.images = updatedImages;
+            item.videos = updatedVideos;
+            return item;
+          })
+        );
+
+        this.invoke(updatedResponse, 200, res, "", next);
+      }    
+    } catch (error) {
+      console.log(error);
+      
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+
+  
 }
+
+

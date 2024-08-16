@@ -58,7 +58,7 @@ paymentRouter
     .post('/',paymentValidation.paymentValidation, paymentController.createLMP)
     .post('/Membership-Pay', paymentController.createPaymentMP)
     .post('/Products-Pay', paymentController.createPaymentProductMP)
-    .post('/transfer-payment', paymentController.createPaymentProductMP)
+    .post('/transfer-payment', paymentController.transferPayment)
     .post('/AddTicket', paymentValidation.ImageValidation, paymentController.addTicket)
     // .post('/Products-PayLocation', paymentController.createPaymentProductMPLocation)
     .post('/success',paymentController.createTicket )

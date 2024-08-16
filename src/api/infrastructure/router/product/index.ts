@@ -46,6 +46,7 @@ productRouter
   .post('/search/ok', productController.searchProduct)
   .delete("/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.deleteProduct)
   .get("/productsByCategories/ok", productController.getProductsByCategories)
-  .post("/productsBySubCategory/ok", productController.getProductsBySubCategory);
+  .post("/productsBySubCategory/ok", productController.getProductsBySubCategory)
+  .get("/videos/ok", productController.getVideos)
 
 export default productRouter;
