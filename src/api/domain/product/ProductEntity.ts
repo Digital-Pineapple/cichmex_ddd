@@ -9,20 +9,30 @@ export interface ProductEntity {
 
   name: string;
   price: number;
+  discountPrice: number;
+  porcentDiscount: number;
   description?: string;
+  shortDescription?: string;
   slug?: string;
-  size?: string;
+  dimensions?: string;
+  brand?: string;
   tag: string;
   category?: Category;
   subCategory?: SubCategory;
+  currency?:string;
   images?: string[];
+  thumbnail?:string;
+  variants?:string[]
   status?:boolean;
   weight ?: string;
-  video ?: string;
+  videos ?: string[];
+  rating?: number;
   product_key ?: string;
   sku: string;
   createdAt        :   NativeDate;
   updatedAt        :   NativeDate;
+  seoDescription?: string,
+  seoKeywords?: string[],
 }
 
 export interface ProductImage  {

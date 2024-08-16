@@ -51,7 +51,6 @@ export class ProductOrderController extends ResponseData {
     const { id } = req.params;
     try {
         const response : any = await this.productOrderUseCase.getOneProductOrder(id);
-        console.log(response);
         
         res.writeHead(200, {
             "Content-Type": "application/pdf",

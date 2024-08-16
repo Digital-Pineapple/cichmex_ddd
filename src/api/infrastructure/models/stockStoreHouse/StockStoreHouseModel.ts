@@ -3,7 +3,6 @@ import { StockStoreHouseEntity } from '../../../domain/storehouse/stockStoreHous
 
   const StockStoreHouseSchema = new Schema<StockStoreHouseEntity>(
     {
-
       StoreHouse_id:{
         type: mongoose.Types.ObjectId,
         ref:'StoreHouses',
@@ -22,7 +21,6 @@ import { StockStoreHouseEntity } from '../../../domain/storehouse/stockStoreHous
         default:true,
         required:false
       },
-
       
     },
      

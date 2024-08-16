@@ -27,7 +27,8 @@ export function buildPDF(orderData: any, dataCallback: any, endCallback: any) {
                 `Estado: ${data.deliveryLocation.state}`,
                 `Municipio: ${data.deliveryLocation.municipality}`,
                 `Dirección: ${data.deliveryLocation.direction}`,
-                `Referencia: ${data.deliveryLocation.neighborhood}`
+                `Referencia: ${data.deliveryLocation.reference ? data.deliveryLocation.reference:'Sin información'}`,
+                `Destinatario: ${data.deliveryLocation.receiver ? data.deliveryLocation.receiver : 'Sin información' }`
             ].join('\n');
         } else {
             return [
@@ -38,6 +39,7 @@ export function buildPDF(orderData: any, dataCallback: any, endCallback: any) {
             ].join('\n');
         }
     };
+
 
     const localDate = momentService.convertUtcToLocal(orderData.createdAt);
     const doc = new PDFDocument();
