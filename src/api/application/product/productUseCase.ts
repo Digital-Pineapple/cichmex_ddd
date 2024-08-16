@@ -47,4 +47,8 @@ export class ProductUseCase {
   public async categoryProducts(category: any): Promise<ProductEntity[] | null> {
     return this.productRepository.search(category)
   }
+  public async getVideoProducts(): Promise<ProductEntity[] | ErrorHandler |  null> {
+    return this.productRepository.findVideoProducts()
+  }
+
 }
