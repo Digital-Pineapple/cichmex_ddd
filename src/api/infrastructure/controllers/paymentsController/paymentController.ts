@@ -331,13 +331,13 @@ export class PaymentController extends ResponseData {
     public async transferPayment(req: Request, res: Response, next: NextFunction) {
         const { user, branch_id, productsOrder, location, typeDelivery, shipping_cost, discount, subTotal, total } = req.body;
         const uuid4 = generateUUID();
-        const folio = RandomCodeId('CIC');
+        const folio = RandomCodeId('CIC');        
     
         try {
             // Create a payment in the database
             const response1 = await this.paymentUseCase.createNewPayment({
                 uuid: uuid4,
-                user: user._id,
+                user_id: user._id,
                 payment_status: 'pending',
                 system: "CICHMEX",
                 products: productsOrder,
@@ -354,7 +354,7 @@ export class PaymentController extends ResponseData {
                 discount,
                 subTotal,
                 total,
-                user_id: user.user_id,
+                user_id: user._id,
                 shipping_cost,
                 paymentType: 'transfer',
                 payment_status: response1.payment_status,
@@ -372,6 +372,8 @@ export class PaymentController extends ResponseData {
                 const order = await this.productOrderUseCase.createProductOrder(values1);
                 return this.invoke(order, 200, res, 'Se pagó con éxito', next);
             } catch (error) {
+                console.log(error);
+                
                 return next(new ErrorHandler('Error: No se pudo crear su orden. Por favor, contacte con servicio al cliente', 500));
             }
     
