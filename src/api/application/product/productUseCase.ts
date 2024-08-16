@@ -18,12 +18,10 @@ export class ProductUseCase {
     return response
   }
 
-  public async createProduct(
-    name: string,price: number, description: string,size:string,tag:string, slug :string, category:any, subCategory:any, weight:any, sku:any
-  ): Promise<ProductEntity | ErrorHandler | null> {
-    const product = await this.productRepository.findOneItem({ name });
+  public async createProduct(body:any): Promise<ProductEntity | ErrorHandler | null> {
+    const product = await this.productRepository.findOneItem({ name:body.name, status:true });
     if (product) return new ErrorHandler("Producto ya registrado", 400);
-    return await this.productRepository.createOne({ name,price,description,size,tag, slug,category, subCategory, weight, sku });
+    return await this.productRepository.createOne({...body});
   }
 
   public async updateProduct(
