@@ -17,7 +17,7 @@ import { RandomCodeId } from '../../../../shared/infrastructure/validation/Utils
 
 export class ProductController extends ResponseData {
   protected path = "/product";
-  private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634" 
+  private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634"
 
   constructor(
     private productUseCase: ProductUseCase,
@@ -76,16 +76,16 @@ export class ProductController extends ResponseData {
   public async getProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
-      const responseStock = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse)            
+      const responseStock = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse)
       const responseProduct: any | null = await this.productUseCase.getProduct(id);
       const parsed = responseProduct.toJSON();
       let response = null;
-      if(responseStock && responseStock.stock){
-         response  = {
+      if (responseStock && responseStock.stock) {
+        response = {
           ...parsed,
           stock: responseStock.stock
-        }      
-      }else{
+        }
+      } else {
         response = responseProduct
       }
       // console.log(response);      
@@ -116,7 +116,7 @@ export class ProductController extends ResponseData {
   async getNoStockProducts(req: Request, res: Response, next: NextFunction) {
     try {
       const products = await this.productUseCase.getProducts(); // Asegúrate de definir el tipo correcto para getProducts()
-      const stock :StockStoreHouseEntity[] = await this.stockStoreHouseUseCase.getStockNoDetail('662fe69b9ba1d8b3cfcd3634'); // Asegúrate de definir el tipo correcto para getStockNoDetail()
+      const stock: StockStoreHouseEntity[] = await this.stockStoreHouseUseCase.getStockNoDetail('662fe69b9ba1d8b3cfcd3634'); // Asegúrate de definir el tipo correcto para getStockNoDetail()
 
       // Obtener los IDs de productos y stock
       const productIds = new Set(products?.map((product) => product._id.toString()));
@@ -144,7 +144,16 @@ export class ProductController extends ResponseData {
 
 
   public async createProduct(req: Request, res: Response, next: NextFunction) {
-    const { name, price, description, size, tag, category, subCategory, weight } = req.body;
+    const { name, price, description, size, tag, category,
+      subCategory, weight, brand, discountPrice,
+      porcentDiscount,
+      product_key,
+      seoDescription,
+      shortDescription,
+      thumbnail,
+      seoKeywords
+
+    } = req.body;
 
     const createSlug = (slug: string): string => {
       let processedSlug = slug
@@ -165,20 +174,35 @@ export class ProductController extends ResponseData {
       if (req.files && req.files.length > 0) {
         const paths: string[] = [];
         const urls: string[] = [];
-        let video_path: string = '';
-        let video_url: string = '';
+        let video_paths: string[] = [];
+        let video_urls: string[] = [];
+        let thumbnail_path: string = '';
+        let thumbnail_url: string = '';
 
-        let response = await this.productUseCase.createProduct(
-          name,
-          price,
-          description,
-          size,
-          tag,
-          slug,
-          category,
-          subCategory,
-          weight,
-          sku
+        let response : any = await this.productUseCase.createProduct(
+          {
+            name,
+            price,
+            description,
+            size,
+            tag,
+            slug,
+            category,
+            subCategory,
+            weight,
+            sku,
+            brand,
+            discountPrice,
+            porcentDiscount,
+            product_key,
+            seoDescription,
+            shortDescription,
+            seoKeywords
+
+
+          }
+
+
 
         );
         if (!(response instanceof ErrorHandler)) {
@@ -196,24 +220,37 @@ export class ProductController extends ResponseData {
                 paths.push(pathObject);
                 urls.push(url);
               }
-              if (item.fieldname === 'video') {
-                const pathVideo  = `${this.path}/${response?._id}`;
+              if (item.fieldname === 'thumbnail') {
+
+                const pathThumbnail = `${this.path}/thumbnail/${response?._id}`;
+                const { url } = await this.s3Service.uploadToS3AndGetUrl(
+                  pathThumbnail + '.jpg',
+                  item,
+                  'image/jpg'
+                );
+                thumbnail_path = pathThumbnail
+                thumbnail_url = url
+              }
+              if (item.fieldname === 'videos') {
+                const pathVideo = `${this.path}/${response?._id}/${index}`;
                 const { url } = await this.s3Service.uploadToS3AndGetUrl(
                   pathVideo + ".mp4",
                   item,
                   "video/mp4"
                 );
-                video_path = pathVideo
-                video_url = url
+                video_paths.push(pathVideo);
+                video_urls.push(url);
               }
             })
           );
           response = await this.productUseCase.updateProduct(response?._id, {
             images: paths,
-            video: video_path
+            videos: video_paths,
+            thumbnail:thumbnail_path
           });
           response.images = urls;
-          response.video = video_url
+          response.videos = video_urls
+          response.thumbnail = thumbnail_url
           response2 = response
         }
         else {
@@ -223,16 +260,25 @@ export class ProductController extends ResponseData {
       } else {
 
         let response = await this.productUseCase.createProduct(
-          name,
-          price,
-          description,
-          size,
-          tag,
-          slug,
-          category,
-          subCategory,
-          weight,
-          sku
+          {
+            name,
+            price,
+            description,
+            size,
+            tag,
+            slug,
+            category,
+            subCategory,
+            weight,
+            sku,
+            brand,
+            discountPrice,
+            porcentDiscount,
+            product_key,
+            seoDescription,
+            shortDescription,
+            seoKeywords
+          }
 
         );
         response2 = response
@@ -241,7 +287,7 @@ export class ProductController extends ResponseData {
       this.invoke(response2, 201, res, 'Producto creado con éxito', next);
 
     } catch (error) {
-      
+
       next(new ErrorHandler('Hubo un error al crear el producto', 500));
     }
   }
@@ -273,7 +319,7 @@ export class ProductController extends ResponseData {
               urls.push(url);
             }
             if (item.fieldname === 'video') {
-              const pathVideo  = `${this.path}/${id}`;
+              const pathVideo = `${this.path}/${id}`;
               const { url } = await this.s3Service.uploadToS3AndGetUrl(
                 pathVideo + ".mp4",
                 item,
@@ -285,7 +331,7 @@ export class ProductController extends ResponseData {
           })
         );
 
-       
+
 
         const response = await this.productUseCase.updateProduct(id, {
           slug,
@@ -300,7 +346,7 @@ export class ProductController extends ResponseData {
           weight
         });
         response.images = urls,
-        response.video = video_url
+          response.video = video_url
         this.invoke(response, 201, res, 'Se actualizó con éxito', next);
       } else {
         const response = await this.productUseCase.updateProduct(id, {
@@ -354,27 +400,27 @@ export class ProductController extends ResponseData {
     const { category } = req.body
     try {
       const categoria: any | null = await this.categoryUseCase.getDetailCategoryByName(category);
-      if(categoria == null){
+      if (categoria == null) {
         return next(new ErrorHandler("La categoria no existe", 404));
-      }               
-      const response: any | null = await this.categoryUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse); 
+      }
+      const response: any | null = await this.categoryUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse);
       const resCategory = response[0]
       resCategory.category_image = await this.s3Service.getUrlObject(resCategory.category_image + ".jpg");
       await Promise.all(
-        resCategory.products.map(async (product: any) => {        
+        resCategory.products.map(async (product: any) => {
           const parsed = await Promise.all(
             product.images.map(async (image: any) => {
-              image = await this.s3Service.getUrlObject(image + ".jpg"); 
-              return image        
-            })                    
+              image = await this.s3Service.getUrlObject(image + ".jpg");
+              return image
+            })
           )
           product.images = parsed;
         })
-      )                
-      
+      )
+
       this.invoke(response, 201, res, '', next);
     } catch (error) {
-      console.log(error);      
+      console.log(error);
 
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
     }
@@ -382,53 +428,53 @@ export class ProductController extends ResponseData {
   public async getProductsBySubCategory(req: Request, res: Response, next: NextFunction) {
     const { subcategory } = req.body
     try {
-      const subcat: any | null = await this.subCategoryUseCase.getDetailSubCategoryByName(subcategory);  
-      if(subcat == null){
+      const subcat: any | null = await this.subCategoryUseCase.getDetailSubCategoryByName(subcategory);
+      if (subcat == null) {
         return next(new ErrorHandler("La categoria no existe", 404));
-      }               
-      const response: any | null = await this.subCategoryUseCase.getProductsBySubCategory(subcat._id, this.onlineStoreHouse); 
+      }
+      const response: any | null = await this.subCategoryUseCase.getProductsBySubCategory(subcat._id, this.onlineStoreHouse);
       const resSubCategory = response[0]
       resSubCategory.subcategory_image = await this.s3Service.getUrlObject(resSubCategory.subcategory_image + ".jpg");
       await Promise.all(
-        resSubCategory.products.map(async (product: any) => {        
+        resSubCategory.products.map(async (product: any) => {
           const parsed = await Promise.all(
             product.images.map(async (image: any) => {
-              image = await this.s3Service.getUrlObject(image + ".jpg"); 
-              return image        
-            })                    
+              image = await this.s3Service.getUrlObject(image + ".jpg");
+              return image
+            })
           )
           product.images = parsed;
         })
-      )                      
+      )
       this.invoke(response, 201, res, '', next);
     } catch (error) {
-      console.log(error);      
+      console.log(error);
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
     }
   }
-  
-  public async getProductsByCategories(req: Request, res: Response, next: NextFunction){
-    try{
-      const categories = ["Ropa, Bolsas y Calzado","Hogar, Muebles y jardín", "Industrias y Oficinas"]
-      const response: any | null = await this.categoryUseCase.getCategoriesAndProducts(categories, this.onlineStoreHouse);    
-      const updatedResponse = await Promise.all(response.map(async (category:any) => {
-          await Promise.all(
-            category.products.map(async(product: any) => {
-              const parsedImages = await Promise.all(product.images.map(async(image: any) => {
-                  const url = await this.s3Service.getUrlObject(image + ".jpg");
-                  return url              
-              }));
-              product.images = parsedImages;  
-              return product                   
-            }))          
-          return category
-        }));
-      
+
+  public async getProductsByCategories(req: Request, res: Response, next: NextFunction) {
+    try {
+      const categories = ["Ropa, Bolsas y Calzado", "Hogar, Muebles y jardín", "Industrias y Oficinas"]
+      const response: any | null = await this.categoryUseCase.getCategoriesAndProducts(categories, this.onlineStoreHouse);
+      const updatedResponse = await Promise.all(response.map(async (category: any) => {
+        await Promise.all(
+          category.products.map(async (product: any) => {
+            const parsedImages = await Promise.all(product.images.map(async (image: any) => {
+              const url = await this.s3Service.getUrlObject(image + ".jpg");
+              return url
+            }));
+            product.images = parsedImages;
+            return product
+          }))
+        return category
+      }));
+
       this.invoke(response, 201, res, '', next);
 
-    }catch(error){
+    } catch (error) {
       console.log(error);
-      
+
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
     }
 
