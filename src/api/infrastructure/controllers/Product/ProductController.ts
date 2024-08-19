@@ -107,8 +107,12 @@ export class ProductController extends ResponseData {
               return url;
             })
           );
-          response.videos = updatedVideos;         
+          response.videos = updatedVideos;
         }
+        if (response.thumbnail) {
+          const updateThumbnail = await this.s3Service.getUrlObject(response.thumbnail + ".jpg");
+          response.thumbnail = updateThumbnail;
+          }
       }
 
       this.invoke(response, 200, res, "", next);
@@ -123,11 +127,11 @@ export class ProductController extends ResponseData {
       const stock: StockStoreHouseEntity[] = await this.stockStoreHouseUseCase.getStockNoDetail('662fe69b9ba1d8b3cfcd3634'); // Asegúrate de definir el tipo correcto para getStockNoDetail()
 
       // Obtener los IDs de productos y stock
-      const productIds = new Set(products?.map((product) => product._id.toString()));
+      const productIds = new Set(products?.map((product : any) => product._id.toString()));
       const stockProductIds = new Set(stock.map((item) => item.product_id.toString()));
 
       // Filtrar productos que no tienen stock asociado
-      const productsNotInStock = products.filter((product) => !stockProductIds.has(product._id.toString()));
+      const productsNotInStock = products.filter((product : any) => !stockProductIds.has(product._id.toString()));
 
       // Filtrar elementos de stock que no están asociados a productos
       const stockNotInProducts = stock.filter((item) => !productIds.has(item.product_id.toString()));
@@ -154,7 +158,6 @@ export class ProductController extends ResponseData {
       product_key,
       seoDescription,
       shortDescription,
-      thumbnail,
       seoKeywords
 
     } = req.body;
@@ -175,7 +178,7 @@ export class ProductController extends ResponseData {
       let response2: any = []
 
 
-      if (req.files && req.files.length > 0) {
+      if (req.files && Array.isArray(req.files)) {
         const paths: string[] = [];
         const urls: string[] = [];
         let video_paths: string[] = [];
@@ -183,7 +186,7 @@ export class ProductController extends ResponseData {
         let thumbnail_path: string = '';
         let thumbnail_url: string = '';
 
-        let response : any = await this.productUseCase.createProduct(
+        let response: any = await this.productUseCase.createProduct(
           {
             name,
             price,
@@ -250,7 +253,7 @@ export class ProductController extends ResponseData {
           response = await this.productUseCase.updateProduct(response?._id, {
             images: paths,
             videos: video_paths,
-            thumbnail:thumbnail_path
+            thumbnail: thumbnail_path
           });
           response.images = urls;
           response.videos = video_urls
@@ -299,20 +302,31 @@ export class ProductController extends ResponseData {
 
   public async updateProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const { name, price, description, slug, size, category, subCategory, weight, images, video } = req.body;
-
+    const { name, price, description, size, category,
+      subCategory, weight, brand, discountPrice,
+      porcentDiscount,
+      product_key,
+      seoDescription,
+      shortDescription,
+      dimensions,
+      seoKeywords } = req.body;
+      console.log(req.body);
+      
+  
     try {
-
-      if (req.files && req.files.length > 0) {
+      let response: any;
+  
+      if (req.files && Array.isArray(req.files)) {
         const paths: string[] = [];
         const urls: string[] = [];
-        let video_path: string = '';
-        let video_url: string = '';
-
+        let video_paths: string[] = [];
+        let video_urls: string[] = [];
+        let thumbnail_path: string = '';
+        let thumbnail_url: string = '';
+  
         await Promise.all(
           req.files.map(async (item: any, index: number) => {
             if (item.fieldname === 'images') {
-
               const pathObject = `${this.path}/${id}/${index}`;
               const { url } = await this.s3Service.uploadToS3AndGetUrl(
                 pathObject + '.jpg',
@@ -321,24 +335,29 @@ export class ProductController extends ResponseData {
               );
               paths.push(pathObject);
               urls.push(url);
-            }
-            if (item.fieldname === 'video') {
-              const pathVideo = `${this.path}/${id}`;
+            } else if (item.fieldname === 'thumbnail') {
+              const pathThumbnail = `${this.path}/thumbnail/${id}`;
+              const { url } = await this.s3Service.uploadToS3AndGetUrl(
+                pathThumbnail + '.jpg',
+                item,
+                'image/jpg'
+              );
+              thumbnail_path = pathThumbnail;
+              thumbnail_url = url;
+            } else if (item.fieldname === 'videos') {
+              const pathVideo = `${this.path}/${id}/${index}`;
               const { url } = await this.s3Service.uploadToS3AndGetUrl(
                 pathVideo + ".mp4",
                 item,
                 "video/mp4"
               );
-              video_path = pathVideo
-              video_url = url
+              video_paths.push(pathVideo);
+              video_urls.push(url);
             }
           })
         );
-
-
-
-        const response = await this.productUseCase.updateProduct(id, {
-          slug,
+  
+        response = await this.productUseCase.updateProduct(id, {
           name,
           price,
           description,
@@ -346,31 +365,51 @@ export class ProductController extends ResponseData {
           category,
           subCategory,
           images: paths,
-          video: video_path,
-          weight
+          videos: video_paths,
+          thumbnail: thumbnail_path,
+          brand,
+          discountPrice,
+          porcentDiscount,
+          product_key,
+          seoDescription,
+          shortDescription,
+          seoKeywords,
+          weight,
+          dimensions,
         });
-        response.images = urls,
-          response.video = video_url
-        this.invoke(response, 201, res, 'Se actualizó con éxito', next);
+  
+        response.images = urls;
+        response.video = video_urls;
+        response.thumbnail = thumbnail_url;
+  
       } else {
-        const response = await this.productUseCase.updateProduct(id, {
+        response = await this.productUseCase.updateProduct(id, {
           name,
           price,
           description,
-          slug,
           size,
           category,
           subCategory,
+          brand,
+          discountPrice,
+          porcentDiscount,
+          product_key,
+          seoDescription,
+          shortDescription,
+          seoKeywords,
           weight
         });
-
-        this.invoke(response, 201, res, 'Se actualizó con éxito', next);
-
       }
+  
+      this.invoke(response, 201, res, 'Se actualizó con éxito', next);
+  
     } catch (error) {
+      console.log(error);
+      
       next(new ErrorHandler('Hubo un error al actualizar', 500));
     }
   }
+  
 
 
   public async deleteProduct(req: Request, res: Response, next: NextFunction) {
@@ -485,7 +524,7 @@ export class ProductController extends ResponseData {
   }
 
   public async getVideos(req: Request, res: Response, next: NextFunction) {
-    try {            
+    try {
       const response: any | null = await this.productUseCase.getVideoProducts();
       if (!(response instanceof ErrorHandler)) {
         const updatedResponse = await Promise.all(
@@ -509,7 +548,7 @@ export class ProductController extends ResponseData {
                 );
                 return video_url;
               })
-            );           
+            );
             item.images = updatedImages;
             item.videos = updatedVideos;
             return item;
@@ -517,15 +556,15 @@ export class ProductController extends ResponseData {
         );
 
         this.invoke(updatedResponse, 200, res, "", next);
-      }    
+      }
     } catch (error) {
       console.log(error);
-      
+
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
 
-  
+
 }
 
 

@@ -29,7 +29,7 @@ export class ProductUseCase {
     updated: any
   ): Promise<ProductEntity> {
     
-    return await this.productRepository.updateOne(_id, updated);
+    return await this.productRepository.updateOne(_id, {...updated});
   }
   
   public async deleteProduct(_id: string): Promise<ProductEntity | null> {
