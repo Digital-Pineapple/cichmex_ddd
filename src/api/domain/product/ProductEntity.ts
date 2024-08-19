@@ -128,7 +128,9 @@ export interface ProductImage  {
   export interface PORouteDetail{
     user: UserEntity,
     route_status?: string,
-    deliveryDate?: string
+    deliveryDate?: string,
+    guide?: string,
+    shipping_company:string
   }
   export interface POVerificationDetail{
       verification_code   ?: string,

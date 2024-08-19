@@ -23,6 +23,7 @@ import storeHouseRouter from './storeHouse';
 import productOrderRouter from './productOrder';
 import shippingCostRouter from './shippingCost';
 import discountCouponRouter from './discountCoupon';
+import socketsRouter from './sockets';
 
 export const apiRouter = (): Router => {
 
@@ -51,6 +52,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/stock-StoreHouse', stockStoreHouseRouter)
     apiRouter.use('/storehouse', storeHouseRouter)
     apiRouter.use('/coupons', discountCouponRouter)
+    apiRouter.use('/socket', socketsRouter)
 
     return apiRouter;
 }

@@ -257,7 +257,7 @@ export class UserController extends ResponseData {
             if (!(TypeUser?._id)) {
                 next (new ErrorHandler('No existe tipo de usuario', 500))
             }
-            const response = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser?._id, uuid:uuid })
+            const response : any  = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser?._id, uuid:uuid })
             if (response?.user._id) {     
                 await this.shoppingCartUseCase.createShoppingCart({user_id: response?.user._id})
             }
@@ -297,7 +297,7 @@ export class UserController extends ResponseData {
 
             const phoneInfo = await this.phoneUserUseCase.findPhone(phone_number)
             if (!(phoneInfo instanceof ErrorHandler)) {
-                const response = await this.userUseCase.signInByPhone(phoneInfo.phone_id, password)
+                const response : any = await this.userUseCase.signInByPhone(phoneInfo.phone_id, password)
                 if (!(response instanceof ErrorHandler) && response.user.profile_image !== undefined) {
                     response.user.profile_image ?
                         response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image + ".jpg") :
@@ -327,7 +327,7 @@ export class UserController extends ResponseData {
             const phoneInfo = await this.phoneUserUseCase.findPhone(phone_number)
             
             if (!(phoneInfo instanceof ErrorHandler)) {
-                const response = await this.userUseCase.signInByPhone(phoneInfo.phone_id, password)
+                const response : any = await this.userUseCase.signInByPhone(phoneInfo.phone_id, password)
                 if (!(response instanceof ErrorHandler) && response.user.profile_image !== undefined) {
                     response.user.profile_image ?
                         response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image + ".jpg") :
@@ -463,7 +463,7 @@ public async RegisterCarrierDriver(req: Request, res: Response, next: NextFuncti
     if (noRepeatUser ) return next( new ErrorHandler('El usuario ya ha sido registrado',400));
 
     try {
-        const r_phone = await this.phoneUserUseCase.createEmployeePhone(info_phone);
+        const r_phone : any = await this.phoneUserUseCase.createEmployeePhone(info_phone);
         
             try {
                 const responsedefault = await this.typeUserUseCase.findTypeUser({role:['CARRIER-DRIVER']})

@@ -219,7 +219,7 @@ export class PaymentController extends ResponseData {
     
         try {
             // Crea un pago en la base de datos
-            const response1 = await this.paymentUseCase.createNewPayment({ uuid: uuid4 });
+            const response1 : any = await this.paymentUseCase.createNewPayment({ uuid: uuid4 });
             const { formData, selectedPaymentMethod } = infoPayment;
             const metadata1 = formData?.metadata;
             const point = metadata1?.payment_point || null;
@@ -257,7 +257,7 @@ export class PaymentController extends ResponseData {
             });
     
             if (payment) {
-                const createPayment = await this.paymentUseCase.updateOnePayment(response1?._id, {
+                const createPayment : any = await this.paymentUseCase.updateOnePayment(response1?._id, {
                     MP_info: payment,
                     user_id: user.user_id,
                     payment_status: payment?.status,
@@ -388,18 +388,18 @@ export class PaymentController extends ResponseData {
 
             if (info !== undefined && info.status === 'approved') {
 
-                const response = await this.paymentUseCase.createNewPayment({ MP_info: info });
+                const response : any = await this.paymentUseCase.createNewPayment({ MP_info: info });
                 if (!(response instanceof ErrorHandler)) {
                     const id_client = response.MP_info?.additional_info.payer.first_name;
                     const idMembership = response.MP_info?.additional_info.items[0].id;
-                    const membership_info = await this.membershipUseCase.getInfoMembership(idMembership);
+                    const membership_info : any = await this.membershipUseCase.getInfoMembership(idMembership);
                     if (!(membership_info instanceof ErrorHandler)) {
                         let start_date1 = moment().format('L');
                         let end_date1 = moment().add(30, 'days').calendar();
                         let services = membership_info?.service_quantity;
                         let mem_id = membership_info?.id
                         if (services !== undefined) {
-                            await Promise.all(services.map(async (item) => {
+                            await Promise.all(services.map(async (item : any) => {
                                 try {
                                     const ok : any = await this.membershipBenefitUseCAse.createNewMembershipBenefit(
                                         mem_id,

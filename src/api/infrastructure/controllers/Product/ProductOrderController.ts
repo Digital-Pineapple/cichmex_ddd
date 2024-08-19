@@ -116,14 +116,31 @@ export class ProductOrderController extends ResponseData {
 
 
   public async AssignRoute(req: Request, res: Response, next: NextFunction) {
-    const { order_id, user_id } = req.body
+    const { order_id, user_id, guide, shipping_company } = req.body;
+    
     try {
-      const response = await this.productOrderUseCase.updateProductOrder(order_id, { route_detail: { user: user_id, route_status: 'assigned' } })
-      this.invoke(response, 200, res, "Orden Asignada Correctamente", next);
+      let response;
+      if (user_id) {
+        response = await this.productOrderUseCase.updateProductOrder(order_id, {
+          route_detail: { user: user_id, route_status: 'assigned', guide:'', shipping_company:'' },
+        });
+        this.invoke(response, 200, res, "Orden Asignada Correctamente", next);
+      } else {
+        response = await this.productOrderUseCase.updateProductOrder(order_id, {
+          route_detail: {
+            guide: guide,
+            route_status: 'assigned',
+            shipping_company: shipping_company,
+            user_id:''
+          },
+        });
+        this.invoke(response, 200, res, "Guía y Compañía de Envío Asignadas Correctamente", next);
+      }
     } catch (error) {
       next(new ErrorHandler("Hubo un error", 500));
     }
   }
+  
 
   public async gerProductOrderResume(req: Request, res: Response, next: NextFunction) {
     try {
@@ -220,7 +237,7 @@ export class ProductOrderController extends ResponseData {
   }
 
   public async getOneProductOrderByUser(req: Request, res: Response, next: NextFunction) {
-    const user = req.user;
+    const user : any = req.user;
     try {
       const response: any | null = await this.productOrderUseCase.ProductOrdersByUser(user?.id)
       this.invoke(response, 200, res, "", next);

@@ -19,7 +19,7 @@ const swagger_output_json_1 = __importDefault(require("../../../../swagger_outpu
 const socket_io_1 = require("socket.io");
 const http_1 = require("http");
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
-const socketsController_1 = __importDefault(require("../../../api/infrastructure/controllers/sockets/socketsController"));
+const socketController_1 = require("../../../api/infrastructure/controllers/sockets/socketController");
 class Server {
     constructor(router) {
         this.router = router;
@@ -27,7 +27,7 @@ class Server {
             explorer: true,
         };
         this.startServer = () => __awaiter(this, void 0, void 0, function* () {
-            return yield new Promise((resolve, reject) => {
+            return new Promise((resolve, reject) => {
                 this.httpServer.listen(config_1.config.PORT, () => {
                     console.log(`🚀 Application ${config_1.config.APP_NAME} running on PORT ${config_1.config.PORT}`);
                     resolve();
@@ -38,7 +38,7 @@ class Server {
         });
         this.express = (0, express_1.default)();
         this.httpServer = (0, http_1.createServer)(this.express);
-        this.express.use("/api-docs", this.router, swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_output_json_1.default, this.swaggerUiOptions));
+        this.express.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_output_json_1.default, this.swaggerUiOptions));
         this.express.use(this.router);
         this.io = new socket_io_1.Server(this.httpServer, {
             path: '/socket/',
@@ -51,18 +51,7 @@ class Server {
     }
     sockets() {
         this.io.on('connection', (socket) => {
-            console.log('A user connected:', socket.id);
-            socket.on('disconnect', (reason) => {
-                console.log('User disconnected:', socket.id, 'Reason:', reason);
-            });
-            socket.on('error', (error) => {
-                console.error('Socket error:', error);
-            });
-            this.io.on('connect_error', (error) => {
-                console.error('Connection error:', error);
-            });
-            // Aquí puedes llamar a tu socketController para manejar eventos específicos
-            (0, socketsController_1.default)(socket);
+            socketController_1.SocketController.handleConnection(socket);
         });
         this.io.on('connect_error', (error) => {
             console.error('Connection error:', error);

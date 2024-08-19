@@ -28,6 +28,7 @@ const storeHouse_1 = __importDefault(require("./storeHouse"));
 const productOrder_1 = __importDefault(require("./productOrder"));
 const shippingCost_1 = __importDefault(require("./shippingCost"));
 const discountCoupon_1 = __importDefault(require("./discountCoupon"));
+const sockets_1 = __importDefault(require("./sockets"));
 const apiRouter = () => {
     const apiRouter = (0, express_1.Router)();
     apiRouter.use('/auth', auth_1.default);
@@ -53,6 +54,7 @@ const apiRouter = () => {
     apiRouter.use('/stock-StoreHouse', stockStoreHouse_1.default);
     apiRouter.use('/storehouse', storeHouse_1.default);
     apiRouter.use('/coupons', discountCoupon_1.default);
+    apiRouter.use('/socket', sockets_1.default);
     return apiRouter;
 };
 exports.apiRouter = apiRouter;

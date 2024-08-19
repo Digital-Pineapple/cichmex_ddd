@@ -1,13 +1,14 @@
-import { Request, Response, Router } from 'express';
+import { Router } from 'express';
+import { UserValidations } from '../../../../shared/infrastructure/validation/User/UserValidation';
+import { SocketUseCase } from '../../../application/socket/socketUseCase';
+import { SocketController } from '../../controllers/sockets/users';
 
-export const socketRouter = (): Router => {
+const socketsRouter = Router();
 
-    const socketRouter = Router();
-    
-    socketRouter.use('/location', ((req: Request, res: Response) => {
-        res.send('Hola desde socket server');
-    }));
+const socketUseCase = new SocketUseCase(); // Instancia de SocketUseCase
+const socketController = new SocketController(socketUseCase); // Instancia de SocketController con SocketUseCase
+const userValidations = new UserValidations();
 
-    return socketRouter; // Agregar esta línea para devolver el enrutador
-    
-}
+socketsRouter.post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), socketController.addUser);
+
+export default socketsRouter;
