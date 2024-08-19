@@ -100,6 +100,10 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
     verifyVoucher:{
       type: Object,
       required:false
+    },
+    paymentType:{
+      type:Object,
+      required:false,
     }
   },
   {
