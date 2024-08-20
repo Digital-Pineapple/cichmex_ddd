@@ -32,6 +32,10 @@ export class ProductOrderUseCase {
     const response =  await this.productOrderRepository.getPaidProductOrders()
     return response
   }
+  public async PendingTransferPO(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+    const response =  await this.productOrderRepository.getPendingTransferPO()
+    return response
+  }
   public async POGetAssigned(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
     const response =  await this.productOrderRepository.getAssignedPO()
     return response

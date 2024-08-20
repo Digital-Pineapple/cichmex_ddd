@@ -72,8 +72,6 @@ export interface ProductImage  {
     status?:boolean;
     paymentType?: string;
     download_ticket?:string;
-    voucher_img?:string;
-    verifyVoucher?: OrderVerifyVoucher;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;
   }
@@ -130,14 +128,14 @@ export interface ProductImage  {
     route_status?: string,
     deliveryDate?: string,
     guide?: string,
-    shipping_company:string
+    shipping_company?:string
   }
   export interface POVerificationDetail{
-      verification_code   ?: string,
-      verification_status ?: boolean,
-      verification_time   ?: string,
-      signature           ?: string,
-      photo_proof         ?: string,
-      notes               ?: string,
+      verification_reference   ?: string,
+      verification_status      ?: boolean,
+      verification_time        ?: string,
+      signature                ?: string,
+      photo_proof              ?: string,
+      notes                    ?: string,
   }
 

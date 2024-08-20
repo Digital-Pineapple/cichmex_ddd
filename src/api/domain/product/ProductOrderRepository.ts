@@ -20,6 +20,8 @@ export interface ProductOrderRepository extends MongoRepository {
      getAssignedPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> 
 
      ResumeProductOrders(): Promise<ProductOrderResume> 
+
+     getPendingTransferPO(): Promise<ProductOrderEntity[] | ErrorHandler | null>
       
 
 

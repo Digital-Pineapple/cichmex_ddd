@@ -310,7 +310,6 @@ export class ProductController extends ResponseData {
       shortDescription,
       dimensions,
       seoKeywords } = req.body;
-      console.log(req.body);
       
   
     try {
@@ -404,7 +403,6 @@ export class ProductController extends ResponseData {
       this.invoke(response, 201, res, 'Se actualizó con éxito', next);
   
     } catch (error) {
-      console.log(error);
       
       next(new ErrorHandler('Hubo un error al actualizar', 500));
     }

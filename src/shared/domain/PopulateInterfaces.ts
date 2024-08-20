@@ -151,7 +151,7 @@ export const InfoPayment = {
 
 export const PopulateInfoUser = {
     path: 'user_id',
-    select: ["fullname"],
+    select: ["fullname", "email"],
     model:UserModel
 }
 

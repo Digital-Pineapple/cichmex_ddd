@@ -35,12 +35,13 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
 
     async getPaidProductOrders(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
         return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: false }).sort({ createdAt: -1 })
-
+    }
+    async getPendingTransferPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+        return await this.ProductOrderModel.find({ payment_status: 'pending', storeHouseStatus: false, paymentType:'transfer' }).sort({ createdAt: -1 })
     }
 
     async getPaidAndSuplyToPointPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
         return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: true, route_status: false, }).sort({ createdAt: -1 })
-
     }
 
     async getAssignedPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {

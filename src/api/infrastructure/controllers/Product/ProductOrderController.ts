@@ -32,10 +32,12 @@ export class ProductOrderController extends ResponseData {
     this.getDeliveries = this.getDeliveries.bind(this);
     this.getProductOrderByBranch = this.getProductOrderByBranch.bind(this);
     this.verifyQr = this.verifyQr.bind(this);
-    this.verifyQrToPoint  = this.verifyQrToPoint.bind(this);
+    this.verifyQrToPoint = this.verifyQrToPoint.bind(this);
     this.endShippingOrder = this.endShippingOrder.bind(this);
     this.endShippingOrdertoPoint = this.endShippingOrdertoPoint.bind(this);
     this.pdfOrder = this.pdfOrder.bind(this)
+    this.pendingTransferPO = this.pendingTransferPO.bind(this)
+    this.uploadProofOfPayment = this.uploadProofOfPayment.bind(this)
   }
 
   public async getAllProductOrders(req: Request, res: Response, next: NextFunction) {
@@ -50,27 +52,27 @@ export class ProductOrderController extends ResponseData {
   public async pdfOrder(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
-        const response : any = await this.productOrderUseCase.getOneProductOrder(id);
-        
-        res.writeHead(200, {
-            "Content-Type": "application/pdf",
-            "Content-Disposition": `attachment; filename=order${response.order_id}.pdf`
-        });
+      const response: any = await this.productOrderUseCase.getOneProductOrder(id);
 
-        const stream = res;
+      res.writeHead(200, {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename=order${response.order_id}.pdf`
+      });
 
-        buildPDF(
-            response,
-            (data: any) => stream.write(data),
-            () => stream.end()
-        );
+      const stream = res;
+
+      buildPDF(
+        response,
+        (data: any) => stream.write(data),
+        () => stream.end()
+      );
 
     } catch (error) {
       console.log(error);
-      
-        next(new ErrorHandler("Hubo un error al generar el PDF", 500));
+
+      next(new ErrorHandler("Hubo un error al generar el PDF", 500));
     }
-}
+  }
 
 
 
@@ -83,6 +85,17 @@ export class ProductOrderController extends ResponseData {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
+
+  public async pendingTransferPO(req: Request, res: Response, next: NextFunction) {
+
+    try {
+      const response = await this.productOrderUseCase.PendingTransferPO()
+      this.invoke(response, 200, res, "", next);
+    } catch (error) {
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+
   public async paidAndSupplyPOToPoint(req: Request, res: Response, next: NextFunction) {
 
     try {
@@ -117,12 +130,12 @@ export class ProductOrderController extends ResponseData {
 
   public async AssignRoute(req: Request, res: Response, next: NextFunction) {
     const { order_id, user_id, guide, shipping_company } = req.body;
-    
+
     try {
       let response;
       if (user_id) {
         response = await this.productOrderUseCase.updateProductOrder(order_id, {
-          route_detail: { user: user_id, route_status: 'assigned', guide:'', shipping_company:'' },
+          route_detail: { user: user_id, route_status: 'assigned', guide: '', shipping_company: '' },
         });
         this.invoke(response, 200, res, "Orden Asignada Correctamente", next);
       } else {
@@ -131,7 +144,7 @@ export class ProductOrderController extends ResponseData {
             guide: guide,
             route_status: 'assigned',
             shipping_company: shipping_company,
-            user_id:''
+            user_id: ''
           },
         });
         this.invoke(response, 200, res, "Guía y Compañía de Envío Asignadas Correctamente", next);
@@ -140,12 +153,12 @@ export class ProductOrderController extends ResponseData {
       next(new ErrorHandler("Hubo un error", 500));
     }
   }
-  
+
 
   public async gerProductOrderResume(req: Request, res: Response, next: NextFunction) {
     try {
       const response = await this.productOrderUseCase.getProductOrdersResume()
-      
+
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
@@ -156,15 +169,20 @@ export class ProductOrderController extends ResponseData {
   public async getOneProductOrder(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
-      const response: any | null = await this.productOrderUseCase.getOneProductOrder(id)
-
+      const response: any = await this.productOrderUseCase.getOneProductOrder(id);
+      
+      if (response.verification) {
+        const url = await this.s3Service.getUrlObject(response.verification.photo_proof );
+        
+        response.verification.photo_proof = url;
+      }
+      
       this.invoke(response, 200, res, "", next);
     } catch (error) {
-      console.log(error);
-      
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
+  
 
   public async getDeliveries(req: Request, res: Response, next: NextFunction) {
     try {
@@ -192,25 +210,25 @@ export class ProductOrderController extends ResponseData {
 
   public async verifyQr(req: Request, res: Response, next: NextFunction) {
     const { order_id, user_id, v_code, branch_id } = req.body
-    
+
 
     const date = new Date()
 
     try {
-      const {verification, _id}: any | null = await this.productOrderUseCase.getOnePO({ order_id: order_id, user_id: user_id})
+      const { verification, _id }: any | null = await this.productOrderUseCase.getOnePO({ order_id: order_id, user_id: user_id })
 
-     
+
       if (verification.verification_code !== v_code) {
-       return   next(new ErrorHandler("El código no coincide", 500));
-     }
-     if (branch_id) {
-      const update = await this.productOrderUseCase.updateProductOrder(_id,{ point_pickup_status:true,'route_detail.route_status':'point_puckup'  } )
-      this.invoke(update, 200, res, "Paquete entregado punto de recolección", next);
-     }
-     else{
-       const update = await this.productOrderUseCase.updateProductOrder(_id, { verification: { verification_status: true, verification_time: date, verification_code: v_code } })
-       this.invoke(update, 200, res, "Código válido", next);
-     }
+        return next(new ErrorHandler("El código no coincide", 500));
+      }
+      if (branch_id) {
+        const update = await this.productOrderUseCase.updateProductOrder(_id, { point_pickup_status: true, 'route_detail.route_status': 'point_puckup' })
+        this.invoke(update, 200, res, "Paquete entregado punto de recolección", next);
+      }
+      else {
+        const update = await this.productOrderUseCase.updateProductOrder(_id, { verification: { verification_status: true, verification_time: date, verification_code: v_code } })
+        this.invoke(update, 200, res, "Código válido", next);
+      }
     } catch (error) {
 
       next(new ErrorHandler("Error en el codigo", 500));
@@ -221,23 +239,23 @@ export class ProductOrderController extends ResponseData {
     const { order_id, user_id, branch_id, v_code } = req.body
 
     try {
-      const {verification, _id}: any | null = await this.productOrderUseCase.getOnePO({ order_id: order_id, user_id: user_id})
+      const { verification, _id }: any | null = await this.productOrderUseCase.getOnePO({ order_id: order_id, user_id: user_id })
 
-     
+
       if (verification.verification_code !== v_code) {
-       return   next(new ErrorHandler("El código no coincide", 500));
-     }
-     if (branch_id) {
-      const update = await this.productOrderUseCase.updateProductOrder(_id,{ point_pickup_status:true,'route_detail.route_status':'point_puckup'  } )
-      this.invoke(update, 200, res, "Paquete entregado punto de recolección", next);
-     }
+        return next(new ErrorHandler("El código no coincide", 500));
+      }
+      if (branch_id) {
+        const update = await this.productOrderUseCase.updateProductOrder(_id, { point_pickup_status: true, 'route_detail.route_status': 'point_puckup' })
+        this.invoke(update, 200, res, "Paquete entregado punto de recolección", next);
+      }
     } catch (error) {
       next(new ErrorHandler("Error en el codigo", 500));
     }
   }
 
   public async getOneProductOrderByUser(req: Request, res: Response, next: NextFunction) {
-    const user : any = req.user;
+    const user: any = req.user;
     try {
       const response: any | null = await this.productOrderUseCase.ProductOrdersByUser(user?.id)
       this.invoke(response, 200, res, "", next);
@@ -251,7 +269,7 @@ export class ProductOrderController extends ResponseData {
     const { id } = req.params;
     try {
       const response = await this.productOrderUseCase.ProductOrdersByBranch(id)
-   
+
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
@@ -272,7 +290,7 @@ export class ProductOrderController extends ResponseData {
   public async endShippingOrder(req: Request, res: Response, next: NextFunction) {
     const { _id, notes } = req.body;
     try {
-      const response = await this.productOrderUseCase.updateProductOrder(_id,{deliveryStatus:true, 'verification.notes': notes})
+      const response = await this.productOrderUseCase.updateProductOrder(_id, { deliveryStatus: true, 'verification.notes': notes })
       this.invoke(response, 201, res, 'Se entregó con éxito', next);
     } catch (error) {
       next(new ErrorHandler('Hubo un error al entregar', 500));
@@ -283,7 +301,7 @@ export class ProductOrderController extends ResponseData {
   public async endShippingOrdertoPoint(req: Request, res: Response, next: NextFunction) {
     const { _id, notes } = req.body;
     try {
-      const response = await this.productOrderUseCase.updateProductOrder(_id,{deliveryStatus:true, 'verification.notes': notes})
+      const response = await this.productOrderUseCase.updateProductOrder(_id, { deliveryStatus: true, 'verification.notes': notes })
       this.invoke(response, 201, res, 'Se entregó con éxito', next);
     } catch (error) {
       next(new ErrorHandler('Hubo un error al entregar', 500));
@@ -316,6 +334,39 @@ export class ProductOrderController extends ResponseData {
 
       next(new ErrorHandler("Hubo un error ", 500));
     }
+  }
+  public async uploadProofOfPayment(req: Request, res: Response, next: NextFunction) {
+    const { order_id, verification_reference } = req.body;
+    if (req.file) {
+      try {
+        let response: any = await this.productOrderUseCase.getOnePO({ order_id: order_id, status: true })
+        if (!response) {
+          return new ErrorHandler('No activa/existente', 500)
+        }
+        else {
+          const pathObject = `${this.path}/proofPhoto/${response._id}`
+          const { url, success, key, message } = await this.s3Service.uploadToS3AndGetUrl(pathObject, req.file, ".jpg")
+          if (!success) {
+            return new ErrorHandler(`${message}`, 500)
+          }
+          const update: any = await this.productOrderUseCase.updateProductOrder(response._id, {
+            verification:
+              { verification_status: false, photo_proof: key, verification_reference: verification_reference }
+          })
+          update.verification.photo_proof = url
+          response = update
+        }
+
+        this.invoke(response, 201, res, 'Se subio el archivo con éxito', next);
+      } catch (error) {
+
+        next(new ErrorHandler("Hubo un error ", 500));
+      }
+    }
+    else {
+      return new ErrorHandler('Documento vacio', 500)
+    }
+
   }
 
   public async deleteProductOrder(req: Request, res: Response, next: NextFunction) {
