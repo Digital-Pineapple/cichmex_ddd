@@ -137,5 +137,6 @@ export interface ProductImage  {
       signature                ?: string,
       photo_proof              ?: string,
       notes                    ?: string,
+      verification_responsible ?: string,
   }
 

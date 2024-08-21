@@ -9,6 +9,9 @@ export class PaymentUseCase {
     public async getPayments(): Promise<PaymentEntity[] | ErrorHandler > {
         return await this.paymentRepository.findAll();
     }
+    public async getPaymentsMPExpired(): Promise<PaymentEntity[] | null > {
+        return await this.paymentRepository.getMPPayments()
+    }
 
     public async getDetailPayment(_id: string): Promise<PaymentEntity | ErrorHandler | null> {
         return await this.paymentRepository.findById(_id);

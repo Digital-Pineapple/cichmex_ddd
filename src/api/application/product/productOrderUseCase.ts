@@ -12,6 +12,9 @@ export class ProductOrderUseCase {
   public async getProductOrders(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
     return await this.productOrderRepository.findAllProductOrders(InfoBranchOrder)
   }
+  public async getProductOrdersExpired(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+    return await this.productOrderRepository.getPOExpired()
+  }
   public async getProductOrdersResume(): Promise<ProductOrderResume> {
     return await this.productOrderRepository.ResumeProductOrders()
   }

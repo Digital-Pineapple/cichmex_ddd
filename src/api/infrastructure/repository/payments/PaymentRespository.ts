@@ -4,6 +4,7 @@ import { MongoRepository } from '../MongoRepository';
 import PaymentModel from '../../models/payments/PaymentModel';
 import  {PaymentEntity}  from '../../../domain/payments/PaymentEntity';
 import _ from 'mongoose-paginate-v2';
+import moment from 'moment';
 
 export class PaymentRepository extends MongoRepository implements PaymentRepositoryConfig {
 
@@ -28,6 +29,14 @@ export class PaymentRepository extends MongoRepository implements PaymentReposit
 
     async createOneCustomer(body: object): Promise<PaymentEntity | null> {
         return await this.createOne(body);
+    }
+
+    async getMPPayments(): Promise<PaymentEntity[]  | null> {
+        
+        const exp = moment().subtract(48, 'hours').toDate();
+        
+        const response = await this.PaymentModel.find({ payment_status: { $ne: 'approved' },MP_info:{$exists:true},  createdAt: { $lt: exp },}).sort({ createdAt: -1 })
+        return response
     }
 
    

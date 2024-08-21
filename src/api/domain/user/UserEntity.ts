@@ -23,7 +23,7 @@ export interface IEmployeeResponse  {
 }
 export interface UserEntity {
     _id              :   mongoose.Types.ObjectId;
-    id ?: string,
+    id               ?: string,
     uuid             :  string;
     fullname        ?:   string;
     privacity       ?:   boolean;

@@ -7,12 +7,16 @@ import ProductOrderModel from '../../models/products/ProductOrderModel';
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
 import { ProductOrderController } from '../../controllers/Product/ProductOrderController';
 import { MomentService } from "../../../../shared/infrastructure/moment/MomentService";
+import StockSHoutputModel from "../../models/stockStoreHouse/StockSHoutputModel";
+import { StockSHOutputRepository } from "../../repository/stockStoreHouse/StockSHOutputRepository";
+import { StockSHoutputUseCase } from "../../../application/storehouse/stockSHoutputUseCase";
+import StockStoreHouseModel from "../../models/stockStoreHouse/StockStoreHouseModel";
+import { StockStoreHouseRepository } from "../../repository/stockStoreHouse/StockStoreHouseRepository";
 
 const productOrderRouter = Router();
 
 
 const productOrderRepository = new ProductOrderRepository(ProductOrderModel);
-
 const productOrderUseCase = new ProductOrderUseCase(productOrderRepository);
 
 
@@ -44,7 +48,7 @@ productOrderRouter
   .post('/verifyStartRoute',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.verifyAndStartRoute)
   .post('/assignRoute',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.AssignRoute)
   .post('/fill-order/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN",]), productOrderController.fillProductOrder)
-  .post("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.updateProductOrder )
+  .post("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.updateProductOrder)
   .delete("/:id",userValidations.authTypeUserValidation(["CUSTOMER"]),productOrderController.deleteProductOrder)
   .get("/ordersByBranch/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER"]), productOrderController.getProductOrderByBranch);
 

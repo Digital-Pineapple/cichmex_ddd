@@ -51,8 +51,10 @@ const mpService = new MPService()
 const s3Service = new S3Service()
 const paymentController = new PaymentController(paymentUseCase, productOrderUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase, stockStoreHouseUseCase, stockSHoutputUseCase, s3Service );
 const paymentValidation = new PaymentValidations();
+const userValidations = new UserValidations()
 
 paymentRouter
+.get("/expired",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), paymentController.autoCancelPO)
     .get('/', paymentController.getAllPayments)
     .get('/:id', paymentController.getPayment)
     .post('/',paymentValidation.paymentValidation, paymentController.createLMP)
@@ -63,6 +65,7 @@ paymentRouter
     // .post('/Products-PayLocation', paymentController.createPaymentProductMPLocation)
     .post('/success',paymentController.createTicket )
     .post('/Mem-Payment-success',paymentController.PaymentSuccess)
+    .post("/validateSale",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), paymentController.validateProofOfPayment)
     // .post('/ticket', paymentController)
     .delete('/:id', paymentController.deletePayment)
 

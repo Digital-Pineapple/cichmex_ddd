@@ -112,7 +112,7 @@ export class AuthController extends ResponseData {
     public async register(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
         const { email, password, fullname, phone } = req.body;
         try {
-            const responsedefault  = await this.typeUserUseCase.getTypeUsers()
+            const responsedefault   = await this.typeUserUseCase.getTypeUsers()
             const def = responsedefault?.filter(item => item.name === 'Customer')
             const TypeUser_id = def?.map(item => item._id)
             const response = await this.authUseCase.signUp({ fullname, email, password, phone, type_user: TypeUser_id });
@@ -337,10 +337,10 @@ export class AuthController extends ResponseData {
     }
 
     public async verifyCode(req: Request, res: Response, next: NextFunction) {
-        const { user } = req;
+        const user = req.user.id;
         const { code } = req.body;
         try {
-            const response = await this.authUseCase.verifyPhoneNumber(user._id, + code);
+            const response = await this.authUseCase.verifyPhoneNumber(user, + code);
             this.invoke(response, 200, res, 'El código de verificación se envió correctamente', next);
         } catch (error) {
             next(new ErrorHandler('El codigo no se ha enviado', 500));
