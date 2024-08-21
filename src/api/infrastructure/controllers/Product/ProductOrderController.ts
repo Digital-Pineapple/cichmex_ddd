@@ -370,9 +370,14 @@ export class ProductOrderController extends ResponseData {
   }
 
   public async deleteProductOrder(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;
+    const { order_id } = req.params;
+    const user = req.user._doc
     try {
-      const response = await this.productOrderUseCase.updateProductOrder(id, { status: false })
+      const active : any = await this.productOrderUseCase.getOnePO({order_id:order_id, status:true, user_id:user.id})
+      if (!active) {
+        return new ErrorHandler('No se encontro el pedido',500)
+      }
+      const response = await this.productOrderUseCase.updateProductOrder(active._id, { status: false })
       this.invoke(response, 201, res, 'Se eliminó con éxito', next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error ", 500));
