@@ -18,15 +18,15 @@ const userValidations = new UserValidations();
 
 shoppingCartRouter
     .get('/', shoppingCartController.getAllShoppingCarts)
-    .get('/:id', shoppingCartController.getShoppingCart)
-    .post('/', shoppingCartController.createShoppingCart)
-    .put('/:id',shoppingCartController.updateShoppingCart )
+    .get('/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.getShoppingCart)
+    .post('/', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.createShoppingCart)
+    .put('/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.updateShoppingCart )
     .delete('/membership/:id', shoppingCartController.deleteMembershipInCart)
-    .delete('/:id', shoppingCartController.deleteShoppingCart)
+    .delete('/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.deleteShoppingCart)
     .put('/product/:id', shoppingCartController.deleteProductInCart)
-    .delete('/products/:id', shoppingCartController.deleteProductsInShoppingCart)
-    .put('/products/:id', shoppingCartController.updateShoppingCartProducts)
-    .put('/product/quantity/:id', shoppingCartController.updateProductQuantity)
+    .delete('/products/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.deleteProductsInShoppingCart)
+    .put('/products/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.updateShoppingCartProducts)
+    .put('/product/quantity/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.updateProductQuantity)
     .put ('/merge/ok', shoppingCartController.mergeCart)
     
 
