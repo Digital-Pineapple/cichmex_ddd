@@ -89,7 +89,7 @@ export class StockStoreHouseController extends ResponseData {
     public async createStock(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params
         const { product_id, stock } = req.body;
-        const user = req.user._doc
+        const user = req.user
         const UserInfo = {
             _id: user._id,
             fullname: user.fullname,
@@ -122,7 +122,7 @@ export class StockStoreHouseController extends ResponseData {
 
     public async createMultipleStock(req: Request, res: Response, next: NextFunction) {
         const { user_received, user_delivery, products } = req.body;
-        const user = req.user._doc;
+        const user = req.user;
         const UserInfo = {
             _id: user._id,
             fullname: user.fullname,
@@ -178,7 +178,7 @@ export class StockStoreHouseController extends ResponseData {
 
     public async createMultipleOutputs(req: Request, res: Response, next: NextFunction) {
         const { user_received, user_delivery, products } = req.body;
-        const user = req.user._doc;
+        const user = req.user;
         const UserInfo = {
             _id: user._id,
             fullname: user.fullname,
@@ -237,7 +237,7 @@ export class StockStoreHouseController extends ResponseData {
     public async addStock(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params
         const { stock } = req.body;
-        const user = req.user._doc
+        const user = req.user
 
         const UserInfo = {
             _id: user._id,

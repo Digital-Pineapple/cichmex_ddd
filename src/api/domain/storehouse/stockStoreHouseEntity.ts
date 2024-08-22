@@ -1,7 +1,4 @@
-
-import MongooseDelete = require("mongoose-delete");
 import { ProductEntity } from "../product/ProductEntity";
-import { BranchOfficeEntity } from "../branch_office/BranchOfficeEntity";
 import { UserEntity } from "../user/UserEntity";
 import { storeHouseEntity } from "./storeHouseEntity";
 
@@ -28,7 +25,8 @@ export interface SHProductInput {
     createdAt: NativeDate;
   }
   export interface SHProductOutput {
-    folio:string,
+    folio ?: string,
+    order_id : string,
     SHStock_id ?: string,
     quantity: number,
     newQuantity: number,
