@@ -20,17 +20,26 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
     
 
     async findAllProductOrders(populateConfig1?: any): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.MODEL.find({}).populate(populateConfig1).sort({ createdAt: -1 })
+        const response : any = await this.ProductOrderModel.find().populate(populateConfig1).sort({ createdAt: -1 })
+        return response
     }
 
     async getProductOrdersByUser(_id: string, populateConfig1?: any): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.MODEL.find({ user_id: _id }).populate(populateConfig1).sort({ createdAt: -1 })
+        const response: any = await this.ProductOrderModel.find({ user_id: _id }).populate(populateConfig1).sort({ createdAt: -1 })
+        return response
 
     }
 
     async getProductOrdersByBranch(_id: string): Promise<ProductOrderEntity[] | ErrorHandler | null> {
         return await this.ProductOrderModel.find({ branch: _id, payment_status: 'approved' }).sort({ createdAt: -1 })
 
+    }
+    async getPOExpired(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+        
+        const exp = moment().subtract(1, 'hours').toDate();
+        
+        const response = await this.ProductOrderModel.find({ payment_status: { $ne: 'approved' }, paymentType:'transfer', verification:{$exists:false}, createdAt: { $lt: exp },}).sort({ createdAt: -1 })
+        return response
     }
 
     async getPaidProductOrders(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
@@ -64,7 +73,8 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
             createdAt: {
                 $gte: startOfDay,
                 $lt: endOfDay
-            }
+            },
+            paymentType: { $ne: 'transfer' }
         };
 
 
@@ -77,7 +87,8 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
             createdAt: {
                 $gte: startOfMonth,
                 $lt: endOfMonth
-            }
+            },
+            paymentType: { $ne: 'transfer' }
         };
         const startOfYear = moment().startOf('year').toDate();
         const endOfYear = moment().endOf('year').toDate();
@@ -87,7 +98,8 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
             createdAt: {
                 $gte: startOfYear,
                 $lt: endOfYear
-            }
+            },
+            paymentType: { $ne: 'transfer' }
         };
 
         const startOfWeek = moment().startOf('week').toDate();
@@ -98,7 +110,8 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
             createdAt: {
                 $gte: startOfWeek,
                 $lt: endOfWeek
-            }
+            },
+            paymentType: { $ne: 'transfer' }
         };
 
         const salesDay: ProductOrderEntity[] = await this.MODEL.find(queryDay).populate(InfoPayment);
@@ -118,27 +131,27 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
         }));
 
         const numDay = salesDay.length;
-        const totalSumDay = salesDay.reduce((sum, item) => sum + item.total, 0);
-        const SalesMoneyDayMP = salesDay.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount)
+        const totalSumDay = salesDay.reduce((sum, item : any) => sum + item.total, 0);
+        const SalesMoneyDayMP = salesDay.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount )
         const totalPayMoneyDayMP = SalesMoneyDayMP.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
         const commissionPayedDay = totalSumDay - totalPayMoneyDayMP
 
         const numWeek = salesWeek.length;
-        const totalSumWeek = salesWeek.reduce((sum, item) => sum + item.total, 0);
-        const SalesMoneyWeekMP = salesWeek.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount)
+        const totalSumWeek = salesWeek.reduce((sum, item: any) => sum + item.total, 0);
+        const SalesMoneyWeekMP = salesWeek.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount )
         const totalPayMoneyWeekMP = SalesMoneyWeekMP.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
         const commissionPayedWeek = totalSumWeek - totalPayMoneyWeekMP
 
         const numMonth = salesMonth.length;
-        const totalSumMoth = salesMonth.reduce((sum, item) => sum + item.total, 0);
+        const totalSumMoth = salesMonth.reduce((sum, item : any) => sum + item.total, 0);
         const SalesMoneyMonthMP = salesMonth.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount)
         const totalPayMoneyMonthMP = SalesMoneyMonthMP.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
         const commissionPayedMonth = totalSumMoth - totalPayMoneyMonthMP
 
 
         const numYear = salesYear.length;
-        const totalSumYear = salesYear.reduce((sum, item) => sum + item.total, 0);
-        const SalesMoneyYearMP = salesYear.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount)
+        const totalSumYear = salesYear.reduce((sum, item : any) => sum + item.total, 0);
+        const SalesMoneyYearMP = salesYear.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount )
         const totalPayMoneyYearMP = SalesMoneyYearMP.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
         const commissionPayedYear = totalSumYear - totalPayMoneyYearMP
 

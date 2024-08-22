@@ -317,10 +317,10 @@ class AuthController extends ResponseData_1.ResponseData {
     }
     verifyCode(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { user } = req;
+            const user = req.user.id;
             const { code } = req.body;
             try {
-                const response = yield this.authUseCase.verifyPhoneNumber(user._id, +code);
+                const response = yield this.authUseCase.verifyPhoneNumber(user, +code);
                 this.invoke(response, 200, res, 'El código de verificación se envió correctamente', next);
             }
             catch (error) {

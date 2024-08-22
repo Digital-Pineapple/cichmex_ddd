@@ -1,11 +1,11 @@
 import { S3Service } from './../../../../shared/infrastructure/aws/S3Service';
-import { Request, Response, NextFunction, response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
 import { RandomCodeShipping } from '../../../../shared/infrastructure/validation/Utils';
 import { buildPDF } from '../../../../libs/pdfKit';
-import { BranchPopulateConfig, PopulateInfoUser, UserPopulateConfig } from '../../../../shared/domain/PopulateInterfaces';
+import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHoutputUseCase';
 
 export class ProductOrderController extends ResponseData {
   protected path = "/productOrder";
@@ -49,6 +49,7 @@ export class ProductOrderController extends ResponseData {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
+  
   public async pdfOrder(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
@@ -161,6 +162,7 @@ export class ProductOrderController extends ResponseData {
 
       this.invoke(response, 200, res, "", next);
     } catch (error) {
+      
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
@@ -170,19 +172,20 @@ export class ProductOrderController extends ResponseData {
     const { id } = req.params;
     try {
       const response: any = await this.productOrderUseCase.getOneProductOrder(id);
-      
+
       if (response.verification) {
-        const url = await this.s3Service.getUrlObject(response.verification.photo_proof );
-        
+        const url = await this.s3Service.getUrlObject(response.verification.photo_proof);
+
         response.verification.photo_proof = url;
       }
-      
+
       this.invoke(response, 200, res, "", next);
     } catch (error) {
+
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
-  
+
 
   public async getDeliveries(req: Request, res: Response, next: NextFunction) {
     try {
@@ -337,49 +340,59 @@ export class ProductOrderController extends ResponseData {
   }
   public async uploadProofOfPayment(req: Request, res: Response, next: NextFunction) {
     const { order_id, verification_reference } = req.body;
-    if (req.file) {
-      try {
-        let response: any = await this.productOrderUseCase.getOnePO({ order_id: order_id, status: true })
+
+    if (!req.file) {
+        return next(new ErrorHandler('Documento vacío', 400));
+    }
+
+    try {
+        let response: any = await this.productOrderUseCase.getOnePO({ order_id: order_id, status: true });
+
         if (!response) {
-          return new ErrorHandler('No activa/existente', 500)
-        }
-        else {
-          const pathObject = `${this.path}/proofPhoto/${response._id}`
-          const { url, success, key, message } = await this.s3Service.uploadToS3AndGetUrl(pathObject, req.file, ".jpg")
-          if (!success) {
-            return new ErrorHandler(`${message}`, 500)
-          }
-          const update: any = await this.productOrderUseCase.updateProductOrder(response._id, {
-            verification:
-              { verification_status: false, photo_proof: key, verification_reference: verification_reference }
-          })
-          update.verification.photo_proof = url
-          response = update
+            return next(new ErrorHandler('No activa', 404));
         }
 
-        this.invoke(response, 201, res, 'Se subio el archivo con éxito', next);
-      } catch (error) {
+        const pathObject = `${this.path}/proofPhoto/${response._id}`;
+        const { url, success, key, message } = await this.s3Service.uploadToS3AndGetUrl(pathObject, req.file, ".jpg");
 
-        next(new ErrorHandler("Hubo un error ", 500));
-      }
-    }
-    else {
-      return new ErrorHandler('Documento vacio', 500)
-    }
+        if (!success) {
+            return next(new ErrorHandler(`${message}`, 500));
+        }
 
-  }
+        const update: any = await this.productOrderUseCase.updateProductOrder(response._id, {
+            verification: {
+                verification_status: false,
+                photo_proof: key,
+                verification_reference: verification_reference
+            }
+        });
+
+        update.verification.photo_proof = url;
+        response = update;
+
+        this.invoke(response, 201, res, 'Se subió el archivo con éxito', next);
+    } catch (error) {
+      console.log(error);
+      
+        return next(new ErrorHandler('Hubo un error', 500));
+    }
+}
+
+
+
 
   public async deleteProductOrder(req: Request, res: Response, next: NextFunction) {
     const { order_id } = req.params;
-    const user = req.user._doc
+    const user = req.user.id
     try {
-      const active : any = await this.productOrderUseCase.getOnePO({order_id:order_id, status:true, user_id:user.id})
+      const active: any = await this.productOrderUseCase.getOnePO({ order_id: order_id, status: true, user_id: user })
       if (!active) {
-        return new ErrorHandler('No se encontro el pedido',500)
+        return new ErrorHandler('No se encontro el pedido', 500)
       }
       const response = await this.productOrderUseCase.updateProductOrder(active._id, { status: false })
       this.invoke(response, 201, res, 'Se eliminó con éxito', next);
     } catch (error) {
+
       next(new ErrorHandler("Hubo un error ", 500));
     }
   }

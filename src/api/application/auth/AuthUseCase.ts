@@ -236,6 +236,7 @@ export class AuthUseCase extends Authentication {
     async registerPhoneNumber(user: UserEntity | UserEntity, phone: IPhoneRequest, code: number) {
         const { phone_number, prefix } = phone;
 
+
         const phoneData = await this.authRepository.validatePhoneNumber(phone_number, user._id);
         if (phoneData) return new ErrorHandler('El telefono ya ha sido registrado', 400);
 
@@ -244,7 +245,7 @@ export class AuthUseCase extends Authentication {
     }
 
 
-    async verifyPhoneNumber(_id: string, currentCode: number) {
+    async verifyPhoneNumber(_id: any, currentCode: number) {
         const customer = await this.authRepository.findById(_id,);
         if (!customer.phone.phone_number) return new ErrorHandler('Ingresa un numero telefonico antes de continuar', 400);
 

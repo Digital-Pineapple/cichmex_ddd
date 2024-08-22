@@ -26,9 +26,9 @@ export class PaymentController extends ResponseData {
         private readonly membershipBenefitUseCAse: MembershipBenefitsUseCase,
         private readonly membershipUseCase: MembershipUseCase,
         private readonly membershipHistoryUseCase: MembershipHistoryUseCase,
-        private readonly stockStoreHouseUseCase : StockStoreHouseUseCase,
-        private readonly stockSHoutputUseCase : StockSHoutputUseCase,
-        private readonly s3Service : S3Service,
+        private readonly stockStoreHouseUseCase: StockStoreHouseUseCase,
+        private readonly stockSHoutputUseCase: StockSHoutputUseCase,
+        private readonly s3Service: S3Service,
 
 
     ) {
@@ -44,6 +44,8 @@ export class PaymentController extends ResponseData {
         this.PaymentSuccess = this.PaymentSuccess.bind(this)
         this.createPaymentProductMP = this.createPaymentProductMP.bind(this)
         this.addTicket = this.addTicket.bind(this);
+        this,this.autoCancelPO = this.autoCancelPO.bind(this);
+        this.validateProofOfPayment = this.validateProofOfPayment.bind(this)
 
 
     }
@@ -65,6 +67,35 @@ export class PaymentController extends ResponseData {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
+
+    public async autoCancelPO(req: Request, res: Response, next: NextFunction) {
+        const access_token = config.MERCADOPAGO_TOKEN;
+        const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
+        const payment1 = new Payment(client);
+        try {
+          const response : any = await this.productOrderUseCase.getProductOrdersExpired()
+          const PaymentMP : any = await this.paymentUseCase.getPaymentsMPExpired()
+        //   console.log(PaymentMP,'Mercado pago');
+        //   console.log(response,'pagos por transferencia');
+          await Promise.all(
+            PaymentMP.map(async (payment: any) => {
+                const infoPayment = await payment1.get({
+                    id:payment.MP_info.id
+                })
+                console.log(infoPayment);
+                
+            
+            })
+        );
+          
+    
+          this.invoke(response, 200, res, "", next);
+        } catch (error) {
+            console.log(error);
+            
+          next(new ErrorHandler("Hubo un error al consultar la información", 500));
+        }
+      }
 
     public async createLMP(req: Request, res: Response, next: NextFunction) {
         const { values, user_id } = req.body;
@@ -93,7 +124,7 @@ export class PaymentController extends ResponseData {
 
         try {
             // Crea un pago en la base de datos
-            const response1 : any = await this.paymentUseCase.createNewPayment({ uuid: uuid4 });
+            const response1: any = await this.paymentUseCase.createNewPayment({ uuid: uuid4 });
 
             const path_notification = `${process.env.URL_NOTIFICATION}api/payments/Mem-Payment-success`;
 
@@ -142,16 +173,16 @@ export class PaymentController extends ResponseData {
                         });
                         const client_id = user_id;
                         const idMembership = membership._id
-                        const membership_info : any = await this.membershipUseCase.getInfoMembership(idMembership);
+                        const membership_info: any = await this.membershipUseCase.getInfoMembership(idMembership);
                         if (!(membership_info instanceof ErrorHandler)) {
                             let start_date1 = moment().format('L');
                             let end_date1 = moment().add(30, 'days').calendar();
                             let services = membership_info?.service_quantity;
                             let mem_id = membership_info?.id
                             if (services !== undefined) {
-                                await Promise.all(services.map(async (item : any ) => {
+                                await Promise.all(services.map(async (item: any) => {
                                     try {
-                                        const ok : any = await this.membershipBenefitUseCAse.createNewMembershipBenefit(
+                                        const ok: any = await this.membershipBenefitUseCAse.createNewMembershipBenefit(
                                             mem_id,
                                             item.service_id._id,
                                             client_id,
@@ -175,7 +206,7 @@ export class PaymentController extends ResponseData {
 
                                     } catch (error) {
                                         console.log(error);
-                                        
+
                                         next(new ErrorHandler(`Error: ${error}`, 500));
                                     }
 
@@ -188,16 +219,16 @@ export class PaymentController extends ResponseData {
 
                     } catch (error) {
                         console.log(error);
-                        
+
                         next(new ErrorHandler(`Error al actualizar el pago: ${error}`, 500));
                     }
                 } else {
-                            next(new ErrorHandler('No se aprobó el pago', 500));
+                    next(new ErrorHandler('No se aprobó el pago', 500));
                 }
 
             } catch (error) {
                 console.log(error);
-                
+
                 next(new ErrorHandler('Error al crear el pago con MercadoPago', 500));
             }
         } catch (error) {
@@ -216,15 +247,27 @@ export class PaymentController extends ResponseData {
         const payment1 = new Payment(client);
         const uuid4 = generateUUID();
         const folio = RandomCodeId('CIC')
-    
+        const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+        const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+        
+
         try {
+            await Promise.all(
+                productsOrder.map(async (product: any) => {
+                    const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);              
+                    if (!available) {
+                        return next(new ErrorHandler(`Sin existencias del producto: ${product.item.name}`,500))
+                    }      
+                })
+            );
             // Crea un pago en la base de datos
-            const response1 : any = await this.paymentUseCase.createNewPayment({ uuid: uuid4 });
+            const response1: any = await this.paymentUseCase.createNewPayment({ uuid: uuid4 });
             const { formData, selectedPaymentMethod } = infoPayment;
+            console.log(selectedPaymentMethod);
             const metadata1 = formData?.metadata;
             const point = metadata1?.payment_point || null;
             const path_notification = `${process.env.URL_NOTIFICATION}api/payments/Mem-Payment-success`;
-    
+
             const body1: any = {
                 transaction_amount: formData.transaction_amount,
                 payment_method_id: formData.payment_method_id,
@@ -246,24 +289,26 @@ export class PaymentController extends ResponseData {
                 external_reference: response1?._id,
                 statement_descriptor: formData.statement_descriptor,
             };
-    
-            if (selectedPaymentMethod === "ticket") {
+            
+            
+            if (selectedPaymentMethod !== "credit_card" || selectedPaymentMethod !== "debit_card" ) {
                 body1['metadata'] = { payment_point: point };
+                body1['date_of_expiration'] = expDate
             }
-    
+
             const payment = await payment1.create({
                 requestOptions: { idempotencyKey: response1.uuid },
                 body: body1,
             });
-    
+
             if (payment) {
-                const createPayment : any = await this.paymentUseCase.updateOnePayment(response1?._id, {
+                const createPayment: any = await this.paymentUseCase.updateOnePayment(response1?._id, {
                     MP_info: payment,
                     user_id: user.user_id,
                     payment_status: payment?.status,
-                    system:"CICHMEX"
+                    system: "CICHMEX"
                 });
-    
+
                 if (!(createPayment instanceof ErrorHandler)) {
                     const values1: any = {
                         payment: createPayment?._id,
@@ -277,9 +322,9 @@ export class PaymentController extends ResponseData {
                         paymentType: infoPayment.paymentType,
                         payment_status: payment?.status,
                         download_ticket: payment?.transaction_details?.external_resource_url,
-                        order_id : folio
+                        order_id: folio
                     };
-    
+
                     if (typeDelivery === 'homedelivery') {
                         values1['deliveryLocation'] = location;
                     }
@@ -287,10 +332,10 @@ export class PaymentController extends ResponseData {
                         values1['branch'] = branch_id;
                         values1['point_pickup_status'] = false;
                     }
-                    if (payment?.status === 'approved') {
+                    // if (payment?.status === 'approved') {
                         await Promise.all(
                             products.map(async (product: any) => {
-                                const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.id);                                
+                                const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.id);
                                 if (available) {
                                     const newQuantity = available.stock - parseInt(product.quantity);
                                     const update = await this.stockSHoutputUseCase.createOutput({
@@ -301,13 +346,13 @@ export class PaymentController extends ResponseData {
                                         product_detail: product,
 
                                     });
-    
+
                                     await this.stockStoreHouseUseCase.updateStock(available._id, { stock: update?.newQuantity });
                                 }
                             })
                         );
-                    }
-    
+                    //}
+
                     try {
                         const order = await this.productOrderUseCase.createProductOrder(values1);
                         const responseOrder = { ...order, id: payment?.id };
@@ -320,6 +365,8 @@ export class PaymentController extends ResponseData {
                 next(new ErrorHandler('Error en la respuesta de pago', 500));
             }
         } catch (error) {
+            console.log(error);
+            
             next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }
     }
@@ -327,22 +374,30 @@ export class PaymentController extends ResponseData {
     public async transferPayment(req: Request, res: Response, next: NextFunction) {
         const { user, branch_id, productsOrder, location, typeDelivery, shipping_cost, discount, subTotal, total } = req.body;
         const uuid4 = generateUUID();
-        const folio = RandomCodeId('CIC');        
-    
+        const folio = RandomCodeId('CIC');
+
         try {
+            await Promise.all(
+                productsOrder.map(async (product: any) => {
+                    const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);              
+                    if (!available) {
+                        return next(new ErrorHandler(`Sin existencias del producto: ${product.item.name}`,500))
+                    }      
+                })
+            );
             // Create a payment in the database
-            const response1 : any = await this.paymentUseCase.createNewPayment({
+            const response1: any = await this.paymentUseCase.createNewPayment({
                 uuid: uuid4,
                 user_id: user._id,
                 payment_status: 'pending',
                 system: "CICHMEX",
                 products: productsOrder,
             });
-    
+
             if (response1 instanceof ErrorHandler) {
                 return next(new ErrorHandler('Error en la respuesta de pago', 500));
             }
-    
+
             const values1: any = {
                 payment: response1._id,
                 uuid: response1.uuid,
@@ -356,52 +411,70 @@ export class PaymentController extends ResponseData {
                 payment_status: response1.payment_status,
                 order_id: folio,
             };
-    
+
             if (typeDelivery === 'homedelivery') {
                 values1.deliveryLocation = location;
             } else if (typeDelivery === 'pickup') {
                 values1.branch = branch_id;
                 values1.point_pickup_status = false;
             }
-    
+
             try {
+                
+                await Promise.all(
+                    productsOrder.map(async (product: any) => {
+                        const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);
+                        if (available) {
+                            const newQuantity = available.stock - parseInt(product.quantity);
+                            const update = await this.stockSHoutputUseCase.createOutput({
+                                folio: folio,
+                                newQuantity: newQuantity,
+                                quantity: product.quantity,
+                                SHStock_id: available._id,
+                                product_detail: product,
+
+                            });
+
+                            await this.stockStoreHouseUseCase.updateStock(available._id, { stock: update?.newQuantity });
+                        }
+                    })
+                );
                 const order = await this.productOrderUseCase.createProductOrder(values1);
                 return this.invoke(order, 200, res, 'Se pagó con éxito', next);
             } catch (error) {
-                console.log(error);
-                
+
                 return next(new ErrorHandler('Error: No se pudo crear su orden. Por favor, contacte con servicio al cliente', 500));
             }
-    
+
         } catch (error) {
             return next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }
     }
-    
+
 
 
 
     public async createTicket(req: Request, res: Response, next: NextFunction) {
 
         try {
-            const info : any = await this.mpService.reciveWebHook(req);
+            const info: any = await this.mpService.reciveWebHook(req);
 
             if (info !== undefined && info.status === 'approved') {
 
-                const response : any = await this.paymentUseCase.createNewPayment({ MP_info: info });
+                const response: any = await this.paymentUseCase.createNewPayment({ MP_info: info });
                 if (!(response instanceof ErrorHandler)) {
                     const id_client = response.MP_info?.additional_info.payer.first_name;
                     const idMembership = response.MP_info?.additional_info.items[0].id;
-                    const membership_info : any = await this.membershipUseCase.getInfoMembership(idMembership);
+                    const membership_info: any = await this.membershipUseCase.getInfoMembership(idMembership);
                     if (!(membership_info instanceof ErrorHandler)) {
                         let start_date1 = moment().format('L');
                         let end_date1 = moment().add(30, 'days').calendar();
                         let services = membership_info?.service_quantity;
                         let mem_id = membership_info?.id
                         if (services !== undefined) {
-                            await Promise.all(services.map(async (item : any) => {
+                            await Promise.all(services.map(async (item: any) => {
                                 try {
-                                    const ok : any = await this.membershipBenefitUseCAse.createNewMembershipBenefit(
+                                    const ok: any = await this.membershipBenefitUseCAse.createNewMembershipBenefit(
                                         mem_id,
                                         item.service_id._id,
                                         id_client,
@@ -450,21 +523,21 @@ export class PaymentController extends ResponseData {
 
     public async addTicket(req: Request, res: Response, next: NextFunction) {
         const { id, reference, amount } = req.body;
-    
+
         try {
             const payment = await this.paymentUseCase.getDetailPayment(id);
             if (!payment) {
-                return next (new ErrorHandler('No se encontro pago', 400))
+                return next(new ErrorHandler('No se encontro pago', 400))
             }
             if (req.file) {
                 const pathObject = `${this.path}/${id}`;
                 const { success } = await this.s3Service.uploadToS3AndGetUrl(`${pathObject}`, req.file, "image/jpeg");
-    
+
                 if (!success) {
                     return next(new ErrorHandler('Hubo un error al subir la imagen', 400));
                 }
-    
-                const response = await this.paymentUseCase.updateOnePayment(id, { ticket: { image: pathObject, verified: false, reference:reference, amount:amount } });
+
+                const response = await this.paymentUseCase.updateOnePayment(id, { ticket: { image: pathObject, verified: false, reference: reference, amount: amount } });
                 return this.invoke(response, 201, res, 'Se subió con éxito', next);
             } else {
                 return next(new ErrorHandler('No se subió imagen', 400));
@@ -473,7 +546,7 @@ export class PaymentController extends ResponseData {
             return next(new ErrorHandler('Hubo un error al actualizar el pago', 500));
         }
     }
-    
+
 
 
 
@@ -486,6 +559,31 @@ export class PaymentController extends ResponseData {
             next(new ErrorHandler('Hubo un error eliminar', 500));
         }
     }
+
+    public async validateProofOfPayment(req: Request, res: Response, next: NextFunction) {
+        const { order_id } = req.body;
+        const date = new Date();
+        const user = req.user.id;
+        try{
+            const order : any = await this.productOrderUseCase.getOnePO({order_id: order_id, status:true})
+
+        const update = await this.productOrderUseCase.updateProductOrder(order._id, {
+            payment_status: 'approved',
+            verification: {
+                verification_status: true,
+                verification_time: date,
+                verification_responsible: user,
+            },
+        });
+
+        this.invoke(update, 201, res, 'Se aprobó con éxito', next);
+
+        } catch (error) {
+            console.error(error);
+            next(new ErrorHandler('Hubo un error al autorizar', 500));
+        }
+    }
+
 
 
 
