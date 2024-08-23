@@ -13,6 +13,7 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { sendMail } from '../../../../shared/infrastructure/nodemailer/emailer';
 import { IGoogleResponse } from '../../../application/authentication/AuthenticationService';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
+import { AddressUseCase } from '../../../application/address/AddressUseCase';
 
 
 export class UserController extends ResponseData {
@@ -22,6 +23,7 @@ export class UserController extends ResponseData {
         private readonly userUseCase: UserUseCase,
         private readonly typeUserUseCase: TypeUserUseCase,
         private readonly shoppingCartUseCase: ShoppingCartUseCase,
+        private readonly addressUseCase: AddressUseCase,
         private readonly twilioService: TwilioService,
         private readonly s3Service: S3Service,
     ) {
@@ -47,6 +49,10 @@ export class UserController extends ResponseData {
         this.updateCollectionPoint  = this.updateCollectionPoint.bind(this);
         this.RegisterCarrierDriver  = this.RegisterCarrierDriver.bind(this);
         this.getAllCarrierDrivers  = this.getAllCarrierDrivers.bind(this);
+        this.createAddress = this.createAddress.bind(this);
+        this.updateAddress = this.updateAddress.bind(this);
+        this.getAddresses = this.getAddresses.bind(this);
+        this.deleteAddress = this.deleteAddress.bind(this);
     }
 
 
@@ -486,6 +492,76 @@ public async RegisterCarrierDriver(req: Request, res: Response, next: NextFuncti
         next(new ErrorHandler("Error al crear telefono", 500));
     }
 }
+
+
+
+public async getAddresses(req: Request, res: Response, next: NextFunction) {
+    const user = req.user;
+    try {                
+        const response = await this.addressUseCase.getAddressesByUser(user.id || "");
+        this.invoke(response, 200, res, '', next);
+    } catch(error) {
+        console.log(error);
+        // console.log(user.id);                
+        next(new ErrorHandler("Hubo un error padrino", 500));
+    }
+}    
+
+public async createAddress(req: Request, res: Response, next: NextFunction) {
+    const user = req.user;
+    const { address } = req.body;
+    if (!address) return next(new ErrorHandler("La dirección es requerida", 400));
+
+    try {        
+        let response = await this.addressUseCase.createAddress(user.id || "", address);
+        if(response){
+            const newresponse = await this.addressUseCase.getAddressesByUser(user.id || "");
+            this.invoke(newresponse, 200, res, 'la direccion fue creada', next);             
+        }else{
+            next(new ErrorHandler("Hubo un error al crear la dirección", 500));
+        }
+    } catch(error) {
+        console.log(error);
+        
+    next(new ErrorHandler("Hubo un error al crear la dirección", 500));
+    }
+}    
+
+public async updateAddress(req: Request, res: Response, next: NextFunction) {
+    const user = req.user;
+    const { id } = req.params;
+    const { address } = req.body;
+    if (!address) return next(new ErrorHandler("La dirección es requerida", 400));
+    try {
+        let response = await this.addressUseCase.updateAddress(id , address);
+        if(response){
+            const newresponse = await this.addressUseCase.getAddressesByUser(user.id || "");
+            this.invoke(newresponse, 200, res, 'la direccion fue actualizada', next);             
+        }else{
+            next(new ErrorHandler("Hubo un error al actualizar la dirección", 500));
+        }
+       
+    } catch(error) {
+        next(new ErrorHandler("Hubo un error al actualizar", 500));
+    }
+}    
+
+public async deleteAddress(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;    
+    const user = req.user;
+    try {
+        let response = await this.addressUseCase.deleteAddress(id);
+        if(response){
+            const newresponse = await this.addressUseCase.getAddressesByUser(user.id || "");
+            this.invoke(newresponse, 200, res, 'la direccion fue eliminada', next);             
+        }else{
+            next(new ErrorHandler("Hubo un error al eliminar la dirección", 500));
+        }       
+    } catch(error) {
+    next(new ErrorHandler("Hubo un error al eliminar la dirección", 500));
+    }
+}    
+
 
 
 
