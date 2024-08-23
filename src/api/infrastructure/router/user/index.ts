@@ -17,6 +17,9 @@ import { UserValidations } from '../../../../shared/infrastructure/validation/Us
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import { ShoppingCartRepository } from '../../repository/shoppingCart/ShoppingCartRepository';
 import ShoppingCartModel from '../../models/ShoppingCartModel';
+import { AddressRepository } from '../../repository/address/AddressRepository';
+import AddressModel from '../../models/AddressModel';
+import { AddressUseCase } from '../../../application/address/AddressUseCase';
 
 const userRouter = Router();
 
@@ -24,16 +27,18 @@ const userPhoneRepository = new UserPhoneRepository(PhoneModel);
 const userRepository = new UserRepository(UserModel)
 const typeUserRepository = new TypeUsersRepository(TypeUserModel)
 const shoppingCartRepository = new ShoppingCartRepository(ShoppingCartModel)
+const adressRepository = new AddressRepository(AddressModel)
 
 const userPhoneserUseCase = new UserPhoneUseCase(userPhoneRepository);
 const userUseCase = new UserUseCase(userRepository);
+const addressUseCase = new AddressUseCase(adressRepository)
 const typeUserUseCase = new TypeUserUseCase(typeUserRepository)
 const shoppingCartUseCase = new ShoppingCartUseCase(shoppingCartRepository)
 const s3Service = new S3Service()
 const userValidations = new UserValidations()
 
 const twilioService = new TwilioService();
-const userController = new UserController(userPhoneserUseCase, userUseCase, typeUserUseCase,shoppingCartUseCase, twilioService, s3Service)
+const userController = new UserController(userPhoneserUseCase, userUseCase, typeUserUseCase,shoppingCartUseCase,  addressUseCase, twilioService, s3Service);
 
 userRouter
     .get('/',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), userController.allUsers)
@@ -57,5 +62,9 @@ userRouter
     .delete('/phone-delete/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), userController.deletePhone)
     .delete('/phone-delete-1/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), userController.physicalDeletePhone)
     .delete('/delete-user/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), userController.deleteUser)
+    .post('/create/address', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.createAddress)
+    .delete('/delete/address/:id', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.deleteAddress)
+    .put('/update/address/:id', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.updateAddress)
+    .get('/addresses/ok', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.getAddresses);
 
 export default userRouter;

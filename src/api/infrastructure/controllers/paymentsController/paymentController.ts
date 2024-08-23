@@ -284,7 +284,7 @@ export class PaymentController extends ResponseData {
                     },
                 },
                 token: formData.token,
-                issuer_id: formData.issuer,
+                issuer_id: formData.issuer._id,
                 installments: formData.installments,
                 notification_url: path_notification,
                 external_reference: order_id,
