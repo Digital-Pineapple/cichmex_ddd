@@ -1,9 +1,12 @@
-
 import mongoose, {  Schema,  model, Document } from 'mongoose';
 import  {PaymentEntity}  from '../../../domain/payments/PaymentEntity';
 
 
 const PaymentSchema = new Schema<PaymentEntity>({
+    _id: {
+        type: Schema.Types.ObjectId,
+        default: () => new mongoose.Types.ObjectId()
+    },
     uuid:{
         type:String,
     },
@@ -33,9 +36,13 @@ const PaymentSchema = new Schema<PaymentEntity>({
         type:Object,
         required:false,
     },
-    ticket:{
+    verification:{
         type:Object,
         required:false,
+    },
+    order_id:{
+        type:String,
+        
     }
 
    

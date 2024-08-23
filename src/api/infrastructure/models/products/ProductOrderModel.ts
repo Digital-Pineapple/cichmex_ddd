@@ -1,9 +1,12 @@
 import mongoose, { model, Schema } from "mongoose";
 import { ProductOrderEntity } from "../../../domain/product/ProductEntity";
 
-
 const ProductOrderSchema = new Schema<ProductOrderEntity>(
   {
+    _id: {
+      type: Schema.Types.ObjectId,
+      default: () => new mongoose.Types.ObjectId()
+    },
     order_id: {
       type: String,
       required: true,
@@ -14,9 +17,9 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       required: true,
       ref: 'Payment'
     },
-    payment_status: {
-      type: String,
-      required: false,
+    payment_status:{
+      type:String,
+      required:true
     },
     user_id: {
       type: mongoose.Types.ObjectId,
@@ -53,13 +56,13 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       required: false,
       default: false,
     },
-    supply_detail:{
-      type:Object,
-      required:false,
+    supply_detail: {
+      type: Object,
+      required: false,
     },
-    route_detail:{
-      type:Object,
-      required:false,
+    route_detail: {
+      type: Object,
+      required: false,
     },
     deliveryStatus: {
       type: Boolean,
@@ -70,11 +73,6 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       type: Object,
       required: false,
     },
-    verification:{
-      type:Object,
-      required:false
-    },
-
     status: {
       type: Boolean,
       required: false,
@@ -93,9 +91,9 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       type: Boolean,
       required: false,
     },
-    paymentType:{
-      type:Object,
-      required:false,
+    paymentType: {
+      type: Object,
+      required: false,
     }
   },
   {

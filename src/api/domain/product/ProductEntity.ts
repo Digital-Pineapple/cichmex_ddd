@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { ObjectId } from "mongoose";
 import { SubCategory } from "../subCategory/SubCategoryEntity";
 import { Category } from "../category/CategoryEntity";
 import { PaymentEntity } from "../payments/PaymentEntity";
@@ -6,7 +6,7 @@ import { BranchOfficeEntity, ILocation } from "../branch_office/BranchOfficeEnti
 import { UserEntity } from "../user/UserEntity";
 
 export interface ProductEntity {
-
+  _id: ObjectId,
   name: string;
   price: number;
   discountPrice: number;
@@ -35,27 +35,26 @@ export interface ProductEntity {
   seoKeywords?: string[],
 }
 
-export interface ProductImage  {
-   
+export interface ProductImage  {  
     url: string;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;
   }
 
   export interface ProductShopping  {
-   
     item ?: mongoose.Types.ObjectId,
-      
     quantity? :number
    
   }
 
   export interface ProductOrderEntity{
+    _id: ObjectId,
+    folio : number,
     order_id: string,
     payment: PaymentEntity;
-    payment_status ?: string; 
+    payment_status: string;
     user_id:UserEntity
-    products?: [ProductEntity];
+    products?: ProductEntity[];
     discount?: number;
     subTotal?: number;
     total?: number;
@@ -68,7 +67,6 @@ export interface ProductImage  {
     route_detail?:PORouteDetail
     point_pickup_status?: boolean;
     deliveryStatus?: boolean;
-    verification?: POVerificationDetail;
     status?:boolean;
     paymentType?: string;
     download_ticket?:string;
@@ -118,11 +116,6 @@ export interface ProductImage  {
     date: string,
 
   }
-  export interface OrderVerifyVoucher{
-    user: UserEntity,
-    verification_status: boolean,
-    verification_time: string
-  }
   export interface PORouteDetail{
     user: UserEntity,
     route_status?: string,
@@ -130,13 +123,3 @@ export interface ProductImage  {
     guide?: string,
     shipping_company?:string
   }
-  export interface POVerificationDetail{
-      verification_reference   ?: string,
-      verification_status      ?: boolean,
-      verification_time        ?: string,
-      signature                ?: string,
-      photo_proof              ?: string,
-      notes                    ?: string,
-      verification_responsible ?: string,
-  }
-

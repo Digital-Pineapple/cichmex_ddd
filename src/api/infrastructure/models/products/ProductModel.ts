@@ -4,6 +4,10 @@ import { ProductEntity } from "../../../domain/product/ProductEntity";
 
 const ProductSchema = new Schema<ProductEntity>(
   {
+      _id: {
+        type: Schema.Types.ObjectId,
+        default: () => new mongoose.Types.ObjectId()
+    },
     name: {
       type: String,
       required: true,

@@ -15,6 +15,8 @@ import { generateUUID, RandomCodeId } from '../../../../shared/infrastructure/va
 import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHoutputUseCase';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
+import { MomentService } from '../../../../shared/infrastructure/moment/MomentService';
+import { PaymentEntity, PaymentVoucher } from '../../../domain/payments/PaymentEntity';
 
 
 export class PaymentController extends ResponseData {
@@ -44,8 +46,10 @@ export class PaymentController extends ResponseData {
         this.PaymentSuccess = this.PaymentSuccess.bind(this)
         this.createPaymentProductMP = this.createPaymentProductMP.bind(this)
         this.addTicket = this.addTicket.bind(this);
-        this,this.autoCancelPO = this.autoCancelPO.bind(this);
+        this, this.autoCancelPO = this.autoCancelPO.bind(this);
         this.validateProofOfPayment = this.validateProofOfPayment.bind(this)
+        this.deleteVoucher = this.deleteVoucher.bind(this)
+        this.editVoucher = this.editVoucher.bind(this)
 
 
     }
@@ -69,33 +73,37 @@ export class PaymentController extends ResponseData {
     }
 
     public async autoCancelPO(req: Request, res: Response, next: NextFunction) {
+        const { id, _id } = req.user
         const access_token = config.MERCADOPAGO_TOKEN;
         const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
         const payment1 = new Payment(client);
         try {
-          const response : any = await this.productOrderUseCase.getProductOrdersExpired()
-          const PaymentMP : any = await this.paymentUseCase.getPaymentsMPExpired()
-        //   console.log(PaymentMP,'Mercado pago');
-        //   console.log(response,'pagos por transferencia');
-          await Promise.all(
-            PaymentMP.map(async (payment: any) => {
-                const infoPayment = await payment1.get({
-                    id:payment.MP_info.id
+            const response: any = await this.productOrderUseCase.getProductOrdersExpired()
+            const PaymentMP: any = await this.paymentUseCase.getPaymentsMPExpired()
+            //   console.log(PaymentMP,'Mercado pago');
+            //   console.log(response,'pagos por transferencia');
+            console.log(id, _id);
+
+            await Promise.all(
+                PaymentMP.map(async (payment: any) => {
+                    const infoPayment = await payment1.get({
+                        id: payment.MP_info.id
+                    })
+                    console.log(infoPayment);
+
+                    const { status, status_detail, payment_method, payment_type_id, id } = infoPayment
+                    const update = await this.paymentUseCase.updateOnePayment(payment._id, { payment_status: status })
                 })
-                console.log(infoPayment);
-                
-            
-            })
-        );
-          
-    
-          this.invoke(response, 200, res, "", next);
+            );
+
+
+            this.invoke(response, 200, res, "", next);
         } catch (error) {
             console.log(error);
-            
-          next(new ErrorHandler("Hubo un error al consultar la información", 500));
+
+            next(new ErrorHandler("Hubo un error al consultar la información", 500));
         }
-      }
+    }
 
     public async createLMP(req: Request, res: Response, next: NextFunction) {
         const { values, user_id } = req.body;
@@ -205,7 +213,6 @@ export class PaymentController extends ResponseData {
                                         }
 
                                     } catch (error) {
-                                        console.log(error);
 
                                         next(new ErrorHandler(`Error: ${error}`, 500));
                                     }
@@ -218,7 +225,6 @@ export class PaymentController extends ResponseData {
 
 
                     } catch (error) {
-                        console.log(error);
 
                         next(new ErrorHandler(`Error al actualizar el pago: ${error}`, 500));
                     }
@@ -227,13 +233,10 @@ export class PaymentController extends ResponseData {
                 }
 
             } catch (error) {
-                console.log(error);
 
                 next(new ErrorHandler('Error al crear el pago con MercadoPago', 500));
             }
         } catch (error) {
-            console.log(error);
-
 
             next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }
@@ -241,29 +244,26 @@ export class PaymentController extends ResponseData {
     }
 
     public async createPaymentProductMP(req: Request, res: Response, next: NextFunction) {
-        const { products, user, branch_id, infoPayment, productsOrder, location, typeDelivery } = req.body;
+        const { products, branch_id, infoPayment, productsOrder, location, typeDelivery } = req.body;
+        const user = req.user
         const access_token = config.MERCADOPAGO_TOKEN;
         const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
         const payment1 = new Payment(client);
         const uuid4 = generateUUID();
-        const folio = RandomCodeId('CIC')
+        const order_id = RandomCodeId('CIC')
         const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
         const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
-        
 
         try {
             await Promise.all(
                 productsOrder.map(async (product: any) => {
-                    const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);              
+                    const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);
                     if (!available) {
-                        return next(new ErrorHandler(`Sin existencias del producto: ${product.item.name}`,500))
-                    }      
+                        return next(new ErrorHandler(`Sin existencias del producto: ${product.item.name}`, 500))
+                    }
                 })
             );
-            // Crea un pago en la base de datos
-            const response1: any = await this.paymentUseCase.createNewPayment({ uuid: uuid4 });
             const { formData, selectedPaymentMethod } = infoPayment;
-            console.log(selectedPaymentMethod);
             const metadata1 = formData?.metadata;
             const point = metadata1?.payment_point || null;
             const path_notification = `${process.env.URL_NOTIFICATION}api/payments/Mem-Payment-success`;
@@ -279,34 +279,36 @@ export class PaymentController extends ResponseData {
                 additional_info: {
                     items: products,
                     payer: {
-                        first_name: user.user_id,
+                        first_name: user.fullname,
                     },
                 },
                 token: formData.token,
                 issuer_id: formData.issuer._id,
                 installments: formData.installments,
                 notification_url: path_notification,
-                external_reference: response1?._id,
+                external_reference: order_id,
                 statement_descriptor: formData.statement_descriptor,
             };
-            
-            
-            if (selectedPaymentMethod !== "credit_card" || selectedPaymentMethod !== "debit_card" ) {
+
+
+            if (selectedPaymentMethod !== "credit_card" || selectedPaymentMethod !== "debit_card") {
                 body1['metadata'] = { payment_point: point };
                 body1['date_of_expiration'] = expDate
             }
 
             const payment = await payment1.create({
-                requestOptions: { idempotencyKey: response1.uuid },
+                requestOptions: { idempotencyKey: uuid4 },
                 body: body1,
             });
-
+            const {additional_info,id, status,transaction_details, payment_method } = payment
             if (payment) {
-                const createPayment: any = await this.paymentUseCase.updateOnePayment(response1?._id, {
-                    MP_info: payment,
-                    user_id: user.user_id,
+                const createPayment: any = await this.paymentUseCase.createNewPayment({
+                    uuid: uuid4,
+                    MP_info: {additional_info,id, status,transaction_details, payment_method},
+                    user_id: user._id,
                     payment_status: payment?.status,
-                    system: "CICHMEX"
+                    system: "CICHMEX",
+                    order_id: order_id
                 });
 
                 if (!(createPayment instanceof ErrorHandler)) {
@@ -317,12 +319,12 @@ export class PaymentController extends ResponseData {
                         discount: infoPayment.discount,
                         subTotal: infoPayment.subtotal,
                         total: infoPayment.formData.transaction_amount,
-                        user_id: user.user_id,
+                        user_id: user._id,
                         shipping_cost: infoPayment.shipping_cost,
                         paymentType: infoPayment.paymentType,
                         payment_status: payment?.status,
                         download_ticket: payment?.transaction_details?.external_resource_url,
-                        order_id: folio
+                        order_id: createPayment?.order_id,
                     };
 
                     if (typeDelivery === 'homedelivery') {
@@ -333,24 +335,25 @@ export class PaymentController extends ResponseData {
                         values1['point_pickup_status'] = false;
                     }
                     // if (payment?.status === 'approved') {
-                        await Promise.all(
-                            products.map(async (product: any) => {
-                                const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.id);
-                                if (available) {
-                                    const newQuantity = available.stock - parseInt(product.quantity);
-                                    const update = await this.stockSHoutputUseCase.createOutput({
-                                        folio: folio,
-                                        newQuantity: newQuantity,
-                                        quantity: product.quantity,
-                                        SHStock_id: available._id,
-                                        product_detail: product,
+                    await Promise.all(
+                        products.map(async (product: any) => {
+                            const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.id);
+                            if (available) {
+                                const newQuantity = available.stock - parseInt(product.quantity);
+                                const update = await this.stockSHoutputUseCase.createOutput({
+                                    order_id: order_id,
+                                    newQuantity: newQuantity,
+                                    quantity: product.quantity,
+                                    SHStock_id: available._id,
+                                    product_detail: product,
+                                    reason: 'Sale Cichmex'
 
-                                    });
+                                });
 
-                                    await this.stockStoreHouseUseCase.updateStock(available._id, { stock: update?.newQuantity });
-                                }
-                            })
-                        );
+                                await this.stockStoreHouseUseCase.updateStock(available._id, { stock: update?.newQuantity });
+                            }
+                        })
+                    );
                     //}
 
                     try {
@@ -366,38 +369,41 @@ export class PaymentController extends ResponseData {
             }
         } catch (error) {
             console.log(error);
-            
+
             next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }
     }
 
     public async transferPayment(req: Request, res: Response, next: NextFunction) {
-        const { user, branch_id, productsOrder, location, typeDelivery, shipping_cost, discount, subTotal, total } = req.body;
+        const { branch_id, productsOrder, location, typeDelivery, shipping_cost, discount, subTotal, total } = req.body;
         const uuid4 = generateUUID();
-        const folio = RandomCodeId('CIC');
+        const order_id = RandomCodeId('CIC');
+        const user = req.user;
 
         try {
-            await Promise.all(
-                productsOrder.map(async (product: any) => {
-                    const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);              
-                    if (!available) {
-                        return next(new ErrorHandler(`Sin existencias del producto: ${product.item.name}`,500))
-                    }      
-                })
-            );
-            // Create a payment in the database
+            // Verificación de existencia de productos
+            for (const product of productsOrder) {
+                const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);
+                if (!available) {
+                    return next(new ErrorHandler(`Sin existencias del producto: ${product.item.name}`, 500));
+                }
+            }
+
+            // Creación de un nuevo pago en la base de datos
             const response1: any = await this.paymentUseCase.createNewPayment({
                 uuid: uuid4,
                 user_id: user._id,
                 payment_status: 'pending',
                 system: "CICHMEX",
                 products: productsOrder,
+                order_id: order_id,
             });
 
-            if (response1 instanceof ErrorHandler) {
-                return next(new ErrorHandler('Error en la respuesta de pago', 500));
+            if (!response1 || response1 instanceof ErrorHandler) {
+                return next(new ErrorHandler('Error en la creación del pago', 500));
             }
 
+            // Preparación de los valores de la orden
             const values1: any = {
                 payment: response1._id,
                 uuid: response1.uuid,
@@ -409,9 +415,10 @@ export class PaymentController extends ResponseData {
                 shipping_cost,
                 paymentType: 'transfer',
                 payment_status: response1.payment_status,
-                order_id: folio,
+                order_id: order_id,
             };
 
+            // Configuración de la entrega según el tipo
             if (typeDelivery === 'homedelivery') {
                 values1.deliveryLocation = location;
             } else if (typeDelivery === 'pickup') {
@@ -420,33 +427,35 @@ export class PaymentController extends ResponseData {
             }
 
             try {
-                
+                // Actualización del stock y creación de salida
                 await Promise.all(
                     productsOrder.map(async (product: any) => {
                         const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);
                         if (available) {
                             const newQuantity = available.stock - parseInt(product.quantity);
                             const update = await this.stockSHoutputUseCase.createOutput({
-                                folio: folio,
+                                order_id: order_id,
                                 newQuantity: newQuantity,
                                 quantity: product.quantity,
                                 SHStock_id: available._id,
                                 product_detail: product,
-
                             });
 
                             await this.stockStoreHouseUseCase.updateStock(available._id, { stock: update?.newQuantity });
                         }
                     })
                 );
+
+                // Creación de la orden del producto
                 const order = await this.productOrderUseCase.createProductOrder(values1);
                 return this.invoke(order, 200, res, 'Se pagó con éxito', next);
             } catch (error) {
-
+                console.error('Error al actualizar el stock o crear la orden:', error);
                 return next(new ErrorHandler('Error: No se pudo crear su orden. Por favor, contacte con servicio al cliente', 500));
             }
 
         } catch (error) {
+            console.error('Error al crear el pago en la base de datos:', error);
             return next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }
     }
@@ -521,29 +530,138 @@ export class PaymentController extends ResponseData {
         }
     }
 
-    public async addTicket(req: Request, res: Response, next: NextFunction) {
+    public async addTicket(req: Request, res: Response, next: NextFunction): Promise<void> {
         const { id, reference, amount } = req.body;
+        const date = new MomentService().newDate();
+        console.log(req.body);
+        
 
         try {
-            const payment = await this.paymentUseCase.getDetailPayment(id);
+            const payment: any = await this.paymentUseCase.getDetailPayment(id);
+            
             if (!payment) {
-                return next(new ErrorHandler('No se encontro pago', 400))
+                return next(new ErrorHandler('No se encontró el pago', 400));
             }
+
             if (req.file) {
-                const pathObject = `${this.path}/${id}`;
+                const pathObject = `${this.path}/${id}/${date}`;
                 const { success } = await this.s3Service.uploadToS3AndGetUrl(`${pathObject}`, req.file, "image/jpeg");
 
                 if (!success) {
                     return next(new ErrorHandler('Hubo un error al subir la imagen', 400));
                 }
 
-                const response = await this.paymentUseCase.updateOnePayment(id, { ticket: { image: pathObject, verified: false, reference: reference, amount: amount } });
+                const newVoucher = {
+                    url: pathObject,
+                    reference: reference,
+                    amount: amount,
+                    status: 'pending',
+                    createdAt: date,
+                };
+                payment.verification = payment.verification || { payment_vouchers: [] };
+                payment.verification.payment_vouchers.push(newVoucher);
+
+                const response = await this.paymentUseCase.updateOnePayment(id, { verification: payment.verification });
+
+                if (response.verification?.payment_vouchers) {
+                    await Promise.all(
+                        response.verification.payment_vouchers.map(async (item: any) => {
+                            const url = await this.s3Service.getUrlObject(item.url);
+                            item.url = url;
+                        })
+                    );
+                }
+
                 return this.invoke(response, 201, res, 'Se subió con éxito', next);
             } else {
                 return next(new ErrorHandler('No se subió imagen', 400));
             }
         } catch (error) {
+            console.log(error);
+
             return next(new ErrorHandler('Hubo un error al actualizar el pago', 500));
+        }
+    }
+
+    public async editVoucher(req: Request, res: Response, next: NextFunction): Promise<void> {
+        const { id, createdAt, reference, amount } = req.body;
+
+        try {
+            const payment: any = await this.paymentUseCase.getDetailPayment(id);
+            if (!payment) {
+                return next(new ErrorHandler('No se encontró el pago', 400));
+            }
+
+            const voucherIndex = payment.verification?.payment_vouchers?.findIndex((v : any )=> v.createdAt === createdAt);
+            if (voucherIndex === undefined || voucherIndex < 0) {
+                return next(new ErrorHandler('No se encontró el voucher', 400));
+            }
+
+            if (req.file) {
+                const pathObject = `${this.path}/${id}/${createdAt}`;
+                const { success } = await this.s3Service.uploadToS3AndGetUrl(`${pathObject}`, req.file, "image/jpeg");
+
+                if (!success) {
+                    return next(new ErrorHandler('Hubo un error al subir la imagen', 400));
+                }
+
+                payment.verification!.payment_vouchers![voucherIndex] = {
+                    ...payment.verification!.payment_vouchers![voucherIndex],
+                    url: pathObject,
+                    reference,
+                    amount,
+                    // notes,
+                    // verification_responsible: _id,
+                    // verification_time: date,
+                    createdAt: payment.verification!.payment_vouchers![voucherIndex].createdAt // Mantener la fecha de creación original
+                };
+                const response = await this.paymentUseCase.updateOnePayment(id, { verification: payment.verification });
+                if (response.verification?.payment_vouchers) {
+                    await Promise.all(
+                        response.verification.payment_vouchers.map(async (item: any) => {
+                            const url = await this.s3Service.getUrlObject(item.url);
+                            item.url = url;
+                        })
+                    );
+                }
+                return this.invoke(response, 200, res, 'Voucher actualizado con éxito', next);
+            } else {
+                return next(new ErrorHandler('No se subió imagen', 400));
+            }
+        } catch (error) {
+            return next(new ErrorHandler('Hubo un error al actualizar el voucher', 500));
+        }
+    }
+
+
+    public async deleteVoucher(req: Request, res: Response, next: NextFunction): Promise<void> {
+        const { id, createdAt } = req.body;
+
+        try {
+            const payment: any = await this.paymentUseCase.getDetailPayment(id);
+            if (!payment) {
+                return next(new ErrorHandler('No se encontró el pago', 400));
+            }
+
+            const voucherIndex = payment.verification?.payment_vouchers?.findIndex((v : any)  => v.createdAt === createdAt);
+            if (voucherIndex === undefined || voucherIndex < 0) {
+                return next(new ErrorHandler('No se encontró el voucher', 400));
+            }
+
+            payment.verification!.payment_vouchers!.splice(voucherIndex, 1);
+
+            const response = await this.paymentUseCase.updateOnePayment(id, { verification: payment.verification });
+            if (response.verification?.payment_vouchers) {
+                await Promise.all(
+                    response.verification.payment_vouchers.map(async (item: any) => {
+                        const url = await this.s3Service.getUrlObject(item.url);
+                        item.url = url;
+                    })
+                );
+            }
+            return this.invoke(response, 200, res, 'Voucher eliminado con éxito', next);
+        } catch (error) {
+            return next(new ErrorHandler('Hubo un error al eliminar el voucher', 500));
         }
     }
 
@@ -564,19 +682,19 @@ export class PaymentController extends ResponseData {
         const { order_id } = req.body;
         const date = new Date();
         const user = req.user.id;
-        try{
-            const order : any = await this.productOrderUseCase.getOnePO({order_id: order_id, status:true})
+        try {
+            const order: any = await this.productOrderUseCase.getOnePO({ order_id: order_id, status: true })
 
-        const update = await this.productOrderUseCase.updateProductOrder(order._id, {
-            payment_status: 'approved',
-            verification: {
-                verification_status: true,
-                verification_time: date,
-                verification_responsible: user,
-            },
-        });
+            const update = await this.productOrderUseCase.updateProductOrder(order._id, {
+                payment_status: 'approved',
+                verification: {
+                    verification_status: true,
+                    verification_time: date,
+                    verification_responsible: user,
+                },
+            });
 
-        this.invoke(update, 201, res, 'Se aprobó con éxito', next);
+            this.invoke(update, 201, res, 'Se aprobó con éxito', next);
 
         } catch (error) {
             console.error(error);

@@ -19,6 +19,11 @@ const StockOutputSchema = new Schema<IProductOutput> ({
     type:Boolean,
     required:false,
     default:true,
+   },
+   responsible:{
+    type:mongoose.Types.ObjectId,
+    ref:'users',
+    required:false
    }
 },
   {

@@ -74,7 +74,8 @@ const checkTypeUserAuth = (type_user) => (req, res, next) => __awaiter(void 0, v
             throw new ErrorHandler_1.ErrorHandler('No tiene permisos necesarios', 403);
         }
         let id = userData._id.toHexString();
-        req.user = Object.assign(Object.assign({}, userData), { id: id });
+        let dataUser = userData.toObject();
+        req.user = Object.assign(Object.assign({}, dataUser), { id: id });
         next();
     }
     catch (error) {

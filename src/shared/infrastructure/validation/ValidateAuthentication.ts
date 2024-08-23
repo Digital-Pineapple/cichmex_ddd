@@ -66,8 +66,8 @@ export const checkTypeUserAuth = (type_user: string | string[]) => async (req: R
             throw new ErrorHandler('No tiene permisos necesarios', 403);
         }
         let id = userData._id.toHexString()
-        
-        req.user= {...userData, id:id}
+        let dataUser = userData.toObject()
+        req.user= {...dataUser, id:id}
         
         next();
     } catch (error) {

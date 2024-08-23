@@ -326,7 +326,7 @@ export class ProductOrderController extends ResponseData {
 
   public async fillProductOrder(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const { _id, uuid, email, fullname } = req.user._doc;
+    const { _id, uuid, email, fullname } = req.user;
     const { storeHouse } = req.body;
     const date = new Date()
     try {
