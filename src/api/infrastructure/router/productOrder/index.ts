@@ -6,25 +6,13 @@ import { UserValidations } from "../../../../shared/infrastructure/validation/Us
 import ProductOrderModel from '../../models/products/ProductOrderModel';
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
 import { ProductOrderController } from '../../controllers/Product/ProductOrderController';
-import { MomentService } from "../../../../shared/infrastructure/moment/MomentService";
-import StockSHoutputModel from "../../models/stockStoreHouse/StockSHoutputModel";
-import { StockSHOutputRepository } from "../../repository/stockStoreHouse/StockSHOutputRepository";
-import { StockSHoutputUseCase } from "../../../application/storehouse/stockSHoutputUseCase";
-import StockStoreHouseModel from "../../models/stockStoreHouse/StockStoreHouseModel";
-import { StockStoreHouseRepository } from "../../repository/stockStoreHouse/StockStoreHouseRepository";
 
 const productOrderRouter = Router();
-
-
 const productOrderRepository = new ProductOrderRepository(ProductOrderModel);
 const productOrderUseCase = new ProductOrderUseCase(productOrderRepository);
-
-
-const s3Service = new S3Service();
-const productvalidations = new ProductValidations()
-
-const productOrderController = new ProductOrderController(productOrderUseCase, s3Service);
 const userValidations = new UserValidations();
+const s3Service = new S3Service();
+const productOrderController = new ProductOrderController(productOrderUseCase, s3Service);
 
 productOrderRouter
 
@@ -40,7 +28,6 @@ productOrderRouter
   .get("/user/resume",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CUSTOMER"]), productOrderController.getOneProductOrderByUser)
   .get("/pdfOrder/:id", userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.pdfOrder)
   .post('/', productOrderController.createProductOrder)
-  .post('/add-ticket',productvalidations.proofOfPayment,userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), productOrderController.uploadProofOfPayment )
   .post('/end-shipping',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER"]), productOrderController.endShippingOrder)
   .post('/endShippingToPoint',userValidations.authTypeUserValidation(["PARTNER"]), productOrderController.endShippingOrdertoPoint)
   .post('/start-verifyQr',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER"]), productOrderController.verifyQr)

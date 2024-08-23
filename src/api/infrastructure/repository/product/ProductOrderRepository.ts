@@ -5,7 +5,7 @@ import { ProductOrderEntity, ProductOrderResume } from '../../../domain/product/
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import moment from 'moment';
 import { response } from 'express';
-import { InfoPayment, PopulateDetailMembership } from '../../../../shared/domain/PopulateInterfaces';
+import { InfoPayment, PopulateDetailMembership, PopulatePayment } from '../../../../shared/domain/PopulateInterfaces';
 
 
 export class ProductOrderRepository extends MongoRepository implements ProductOrderConfig {
@@ -46,7 +46,7 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
         return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: false }).sort({ createdAt: -1 })
     }
     async getPendingTransferPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.ProductOrderModel.find({ payment_status: 'pending', storeHouseStatus: false, paymentType:'transfer' }).sort({ createdAt: -1 })
+        return await this.ProductOrderModel.find({ payment_status:{ $in: ['pending', 'pending_to_verify'] }, storeHouseStatus: false, paymentType:'transfer' }).sort({ createdAt: -1 }).populate(PopulatePayment)
     }
 
     async getPaidAndSuplyToPointPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {

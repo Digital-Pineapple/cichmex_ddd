@@ -7,6 +7,7 @@ import ProductModel from '../../api/infrastructure/models/products/ProductModel'
 import ServiceModel from '../../api/infrastructure/models/ServicesModel';
 import SubCategoryModel from '../../api/infrastructure/models/SubCategoryModel';
 import UserModel from '../../api/infrastructure/models/UserModel';
+import PaymentModel from '../../api/infrastructure/models/payments/PaymentModel';
 export interface IAuthPopulateConfig {
     path    : string;
     select  : string;
@@ -153,5 +154,10 @@ export const PopulateInfoUser = {
     path: 'user_id',
     select: ["fullname", "email"],
     model:UserModel
+}
+export const PopulatePayment = {
+    path: 'payment',
+    select: ["uuid", "MP_info","payment_status", "verification"],
+    model:PaymentModel
 }
 

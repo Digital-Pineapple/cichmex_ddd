@@ -50,6 +50,7 @@ export class PaymentController extends ResponseData {
         this.validateProofOfPayment = this.validateProofOfPayment.bind(this)
         this.deleteVoucher = this.deleteVoucher.bind(this)
         this.editVoucher = this.editVoucher.bind(this)
+        this.rejectProofOfPayment = this.rejectProofOfPayment.bind(this);
 
 
     }
@@ -300,11 +301,11 @@ export class PaymentController extends ResponseData {
                 requestOptions: { idempotencyKey: uuid4 },
                 body: body1,
             });
-            const {additional_info,id, status,transaction_details, payment_method } = payment
+            const { additional_info, id, status, transaction_details, payment_method } = payment
             if (payment) {
                 const createPayment: any = await this.paymentUseCase.createNewPayment({
                     uuid: uuid4,
-                    MP_info: {additional_info,id, status,transaction_details, payment_method},
+                    MP_info: { additional_info, id, status, transaction_details, payment_method },
                     user_id: user._id,
                     payment_status: payment?.status,
                     system: "CICHMEX",
@@ -533,12 +534,11 @@ export class PaymentController extends ResponseData {
     public async addTicket(req: Request, res: Response, next: NextFunction): Promise<void> {
         const { id, reference, amount } = req.body;
         const date = new MomentService().newDate();
-        console.log(req.body);
-        
+
 
         try {
             const payment: any = await this.paymentUseCase.getDetailPayment(id);
-            
+
             if (!payment) {
                 return next(new ErrorHandler('No se encontró el pago', 400));
             }
@@ -561,7 +561,7 @@ export class PaymentController extends ResponseData {
                 payment.verification = payment.verification || { payment_vouchers: [] };
                 payment.verification.payment_vouchers.push(newVoucher);
 
-                const response = await this.paymentUseCase.updateOnePayment(id, { verification: payment.verification });
+                const response = await this.paymentUseCase.updateOnePayment(id, { verification: payment.verification, payment_status: 'pending_to_verify' });
 
                 if (response.verification?.payment_vouchers) {
                     await Promise.all(
@@ -570,6 +570,13 @@ export class PaymentController extends ResponseData {
                             item.url = url;
                         })
                     );
+                }
+                try {
+                    const productOrder: any = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id })
+                    await this.productOrderUseCase.updateProductOrder(productOrder._id, { payment_status: 'pending_to_verify' })
+                }
+                catch (error) {
+                    return next(new ErrorHandler('NO se actualizó la orden de producto', 500))
                 }
 
                 return this.invoke(response, 201, res, 'Se subió con éxito', next);
@@ -592,7 +599,7 @@ export class PaymentController extends ResponseData {
                 return next(new ErrorHandler('No se encontró el pago', 400));
             }
 
-            const voucherIndex = payment.verification?.payment_vouchers?.findIndex((v : any )=> v.createdAt === createdAt);
+            const voucherIndex = payment.verification?.payment_vouchers?.findIndex((v: any) => v.createdAt === createdAt);
             if (voucherIndex === undefined || voucherIndex < 0) {
                 return next(new ErrorHandler('No se encontró el voucher', 400));
             }
@@ -643,7 +650,7 @@ export class PaymentController extends ResponseData {
                 return next(new ErrorHandler('No se encontró el pago', 400));
             }
 
-            const voucherIndex = payment.verification?.payment_vouchers?.findIndex((v : any)  => v.createdAt === createdAt);
+            const voucherIndex = payment.verification?.payment_vouchers?.findIndex((v: any) => v.createdAt === createdAt);
             if (voucherIndex === undefined || voucherIndex < 0) {
                 return next(new ErrorHandler('No se encontró el voucher', 400));
             }
@@ -679,26 +686,129 @@ export class PaymentController extends ResponseData {
     }
 
     public async validateProofOfPayment(req: Request, res: Response, next: NextFunction) {
-        const { order_id } = req.body;
-        const date = new Date();
-        const user = req.user.id;
+        const { id, createdAt } = req.body;
+        const date = new MomentService().newDate();
+        const userId = req.user?._id;
         try {
-            const order: any = await this.productOrderUseCase.getOnePO({ order_id: order_id, status: true })
+            const payment: any = await this.paymentUseCase.getDetailPayment(id)
+            if (!payment) {
+                return next(new ErrorHandler('No se encontro el pago', 500))
+            }
+            const voucherIndex = payment.verification?.payment_vouchers?.findIndex((v: any) => v.createdAt === createdAt);
+            if (voucherIndex === undefined || voucherIndex < 0) {
+                return next(new ErrorHandler('No se encontró el voucher', 400));
+            }
 
-            const update = await this.productOrderUseCase.updateProductOrder(order._id, {
-                payment_status: 'approved',
-                verification: {
-                    verification_status: true,
-                    verification_time: date,
-                    verification_responsible: user,
-                },
-            });
+            const voucher = payment.verification!.payment_vouchers![voucherIndex]
 
-            this.invoke(update, 201, res, 'Se aprobó con éxito', next);
+            const productOrder: any = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id })
 
+            payment.verification!.payment_vouchers![voucherIndex] = {
+                ...payment.verification!.payment_vouchers![voucherIndex],
+                verification_responsible: userId,
+                verification_time: date,
+                status: 'approved',
+                createdAt: payment.verification!.payment_vouchers![voucherIndex].createdAt // Mantener la fecha de creación original
+            };
+
+            payment.verification.last_verification_time = date
+            
+            let vouchers: [] = payment.verification.payment_vouchers;
+
+            const amountVauchers = vouchers
+            .filter((voucher: any) => voucher.status === 'approved') // Filtrar solo los aprobados
+            .reduce((accumulator: number, voucher: any) => accumulator + Number(voucher.amount), 0); // Sumar los amounts
+          
+
+            if ((amountVauchers >=  productOrder.total) && productOrder) {
+
+                const updatePayment = await this.paymentUseCase.updateOnePayment(id, { verification: payment.verification, payment_status:'approved', });
+                if (!updatePayment) {
+                    return  next(new ErrorHandler('Error al acutualizar el pago',500))
+                }
+
+                const updateOnePayment = await this.productOrderUseCase.updateProductOrder(productOrder._id,{payment_status:'approved'})
+                if (!updateOnePayment){
+                    return  next(new ErrorHandler('Error al acutualizar la orden de productos',500))
+                }
+                const response: any = await this.productOrderUseCase.getOneProductOrder(productOrder._id)
+
+                if (response.payment && response.payment.verification && response.payment.verification.payment_vouchers) {
+                    const promises = response.payment.verification.payment_vouchers.map(async (item: any) => {
+                      const url = await this.s3Service.getUrlObject(item.url);
+                      item.url = url; // Actualizando el URL con el valor desde S3
+                    });
+                    await Promise.all(promises); // Espera a que todas las promesas se resuelvan
+                  }
+
+                this.invoke(response, 201, res, 'Ticket y venta aprobada', next);
+
+            } else {
+                const updatePayment = await this.paymentUseCase.updateOnePayment(id, { verification: payment.verification, });
+                if (!updatePayment) {
+                    return  next(new ErrorHandler('Error al acutualizar el pago',500))
+                }
+                const response : any = await this.productOrderUseCase.getOneProductOrder(productOrder._id)
+                if (response.payment && response.payment.verification && response.payment.verification.payment_vouchers) {
+                    const promises = response.payment.verification.payment_vouchers.map(async (item: any) => {
+                      const url = await this.s3Service.getUrlObject(item.url);
+                      item.url = url; // Actualizando el URL con el valor desde S3
+                    });
+                    await Promise.all(promises); // Espera a que todas las promesas se resuelvan
+                  }
+
+                this.invoke(response, 201, res, 'Ticket aprovado', next);
+            }
         } catch (error) {
             console.error(error);
             next(new ErrorHandler('Hubo un error al autorizar', 500));
+        }
+    }
+
+    public async rejectProofOfPayment(req: Request, res: Response, next: NextFunction) {
+        const { id, createdAt, notes } = req.body;
+        const date = new MomentService().newDate();
+        const userId = req.user?._id;
+        try {
+            const payment: any = await this.paymentUseCase.getDetailPayment(id)
+            if (!payment) {
+                return next(new ErrorHandler('No se encontro el pago', 500))
+            }
+            const voucherIndex = payment.verification?.payment_vouchers?.findIndex((v: any) => v.createdAt === createdAt);
+            if (voucherIndex === undefined || voucherIndex < 0) {
+                return next(new ErrorHandler('No se encontró el voucher', 400));
+            }
+
+            const productOrder: any = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id })
+
+            payment.verification!.payment_vouchers![voucherIndex] = {
+                ...payment.verification!.payment_vouchers![voucherIndex],
+                verification_responsible: userId,
+                verification_time: date,
+                status: 'rejected',
+                notes: notes,
+                createdAt: payment.verification!.payment_vouchers![voucherIndex].createdAt // Mantener la fecha de creación original
+            };
+            payment.verification.last_verification_time = date
+
+                const updatePayment = await this.paymentUseCase.updateOnePayment(id, { verification: payment.verification, });
+                if (!updatePayment) {
+                    return  next(new ErrorHandler('Error al acutualizar el pago',500))
+                }
+                const response : any = await this.productOrderUseCase.getOneProductOrder(productOrder._id)
+                if (response.payment && response.payment.verification && response.payment.verification.payment_vouchers) {
+                    const promises = response.payment.verification.payment_vouchers.map(async (item: any) => {
+                      const url = await this.s3Service.getUrlObject(item.url);
+                      item.url = url; // Actualizando el URL con el valor desde S3
+                    });
+                    await Promise.all(promises); // Espera a que todas las promesas se resuelvan
+                  }
+
+                this.invoke(response, 201, res, 'Ticket rechazado', next);
+        
+        } catch (error) {
+            console.error(error);
+            next(new ErrorHandler('Hubo un error al rechazar', 500));
         }
     }
 

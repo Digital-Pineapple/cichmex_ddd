@@ -6,6 +6,7 @@ import { ProductOrderUseCase } from '../../../application/product/productOrderUs
 import { RandomCodeShipping } from '../../../../shared/infrastructure/validation/Utils';
 import { buildPDF } from '../../../../libs/pdfKit';
 import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHoutputUseCase';
+import { ProductOrderEntity } from '../../../domain/product/ProductEntity';
 
 export class ProductOrderController extends ResponseData {
   protected path = "/productOrder";
@@ -37,7 +38,6 @@ export class ProductOrderController extends ResponseData {
     this.endShippingOrdertoPoint = this.endShippingOrdertoPoint.bind(this);
     this.pdfOrder = this.pdfOrder.bind(this)
     this.pendingTransferPO = this.pendingTransferPO.bind(this)
-    this.uploadProofOfPayment = this.uploadProofOfPayment.bind(this)
   }
 
   public async getAllProductOrders(req: Request, res: Response, next: NextFunction) {
@@ -171,21 +171,26 @@ export class ProductOrderController extends ResponseData {
   public async getOneProductOrder(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
+      // Obteniendo la orden de producto
       const response: any = await this.productOrderUseCase.getOneProductOrder(id);
-
-      if (response.verification) {
-        const url = await this.s3Service.getUrlObject(response.verification.photo_proof);
-
-        response.verification.photo_proof = url;
+  
+      // Verificando si existen vouchers de pago y obteniendo las URLs desde S3
+      if (response.payment && response.payment.verification && response.payment.verification.payment_vouchers) {
+        const promises = response.payment.verification.payment_vouchers.map(async (item: any) => {
+          const url = await this.s3Service.getUrlObject(item.url);
+          item.url = url; // Actualizando el URL con el valor desde S3
+        });
+        await Promise.all(promises); // Espera a que todas las promesas se resuelvan
       }
-
+  
+      // Invocando la respuesta final
       this.invoke(response, 200, res, "", next);
+  
     } catch (error) {
-
-      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+      next(new ErrorHandler(`Error al consultar la información`, 500)); // Manejo de error
     }
   }
-
+  
 
   public async getDeliveries(req: Request, res: Response, next: NextFunction) {
     try {
@@ -338,45 +343,6 @@ export class ProductOrderController extends ResponseData {
       next(new ErrorHandler("Hubo un error ", 500));
     }
   }
-  public async uploadProofOfPayment(req: Request, res: Response, next: NextFunction) {
-    const { order_id, verification_reference } = req.body;
-
-    if (!req.file) {
-        return next(new ErrorHandler('Documento vacío', 400));
-    }
-
-    try {
-        let response: any = await this.productOrderUseCase.getOnePO({ order_id: order_id, status: true });
-
-        if (!response) {
-            return next(new ErrorHandler('No activa', 404));
-        }
-
-        const pathObject = `${this.path}/proofPhoto/${response._id}`;
-        const { url, success, key, message } = await this.s3Service.uploadToS3AndGetUrl(pathObject, req.file, ".jpg");
-
-        if (!success) {
-            return next(new ErrorHandler(`${message}`, 500));
-        }
-
-        const update: any = await this.productOrderUseCase.updateProductOrder(response._id, {
-            verification: {
-                verification_status: false,
-                photo_proof: key,
-                verification_reference: verification_reference
-            }
-        });
-
-        update.verification.photo_proof = url;
-        response = update;
-
-        this.invoke(response, 201, res, 'Se subió el archivo con éxito', next);
-    } catch (error) {
-      console.log(error);
-      
-        return next(new ErrorHandler('Hubo un error', 500));
-    }
-}
 
 
 

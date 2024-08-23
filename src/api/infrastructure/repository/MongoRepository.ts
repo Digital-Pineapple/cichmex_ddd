@@ -27,8 +27,8 @@ export abstract class MongoRepository {
     return result
   }
 
-  public async findById(_id: String, populateConfig?: any, populateConfig2?:any): Promise<any> {
-    return await this.MODEL.findById( {_id,  status: true }).populate(populateConfig).populate(populateConfig2);
+  public async findById(_id: String, populateConfig?: any, populateConfig2?:any, populateConfig3?:any): Promise<any> {
+    return await this.MODEL.findById( {_id,  status: true }).populate(populateConfig).populate(populateConfig2).populate(populateConfig3);
   }
 
   public async findByIdPupulate(
