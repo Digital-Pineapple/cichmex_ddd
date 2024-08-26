@@ -22,27 +22,27 @@ const productRepository = new ProductRepository(ProductModel);
 const categoryRepository = new CategoryRepository(CategoryModel)
 const subcategoryRepository = new SubCategoryRepository(SubCategoryModel)
 
-const stockStoreHouseRepository    = new StockStoreHouseRepository(StockStoreHouseModel);
+const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
 
 const productUseCase = new ProductUseCase(productRepository);
 const categoryUseCase = new CategoryUseCase(categoryRepository)
 const subCategoryUseCase = new SubCategoryUseCase(subcategoryRepository);
-const stockStoreHouseUseCase      = new StockStoreHouseUseCase(stockStoreHouseRepository);
+const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository);
 
 const s3Service = new S3Service();
 const productvalidations = new ProductValidations()
 
-const productController = new ProductController(productUseCase, categoryUseCase,stockStoreHouseUseCase,  s3Service, subCategoryUseCase);
+const productController = new ProductController(productUseCase, categoryUseCase, stockStoreHouseUseCase, s3Service, subCategoryUseCase);
 const userValidations = new UserValidations();
 
 productRouter
 
-.post("/create-product/ok",productvalidations.productValidation,userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.createProduct)
+  .post("/addProduct", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.createProduct)
   .get("/", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProducts)
   .get("/:id", productController.getProduct)
   .get('/non-existent/get', productController.getNoStockProducts)
   .post('/search-category', productController.getProductsByCategory)
-  .post("/:id", productvalidations.productValidation,userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProduct)
+  .post("/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProduct)
   .post('/search/ok', productController.searchProduct)
   .delete("/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.deleteProduct)
   .get("/productsByCategories/ok", productController.getProductsByCategories)

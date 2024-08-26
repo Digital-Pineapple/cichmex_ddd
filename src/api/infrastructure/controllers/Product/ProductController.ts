@@ -294,6 +294,8 @@ export class ProductController extends ResponseData {
       this.invoke(response2, 201, res, 'Producto creado con éxito', next);
 
     } catch (error) {
+      console.log(error);
+      
 
       next(new ErrorHandler('Hubo un error al crear el producto', 500));
     }

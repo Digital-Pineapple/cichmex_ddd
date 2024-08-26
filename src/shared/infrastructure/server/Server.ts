@@ -1,48 +1,38 @@
 import express, { Router } from 'express';
 import { config } from '../../../../config';
 import swaggerCarWash from '../../../../swagger_output.json';
-import { Server as ServerSocket, Socket } from 'socket.io';
 import { createServer, Server as HttpServer } from 'http';
 import swaggerUi from 'swagger-ui-express';
-import { SocketController } from '../../../api/infrastructure/controllers/sockets/socketController';
+import cors from 'cors';
 
 export class Server {
     private readonly express: express.Application;
     private readonly httpServer: HttpServer;
-    private readonly io: ServerSocket;
-    private swaggerUiOptions = {
-        explorer: true,
-    };
+    // private swaggerUiOptions = {
+    //     explorer: true,
+    // };
 
     constructor(private router: Router) {
         this.express = express();
         this.httpServer = createServer(this.express);
-        this.express.use(
-            "/api-docs",
-            swaggerUi.serve,
-            swaggerUi.setup(swaggerCarWash, this.swaggerUiOptions)
-        );
+
+        // // Habilitar CORS
+        // this.express.use(cors({
+        //     origin: 'http://localhost:3003', // Puedes cambiarlo a los orígenes que necesites
+        //     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        // }));
+
+        // // Documentación Swagger
+        // this.express.use(
+        //     "/api-docs",
+        //     swaggerUi.serve,
+        //     swaggerUi.setup(swaggerCarWash, this.swaggerUiOptions)
+        // );
+
+        // Registro de rutas
         this.express.use(this.router);
 
-        this.io = new ServerSocket(this.httpServer, {
-            path: '/socket/',
-            cors: {
-                origin: process.env.SOCKET_URL_CORS,
-                methods: ["GET", "POST"]
-            },
-        });
-
-        this.sockets();
-    }
-
-    private sockets() {
-        this.io.on('connection', (socket: Socket) => {
-            SocketController.handleConnection(socket);
-        });
-
-        this.io.on('connect_error', (error) => {
-            console.error('Connection error:', error);
-        });
+        // Otras configuraciones de sockets o middlewares irán después...
     }
 
     public startServer = async (): Promise<void> => {
