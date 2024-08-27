@@ -24,6 +24,7 @@ import productOrderRouter from './productOrder';
 import shippingCostRouter from './shippingCost';
 import discountCouponRouter from './discountCoupon';
 import socketsRouter from './sockets';
+import dynamicRouteRouter from './dynamicRoute';
 
 export const apiRouter = (): Router => {
 
@@ -47,6 +48,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/product-order', productOrderRouter)
     apiRouter.use('/stock-branch', stockBranchRouter)
     apiRouter.use('/payments', paymentRouter)
+    apiRouter.use('/dynamic-route', dynamicRouteRouter)
     apiRouter.use('/shipping-cost', shippingCostRouter)
     apiRouter.use('/shopping-cart', shoppingCartRouter)
     apiRouter.use('/stock-StoreHouse', stockStoreHouseRouter)
@@ -73,8 +75,9 @@ apiRouterx.use('/membership-benefit', membershipBenefitRouter)
 apiRouterx.use('/branch-offices', branchOfficeRouter)
 apiRouterx.use('/product', productRouter)
 apiRouterx.use('/product-order', productOrderRouter)
-apiRouterx.use('/stock-branch', stockBranchRouter)
 apiRouterx.use('/payments', paymentRouter)
+apiRouterx.use('/dynamic-route', dynamicRouteRouter)
+apiRouterx.use('/stock-branch', stockBranchRouter)
 apiRouterx.use('/shipping-cost', shippingCostRouter)
 apiRouterx.use('/shopping-cart', shoppingCartRouter)
 apiRouterx.use('/stock-StoreHouse', stockStoreHouseRouter )

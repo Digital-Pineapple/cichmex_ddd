@@ -37,16 +37,16 @@ const userValidations = new UserValidations();
 
 productRouter
 
-  .post("/addProduct", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.createProduct)
-  .get("/", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProducts)
-  .get("/:id", productController.getProduct)
-  .get('/non-existent/get', productController.getNoStockProducts)
-  .post('/search-category', productController.getProductsByCategory)
-  .post("/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProduct)
+.get("/", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProducts)
+.get("/:id", productController.getProduct)
+.get('/non-existent/get', productController.getNoStockProducts)
+.post("/addProduct", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.createProduct)
+.post('/search-category', productController.getProductsByCategory)
+.post("/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProduct)
   .post('/search/ok', productController.searchProduct)
-  .delete("/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.deleteProduct)
   .get("/productsByCategories/ok", productController.getProductsByCategories)
   .post("/productsBySubCategory/ok", productController.getProductsBySubCategory)
   .get("/videos/ok", productController.getVideos)
+  .delete("/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.deleteProduct)
 
 export default productRouter;

@@ -21,8 +21,8 @@ export class ServicesController extends ResponseData {
     public async getAllServices(req: Request, res: Response, next: NextFunction) {
         try {
             
-            const response = await this.servicesUseCase.getServices();
-            await Promise.all(response.map(async (res) => {
+            const response : any = await this.servicesUseCase.getServices();
+            await Promise.all(response.map(async (res:any) => {
                 
                 const url = await this.s3Service.getUrlObject(res.image + ".jpg");
                 res.image = url;
@@ -37,7 +37,7 @@ export class ServicesController extends ResponseData {
     public async getService(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         try {
-            const response = await this.servicesUseCase.getDetailService(id);
+            const response : any = await this.servicesUseCase.getDetailService(id);
             const url = await this.s3Service.getUrlObject(response.image + ".jpg");
             response.image = url;
             this.invoke(response, 200, res, '', next);
@@ -50,7 +50,7 @@ export class ServicesController extends ResponseData {
         const { name, description, subCategory } = req.body;
         
         try {
-            const response = await this.servicesUseCase.createNewService({name:name,description:description,subCategory:subCategory});
+            const response : any = await this.servicesUseCase.createNewService({name:name,description:description,subCategory:subCategory});
     
             if (response instanceof ErrorHandler || response === null) {
                 return this.invoke(response, 400, res, 'Hubo un error al crear ', next);

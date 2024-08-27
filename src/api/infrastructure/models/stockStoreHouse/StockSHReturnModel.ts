@@ -17,7 +17,8 @@ const StockSHReturnSchema = new Schema<SHProductReturn> ({
       required: true,
   },
   responsible_id: {
-      type    : mongoose.Types.ObjectId, ref :'users',
+      type    : mongoose.Types.ObjectId,
+       ref :'users',
       required: true,
   },
   status:{

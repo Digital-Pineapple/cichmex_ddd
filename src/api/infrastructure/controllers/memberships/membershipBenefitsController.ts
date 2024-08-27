@@ -94,7 +94,7 @@ export class MembershipBenefitsController extends ResponseData {
 
     try {
       // Crear beneficio de membresía
-      const memBenefit = await this.membershipBenefitsUseCase.createNewMembershipBenefit(
+      const memBenefit : any = await this.membershipBenefitsUseCase.createNewMembershipBenefit(
         {membership_id: membership},
        { service_id : service},
         {client_id: user},

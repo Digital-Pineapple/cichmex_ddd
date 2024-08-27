@@ -25,7 +25,7 @@ export class DocumentationController extends ResponseData {
 
     public async getAllDocumentations(req: Request, res: Response, next: NextFunction) {
         try {
-            const response = await this.documentationUseCase.getDocumentations();
+            const response : any = await this.documentationUseCase.getDocumentations();
             await Promise.all(response?.map(async (res: any) => {
                 const url = await this.s3Service.getUrlObject(res.url + ".pdf");
                 res.url = url;
@@ -94,7 +94,7 @@ export class DocumentationController extends ResponseData {
             const pathObject = `${this.path}/${id}/${name}`;
             const { success, url, } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".pdf", req.file, "application/pdf");
             if (!success) return new ErrorHandler('Hubo un error al subir el documento', 400)
-            const documentation = await this.documentationUseCase.updateOneDocumentation(id, { name, status, message, verify, url: pathObject });
+            const documentation : any = await this.documentationUseCase.updateOneDocumentation(id, { name, status, message, verify, url: pathObject });
                documentation.url = url
                this.invoke(documentation, 200, res, 'La documentacion se actualizó con éxito', next);
         } catch (error) {
@@ -121,7 +121,7 @@ export class DocumentationController extends ResponseData {
     public async getAllDocumentationsByCustomer(req: Request, res: Response, next: NextFunction) {
         const {id } = req.params;
         try {
-             const response = await this.documentationUseCase.getDocumentationByUser(id);
+             const response : any = await this.documentationUseCase.getDocumentationByUser(id);
              if (!(response instanceof ErrorHandler)) {
                 
                  await Promise.all(response != null ? response.map(async (res:any) => {

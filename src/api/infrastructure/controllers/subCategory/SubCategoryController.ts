@@ -56,7 +56,7 @@ export class SubCategoryController extends ResponseData {
         const { name, category_id } = req.body;
     
         try {
-            const response = await this.subCategoryUseCase.createNewSubCategory(name, category_id)
+            const response : any = await this.subCategoryUseCase.createNewSubCategory(name, category_id)
     
             if (response instanceof ErrorHandler || response === null) {
                 return this.invoke(response, 400, res, 'Hubo un error al crear la Subcategoría', next);
