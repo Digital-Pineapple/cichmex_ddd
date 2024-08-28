@@ -130,16 +130,17 @@ export class StockStoreHouseController extends ResponseData {
             type_user: user.type_user
         };
         const SH_id = '662fe69b9ba1d8b3cfcd3634';
-        const code_folio = RandomCodeId('FO');
+        const code_folio = RandomCodeId('FO');        
     
         try {
             const operations = products.map(async (item: any) => {
                 const available = await this.stockStoreHouseUseCase.getProductStock(item._id, SH_id);
-                const available_id = available?._id;
-                
+                const available_id = available?._id;                
     
                 if (!available) {
                     const response = await this.stockStoreHouseUseCase.createStock({ product_id: item._id, StoreHouse_id: SH_id });
+                    console.log(response);
+                    
                     const newQuantity = item.quantity;
                     const entry = await this.stockSHinputUseCase.createInput({
                         SHStock_id: response?._id,
@@ -153,7 +154,7 @@ export class StockStoreHouseController extends ResponseData {
                     });
                     await this.stockStoreHouseUseCase.updateStock(response?._id, { stock: entry.newQuantity });
                 } else {
-                    const newQuantity = item.quantity + available.stock;
+                    const newQuantity = item.quantity + available.stock ;
                     const entry = await this.stockSHinputUseCase.createInput({
                         SHStock_id: available?._id,
                         quantity: item.quantity,
@@ -171,7 +172,6 @@ export class StockStoreHouseController extends ResponseData {
             await Promise.all(operations);
             this.invoke(code_folio, 200, res, 'Alta de stock exitosa', next);
         } catch (error) {
-            console.error(error);
             next(new ErrorHandler('Hubo un error', 500));
         }
     }

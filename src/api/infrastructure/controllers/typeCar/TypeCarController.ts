@@ -39,7 +39,7 @@ export class TypeCarController extends ResponseData {
     public async getTypeCar(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         try {
-           const response = await this.typeCarUseCase.getTypeCar(id);
+           const response : any = await this.typeCarUseCase.getTypeCar(id);
            const url = await this.s3Service.getUrlObject(response?.typeCar_image + ".jpg");
                response.typeCar_image = url;
                this.invoke(response,200,res,"", next)

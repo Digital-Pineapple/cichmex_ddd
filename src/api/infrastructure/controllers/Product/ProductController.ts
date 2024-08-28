@@ -158,9 +158,12 @@ export class ProductController extends ResponseData {
       product_key,
       seoDescription,
       shortDescription,
-      seoKeywords
+      seoKeywords,
+      dimensions
 
     } = req.body;
+    console.log(req.body);
+    
 
     const createSlug = (slug: string): string => {
       let processedSlug = slug
@@ -204,7 +207,8 @@ export class ProductController extends ResponseData {
             product_key,
             seoDescription,
             shortDescription,
-            seoKeywords
+            seoKeywords,
+            dimensions
 
 
           }
@@ -284,7 +288,8 @@ export class ProductController extends ResponseData {
             product_key,
             seoDescription,
             shortDescription,
-            seoKeywords
+            seoKeywords,
+            dimensions
           }
 
         );
@@ -294,6 +299,8 @@ export class ProductController extends ResponseData {
       this.invoke(response2, 201, res, 'Producto creado con éxito', next);
 
     } catch (error) {
+      console.log(error);
+      
 
       next(new ErrorHandler('Hubo un error al crear el producto', 500));
     }
@@ -309,13 +316,16 @@ export class ProductController extends ResponseData {
       seoDescription,
       shortDescription,
       dimensions,
-      seoKeywords } = req.body;
+      seoKeywords, 
+    tag
+   } = req.body;
+      console.log(req.body,'data');
       
   
     try {
       let response: any;
   
-      if (req.files && Array.isArray(req.files)) {
+      if (req.files) {
         const paths: string[] = [];
         const urls: string[] = [];
         let video_paths: string[] = [];
@@ -375,6 +385,7 @@ export class ProductController extends ResponseData {
           seoKeywords,
           weight,
           dimensions,
+          tag
         });
   
         response.images = urls;
@@ -396,7 +407,9 @@ export class ProductController extends ResponseData {
           seoDescription,
           shortDescription,
           seoKeywords,
-          weight
+          weight,
+          dimensions,
+          tag
         });
       }
   

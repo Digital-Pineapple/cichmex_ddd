@@ -42,7 +42,7 @@ export interface SHProductInput {
     SHStock_id ?: string,
     quantity: number,
     newQuantity: number,
-    responsible: UserEntity,
+    responsible_id: UserEntity,
     createdAt: NativeDate;
     status?:boolean;
   }

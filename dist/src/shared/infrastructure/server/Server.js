@@ -15,17 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Server = void 0;
 const express_1 = __importDefault(require("express"));
 const config_1 = require("../../../../config");
-const swagger_output_json_1 = __importDefault(require("../../../../swagger_output.json"));
-const socket_io_1 = require("socket.io");
 const http_1 = require("http");
-const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
-const socketController_1 = require("../../../api/infrastructure/controllers/sockets/socketController");
 class Server {
+    // private swaggerUiOptions = {
+    //     explorer: true,
+    // };
     constructor(router) {
         this.router = router;
-        this.swaggerUiOptions = {
-            explorer: true,
-        };
         this.startServer = () => __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
                 this.httpServer.listen(config_1.config.PORT, () => {
@@ -38,24 +34,20 @@ class Server {
         });
         this.express = (0, express_1.default)();
         this.httpServer = (0, http_1.createServer)(this.express);
-        this.express.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_output_json_1.default, this.swaggerUiOptions));
+        // // Habilitar CORS
+        // this.express.use(cors({
+        //     origin: 'http://localhost:3003', // Puedes cambiarlo a los orígenes que necesites
+        //     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        // }));
+        // // Documentación Swagger
+        // this.express.use(
+        //     "/api-docs",
+        //     swaggerUi.serve,
+        //     swaggerUi.setup(swaggerCarWash, this.swaggerUiOptions)
+        // );
+        // Registro de rutas
         this.express.use(this.router);
-        this.io = new socket_io_1.Server(this.httpServer, {
-            path: '/socket/',
-            cors: {
-                origin: process.env.SOCKET_URL_CORS,
-                methods: ["GET", "POST"]
-            },
-        });
-        this.sockets();
-    }
-    sockets() {
-        this.io.on('connection', (socket) => {
-            socketController_1.SocketController.handleConnection(socket);
-        });
-        this.io.on('connect_error', (error) => {
-            console.error('Connection error:', error);
-        });
+        // Otras configuraciones de sockets o middlewares irán después...
     }
 }
 exports.Server = Server;
