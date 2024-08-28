@@ -23,12 +23,11 @@ shoppingCartRouter
     .put('/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.updateShoppingCart )
     .delete('/membership/:id', shoppingCartController.deleteMembershipInCart)
     .delete('/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.deleteShoppingCart)
-    .put('/product/:id', shoppingCartController.deleteProductInCart)
-    .delete('/products/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.deleteProductsInShoppingCart)
-    .put('/products/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.updateShoppingCartProducts)
-    .put('/product/quantity/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.updateProductQuantity)
-    .put ('/merge/ok', shoppingCartController.mergeCart)
+    .delete('/product/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.deleteProductInCart)
+    .delete('/products/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.deleteProductsInShoppingCart)
+    .put('/products/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.updateShoppingCartProducts)
+    .put('/product/quantity/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.updateProductQuantity)
+    .put ('/merge/ok', shoppingCartController.mergeCart) 
 
-    
 
 export default shoppingCartRouter;

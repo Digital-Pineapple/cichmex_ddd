@@ -16,7 +16,6 @@ const ShoppingCartSchema = new Schema<ShoppingCartEntity>({
     memberships: {
         type: Array,
         required: false
-
     },
     status:{
         type:Boolean,

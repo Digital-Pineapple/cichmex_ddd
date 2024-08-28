@@ -8,6 +8,7 @@ import ServiceModel from '../../api/infrastructure/models/ServicesModel';
 import SubCategoryModel from '../../api/infrastructure/models/SubCategoryModel';
 import UserModel from '../../api/infrastructure/models/UserModel';
 import PaymentModel from '../../api/infrastructure/models/payments/PaymentModel';
+import StockStoreHouseModel from '../../api/infrastructure/models/stockStoreHouse/StockStoreHouseModel';
 export interface IAuthPopulateConfig {
     path    : string;
     select  : string;
@@ -160,4 +161,5 @@ export const PopulatePayment = {
     select: ["uuid", "MP_info","payment_status", "verification"],
     model:PaymentModel
 }
+
 
