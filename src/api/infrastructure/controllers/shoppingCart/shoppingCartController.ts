@@ -42,13 +42,16 @@ export class ShoppingCartController extends ResponseData {
         }
     }
     public async getShoppingCart(req: Request, res: Response, next: NextFunction) {
-        const { id } = req.params;
-        try {
-            const response: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(id)
+        const user = req.user;
+        try {            
+            const response: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id+"");
+            console.log(response, "response xdxd");
+            
             if(response.products){
                 const products = response.products
                 response.products = products.filter((product:any)=>product.item !== null)
-                this.shoppingCartUseCase.createShoppingCart({user_id:id,products: response.products})
+                this.shoppingCartUseCase.updateShoppingCart(response._id, { products: response.products })
+                // this.shoppingCartUseCase.createShoppingCart({user_id:id,products: response.products})
             }
             const updatedResponse = await Promise.all(
                 response.products.map(async (product:any)=>{
@@ -59,9 +62,9 @@ export class ShoppingCartController extends ResponseData {
                 })
             )                       
             this.invoke(response, 200, res, '', next);
-        } catch (error) {
-           
-
+        } catch (error) {           
+            console.log(error, "error");
+            
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }

@@ -117,83 +117,155 @@ export class BranchOfficeController extends ResponseData {
         }
     }
 
+    // public async createBranchOffice(req: Request, res: Response, next: NextFunction) {
+    //     const { user_id, name, description, phone_number, location, schedules, type } = req.body;
+    //      const location1 = JSON.parse(location)
+    //      const parseSchedules = JSON.parse(schedules)
+    //      console.log(req.body);
+         
+    //     try {
+    //         if (req.files) {
+    //             const paths: string[] = [];
+    //             const urls: string[] = [];
+
+    //             await Promise.all(req.files.map(async (item: any, index: number) => {
+    //                 const pathObject: string = `${this.path}/${user_id}/${index}`;
+    //                 const { url, success, key } = await this.s3Service.uploadToS3AndGetUrl(
+    //                     pathObject + ".jpg",
+    //                     item,
+    //                     "image/jpeg"
+    //                 );
+    //                 paths.push(pathObject);
+    //                 urls.push(url)
+    //                 if (!success) return new ErrorHandler("Hubo un error al subir la imagen", 400)
+                        
+    //                 const response = await this.branchOfficeUseCase.createBranchOffice(
+    //                     {  
+    //                         user_id, 
+    //                         name, 
+    //                         description, 
+    //                         phone_number: phone_number,
+    //                         location, 
+    //                         schedules: parseSchedules, 
+    //                         type,                             
+    //                         images: paths, 
+    //                         status:true 
+    //                     }, location1)
+    //                 if (!(response instanceof ErrorHandler)) {
+    //                     response.images = urls;
+    //                 }
+
+    //                 this.invoke(
+    //                     response,
+    //                     201,
+    //                     res,
+    //                     "Registro exitoso",
+    //                     next)
+    //             }))
+    //         }
+
+    //         const response = await this.branchOfficeUseCase.createBranchOffice(
+    //             { 
+    //                 user_id, 
+    //                 name, 
+    //                 description, 
+    //                 phone_number: phone_number,
+    //                 location, 
+    //                 schedules: parseSchedules, 
+    //                 type 
+    //             }, location1)
+
+    //         this.invoke(
+    //             response,
+    //             201,
+    //             res,
+    //             "Se registró con éxito",
+    //             next
+    //         );
+
+
+
+
+    //     } catch (error) {
+    //         console.log(error);
+            
+           
+    //         next(new ErrorHandler('Hubo un error al crear', 500));
+    //     }
+
+    // }
+
     public async createBranchOffice(req: Request, res: Response, next: NextFunction) {
         const { user_id, name, description, phone_number, location, schedules, type } = req.body;
-         const location1 = JSON.parse(location)
-         const parseSchedules = JSON.parse(schedules)
-         console.log(req.body);
-         
+    
         try {
+            // Parse JSON strings
+            const location1 = JSON.parse(location);
+            const parseSchedules = JSON.parse(schedules);
+    
+            let images: string[] = [];
+            let imageUrls: string[] = [];
+    
             if (req.files) {
-                const paths: string[] = [];
-                const urls: string[] = [];
-
-                await Promise.all(req.files.map(async (item: any, index: number) => {
-                    const pathObject: string = `${this.path}/${user_id}/${index}`;
+                // Cast req.files to a more specific type if you know what kind of files are being handled
+                const files = req.files as Express.Multer.File[];
+    
+                // Upload files to S3 and collect URLs
+                await Promise.all(files.map(async (file, index) => {
+                    const pathObject = `${this.path}/${user_id}/${index}`;
                     const { url, success, key } = await this.s3Service.uploadToS3AndGetUrl(
-                        pathObject + ".jpg",
-                        item,
-                        "image/jpeg"
+                        `${pathObject}.jpg`,
+                        file,
+                        'image/jpeg'
                     );
-                    paths.push(pathObject);
-                    urls.push(url)
-                    if (!success) return new ErrorHandler("Hubo un error al subir la imagen", 400)
-                        
-                    const response = await this.branchOfficeUseCase.createBranchOffice(
-                        {  
-                            user_id, 
-                            name, 
-                            description, 
-                            phone_number: phone_number,
-                            location, 
-                            schedules: parseSchedules, 
-                            type,                             
-                            images: paths, 
-                            status:true 
-                        }, location1)
-                    if (!(response instanceof ErrorHandler)) {
-                        response.images = urls;
+    
+                    if (!success) {
+                        throw new ErrorHandler('Hubo un error al subir la imagen', 400);
                     }
-
-                    this.invoke(
-                        response,
-                        201,
-                        res,
-                        "Registro exitoso",
-                        next)
-                }))
+    
+                    images.push(pathObject);
+                    imageUrls.push(url);
+                }));
             }
-
+    
+            // Create branch office entry
             const response = await this.branchOfficeUseCase.createBranchOffice(
-                { 
+                {  
                     user_id, 
                     name, 
                     description, 
-                    phone_number: phone_number,
+                    phone_number,
                     location, 
                     schedules: parseSchedules, 
-                    type 
-                }, location1)
-
+                    type,                             
+                    images, 
+                    status: true 
+                }, 
+                location1
+            );
+    
+            if (response instanceof ErrorHandler) {
+                return next(response);
+            }
+    
+            // Update response with image URLs
+            response.images = imageUrls;
+    
+            // Send success response
             this.invoke(
                 response,
                 201,
                 res,
-                "Se registró con éxito",
+                "Registro exitoso",
                 next
             );
-
-
-
-
+    
         } catch (error) {
-            console.log(error);
-            
-           
+            console.error(error);
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
-
     }
+    
 
     public async addServices(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params

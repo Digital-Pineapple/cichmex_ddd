@@ -17,8 +17,8 @@ const shoppingCartController   = new ShoppingCartController(shoppingCartUseCase,
 const userValidations = new UserValidations();
 
 shoppingCartRouter
-    .get('/', shoppingCartController.getAllShoppingCarts)
-    .get('/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.getShoppingCart)
+    .get('/all', shoppingCartController.getAllShoppingCarts)
+    .get('/', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.getShoppingCart)
     .post('/', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.createShoppingCart)
     .put('/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.updateShoppingCart )
     .delete('/membership/:id', shoppingCartController.deleteMembershipInCart)
@@ -28,6 +28,7 @@ shoppingCartRouter
     .put('/products/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.updateShoppingCartProducts)
     .put('/product/quantity/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.updateProductQuantity)
     .put ('/merge/ok', shoppingCartController.mergeCart)
+
     
 
 export default shoppingCartRouter;
