@@ -26,7 +26,9 @@ const validateAuthentication = (req, res, next) => __awaiter(void 0, void 0, voi
         return next(new ErrorHandler_1.ErrorHandler('Token is required', 401));
     try {
         const { uuid } = jsonwebtoken_1.default.verify(token, config_1.config.SECRET_JWT_KEY);
+        console.log(uuid);
         const userData = yield UserModel_1.default.findOne({ uuid: uuid, status: true });
+        console.log(userData);
         if (!userData)
             return next(new ErrorHandler_1.ErrorHandler('El usuario no es valido', 400));
         req.user = userData;

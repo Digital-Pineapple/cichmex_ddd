@@ -17,7 +17,11 @@ export const validateAuthentication = async(req: Request, res: Response, next: N
         if (!token) return next(new ErrorHandler('Token is required', 401));
         try {
             const { uuid } = Jwt.verify(token, config.SECRET_JWT_KEY) as { uuid: Iuuid };
+           console.log(uuid);
+           
             const userData = await UserModel.findOne({uuid:uuid, status:true})
+            console.log(userData);
+            
             if (!userData) return next(new ErrorHandler('El usuario no es valido', 400));
             req.user = userData;
             next();

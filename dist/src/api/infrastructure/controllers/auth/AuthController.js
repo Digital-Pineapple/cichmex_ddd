@@ -98,7 +98,7 @@ class AuthController extends ResponseData_1.ResponseData {
             const { email, password, fullname, phone } = req.body;
             try {
                 const responsedefault = yield this.typeUserUseCase.getTypeUsers();
-                const def = responsedefault === null || responsedefault === void 0 ? void 0 : responsedefault.filter(item => item.name === 'Customer');
+                const def = responsedefault === null || responsedefault === void 0 ? void 0 : responsedefault.filter((item) => item.name === 'Customer');
                 const TypeUser_id = def === null || def === void 0 ? void 0 : def.map(item => item._id);
                 const response = yield this.authUseCase.signUp({ fullname, email, password, phone, type_user: TypeUser_id });
                 this.invoke(response, 200, res, '', next);

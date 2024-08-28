@@ -319,7 +319,6 @@ export class ProductController extends ResponseData {
       seoKeywords, 
     tag
    } = req.body;
-      console.log(req.body,'data');
       
   
     try {

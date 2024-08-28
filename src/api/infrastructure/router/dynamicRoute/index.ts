@@ -15,6 +15,7 @@ const userValidations = new UserValidations();
 dynamicRouteRouter
     .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), dynamicRouteController.getAllRoutes)
     .get('/links', userValidations.authTypeUserValidation(['SUPER-ADMIN']), dynamicRouteController.getRoutes)
+    .get('/public-links', dynamicRouteController.getPublicRoutes)
     .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), dynamicRouteController.CreateRoute)
     .put('/update/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), dynamicRouteController.UpdateRoute)
     .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), dynamicRouteController.DeleteRoute)

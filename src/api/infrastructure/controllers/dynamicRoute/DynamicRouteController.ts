@@ -16,6 +16,7 @@ export class DynamicRouteController extends ResponseData {
         super();
         this.getAllRoutes = this.getAllRoutes.bind(this);
         this.getRoutes = this.getRoutes.bind(this);
+        this.getPublicRoutes = this.getPublicRoutes.bind(this);
         this.CreateRoute = this.CreateRoute.bind(this);
         this.UpdateRoute = this.UpdateRoute.bind(this);
         this.DeleteRoute = this.DeleteRoute.bind(this);
@@ -30,25 +31,54 @@ export class DynamicRouteController extends ResponseData {
         }
     }
     public async getRoutes(req: Request, res: Response, next: NextFunction) {
-        const { type_user } = req.user
-        const { system } = req.query
-        console.log(req,'infodetail');
-        
-        console.log(system,type_user);
-        
-
+        const { type_user } = req.user;
+        const { system } = req.query;
+    
         try {
-            const response: any = await this.dynamicRouteUseCase.getRoutes(type_user?.role,system)
-            this.invoke(response, 200, res, '', next);
+            const response: any = await this.dynamicRouteUseCase.getRoutes(type_user?.role, system);
+            
+            let responseData: any = [];
+    
+            if (!response || response.length === 0) {
+                return next(new ErrorHandler('No se encontraron rutas', 404));
+            }
+    
+            response.forEach((item: any) => {
+                const { name, path, component, layout, authRequired, rolesAllowed } = item;
+                responseData.push({ name, path, component, layout, authRequired, rolesAllowed });
+            });
+    
+            return this.invoke(responseData, 200, res, '', next);
+    
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
-
+    public async getPublicRoutes(req: Request, res: Response, next: NextFunction) {
+        const { system } = req.query;
+    
+        try {
+            const response: any = await this.dynamicRouteUseCase.getPublicRoutes(system)
+            let responseData: any = [];
+    
+            if (!response || response.length === 0) {
+                return next(new ErrorHandler('No se encontraron rutas', 404));
+            }
+    
+            response.forEach((item: any) => {
+                const { name, path, component, layout, authRequired, rolesAllowed } = item;
+                responseData.push({ name, path, component, layout, authRequired, rolesAllowed });
+            });
+    
+            return this.invoke(responseData, 200, res, '', next);
+    
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+    
     public async CreateRoute(req: Request, res: Response, next: NextFunction) {
         const { values } = req.body
-        console.log(values);
-
         const uuid = generateUUID()
         try {
             const response: any = await this.dynamicRouteUseCase.createOneRoute({ ...values, uuid })
@@ -61,7 +91,7 @@ export class DynamicRouteController extends ResponseData {
     public async UpdateRoute(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params
         const { values } = req.body
-        
+
         try {
             const response: any = await this.dynamicRouteUseCase.updateOneRoute(id, { ...values })
             this.invoke(response, 200, res, '', next);

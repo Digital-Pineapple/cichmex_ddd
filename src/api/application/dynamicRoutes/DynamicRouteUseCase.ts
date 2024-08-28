@@ -15,6 +15,9 @@ export class DynamicRouteUseCase {
     public async getRoutes(role: any, system:any): Promise<DynamicRouteEntity[] | null> {
         return await this.dynamicRouteRepository.findRoutes(role, system)
     }
+    public async getPublicRoutes(system:any): Promise<DynamicRouteEntity[] | null> {
+        return await this.dynamicRouteRepository.findPublicRoutes(system)
+    }
     public async createOneRoute(body: any): Promise<DynamicRouteEntity | ErrorHandler | null> {
         const noRepeat = await this.dynamicRouteRepository.findOneItem({ name: body.name, status: true })    
         if (noRepeat) {
