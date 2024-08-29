@@ -6,10 +6,10 @@ export interface DynamicRouteEntity {
     name: string;
     path: string;
     component:  number;
-    layout: string;
+    layout?: string;
     authRequired: boolean;
     rolesAllowed:  string[];
-    redirectTo: string;
+    redirectTo?: string;
     system:string;
     status?: boolean;
 }
