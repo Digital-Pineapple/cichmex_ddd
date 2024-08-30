@@ -20,7 +20,7 @@ const DynamicRouteSchema = new Schema<DynamicRouteEntity>({
     },
     layout:{
         type: String,
-        reqired: true
+        reqired: false
     },
     component:{
         type:Number,
@@ -43,6 +43,10 @@ const DynamicRouteSchema = new Schema<DynamicRouteEntity>({
         required: false,
         default:true,
     },
+    redirectTo:{
+        type:String,
+        required:false
+    }
 
 }, {
     versionKey: false,
