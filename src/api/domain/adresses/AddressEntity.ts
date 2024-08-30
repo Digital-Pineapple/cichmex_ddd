@@ -8,13 +8,15 @@ export interface AddressEntity {
   numext?: string;
   numint?: string;
   zipcode?: string;
+  city?: string;
   state?: string;
-  coords?: Coords;
   municipality?: string;
   neighborhood?: string;
   reference?: string;
   btwstreet?: string;
+  country?: string;
   status?: boolean;
+  default?: boolean;
   createdAt: NativeDate;
   updatedAt: NativeDate;
 }
