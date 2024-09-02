@@ -67,7 +67,6 @@ export class AuthUseCase extends Authentication {
 
     async findUser(body:any): Promise<UserEntity> {
         const user = await this.authRepository.findOneItem({ ...body },PhonePopulateConfig, TypeUserPopulateConfig);
-        
         return await (user);
     }
 
@@ -233,7 +232,7 @@ export class AuthUseCase extends Authentication {
         return await this.generateJWT(user, infoToken)
     }
 
-    async registerPhoneNumber(user: UserEntity | UserEntity, phone: IPhoneRequest, code: number) {
+    async registerPhoneNumber(user: UserEntity , phone: IPhoneRequest, code: number) {
         const { phone_number, prefix } = phone;
 
 

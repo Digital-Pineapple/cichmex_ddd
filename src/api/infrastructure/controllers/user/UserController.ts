@@ -365,26 +365,16 @@ export class UserController extends ResponseData {
     public async updateUser(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { fullname, type_user } = req.body;
-        const uuid = generateUUID()
-        
         
         try {
             if (req.file !== undefined || req.file !==null) {
                 const pathObject = `${this.path}/${id}/${fullname}`;
-                const response = await this.userUseCase.updateUser(id, { fullname, profile_image: pathObject, type_user:type_user, uuid:uuid })
+                const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
+                if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
+                const response : any = await this.userUseCase.updateUser(id, { fullname, profile_image: pathObject, type_user:type_user})
                 if (!(response instanceof ErrorHandler)) {
-                    const { url, success } = await this.s3Service.uploadToS3AndGetUrl(
-                        pathObject + ".jpg",
-                        req.file,
-                        "image/jpeg"
-                    );
-                    if (!success)
-                        return new ErrorHandler("Hubo un error al subir la imagen", 400);
-                    if (response !== null) {
-                        response.profile_image = url;
-                    }
+                    response.profile_image = url;
                 }
-                
                 this.invoke(
                     response,
                     201,
@@ -394,7 +384,7 @@ export class UserController extends ResponseData {
                 );
             } else {
                 const response = await this.userUseCase.updateUser(id, {
-                  fullname:fullname, type_user:type_user, uuid:uuid
+                  fullname:fullname, type_user:type_user
                 });
                 this.invoke(
                     response,
@@ -405,6 +395,7 @@ export class UserController extends ResponseData {
                 );
             }
         } catch (error) {
+            
             next(new ErrorHandler("Hubo un error al editar la información", 500));
         }
     }
