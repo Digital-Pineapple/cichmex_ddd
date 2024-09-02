@@ -233,7 +233,7 @@ export class AuthUseCase extends Authentication {
         return await this.generateJWT(user, infoToken)
     }
 
-    async registerPhoneNumber(user: UserEntity | UserEntity, phone: IPhoneRequest, code: number) {
+    async registerPhoneNumber(user: any , phone: IPhoneRequest, code: number) {
         const { phone_number, prefix } = phone;
 
 

@@ -23,13 +23,10 @@ export class CarDetailController extends ResponseData {
 
     public async getAllCarDetails(req: Request, res: Response, next: NextFunction) {
         try {
-            const response = await this.carDetailUseCase.getAllCarDetail();
-                await Promise.all(response?.map(async(res)=> {
+            const response : any = await this.carDetailUseCase.getAllCarDetail();
+                await Promise.all(response?.map(async(res : any)=> {
                     const url = await this.s3Service.getUrlObject(res.carDetail_image + ".jpg");
-                    
-                    
                     res.carDetail_image = url
-                   
                 }))
             this.invoke(response, 200, res, '', next);
         } catch (error) {
@@ -54,8 +51,8 @@ export class CarDetailController extends ResponseData {
     public async getCarDetailByCustomer(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         try {
-            const response = await this.carDetailUseCase.getDetailCarDetailByCustomer(id);
-            await Promise.all(response?.map(async(res)=> {
+            const response : any = await this.carDetailUseCase.getDetailCarDetailByCustomer(id);
+            await Promise.all(response?.map(async(res : any)=> {
                 const url = await this.s3Service.getUrlObject(res.carDetail_image + ".jpg");
                 const nameTypeCar = await this.carDetailUseCase.getDetailNameCar( res.typeCar_id );
             
@@ -83,7 +80,7 @@ export class CarDetailController extends ResponseData {
                 if (!success) {
                     return new ErrorHandler('Hubo un error', 400);
                 }
-                const response = await this.carDetailUseCase.createNewCarDetail( plate_number,customer_id,pathObject,status, typeCar_id);
+                const response : any = await this.carDetailUseCase.createNewCarDetail( plate_number,customer_id,pathObject,status, typeCar_id);
                 if (response) {
                     response.carDetail_image = url;
                 }

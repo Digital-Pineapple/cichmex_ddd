@@ -324,7 +324,7 @@ export class ProductController extends ResponseData {
     try {
       let response: any;
   
-      if (req.files) {
+      if (req.files && Array.isArray(req.files)) {
         const paths: string[] = [];
         const urls: string[] = [];
         let video_paths: string[] = [];

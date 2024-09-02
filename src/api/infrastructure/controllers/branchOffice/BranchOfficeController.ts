@@ -301,7 +301,7 @@ export class BranchOfficeController extends ResponseData {
             const parsedSchedules = JSON.parse(schedules);
            
             // Verificar si existen archivos adjuntos
-            if (req.files && req.files.length > 0) {
+            if (req.files && Array.isArray(req.files)) {
                 const paths: string[] = [];
                 const urls: string[] = [];
 
@@ -323,7 +323,7 @@ export class BranchOfficeController extends ResponseData {
                 }));
 
                 // Actualizar la sucursal de la oficina con las URLs de las imágenes
-                const response = await this.branchOfficeUseCase.updateBranchOffice(id, {
+                const response : any = await this.branchOfficeUseCase.updateBranchOffice(id, {
                     name: name,
                     type: type,
                     description: description,
