@@ -16,6 +16,7 @@ export class DynamicRouteController extends ResponseData {
         super();
         this.getAllRoutes = this.getAllRoutes.bind(this);
         this.getRoutes = this.getRoutes.bind(this);
+        this.getOneRoute = this.getOneRoute.bind(this);
         this.getPublicRoutes = this.getPublicRoutes.bind(this);
         this.CreateRoute = this.CreateRoute.bind(this);
         this.UpdateRoute = this.UpdateRoute.bind(this);
@@ -25,6 +26,17 @@ export class DynamicRouteController extends ResponseData {
     public async getAllRoutes(req: Request, res: Response, next: NextFunction) {
         try {
             const response: any = await this.dynamicRouteUseCase.getAllRoutes()
+           
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+    public async getOneRoute(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.params
+
+        try {
+            const response: any = await this.dynamicRouteUseCase.getOneRoute(id)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
@@ -33,7 +45,6 @@ export class DynamicRouteController extends ResponseData {
     public async getRoutes(req: Request, res: Response, next: NextFunction) {
         const { type_user } = req.user;
         const { system } = req.query;
-        
 
         try {
             const response: any = await this.dynamicRouteUseCase.getRoutes(type_user?.role, system);
@@ -94,8 +105,8 @@ export class DynamicRouteController extends ResponseData {
         const { values } = req.body
 
         try {
-            const response: any = await this.dynamicRouteUseCase.updateOneRoute(id, { ...values })
-            this.invoke(response, 200, res, '', next);
+            const response: any = await this.dynamicRouteUseCase.updateOneRoute(id, { ...values })            
+            this.invoke(response, 200, res, 'Se edito correctamente', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al editar', 500));
         }

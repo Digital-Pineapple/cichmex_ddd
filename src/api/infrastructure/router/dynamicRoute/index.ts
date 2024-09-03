@@ -13,8 +13,9 @@ const dynamicRouteController = new DynamicRouteController(dynamicRouteUseCase);
 const userValidations = new UserValidations();
 
 dynamicRouteRouter
-    .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), dynamicRouteController.getAllRoutes)
-    .get('/links',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN', 'CARRIER-DRIVER']), dynamicRouteController.getRoutes)
+    .get('/all', userValidations.authTypeUserValidation(['SUPER-ADMIN']), dynamicRouteController.getAllRoutes)
+    .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), dynamicRouteController.getOneRoute)
+    .get('/links/all', userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN', 'CARRIER-DRIVER']), dynamicRouteController.getRoutes)
     .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), dynamicRouteController.CreateRoute)
     .put('/update/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), dynamicRouteController.UpdateRoute)
     .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), dynamicRouteController.DeleteRoute)

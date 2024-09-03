@@ -12,6 +12,9 @@ export class DynamicRouteUseCase {
     public async getAllRoutes(): Promise<DynamicRouteEntity[] | null> {
         return await this.dynamicRouteRepository.findAll()
     }
+    public async getOneRoute(id:string): Promise<DynamicRouteEntity[] | null> {
+        return await this.dynamicRouteRepository.findById(id)
+    }
     public async getRoutes(role: any, system:any): Promise<DynamicRouteEntity[] | null> {
         return await this.dynamicRouteRepository.findRoutes(role, system)
     }

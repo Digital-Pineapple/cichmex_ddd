@@ -18,7 +18,8 @@ export class DynamicRouteRepository extends MongoRepository implements DynamicRo
                     $in: role
                 }
             },
-            system: system
+            system: system,
+            status: true
         });
     }
     async findPublicRoutes(system: string): Promise<any> {
