@@ -37,12 +37,13 @@ const userValidations = new UserValidations();
 
 productRouter
 
-.get("/", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProducts)
-.get("/:id", productController.getProduct)
-.get('/non-existent/get', productController.getNoStockProducts)
-.post("/addProduct", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.createProduct)
-.post('/search-category', productController.getProductsByCategory)
-.post("/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProduct)
+  .get("/", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProducts)
+  .get("/:id", productController.getProduct)
+  .get('/non-existent/get', productController.getNoStockProducts)
+  .post("/addProduct", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.createProduct)
+  .post('/search-category', productController.getProductsByCategory)
+  .post("/updateInfo/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProduct)
+  .put("/updateVideo/:id", productvalidations.videoValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProductVideo)
   .post('/search/ok', productController.searchProduct)
   .get("/productsByCategories/ok", productController.getProductsByCategories)
   .post("/productsBySubCategory/ok", productController.getProductsBySubCategory)
