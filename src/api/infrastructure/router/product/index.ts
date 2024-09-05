@@ -44,6 +44,8 @@ productRouter
   .post('/search-category', productController.getProductsByCategory)
   .post("/updateInfo/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProduct)
   .put("/updateVideo/:id", productvalidations.videoValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProductVideo)
+  .put("/updateThumbnail/:id", productvalidations.thumbnailValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateThumbnail)
+  .post("/updateImages/:id", productvalidations.imagesValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateImagesProducts)
   .post('/search/ok', productController.searchProduct)
   .get("/productsByCategories/ok", productController.getProductsByCategories)
   .post("/productsBySubCategory/ok", productController.getProductsBySubCategory)

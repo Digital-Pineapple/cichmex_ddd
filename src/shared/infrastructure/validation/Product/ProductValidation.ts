@@ -17,4 +17,11 @@ export class ProductValidations {
         // this.upload.array('images', 3), // Subir hasta 3 imágenes
          this.upload.single('ticket'), // Subir un solo video
      ];
+     readonly thumbnailValidation = [
+        // this.upload.array('images', 3), // Subir hasta 3 imágenes
+         this.upload.single('thumbnail'), // Subir un solo video
+     ];
+     readonly imagesValidation = [
+         this.upload.any()
+     ];
 }

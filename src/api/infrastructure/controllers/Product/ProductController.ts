@@ -39,6 +39,8 @@ export class ProductController extends ResponseData {
     this.getProductsBySubCategory = this.getProductsBySubCategory.bind(this);
     this.getVideos = this.getVideos.bind(this);
     this.updateProductVideo = this.updateProductVideo.bind(this);
+    this.updateThumbnail = this.updateThumbnail.bind(this);
+    this.updateImagesProducts = this.updateImagesProducts.bind(this)
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
@@ -265,7 +267,7 @@ export class ProductController extends ResponseData {
       let response: any;
       let video_paths: string[] = [];
       let video_urls: string[] = [];
-      
+
       if (Array.isArray(req.files) && req.files.length > 0) {
         await Promise.all(
           req.files.map(async (item: any, index: number) => {
@@ -281,16 +283,85 @@ export class ProductController extends ResponseData {
           )
         );
       }
-      
-      response = await this.productUseCase.updateProduct(id, {videos:video_paths});
+
+      response = await this.productUseCase.updateProduct(id, { videos: video_paths });
       response.videos = video_urls
-      
+
       this.invoke(response, 201, res, 'Se actualizó con éxito', next);
 
     } catch (error) {
       next(new ErrorHandler('Hubo un error al actualizar', 500));
     }
   }
+
+  public async updateThumbnail(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+
+    try {
+      let response: any
+      let thumbnail_path: string;
+      let thumbnail_url: string;
+      response = await this.productUseCase.getProduct(id)
+      const pathThumbnail = `${this.path}/thumbnail/${response?._id}`;
+      const { url } = await this.s3Service.uploadToS3AndGetUrl(
+        pathThumbnail + '.jpg',
+        req.file,
+        'image/jpg'
+      );
+      thumbnail_path = pathThumbnail
+      thumbnail_url = url
+      response = await this.productUseCase.updateProduct(id, { thumbnail: thumbnail_path })
+      response.thumbnail = thumbnail_url
+      this.invoke(response, 201, res, 'Se actualizó con éxito', next);
+    } catch (error) {
+      console.log(error);
+
+      next(new ErrorHandler('Hubo un error al actualizar', 500));
+    }
+  }
+
+  public async updateImagesProducts(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;   
+    console.log(req);
+     
+  
+    try {
+      let response: any;
+      let images_path: string[] = [];
+      let images_url: string[] = [];
+  
+      response = await this.productUseCase.getProduct(id);
+
+      if (Array.isArray(req.files) && req.files.length > 0) {
+        await Promise.all(
+          req.files.map(async (item: any, index: number) => {
+            let num = item.fieldname.split('[]')
+            console.log(num);
+            
+            const pathVideo = `${this.path}/${id}/${index}`;
+            const { url } = await this.s3Service.uploadToS3AndGetUrl(
+              pathVideo + ".mp4",
+              item,
+              ".jpg"
+            );
+            images_path.push(pathVideo);
+            images_url.push(url);
+          }
+          )
+        );
+      }
+  
+      // Actualizamos el producto con las nuevas imágenes
+      await this.productUseCase.updateProduct(id, { images: images_path });
+      response.images = images_url;  // Asignamos las URLs a response.images
+  
+      this.invoke(response, 201, res, 'Se actualizó con éxito', next);
+    } catch (error) {
+      console.log(error);
+      next(new ErrorHandler('Hubo un error al actualizar', 500));
+    }
+  }
+  
 
 
 
