@@ -266,6 +266,15 @@ export class ProductOrderController extends ResponseData {
     const user: any = req.user;
     try {
       const response: any | null = await this.productOrderUseCase.ProductOrdersByUser(user?.id)
+      // Promise.all(response.map(async (item: any) => {        
+      //  const newParsedProducts = await Promise.all(item.products.map(async (product: any) => {
+      //    const url = await this.s3Service.getUrlObject(product.item.thumbnail);
+      //    product.item.thumbnail = url; // Actualizando el URL con el valor desde S3
+      //    return product;
+      //  })) 
+      //  item.products = newParsedProducts 
+      //  return item
+      // }))      
       this.invoke(response, 200, res, "", next);
     } catch (error) {
 

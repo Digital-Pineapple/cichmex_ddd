@@ -17,6 +17,7 @@ import { StockStoreHouseUseCase } from '../../../application/storehouse/stockSto
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { MomentService } from '../../../../shared/infrastructure/moment/MomentService';
 import { PaymentEntity, PaymentVoucher } from '../../../domain/payments/PaymentEntity';
+import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 
 
 export class PaymentController extends ResponseData {
@@ -30,7 +31,8 @@ export class PaymentController extends ResponseData {
         private readonly membershipHistoryUseCase: MembershipHistoryUseCase,
         private readonly stockStoreHouseUseCase: StockStoreHouseUseCase,
         private readonly stockSHoutputUseCase: StockSHoutputUseCase,
-        private readonly s3Service: S3Service,
+        private readonly shoppingCartUseCase: ShoppingCartUseCase,
+        private readonly s3Service: S3Service,        
 
 
     ) {
@@ -284,7 +286,7 @@ export class PaymentController extends ResponseData {
                     },
                 },
                 token: formData.token,
-                issuer_id: formData.issuer._id,
+                issuer_id: formData.issuer,
                 installments: formData.installments,
                 notification_url: path_notification,
                 external_reference: order_id,

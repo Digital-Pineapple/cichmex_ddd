@@ -45,7 +45,7 @@ export class ShoppingCartController extends ResponseData {
         const user = req.user;
         try {            
             const response: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id+"");
-            console.log(response, "response xdxd");             
+            // console.log(response, "response xdxd");             
             if(response.products){
                 const products = response.products
                 response.products = products.filter((product:any)=>product.item !== null)
@@ -54,10 +54,12 @@ export class ShoppingCartController extends ResponseData {
             }
             const updatedResponse = await Promise.all(
                 response.products.map(async (product:any)=>{
-                    let parsedImages = await Promise.all(product.item.images.map(async (image: any) => {
-                        return await this.s3Service.getUrlObject(image + ".jpg");
-                    })) 
-                    product.item.images = parsedImages                
+                    const thumbnail= await this.s3Service.getUrlObject(product.item.thumbnail + ".jpg");       
+                    product.item.thumbnail = thumbnail;
+                    // let parsedImages = await Promise.all(product.item.images.map(async (image: any) => {
+                    //     return await this.s3Service.getUrlObject(image + ".jpg");
+                    // })) 
+                    // product.item.images = parsedImages                
                 })
             )                       
             this.invoke(response, 200, res, '', next);
@@ -147,7 +149,7 @@ export class ShoppingCartController extends ResponseData {
 
 
     public async deleteProductInCart(req: Request, res: Response, next: NextFunction) {
-        const { id } = req.params;
+        const { id } = req.params; // product id
         const user = req.user;
         try {
             const response : any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id)
@@ -164,13 +166,13 @@ export class ShoppingCartController extends ResponseData {
     }
 
     public async deleteProductsInShoppingCart(req: Request, res: Response, next: NextFunction) {
-        const { id } = req.params; // shopping_car id
-
+        const user = req.user; 
         try {
-            const response = await this.shoppingCartUseCase.updateShoppingCart(id, { products: [] });
+            const cart: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
+            const response = await this.shoppingCartUseCase.updateShoppingCart(cart._id.toString(), { products: [] });
             this.invoke(response, 201, res, 'Carrito de compras vaciado', next);
         } catch (error) {
-          
+            console.log(error);            
             next(new ErrorHandler('Hubo un error eliminar', 500));
         }
     }

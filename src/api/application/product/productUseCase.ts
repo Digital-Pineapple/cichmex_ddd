@@ -48,5 +48,8 @@ export class ProductUseCase {
   public async getVideoProducts(): Promise<ProductEntity[] | ErrorHandler |  null> {
     return this.productRepository.findVideoProducts()
   }
+  public async getRandomProductsByCategory(id: any, skiproduct: any, storehouse: any ): Promise<ProductEntity[] | ErrorHandler |  null> {
+    return this.productRepository.findRandomProductsByCategory(id, skiproduct, storehouse)
+  }
 
 }
