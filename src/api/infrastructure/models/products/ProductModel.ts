@@ -1,12 +1,31 @@
 import mongoose, { model, Schema } from "mongoose";
-import { ProductEntity } from "../../../domain/product/ProductEntity";
+import { ProductEntity, ProductImageEntity } from "../../../domain/product/ProductEntity";
+
+const ProductImageSchema = new Schema<ProductImageEntity>(
+  {
+    _id: {
+      type: Schema.Types.ObjectId,
+      default: () => new mongoose.Types.ObjectId
+    },
+    url: {
+      type: String,
+      required: false
+    }
+  },
+
+  {
+    versionKey: false,
+    timestamps: true,
+  }
+
+)
 
 
 const ProductSchema = new Schema<ProductEntity>(
   {
-      _id: {
-        type: Schema.Types.ObjectId,
-        default: () => new mongoose.Types.ObjectId()
+    _id: {
+      type: Schema.Types.ObjectId,
+      default: () => new mongoose.Types.ObjectId()
     },
     name: {
       type: String,
@@ -17,21 +36,21 @@ const ProductSchema = new Schema<ProductEntity>(
       type: Number,
       required: true,
     },
-    discountPrice:{
-      type:Number,
-      required:false,
-    },
-    porcentDiscount:{
+    discountPrice: {
       type: Number,
-      required:false,
+      required: false,
+    },
+    porcentDiscount: {
+      type: Number,
+      required: false,
     },
     description: {
       type: String,
       required: false,
     },
-    shortDescription:{
-      type:String,
-      required:false,
+    shortDescription: {
+      type: String,
+      required: false,
     },
     slug: {
       type: String,
@@ -41,9 +60,9 @@ const ProductSchema = new Schema<ProductEntity>(
       type: String,
       required: false,
     },
-    brand:{
-      type:String,
-      required:false,
+    brand: {
+      type: String,
+      required: false,
     },
     tag: {
       type: String,
@@ -60,55 +79,52 @@ const ProductSchema = new Schema<ProductEntity>(
       ref: 'SubCategory',
       required: false
     },
-    currency:{
-      type:String,
-      default:'MX'
+    currency: {
+      type: String,
+      default: 'MX'
     },
-    images: {
+    images: [ProductImageSchema],
+    thumbnail: {
+      type: String,
+      required: false,
+    },
+    variants: {
       type: Array,
       required: false,
     },
-    thumbnail:{
-      type:String,
-      required:false,
+    status: {
+      type: Boolean,
+      required: false,
+      default: true,
     },
-    variants:{
-      type:Array,
-      required:false,
-    },
-    status:{
-      type:Boolean,
-      required:false,
-      default:true,
-     },
-     weight:{
-      type:Number,
-      required:false,
-     },
-     videos:{
-      type:Array,
-      required:false
-     },
-     rating:{
+    weight: {
       type: Number,
-      required:false
-     },
-     product_key:{
-      type:String,
-      required:false
-     },
-     sku:{
+      required: false,
+    },
+    videos: {
+      type: Array,
+      required: false
+    },
+    rating: {
+      type: Number,
+      required: false
+    },
+    product_key: {
       type: String,
       required: false
-     },
-     seoDescription:{
-      type:String,
+    },
+    sku: {
+      type: String,
       required: false
-     },
-     seoKeywords:{
-      type:Array,
-      required:false,
-     }
+    },
+    seoDescription: {
+      type: String,
+      required: false
+    },
+    seoKeywords: {
+      type: Array,
+      required: false,
+    }
   },
   {
     versionKey: false,

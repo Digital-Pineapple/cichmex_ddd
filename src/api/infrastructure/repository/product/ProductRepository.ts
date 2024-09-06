@@ -33,6 +33,34 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     async getProductsByCategory(query:any, populateConfig1?:any): Promise<ProductEntity[] | ErrorHandler | null > {
         return await this.MODEL.find({...query}).populate(populateConfig1)
     }
+    async startDeleteImageDetail(id: string, imageId: string): Promise<ProductEntity | ErrorHandler | null> {
+        try {
+            // Busca el producto por su ID
+            const product: any = await this.ProductModel.findById(id);
+            
+            // Verifica si el producto existe
+            if (!product) {
+                return new ErrorHandler('Product not found', 404);
+            }
+    
+            // Filtra las imágenes y elimina la que coincide con imageId
+            const imagesUpdated = product.images.filter((i: any) => !i._id.equals(imageId));
+    
+            // Actualiza el producto con el nuevo arreglo de imágenes y devuelve el documento actualizado
+            const updatedProduct = await this.ProductModel.findOneAndUpdate(
+                { _id: id }, 
+                { images: imagesUpdated }, 
+                { new: true } // Devuelve el producto actualizado
+            );
+    
+            // Retorna el producto actualizado o null si no se encuentra
+            return updatedProduct ? updatedProduct : null;
+        } catch (error) {
+            // Maneja cualquier error inesperado
+            return new ErrorHandler('Error while updating product', 500);
+        }
+    }
+    
     
    async  findDetailProductById(id:string, populateCofig1?:any, populateConfig2?:any, populateConfig3?:any): Promise<ProductEntity| ErrorHandler | null> {
     return await this.MODEL.findById(id).populate(populateCofig1).populate(populateConfig2).populate(populateConfig3)

@@ -22,6 +22,6 @@ export class ProductValidations {
          this.upload.single('thumbnail'), // Subir un solo video
      ];
      readonly imagesValidation = [
-         this.upload.any()
+         this.upload.single('image')
      ];
 }

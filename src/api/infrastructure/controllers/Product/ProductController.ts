@@ -13,7 +13,9 @@ import { StockBranchEntity } from '../../../domain/stockBranch/StockBranchEntity
 import { StockStoreHouseEntity } from '../../../domain/storehouse/stockStoreHouseEntity';
 import { Category } from '../../../domain/category/CategoryEntity';
 import { SubCategoryUseCase } from '../../../application/subCategory/SubCategoryUseCase';
-import { RandomCodeId } from '../../../../shared/infrastructure/validation/Utils';
+import { generateUUID, RandomCodeId } from '../../../../shared/infrastructure/validation/Utils';
+import mongoose from 'mongoose';
+
 
 export class ProductController extends ResponseData {
   protected path = "/product";
@@ -40,7 +42,9 @@ export class ProductController extends ResponseData {
     this.getVideos = this.getVideos.bind(this);
     this.updateProductVideo = this.updateProductVideo.bind(this);
     this.updateThumbnail = this.updateThumbnail.bind(this);
-    this.updateImagesProducts = this.updateImagesProducts.bind(this)
+    this.addOneImageProduct = this.addOneImageProduct.bind(this)
+    this.deleteOneImageDetail = this.deleteOneImageDetail.bind(this);
+
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
@@ -93,11 +97,12 @@ export class ProductController extends ResponseData {
         response = responseProduct
       }
       if (!(response instanceof ErrorHandler) && response !== null) {
+     
         if (response.images) {
           const updatedImages = await Promise.all(
             response.images.map(async (image: any) => {
-              const url = await this.s3Service.getUrlObject(image + ".jpg");
-              return url;
+              const url = await this.s3Service.getUrlObject(image.url + ".jpg");
+              return {url:url, _id:image._id};
             })
           );
           response.images = updatedImages;
@@ -173,26 +178,25 @@ export class ProductController extends ResponseData {
 
 
       if (req.files && Array.isArray(req.files)) {
-        const paths: string[] = [];
+        const paths: {}[] = [];
         const urls: string[] = [];
         let video_paths: string[] = [];
         let video_urls: string[] = [];
         let thumbnail_path: string = '';
         let thumbnail_url: string = '';
 
-        let response: any = await this.productUseCase.createProduct({ ...data });
+        let response: any = await this.productUseCase.createProduct({ ...data, slug, sku });
         if (!(response instanceof ErrorHandler)) {
           await Promise.all(
             req.files.map(async (item: any, index: number) => {
               if (item.fieldname === 'images') {
-
                 const pathObject = `${this.path}/${response?._id}/${index}`;
                 const { url } = await this.s3Service.uploadToS3AndGetUrl(
                   pathObject + '.jpg',
                   item,
                   'image/jpg'
                 );
-                paths.push(pathObject);
+                paths.push({ url: pathObject });
                 urls.push(url);
               }
               if (item.fieldname === 'thumbnail') {
@@ -233,7 +237,7 @@ export class ProductController extends ResponseData {
         }
 
       } else {
-        let response = await this.productUseCase.createProduct({ ...data });
+        let response = await this.productUseCase.createProduct({ ...data, slug, sku });
         response2 = response
       }
 
@@ -320,44 +324,63 @@ export class ProductController extends ResponseData {
     }
   }
 
-  public async updateImagesProducts(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;   
-    console.log(req);
-     
-  
+  public async addOneImageProduct(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
     try {
       let response: any;
-      let images_path: string[] = [];
-      let images_url: string[] = [];
-  
-      response = await this.productUseCase.getProduct(id);
 
-      if (Array.isArray(req.files) && req.files.length > 0) {
-        await Promise.all(
-          req.files.map(async (item: any, index: number) => {
-            let num = item.fieldname.split('[]')
-            console.log(num);
-            
-            const pathVideo = `${this.path}/${id}/${index}`;
-            const { url } = await this.s3Service.uploadToS3AndGetUrl(
-              pathVideo + ".mp4",
-              item,
-              ".jpg"
-            );
-            images_path.push(pathVideo);
-            images_url.push(url);
-          }
-          )
-        );
+      response = await this.productUseCase.getProduct(id)
+      if (req.file) {
+        const imageId = generateUUID()
+        const pathObject = `${this.path}/${response?._id}/${imageId}`;
+        await this.s3Service.uploadToS3AndGetUrl(
+          pathObject + '.jpg',
+          req.file,
+          'image/jpg'
+        )
+        const updatedImages = [...response.images, { url:pathObject }];
+        await this.productUseCase.updateProduct(id, { images: updatedImages });
       }
-  
-      // Actualizamos el producto con las nuevas imágenes
-      await this.productUseCase.updateProduct(id, { images: images_path });
-      response.images = images_url;  // Asignamos las URLs a response.images
-  
+      response = await this.productUseCase.getProduct(id)
+      const updatedImages = await Promise.all(
+        response.images.map(async (image: any) => {
+          const url = await this.s3Service.getUrlObject(image.url + ".jpg");
+          return {url:url, _id:image._id};
+        })
+      );
+      response.images = updatedImages;
       this.invoke(response, 201, res, 'Se actualizó con éxito', next);
     } catch (error) {
       console.log(error);
+      next(new ErrorHandler('Hubo un error al actualizar', 500));
+    }
+  }
+
+  public async deleteOneImageDetail(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params; // ID del producto
+    const { imageId } = req.body; // ID de la imagen a elimina
+    
+    try {
+      // Obtiene el producto por su ID
+      const product : any = await this.productUseCase.getProduct(id);
+  
+      if (!product) {
+        return next(new ErrorHandler('Producto no encontrado', 404));
+      }
+      const updated : any = await this.productUseCase.deleteImageProduct(id,imageId)
+      const updatedImagesWithUrls = await Promise.all(
+        updated.images.map(async (image: any) => {
+          const url = await this.s3Service.getUrlObject(image.url + ".jpg");
+          return { _id: image._id, url: url };
+        })
+      );
+      // Actualiza el campo images con las URLs obtenidas
+      updated.images = updatedImagesWithUrls;
+  
+      // Respuesta exitosa
+      this.invoke(updated, 201, res, 'Se actualizó con éxito', next);
+    } catch (error) {
+      console.error(error);
       next(new ErrorHandler('Hubo un error al actualizar', 500));
     }
   }
@@ -517,6 +540,7 @@ export class ProductController extends ResponseData {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
+  
 
 
 }

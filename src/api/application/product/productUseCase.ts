@@ -17,6 +17,12 @@ export class ProductUseCase {
     const response =  await this.productRepository.findDetailProductById(_id, PopulateProductCategory, PopulateProductSubCategory)
     return response
   }
+  public async deleteImageProduct(
+    _id: string,
+    imageId: any
+  ): Promise<ProductEntity | ErrorHandler| null > {
+    return  await this.productRepository.startDeleteImageDetail(_id,imageId) 
+  }
 
   public async createProduct(body:any): Promise<ProductEntity | ErrorHandler | null> {
     const product = await this.productRepository.findOneItem({ name:body.name, status:true });

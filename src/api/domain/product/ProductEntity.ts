@@ -5,6 +5,7 @@ import { PaymentEntity } from "../payments/PaymentEntity";
 import { BranchOfficeEntity, ILocation } from "../branch_office/BranchOfficeEntity";
 import { UserEntity } from "../user/UserEntity";
 
+
 export interface ProductEntity {
   _id: ObjectId,
   name: string;
@@ -20,7 +21,7 @@ export interface ProductEntity {
   category?: Category;
   subCategory?: SubCategory;
   currency?:string;
-  images?: string[];
+  images?: ProductImageEntity[];
   thumbnail?:string;
   variants?:string[]
   status?:boolean;
@@ -35,8 +36,10 @@ export interface ProductEntity {
   seoKeywords?: string[],
 }
 
-export interface ProductImage  {  
+export interface ProductImageEntity  {  
+    _id: ObjectId,
     url: string;
+    status: boolean;
     createdAt        :   NativeDate;
     updatedAt        :   NativeDate;
   }

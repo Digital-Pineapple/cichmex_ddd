@@ -8,5 +8,6 @@ export interface ProductRepository extends MongoRepository {
 
     findDetailProductById(id:string, populateCofig1?:any, populateConfig2?:any, populateConfig3?:any): Promise<ProductEntity| ErrorHandler | null>
     findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null>
+    startDeleteImageDetail(id: string, imageId: string): Promise<ProductEntity | ErrorHandler | null >
 
 }
