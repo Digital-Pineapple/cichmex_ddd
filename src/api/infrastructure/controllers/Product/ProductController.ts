@@ -514,17 +514,7 @@ export class ProductController extends ResponseData {
       if (!(response instanceof ErrorHandler)) {
         const updatedResponse = await Promise.all(
           response.map(async (item: any) => {
-            const images = item.images;
-            const updatedImages = await Promise.all(
-              images.map(async (image: any) => {
-                const url = await this.s3Service.getUrlObject(
-                  image + ".jpg"
-                );
-                return url;
-              })
-            );
-
-
+            const thumbnail= await this.s3Service.getUrlObject(item.thumbnail + ".jpg");             
             const videos = item.videos
             const updatedVideos = await Promise.all(
               videos.map(async (video: any) => {
@@ -534,7 +524,7 @@ export class ProductController extends ResponseData {
                 return video_url;
               })
             );
-            item.images = updatedImages;
+            item.thumbnail = thumbnail;
             item.videos = updatedVideos;
             return item;
           })
