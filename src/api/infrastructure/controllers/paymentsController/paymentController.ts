@@ -133,6 +133,7 @@ export class PaymentController extends ResponseData {
         const payment1 = new Payment(client);
         const uuid4 = uuidv4();
 
+
         try {
             // Crea un pago en la base de datos
             const response1: any = await this.paymentUseCase.createNewPayment({ uuid: uuid4 });
@@ -257,6 +258,15 @@ export class PaymentController extends ResponseData {
         const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
         const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
 
+        const productToSend = products.map((i:any)=>{
+           const pr = { id: i.id,
+            title:i.title,
+            picture_url: i.picture_url.url,
+            unit_price:i.unit_price,
+            quantity: i.quantity}
+            return pr
+        })
+        
         try {
             await Promise.all(
                 productsOrder.map(async (product: any) => {
@@ -280,7 +290,7 @@ export class PaymentController extends ResponseData {
                     last_name: formData.payer.last_name,
                 },
                 additional_info: {
-                    items: products,
+                    items: productToSend,
                     payer: {
                         first_name: user.fullname,
                     },
@@ -304,6 +314,7 @@ export class PaymentController extends ResponseData {
                 body: body1,
             });
             const { additional_info, id, status, transaction_details, payment_method } = payment
+            
             if (payment) {
                 const createPayment: any = await this.paymentUseCase.createNewPayment({
                     uuid: uuid4,
