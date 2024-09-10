@@ -57,5 +57,8 @@ export class ProductUseCase {
   public async getRandomProductsByCategory(id: any, skiproduct: any, storehouse: any ): Promise<ProductEntity[] | ErrorHandler |  null> {
     return this.productRepository.findRandomProductsByCategory(id, skiproduct, storehouse)
   }
+  public async searchProducts(search: any): Promise<ProductEntity[] | null> {
+    return this.productRepository.findSearchProducts(search)
+  }
 
 }

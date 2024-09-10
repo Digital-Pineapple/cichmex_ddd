@@ -38,13 +38,44 @@ export class CategoryRepository extends MongoRepository implements CategoryConfi
     async searchCategory(body: Object): Promise<Category| null> {
         return await this.createOne(body);
     }
-
-    async findCategoriesAndSubCategories (): Promise<Category[]  | null>{
-        const result = await this.MODEL.aggregate([
-            { $lookup: { from: "subcategories", localField: "_id", foreignField: "category_id", as: "SubCategories" } },
-          ]);
-          return result;
+    async findCategoriesAndSubCategories(): Promise<Category[] | null> {
+      const result = await this.MODEL.aggregate([
+        {
+          // Filtrar las categorías que tienen el estatus "true"
+          $match: { status: true }
+        },
+        {
+          // Realizar el lookup para las subcategorías relacionadas
+          $lookup: {
+            from: "subcategories",
+            localField: "_id",
+            foreignField: "category_id",
+            as: "SubCategories"
+          }
+        },
+        {
+          // Filtrar las subcategorías dentro de cada categoría
+          $addFields: {
+            SubCategories: {
+              $filter: {
+                input: "$SubCategories",
+                as: "subCategory",
+                cond: { $eq: ["$$subCategory.status", true] } // Solo incluye subcategorías con estatus "true"
+              }
+            }
+          }
+        }
+      ]);
+      return result;
     }
+    
+
+    // async findCategoriesAndSubCategories (): Promise<Category[]  | null>{
+    //     const result = await this.MODEL.aggregate([
+    //         { $lookup: { from: "subcategories", localField: "_id", foreignField: "category_id", as: "SubCategories" } },
+    //       ]);
+    //       return result;
+    // }
     async findCategoriesAndProducts (categoryNames: string[] , storehouse: string): Promise<Category[]  | null>{
         const storehouseId = new ObjectId(storehouse);       
         const result = await this.MODEL.aggregate([

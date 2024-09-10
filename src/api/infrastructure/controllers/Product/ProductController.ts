@@ -406,13 +406,20 @@ export class ProductController extends ResponseData {
   }
   public async searchProduct(req: Request, res: Response, next: NextFunction) {
     const { search } = req.body
-
-
     try {
-      const response = await this.productUseCase.searchProduct(search)
-      this.invoke(response, 201, res, 'Busqueda exitosa', next);
-    } catch (error) {
+      const response: any | null = await this.productUseCase.searchProducts(search);
+      if (!(response instanceof ErrorHandler)) {
+        const updatedResponse = await Promise.all(
+          response.map(async (item: any) => {
+            const thumbnail= await this.s3Service.getUrlObject(item.thumbnail + ".jpg");                         
+            item.thumbnail = thumbnail;
+            return item;
+          })
+        );
 
+        this.invoke(updatedResponse, 200, res, "", next);
+      }
+    } catch (error) {
       next(new ErrorHandler("Hubo un error al buscar", 500));
     }
 
