@@ -3,6 +3,7 @@ import { SubCategoriesRepository as SubCategoryConfig } from '../../../domain/su
 import { ObjectId } from 'mongodb';
 import { MongoRepository } from '../MongoRepository';
 import { SubCategory } from '../../../domain/subCategory/SubCategoryEntity';
+import { PopulateCategory } from '../../../../shared/domain/PopulateInterfaces';
 
 
 export class SubCategoryRepository extends MongoRepository implements SubCategoryConfig {
@@ -33,6 +34,10 @@ export class SubCategoryRepository extends MongoRepository implements SubCategor
     async searchSubCategory(body: Object): Promise<SubCategory| null> {
         return await this.createOne(body);
     }
+    async getDetailSubCategory (id:string): Promise<SubCategory  | null>{
+      return  await this.MODEL.findById(id).populate(PopulateCategory)
+  }
+    
     async findProductsBySubCategory(subcat_id: any, storehouse:any): Promise<SubCategory[] | null> {        
         const storehouseId = new ObjectId(storehouse);  
         const result = await this.MODEL.aggregate([

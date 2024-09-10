@@ -38,6 +38,9 @@ export class SubCategoryUseCase {
     public async getDetailSubCategoryByName(name: string): Promise<SubCategory | null> {
         return await this.subCategoriesRepository.findOneItem({name});
     }
+    public async getSubCategory(id: string): Promise<SubCategory | null> {
+        return await this.subCategoriesRepository.getDetailSubCategory(id)
+    }
 
 
     
