@@ -160,5 +160,10 @@ export const PopulatePayment = {
     select: ["uuid", "MP_info","payment_status", "verification"],
     model:PaymentModel
 }
+export const PopulateCategory = {
+    path: 'category_id',
+    select: ["name"],
+    model:CategoryModel
+}
 
 

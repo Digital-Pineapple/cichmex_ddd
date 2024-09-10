@@ -19,6 +19,7 @@ const userValidations = new UserValidations();
 subCategoryRouter
     .get('/', subCategoryController.getAllSubCategories)
     .get('/:id', subCategoryController.getSubCategory)
+    .get('/detail/:id', subCategoryController.getDetailSubCategory)
     .get('/subCategory/:id', subCategoryController.findSubCategoriesByCategory)
     .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),subCategoryValidations.subCategoryPhotoValidation, subCategoryController.createSubCategory)
     .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), subCategoryValidations.subCategoryPhotoValidation, subCategoryController.updateSubCategory)

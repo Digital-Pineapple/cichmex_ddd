@@ -19,6 +19,7 @@ export class SubCategoryController extends ResponseData {
         this.deleteSubCategory      =   this.deleteSubCategory.bind(this);
         // this.searchSubCategory    =   this.searchSubCategory.bind(this);
         this.findSubCategoriesByCategory  = this.findSubCategoriesByCategory.bind(this);
+        this.getDetailSubCategory = this.getDetailSubCategory.bind(this)
     
     }
 
@@ -44,6 +45,17 @@ export class SubCategoryController extends ResponseData {
         const { id } = req.params;
         try {
             const response = await this.subCategoryUseCase.getDetailSubCategory(id);
+            const url = await this.s3Service.getUrlObject(response?.subCategory_image + ".jpg");
+            response ? response.subCategory_image = url: null;
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+    public async getDetailSubCategory(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        try {
+            const response = await this.subCategoryUseCase.getSubCategory(id)
             const url = await this.s3Service.getUrlObject(response?.subCategory_image + ".jpg");
             response ? response.subCategory_image = url: null;
             this.invoke(response, 200, res, '', next);
