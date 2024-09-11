@@ -5,14 +5,18 @@ import { UserValidations } from '../../../../shared/infrastructure/validation/Us
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import { ShoppingCartController } from '../../controllers/shoppingCart/shoppingCartController';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
+import { StockStoreHouseRepository } from '../../repository/stockStoreHouse/StockStoreHouseRepository';
+import StockStoreHouseModel from '../../models/stockStoreHouse/StockStoreHouseModel';
+import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 
 const shoppingCartRouter = Router();
 
 const shoppingCartRepository    = new ShoppingCartRepository(ShoppingCartModel);
 const shoppingCartUseCase      = new ShoppingCartUseCase(shoppingCartRepository);
 const s3Service = new S3Service();
-
-const shoppingCartController   = new ShoppingCartController(shoppingCartUseCase, s3Service);
+const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
+const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository);
+const shoppingCartController   = new ShoppingCartController(shoppingCartUseCase, stockStoreHouseUseCase, s3Service);
 
 const userValidations = new UserValidations();
 

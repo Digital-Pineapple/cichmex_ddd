@@ -420,6 +420,7 @@ export class ProductController extends ResponseData {
         this.invoke(updatedResponse, 200, res, "", next);
       }
     } catch (error) {
+      console.log(error);      
       next(new ErrorHandler("Hubo un error al buscar", 500));
     }
 

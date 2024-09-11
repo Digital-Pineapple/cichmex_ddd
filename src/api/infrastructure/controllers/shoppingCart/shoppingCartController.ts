@@ -1,3 +1,4 @@
+import { StockStoreHouseUseCase } from './../../../application/storehouse/stockStoreHouseUseCase';
 import { body } from 'express-validator';
 import { ObjectId } from 'mongodb';
 import { Request, Response, NextFunction, response } from 'express';
@@ -14,9 +15,11 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 
 export class ShoppingCartController extends ResponseData {
     protected path = '/shoppingCart'
+    private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634"
 
     constructor(
         private shoppingCartUseCase: ShoppingCartUseCase,
+        private stockStoreHouseUseCase: StockStoreHouseUseCase,
         private readonly s3Service: S3Service
     ) {
         super();
@@ -45,27 +48,23 @@ export class ShoppingCartController extends ResponseData {
         const user = req.user;
         try {            
             const response: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id+"");
-            // console.log(response, "response xdxd");             
-            if(response.products){
-                const products = response.products
-                response.products = products.filter((product:any)=>product.item !== null)
-                this.shoppingCartUseCase.updateShoppingCart(response._id, { products: response.products })
-                // this.shoppingCartUseCase.createShoppingCart({user_id:id,products: response.products})
-            }
+            const mergeStockProducts = await Promise.all(
+                response.products.map(async (product: any) => {
+                    const stock = await this.stockStoreHouseUseCase.getProductStock(product.item._id, this.onlineStoreHouse);
+                    return { ...product, stock: stock?.stock ? stock?.stock : 0 };
+                })
+            )
+            response.products = mergeStockProducts;
+            // console.log(mergeStockProducts, "jhgjhfghkfj stocks");            
             const updatedResponse = await Promise.all(
                 response.products.map(async (product:any)=>{
                     const thumbnail= await this.s3Service.getUrlObject(product.item.thumbnail + ".jpg");       
-                    product.item.thumbnail = thumbnail;
-                    // let parsedImages = await Promise.all(product.item.images.map(async (image: any) => {
-                    //     return await this.s3Service.getUrlObject(image + ".jpg");
-                    // })) 
-                    // product.item.images = parsedImages                
+                    product.item.thumbnail = thumbnail;                                  
                 })
             )                       
-            this.invoke(response, 200, res, '', next);
+            this.invoke(response, 200, res, '', next);          
         } catch (error) {           
-            console.log(error, "error");
-            
+            console.log(error, "error");            
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }

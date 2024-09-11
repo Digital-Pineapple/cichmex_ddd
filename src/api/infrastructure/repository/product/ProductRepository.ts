@@ -6,7 +6,7 @@ import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ObjectId } from 'mongodb';
 
 export class ProductRepository extends MongoRepository implements ProductConfig  {
-
+    private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634";
     constructor(protected ProductModel: Model<any>) {
         super(ProductModel);
     }
@@ -68,6 +68,54 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
         
     // ]).
    }
+
+    async findSearchProducts(search: string): Promise<any> {
+    // Clean up the search term by removing special characters
+    const noSpecialCharacters = search.replace(
+      /[`~!@#$%^&*()_|+\-=?;:'"<>\{\}\[\]\\\/]/gi,
+      ""
+    );
+  
+    const storehouseId = new ObjectId(this.onlineStoreHouse);
+  
+    // Use aggregation to find products and join with the storehouse
+    const result = await this.MODEL.aggregate([
+      {
+        $match: {
+          // Find products that match the search criteria
+          slug: { $regex: ".*" + noSpecialCharacters + ".*", $options: "i" },
+        },
+      },
+      {
+        // Join with the storehouse data
+        $lookup: {
+          from: "storehousestocks", // The collection containing storehouse stocks
+          let: { productId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$product_id", "$$productId"] }, // Match product ID
+                    { $eq: ["$StoreHouse_id", storehouseId] }, // Match specific storehouse ID
+                  ],
+                },
+              },
+            },
+          ],
+          as: "storehouseStock", // Alias for the joined data
+        },
+      },
+      {
+        // Optionally, you can add fields or transform data here
+        $addFields: {
+          stock: { $arrayElemAt: ["$storehouseStock.stock", 0] }, // Extract stock value if needed
+        },
+      },
+    ]);
+  
+    return result;
+  }
 
    async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
     const result = await this.MODEL.aggregate([
