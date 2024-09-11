@@ -71,7 +71,8 @@ export class SubCategoryRepository extends MongoRepository implements SubCategor
                 },
                 {
                   $addFields: {
-                    stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
+                    // stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
+                    stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
                   }
                 }
               ],

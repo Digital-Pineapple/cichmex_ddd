@@ -109,7 +109,8 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
       {
         // Optionally, you can add fields or transform data here
         $addFields: {
-          stock: { $arrayElemAt: ["$storehouseStock.stock", 0] }, // Extract stock value if needed
+        //   stock: { $arrayElemAt: ["$storehouseStock.stock", 0] }, // Extract stock value if needed
+        stock: { $ifNull: [{ $arrayElemAt: ['$storehouseStock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
         },
       },
     ]);
@@ -156,7 +157,8 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
          },
          {
             $addFields: {
-              stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
+              // stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
+              stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
             }
           }
      ]) 

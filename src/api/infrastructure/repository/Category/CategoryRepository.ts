@@ -113,7 +113,8 @@ export class CategoryRepository extends MongoRepository implements CategoryConfi
                   },
                   {
                     $addFields: {
-                      stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
+                      // stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
+                      stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
                     }
                   }
                 ],
@@ -157,7 +158,9 @@ export class CategoryRepository extends MongoRepository implements CategoryConfi
             },
             {
               $addFields: {
-                stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
+                // stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
+                stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
+
               }
             }
           ],
