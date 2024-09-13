@@ -12,6 +12,9 @@ export class PaymentUseCase {
     public async getPaymentsMPExpired(): Promise<PaymentEntity[] | null > {
         return await this.paymentRepository.getMPPayments()
     }
+    public async getPaymentsTransferExpired(): Promise<PaymentEntity[] | null > {
+        return await this.paymentRepository.getTransferPaymentsExpired()
+    }
 
     public async getDetailPayment(_id: string): Promise<PaymentEntity | ErrorHandler | null> {
         return await this.paymentRepository.findById(_id);

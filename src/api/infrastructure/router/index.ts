@@ -25,12 +25,14 @@ import shippingCostRouter from './shippingCost';
 import discountCouponRouter from './discountCoupon';
 import socketsRouter from './sockets';
 import dynamicRouteRouter from './dynamicRoute';
+import regionRouter from './region';
 
 export const apiRouter = (): Router => {
 
     const apiRouter = Router();
 
     apiRouter.use('/auth', authRouter);
+    apiRouter.use('/dynamic-route', dynamicRouteRouter)
     apiRouter.use('/user', userRouter);
     apiRouter.use('/services', serviceRouter);
     apiRouter.use('/services-branch', servicesInBranchRouter);
@@ -48,7 +50,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/product-order', productOrderRouter)
     apiRouter.use('/stock-branch', stockBranchRouter)
     apiRouter.use('/payments', paymentRouter)
-    apiRouter.use('/dynamic-route', dynamicRouteRouter)
+    apiRouter.use('/region', regionRouter)
     apiRouter.use('/shipping-cost', shippingCostRouter)
     apiRouter.use('/shopping-cart', shoppingCartRouter)
     apiRouter.use('/stock-StoreHouse', stockStoreHouseRouter)
@@ -77,10 +79,12 @@ apiRouterx.use('/product', productRouter)
 apiRouterx.use('/product-order', productOrderRouter)
 apiRouterx.use('/payments', paymentRouter)
 apiRouterx.use('/dynamic-route', dynamicRouteRouter)
+apiRouterx.use('/region', regionRouter)
 apiRouterx.use('/stock-branch', stockBranchRouter)
 apiRouterx.use('/shipping-cost', shippingCostRouter)
 apiRouterx.use('/shopping-cart', shoppingCartRouter)
-apiRouterx.use('/stock-StoreHouse', stockStoreHouseRouter )
+
+apiRouterx.use('/stock-StoreHouse', stockStoreHouseRouter)
 apiRouterx.use('/storehouse', storeHouseRouter)
 apiRouterx.use('/coupons', discountCouponRouter)
 

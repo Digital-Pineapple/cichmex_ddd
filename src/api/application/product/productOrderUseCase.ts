@@ -66,7 +66,7 @@ export class ProductOrderUseCase {
   }
 
   public async updateProductOrder(
-    _id: string,
+    _id: any,
     updated: any
   ): Promise<ProductOrderEntity> {
     

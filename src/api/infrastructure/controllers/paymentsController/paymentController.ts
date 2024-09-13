@@ -76,35 +76,66 @@ export class PaymentController extends ResponseData {
     }
 
     public async autoCancelPO(req: Request, res: Response, next: NextFunction) {
-        const { id, _id } = req.user
-        const access_token = config.MERCADOPAGO_TOKEN;
-        const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
-        const payment1 = new Payment(client);
         try {
-            const response: any = await this.productOrderUseCase.getProductOrdersExpired()
-            const PaymentMP: any = await this.paymentUseCase.getPaymentsMPExpired()
-            //   console.log(PaymentMP,'Mercado pago');
-            //   console.log(response,'pagos por transferencia');
-            console.log(id, _id);
-
+            const access_token = config.MERCADOPAGO_TOKEN;
+            const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
+            const payment1 = new Payment(client);
+            const PaymentMP: any = await this.paymentUseCase.getPaymentsMPExpired();
+            const PaymentsTransfer: any = await this.paymentUseCase.getPaymentsTransferExpired()
+    
+            // Procesar todos los pagos expirados
             await Promise.all(
                 PaymentMP.map(async (payment: any) => {
-                    const infoPayment = await payment1.get({
-                        id: payment.MP_info.id
-                    })
-                    console.log(infoPayment);
-
-                    const { status, status_detail, payment_method, payment_type_id, id } = infoPayment
-                    const update = await this.paymentUseCase.updateOnePayment(payment._id, { payment_status: status })
+                    try {
+                        // Obtener información de pago de MercadoPago
+                        const infoPayment = await payment1.get({ id: payment.MP_info.id.toString() });
+    
+                        // Actualizar estado del pago y orden de producto basado en el estado del pago
+                        await this.updatePaymentAndOrder(payment, infoPayment);
+                    } catch (err) {
+                        console.error(`Error al obtener información de pago con id ${payment.MP_info.id}:`, err);
+                    }
                 })
             );
 
-
-            this.invoke(response, 200, res, "", next);
-        } catch (error) {
-            console.log(error);
-
-            next(new ErrorHandler("Hubo un error al consultar la información", 500));
+            await Promise.all(
+                PaymentsTransfer.map(async (payment: any) => {
+                    try {
+                        await this.paymentUseCase.updateOnePayment(payment._id,{status:false, payment_status:'cancelled'})
+                        const PO = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id, status: true });
+                        await this.productOrderUseCase.updateProductOrder(PO._id, { status: false,payment_status:'cancelled' });
+                    } catch (err) {
+                        console.error(`Error al obtener información de pago con id ${payment.MP_info.id}:`, err);
+                    }
+                })
+            );
+    
+            this.invoke('', 200, res, "Verificacion completa", next);
+        } catch (error: any) {
+            
+            next(new ErrorHandler(`Hubo un error al consultar la información: ${error.message}`, 500));
+        }
+    }
+    
+    private async updatePaymentAndOrder(payment: any, infoPayment: any) {
+        const status = infoPayment.status;
+    
+        // Actualizar el estado del pago en tu base de datos
+        await this.paymentUseCase.updateOnePayment(payment._id, { payment_status: status });
+    
+        // Obtener la orden de producto asociada
+        const PO = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id, status: true });
+    
+        if (PO) {
+            if (status === "approved" || status === "in_process") {
+                // Actualizar la orden de producto si el pago fue aprobado o está en proceso
+                await this.productOrderUseCase.updateProductOrder(PO._id, { payment_status: status });
+            } else {
+                // Marcar como inactivo si el estado es diferente (rechazado, cancelado, etc.)
+                await this.productOrderUseCase.updateProductOrder(PO._id, { payment_status: status, status: false });
+            }
+        } else {
+            console.error(`No se encontró una orden de producto con order_id ${payment.order_id}`);
         }
     }
 

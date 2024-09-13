@@ -35,7 +35,15 @@ export class PaymentRepository extends MongoRepository implements PaymentReposit
         
         const exp = moment().subtract(48, 'hours').toDate();
         
-        const response = await this.PaymentModel.find({ payment_status: { $ne: 'approved' },MP_info:{$exists:true},  createdAt: { $lt: exp },}).sort({ createdAt: -1 })
+        const response = await this.PaymentModel.find({ payment_status: { $ne: 'approved' },MP_info:{$exists:true}, status:true,  createdAt: { $lt: exp },}).sort({ createdAt: -1 })
+        return response
+    }
+
+    async getTransferPaymentsExpired(): Promise<PaymentEntity[]  | null> {
+        
+        const exp = moment().subtract(48, 'hours').toDate();
+        
+        const response = await this.PaymentModel.find({ payment_status: { $ne: 'approved' },verification:{$exists:true}, status:true,   createdAt: { $lt: exp },}).sort({ createdAt: -1 })
         return response
     }
 

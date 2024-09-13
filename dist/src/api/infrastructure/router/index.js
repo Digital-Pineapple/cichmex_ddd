@@ -30,9 +30,11 @@ const shippingCost_1 = __importDefault(require("./shippingCost"));
 const discountCoupon_1 = __importDefault(require("./discountCoupon"));
 const sockets_1 = __importDefault(require("./sockets"));
 const dynamicRoute_1 = __importDefault(require("./dynamicRoute"));
+const region_1 = __importDefault(require("./region"));
 const apiRouter = () => {
     const apiRouter = (0, express_1.Router)();
     apiRouter.use('/auth', auth_1.default);
+    apiRouter.use('/dynamic-route', dynamicRoute_1.default);
     apiRouter.use('/user', user_1.default);
     apiRouter.use('/services', services_1.default);
     apiRouter.use('/services-branch', servicesInBranch_1.default);
@@ -50,7 +52,7 @@ const apiRouter = () => {
     apiRouter.use('/product-order', productOrder_1.default);
     apiRouter.use('/stock-branch', StockBranch_1.default);
     apiRouter.use('/payments', payments_1.default);
-    apiRouter.use('/dynamic-route', dynamicRoute_1.default);
+    apiRouter.use('/region', region_1.default);
     apiRouter.use('/shipping-cost', shippingCost_1.default);
     apiRouter.use('/shopping-cart', shoppingCart_ts_1.default);
     apiRouter.use('/stock-StoreHouse', stockStoreHouse_1.default);
@@ -78,6 +80,7 @@ apiRouterx.use('/product', product_1.default);
 apiRouterx.use('/product-order', productOrder_1.default);
 apiRouterx.use('/payments', payments_1.default);
 apiRouterx.use('/dynamic-route', dynamicRoute_1.default);
+apiRouterx.use('/region', region_1.default);
 apiRouterx.use('/stock-branch', StockBranch_1.default);
 apiRouterx.use('/shipping-cost', shippingCost_1.default);
 apiRouterx.use('/shopping-cart', shoppingCart_ts_1.default);

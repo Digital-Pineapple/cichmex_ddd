@@ -7,4 +7,6 @@ export interface PaymentRepository extends MongoRepository {
     
     getMPPayments(): Promise<PaymentEntity[]  | null>
 
+    getTransferPaymentsExpired(): Promise<PaymentEntity[]  | null> 
+
 }

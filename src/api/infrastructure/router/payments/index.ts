@@ -36,7 +36,7 @@ const paymentRepository = new PaymentRepository(PaymentModel);
 const productOrderRepository = new ProductOrderRepository(ProductOrderModel)
 const membershipRepository = new MembershipRepository(MembershipModel)
 const membershipHistoryRepository = new MembershipHistoryRepository(MembershipHistoryModel)
-const stockStoreHouseRepository    = new StockStoreHouseRepository(StockStoreHouseModel);
+const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
 const stockSHOutputRepository = new StockSHOutputRepository(StockSHoutputModel)
 const shoppingCartRepository = new ShoppingCartRepository(ShoppingCartModel)
 
@@ -45,36 +45,36 @@ const membershipHistoryUseCase = new MembershipHistoryUseCase(membershipHistoryR
 const productOrderUseCase = new ProductOrderUseCase(productOrderRepository)
 
 const membershipBenefitsRespository = new MembershipBenefitsRepository(MembershipBenefitsModel)
-const membershipBenefitsUseCase= new MembershipBenefitsUseCase(membershipBenefitsRespository)
+const membershipBenefitsUseCase = new MembershipBenefitsUseCase(membershipBenefitsRespository)
 const membershipUseCase = new MembershipUseCase(membershipRepository)
-const stockStoreHouseUseCase      = new StockStoreHouseUseCase(stockStoreHouseRepository);
+const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository);
 const stockSHoutputUseCase = new StockSHoutputUseCase(stockSHOutputRepository)
 const shoppingCartUseCase = new ShoppingCartUseCase(shoppingCartRepository)
 
 const paymentUseCase = new PaymentUseCase(paymentRepository);
 const mpService = new MPService()
 const s3Service = new S3Service()
-const paymentController = new PaymentController(paymentUseCase, productOrderUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase, stockStoreHouseUseCase, stockSHoutputUseCase, shoppingCartUseCase, s3Service );
+const paymentController = new PaymentController(paymentUseCase, productOrderUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase, stockStoreHouseUseCase, stockSHoutputUseCase, shoppingCartUseCase, s3Service);
 const paymentValidation = new PaymentValidations();
 const userValidations = new UserValidations()
 
 paymentRouter
-.get("/expired",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), paymentController.autoCancelPO)
     .get('/', paymentController.getAllPayments)
     .get('/:id', paymentController.getPayment)
-    .post('/addTicket', paymentValidation.ImageValidation,userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.addTicket)
-    .post('/rejectTicket', paymentValidation.ImageValidation,userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), paymentController.rejectProofOfPayment)
-    .post('/',paymentValidation.paymentValidation, paymentController.createLMP)
+    .get("/expired/sales", userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), paymentController.autoCancelPO)
+    .post('/addTicket', paymentValidation.ImageValidation, userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.addTicket)
+    .post('/rejectTicket', paymentValidation.ImageValidation, userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), paymentController.rejectProofOfPayment)
+    .post('/', paymentValidation.paymentValidation, paymentController.createLMP)
     .post('/Membership-Pay', paymentController.createPaymentMP)
-    .post('/Products-Pay',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.createPaymentProductMP)
-    .post('/transfer-payment',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.transferPayment)
+    .post('/Products-Pay', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.createPaymentProductMP)
+    .post('/transfer-payment', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.transferPayment)
     // .post('/Products-PayLocation', paymentController.createPaymentProductMPLocation)
-    .post('/success',paymentController.createTicket )
-    .post('/Mem-Payment-success',paymentController.PaymentSuccess)
-    .post("/validatePaymentProof",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), paymentController.validateProofOfPayment)
+    .post('/success', paymentController.createTicket)
+    .post('/Mem-Payment-success', paymentController.PaymentSuccess)
+    .post("/validatePaymentProof", userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), paymentController.validateProofOfPayment)
     // .post('/ticket', paymentController)
-    .post('/deleteTicket',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.deleteVoucher)
-    .put('/updateTicket', paymentValidation.ImageValidation,userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.editVoucher)
+    .post('/deleteTicket', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.deleteVoucher)
+    .put('/updateTicket', paymentValidation.ImageValidation, userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.editVoucher)
     .delete('/:id', paymentController.deletePayment)
 
 
