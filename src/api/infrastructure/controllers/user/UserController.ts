@@ -46,13 +46,14 @@ export class UserController extends ResponseData {
         this.loginPhone = this.loginPhone.bind(this);
         this.physicalDeletePhone = this.physicalDeletePhone.bind(this);
         this.validateUser = this.validateUser.bind(this);
-        this.updateCollectionPoint  = this.updateCollectionPoint.bind(this);
-        this.RegisterCarrierDriver  = this.RegisterCarrierDriver.bind(this);
-        this.getAllCarrierDrivers  = this.getAllCarrierDrivers.bind(this);
+        this.updateCollectionPoint = this.updateCollectionPoint.bind(this);
+        this.RegisterCarrierDriver = this.RegisterCarrierDriver.bind(this);
+        this.getAllCarrierDrivers = this.getAllCarrierDrivers.bind(this);
         this.createAddress = this.createAddress.bind(this);
         this.updateAddress = this.updateAddress.bind(this);
         this.getAddresses = this.getAddresses.bind(this);
         this.deleteAddress = this.deleteAddress.bind(this);
+        this.getOneCarrierDriver = this.getOneCarrierDriver.bind(this);
     }
 
 
@@ -103,18 +104,18 @@ export class UserController extends ResponseData {
 
         try {
             const response = await this.userUseCase.getOneUser(id)
-            if (!(response instanceof ErrorHandler) && response?.profile_image !== undefined ) {
+            if (!(response instanceof ErrorHandler) && response?.profile_image !== undefined) {
                 if (response.google === true) {
                     response.profile_image = response.profile_image
-                    
-                }else{
-                    const url = await this.s3Service.getUrlObject(response.profile_image + ".jpg") 
+
+                } else {
+                    const url = await this.s3Service.getUrlObject(response.profile_image + ".jpg")
                     response.profile_image = url
                     'No hay imagen de perfil'
                 }
-                    
+
             }
-            
+
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
@@ -122,12 +123,23 @@ export class UserController extends ResponseData {
     }
 
     public async getAllCarrierDrivers(req: Request, res: Response, next: NextFunction): Promise<void> {
-        
+
         try {
             const response = await this.userUseCase.allCarrierDrivers()
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-            
+
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+
+    public async getOneCarrierDriver(req: Request, res: Response, next: NextFunction): Promise<void> {
+        const {id} = req.params
+        try {
+            const response = await this.userUseCase.findUserById(id)
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
@@ -141,7 +153,7 @@ export class UserController extends ResponseData {
             const phoneString = phoneC.toString()
             const noRepeat = await this.phoneUserUseCase.findOnePhone(phone_number)
             if (noRepeat == null) {
-                 await this.twilioService.sendSMS(phoneString, `CICHMEX. Código de verificación - ${code}`)
+                await this.twilioService.sendSMS(phoneString, `CICHMEX. Código de verificación - ${code}`)
                 const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
                 this.invoke(newPhone, 200, res, '', next);
 
@@ -167,7 +179,7 @@ export class UserController extends ResponseData {
                 return this.invoke(updated, 400, res, '', next)
             }
         } catch (error) {
-           
+
             next(new ErrorHandler('Hubo un error al enviar código de verificacion', 500));
         }
     }
@@ -179,14 +191,14 @@ export class UserController extends ResponseData {
             if (!(infoPhone instanceof ErrorHandler)) {
                 if (infoPhone?.code === code) {
                     const verified = await this.phoneUserUseCase.verifyCode(id)
-                    
+
                     this.invoke(verified, 200, res, '', next)
                 } else {
                     next(new ErrorHandler('El codigo no coincide', 400))
                 }
             }
         } catch (error) {
-          
+
             next(new ErrorHandler('Hubo un error ', 500));
         }
     }
@@ -200,7 +212,7 @@ export class UserController extends ResponseData {
             if (!(infoUser instanceof ErrorHandler)) {
                 if (infoUser?.accountVerify === code) {
                     const response = this.userUseCase.updateRegisterUser(id, { email_verified: true, google: true })
-                    
+
 
                     this.invoke(response, 200, res, '', next)
                 } else {
@@ -208,7 +220,7 @@ export class UserController extends ResponseData {
                 }
             }
         } catch (error) {
-          
+
             next(new ErrorHandler('Hubo un error ', 500));
         }
     }
@@ -230,7 +242,7 @@ export class UserController extends ResponseData {
             const response = await this.phoneUserUseCase.deletePhysicalPhone(id)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-           
+
 
             next(new ErrorHandler('Hubo un error al eliminar', 500));
         }
@@ -250,28 +262,28 @@ export class UserController extends ResponseData {
     }
 
     public async signUpByPhone(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
-        const { fullname, email, password, phone_id, system  } = req.body
+        const { fullname, email, password, phone_id, system } = req.body
 
-        
+
         const uuid = generateUUID()
-   
-        
+
+
         try {
 
-            const TypeUser = await this.typeUserUseCase.findTypeUser({system:system, role:"CUSTOMER"})
-            
+            const TypeUser = await this.typeUserUseCase.findTypeUser({ system: system, role: "CUSTOMER" })
+
             if (!(TypeUser?._id)) {
-                next (new ErrorHandler('No existe tipo de usuario', 500))
+                next(new ErrorHandler('No existe tipo de usuario', 500))
             }
-            const response : any  = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser?._id, uuid:uuid })
-            if (response?.user._id) {     
-                await this.shoppingCartUseCase.createShoppingCart({user_id: response?.user._id})
+            const response: any = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser?._id, uuid: uuid })
+            if (response?.user._id) {
+                await this.shoppingCartUseCase.createShoppingCart({ user_id: response?.user._id })
             }
 
             this.invoke(response, 200, res, '', next);
 
         } catch (error) {
-          
+
             next(new ErrorHandler('Hubo un error ', 500));
         }
     }
@@ -281,17 +293,17 @@ export class UserController extends ResponseData {
         const uuid = generateUUID()
         try {
 
-            const TypeUser = await this.typeUserUseCase.findTypeUser({system:system, role:"PARTNER"})
+            const TypeUser = await this.typeUserUseCase.findTypeUser({ system: system, role: "PARTNER" })
             console.log(TypeUser);
-            
+
             if (!(TypeUser?._id)) {
-                next (new ErrorHandler('No existe tipo de usuario', 500))
+                next(new ErrorHandler('No existe tipo de usuario', 500))
             }
-            const response = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser?._id, uuid:uuid })
+            const response = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser?._id, uuid: uuid })
             this.invoke(response, 200, res, '', next);
 
         } catch (error) {
-           
+
             next(new ErrorHandler('Hubo un error ', 500));
         }
     }
@@ -303,7 +315,7 @@ export class UserController extends ResponseData {
 
             const phoneInfo = await this.phoneUserUseCase.findPhone(phone_number)
             if (!(phoneInfo instanceof ErrorHandler)) {
-                const response : any = await this.userUseCase.signInByPhone(phoneInfo.phone_id, password)
+                const response: any = await this.userUseCase.signInByPhone(phoneInfo.phone_id, password)
                 if (!(response instanceof ErrorHandler) && response.user.profile_image !== undefined) {
                     response.user.profile_image ?
                         response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image + ".jpg") :
@@ -312,28 +324,28 @@ export class UserController extends ResponseData {
                 this.invoke(response, 200, res, '', next);
 
             }
-            else{
+            else {
                 next(new ErrorHandler('No existe el telefono', 500));
             }
 
 
         } catch (error) {
-          console.log(error);
-          
+            console.log(error);
+
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }
     }
 
     public async loginPhonePartner(req: Request, res: Response, next: NextFunction): Promise<UserEntity | IPhone | ErrorHandler | void> {
         const { password, phone_number } = req.body
-        
+
 
         try {
 
             const phoneInfo = await this.phoneUserUseCase.findPhone(phone_number)
-            
+
             if (!(phoneInfo instanceof ErrorHandler)) {
-                const response : any = await this.userUseCase.signInByPhone(phoneInfo.phone_id, password)
+                const response: any = await this.userUseCase.signInByPhone(phoneInfo.phone_id, password)
                 if (!(response instanceof ErrorHandler) && response.user.profile_image !== undefined) {
                     response.user.profile_image ?
                         response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image + ".jpg") :
@@ -342,13 +354,13 @@ export class UserController extends ResponseData {
                 this.invoke(response, 200, res, '', next);
 
             }
-            else{
+            else {
                 this.invoke(phoneInfo, 200, res, '', next);
             }
 
 
         } catch (error) {
-           
+
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }
     }
@@ -365,13 +377,13 @@ export class UserController extends ResponseData {
     public async updateUser(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { fullname, type_user } = req.body;
-        
+
         try {
-            if (req.file !== undefined || req.file !==null) {
+            if (req.file !== undefined || req.file !== null) {
                 const pathObject = `${this.path}/${id}/${fullname}`;
                 const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
                 if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-                const response : any = await this.userUseCase.updateUser(id, { fullname, profile_image: pathObject, type_user:type_user})
+                const response: any = await this.userUseCase.updateUser(id, { fullname, profile_image: pathObject, type_user: type_user })
                 if (!(response instanceof ErrorHandler)) {
                     response.profile_image = url;
                 }
@@ -384,7 +396,7 @@ export class UserController extends ResponseData {
                 );
             } else {
                 const response = await this.userUseCase.updateUser(id, {
-                  fullname:fullname, type_user:type_user
+                    fullname: fullname, type_user: type_user
                 });
                 this.invoke(
                     response,
@@ -395,7 +407,7 @@ export class UserController extends ResponseData {
                 );
             }
         } catch (error) {
-            
+
             next(new ErrorHandler("Hubo un error al editar la información", 500));
         }
     }
@@ -408,71 +420,71 @@ export class UserController extends ResponseData {
     public async updateCollectionPoint(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { store } = req.body;
-        
+
         try {
-            const response = await this.userUseCase.updateUser(id,{store:store})
-           
-            
+            const response = await this.userUseCase.updateUser(id, { store: store })
+
+
             this.invoke(
                 response,
                 201,
                 res,
                 "Cambio exitoso",
                 next
-            ); 
-        } catch(error) {
-        next(new ErrorHandler("Hubo un error al editar la información", 500));
+            );
+        } catch (error) {
+            next(new ErrorHandler("Hubo un error al editar la información", 500));
+        }
     }
-}
 
     public async validateUser(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;
-    const { accountVerified } = req.body
-    const data = Boolean(accountVerified)
+        const { id } = req.params;
+        const { accountVerified } = req.body
+        const data = Boolean(accountVerified)
 
-    try {
-        const response = await this.userUseCase.updateUser(id, { accountVerify: data })
-        if (!(response instanceof ErrorHandler)) {
-            if (!response?.google && response !== null) {
-                const url = await this.s3Service.getUrlObject(response?.profile_image + ".jpg");
-                response.profile_image = url;
+        try {
+            const response = await this.userUseCase.updateUser(id, { accountVerify: data })
+            if (!(response instanceof ErrorHandler)) {
+                if (!response?.google && response !== null) {
+                    const url = await this.s3Service.getUrlObject(response?.profile_image + ".jpg");
+                    response.profile_image = url;
+                }
             }
+            this.invoke(response, 200, res, 'Verificado con éxito', next);
+        } catch (error) {
+            next(new ErrorHandler("Hubo un error al editar la información", 500));
         }
-        this.invoke(response, 200, res, 'Verificado con éxito', next);
-    } catch (error) {
-        next(new ErrorHandler("Hubo un error al editar la información", 500));
     }
-}
 
-public async RegisterCarrierDriver(req: Request, res: Response, next: NextFunction) {
-    const { values } = req.body;
-    const p = values.phone.split(' ');
-    const prefix = p[0];
-    const phone_number = JSON.parse(p[1] + p[2] + p[3]);
-    const info_phone = {
-        prefix,
-        phone_number,
-        code: generateRandomCode()
-    };
-    const uuid = generateUUID()
-    let response: any = '';
+    public async RegisterCarrierDriver(req: Request, res: Response, next: NextFunction) {
+        const { values } = req.body;
+        const p = values.phone.split(' ');
+        const prefix = p[0];
+        const phone_number = JSON.parse(p[1] + p[2] + p[3]);
+        const info_phone = {
+            prefix,
+            phone_number,
+            code: generateRandomCode()
+        };
+        const uuid = generateUUID()
+        let response: any = '';
 
-    const noRepeatPhone = await this.phoneUserUseCase.findOnePhone(phone_number)
-    if (noRepeatPhone ) return next( new ErrorHandler('El telefono ya ha sido registrado',400));
+        const noRepeatPhone = await this.phoneUserUseCase.findOnePhone(phone_number)
+        if (noRepeatPhone) return next(new ErrorHandler('El telefono ya ha sido registrado', 400));
 
-    const noRepeatUser = await this.userUseCase.findUser(values.email)
-    
-    if (noRepeatUser ) return next( new ErrorHandler('El usuario ya ha sido registrado',400));
+        const noRepeatUser = await this.userUseCase.findUser(values.email)
 
-    try {
-        const r_phone : any = await this.phoneUserUseCase.createEmployeePhone(info_phone);
-        
+        if (noRepeatUser) return next(new ErrorHandler('El usuario ya ha sido registrado', 400));
+
+        try {
+            const r_phone: any = await this.phoneUserUseCase.createEmployeePhone(info_phone);
+
             try {
-                const responsedefault = await this.typeUserUseCase.findTypeUser({role:['CARRIER-DRIVER']})
-              
+                const responsedefault = await this.typeUserUseCase.findTypeUser({ role: ['CARRIER-DRIVER'] })
+
                 if (responsedefault) {
                     const TypeUser_id = responsedefault._id; // Extraer el _id del objeto encontrado
-                    const response1 = await this.userUseCase.createUser({ ...values, type_user: TypeUser_id, phone_id: r_phone?._id, uuid:uuid });
+                    const response1 = await this.userUseCase.createUser({ ...values, type_user: TypeUser_id, phone_id: r_phone?._id, uuid: uuid });
                     response = response1;
                     this.invoke(response, 200, res, 'Creado con éxito', next);
                 } else {
@@ -480,83 +492,98 @@ public async RegisterCarrierDriver(req: Request, res: Response, next: NextFuncti
                 }
             } catch (error) {
                 console.log(error);
-                
+
                 next(new ErrorHandler("Correo existente", 500));
             }
-        
-    } catch (error) {
-        next(new ErrorHandler("Error al crear telefono", 500));
+
+        } catch (error) {
+            next(new ErrorHandler("Error al crear telefono", 500));
+        }
     }
-}
 
-
-
-public async getAddresses(req: Request, res: Response, next: NextFunction) {
-    const user = req.user;
-    try {                
-        const response = await this.addressUseCase.getAddressesByUser(user.id || "");
-        this.invoke(response, 200, res, '', next);
-    } catch(error) {
-        console.log(error);
-        // console.log(user.id);                
-        next(new ErrorHandler("Hubo un error padrino", 500));
+    public async UpdateCarrierDriver(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params
+        const { values } = req.body;
+        let response: any = '';
+        try {
+            response = await this.userUseCase.updateUser(id, { ...values })
+            this.invoke(response, 200, res, 'Se actualizó de manera correcta', next);
+        } catch (error) {
+            next(new ErrorHandler("Correo existente", 500));
+        }
     }
-}    
 
-public async createAddress(req: Request, res: Response, next: NextFunction) {
-    const user = req.user;
-    const { address } = req.body;
-    if (!address) return next(new ErrorHandler("La dirección es requerida", 400));
 
-    try {        
-        let response = await this.addressUseCase.createAddress(user.id || "", address);
-        if(response){
-            const newresponse = await this.addressUseCase.getAddressesByUser(user.id || "");
-            this.invoke(newresponse, 200, res, 'la direccion fue creada', next);             
-        }else{
+
+
+
+
+    public async getAddresses(req: Request, res: Response, next: NextFunction) {
+        const user = req.user;
+        try {
+            const response = await this.addressUseCase.getAddressesByUser(user.id || "");
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error);
+            // console.log(user.id);                
+            next(new ErrorHandler("Hubo un error padrino", 500));
+        }
+    }
+
+    public async createAddress(req: Request, res: Response, next: NextFunction) {
+        const user = req.user;
+        const { address } = req.body;
+        if (!address) return next(new ErrorHandler("La dirección es requerida", 400));
+
+        try {
+            let response = await this.addressUseCase.createAddress(user.id || "", address);
+            if (response) {
+                const newresponse = await this.addressUseCase.getAddressesByUser(user.id || "");
+                this.invoke(newresponse, 200, res, 'la direccion fue creada', next);
+            } else {
+                next(new ErrorHandler("Hubo un error al crear la dirección", 500));
+            }
+        } catch (error) {
+            console.log(error);
+
             next(new ErrorHandler("Hubo un error al crear la dirección", 500));
         }
-    } catch(error) {
-        console.log(error);
-        
-    next(new ErrorHandler("Hubo un error al crear la dirección", 500));
     }
-}    
 
-public async updateAddress(req: Request, res: Response, next: NextFunction) {
-    const user = req.user;
-    const { id } = req.params;
-    const { address } = req.body;
-    if (!address) return next(new ErrorHandler("La dirección es requerida", 400));
-    try {
-        let response = await this.addressUseCase.updateAddress(id , address);
-        if(response){
-            const newresponse = await this.addressUseCase.getAddressesByUser(user.id || "");
-            this.invoke(newresponse, 200, res, 'la direccion fue actualizada', next);             
-        }else{
-            next(new ErrorHandler("Hubo un error al actualizar la dirección", 500));
+    public async updateAddress(req: Request, res: Response, next: NextFunction) {
+        const user = req.user;
+        const { id } = req.params;
+        const { address } = req.body;
+        if (!address) return next(new ErrorHandler("La dirección es requerida", 400));
+        try {
+            let response = await this.addressUseCase.updateAddress(id, address);
+            if (response) {
+                const newresponse = await this.addressUseCase.getAddressesByUser(user.id || "");
+                this.invoke(newresponse, 200, res, 'la direccion fue actualizada', next);
+            } else {
+                next(new ErrorHandler("Hubo un error al actualizar la dirección", 500));
+            }
+
+        } catch (error) {
+            next(new ErrorHandler("Hubo un error al actualizar", 500));
         }
-       
-    } catch(error) {
-        next(new ErrorHandler("Hubo un error al actualizar", 500));
     }
-}    
 
-public async deleteAddress(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;    
-    const user = req.user;
-    try {
-        let response = await this.addressUseCase.deleteAddress(id);
-        if(response){
-            const newresponse = await this.addressUseCase.getAddressesByUser(user.id || "");
-            this.invoke(newresponse, 200, res, 'la direccion fue eliminada', next);             
-        }else{
+    public async deleteAddress(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        const user = req.user;
+        try {
+            let response = await this.addressUseCase.deleteAddress(id);
+            if (response) {
+                const newresponse = await this.addressUseCase.getAddressesByUser(user.id || "");
+                this.invoke(newresponse, 200, res, 'la direccion fue eliminada', next);
+            } else {
+                next(new ErrorHandler("Hubo un error al eliminar la dirección", 500));
+            }
+        } catch (error) {
             next(new ErrorHandler("Hubo un error al eliminar la dirección", 500));
-        }       
-    } catch(error) {
-    next(new ErrorHandler("Hubo un error al eliminar la dirección", 500));
+        }
     }
-}    
 
 
 

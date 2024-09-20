@@ -41,7 +41,7 @@ export class RegionController extends ResponseData {
         const {values} = req.body
         try {
             const response : any = await this.regionUseCase.createRegion(values)
-            this.invoke(response, 200, res, '', next);
+            this.invoke(response, 200, res, 'Se creo correctamente', next);
         } catch (error) {
             console.log(error);
             
@@ -56,7 +56,7 @@ export class RegionController extends ResponseData {
         
         try {
             const response : any = await this.regionUseCase.updateRegion(id,values)
-            this.invoke(response, 200, res, '', next);
+            this.invoke(response, 200, res, 'Se edito correctamente', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }

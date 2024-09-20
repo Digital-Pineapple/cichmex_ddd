@@ -47,6 +47,7 @@ userRouter
     .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "PARTNER", "CUSTOMER"]), userController.getUser)
     .get('/getVerifyEmail/:id', userController.getVerifyEmail)
     .get('/carrier-driver/all',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), userController.getAllCarrierDrivers)
+    .get('/carrier-driver/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), userController.getOneCarrierDriver)
     .post('/send-code', userController.sendCode)
     .put('/validate/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), userController.validateUser)
     .post ('/resend-code/:id', userController.resendCode)
@@ -59,12 +60,13 @@ userRouter
     .post('/loginByPhonePartner', userController.loginPhonePartner)
     .post('/collection-point/update/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER","CUSTOMER"]),userController.updateCollectionPoint)
     .post('/carrier-driver',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), userController.RegisterCarrierDriver)
+    .post('/carrier-driver/update/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), userController.RegisterCarrierDriver)
     .delete('/phone-delete/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), userController.deletePhone)
     .delete('/phone-delete-1/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), userController.physicalDeletePhone)
     .delete('/delete-user/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), userController.deleteUser)
     .post('/create/address', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.createAddress)
     .delete('/delete/address/:id', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.deleteAddress)
     .put('/update/address/:id', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.updateAddress)
-    .get('/addresses/ok', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.getAddresses);
+    .get('/addresses/ok', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.getAddresses); 
 
 export default userRouter;

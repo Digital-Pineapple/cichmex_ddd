@@ -59,6 +59,10 @@ export class UserUseCase extends Authentication {
     return await this.userRepository.findOneItem({phone_id:phone_id})
 
   }
+  public async findUserById(id:string): Promise<UserEntity | ErrorHandler | null> {
+    return await this.userRepository.findById(id)
+
+  }
   public async createUser(body:any): Promise<UserEntity | IAuth |  ErrorHandler | null> {
     const user = await this.userRepository.findOneItem({ email: body.email, status:true });
         if (user) return new ErrorHandler('El usuario ya existe',400);
