@@ -67,6 +67,14 @@ export class ProductController extends ResponseData {
             const video_url = await this.s3Service.getUrlObject(
               video + ".mp4"
             )
+            const thumbnail = item.thumbnail
+            if (thumbnail.startsWith("https://")) {
+              item.thumbnail = thumbnail
+          } else {
+             item.thumbnail =  await this.s3Service.getUrlObject(
+              thumbnail + ".jpg"
+            );
+          }
             item.images = updatedImages;
             item.video = video_url
             return item;
@@ -117,12 +125,16 @@ export class ProductController extends ResponseData {
           );
           response.videos = updatedVideos;
         }
-        if (response.thumbnail) {
-          const updateThumbnail = await this.s3Service.getUrlObject(response.thumbnail + ".jpg");
-          response.thumbnail = updateThumbnail;
-        }
+        const thumbnail = response.thumbnail
+            if (thumbnail.startsWith("https://")) {
+              response.thumbnail = thumbnail
+          } else {
+            response.thumbnail =  await this.s3Service.getUrlObject(
+              thumbnail + ".jpg"
+            );
+          }
       }
-
+ 
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));

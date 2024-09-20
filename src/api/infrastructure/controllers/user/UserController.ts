@@ -478,7 +478,7 @@ export class UserController extends ResponseData {
                 const responsedefault = await this.typeUserUseCase.findTypeUser({ role: ['CARRIER-DRIVER'] })
 
                 if (responsedefault) {
-                    const TypeUser_id = responsedefault._id; // Extraer el _id del objeto encontrado
+                    const TypeUser_id = responsedefault._id;
                     const response1 = await this.userUseCase.createUser({ ...values, type_user: TypeUser_id, phone_id: r_phone?._id, uuid: uuid });
                     response = response1;
                     this.invoke(response, 200, res, 'Creado con éxito', next);
