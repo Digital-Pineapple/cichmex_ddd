@@ -206,35 +206,35 @@ class AuthController extends ResponseData_1.ResponseData {
         return __awaiter(this, void 0, void 0, function* () {
             const { email } = req.body;
             try {
-                const response = yield this.authUseCase.findUser(email);
+                const response = yield this.authUseCase.findUser({ email: email });
+                if (!response)
+                    return next(new ErrorHandler_1.ErrorHandler('No existe el usuario', 404));
                 const newCode = parseInt((0, Utils_1.generateRandomCode)());
-                const NoAttempts = 2;
+                // const NoAttempts = 2
                 if (!response.verify_code) {
-                    const { attemps } = (response.verify_code);
-                    if (attemps >= 1) {
-                        const newAttemps = attemps - 1;
-                        try {
-                            yield this.authUseCase.updateCodeUser(response._id, newCode, newAttemps);
-                            const { success, message } = yield (0, emailer_1.sendCodeMail)(response.email, response.fullname, newCode);
-                            this.invoke(success, 200, res, `${message}`, next);
-                        }
-                        catch (error) {
-                            next(new ErrorHandler_1.ErrorHandler('Error', 500));
-                        }
-                    }
-                    if (attemps === 0) {
-                        next(new ErrorHandler_1.ErrorHandler('Has alcanzado el limite de intentos', 500));
-                    }
+                    // const { attemps }: any = (response.verify_code);
+                    // if (attemps >= 1) {
+                    // const newAttemps = attemps - 1
+                    // try {
+                    yield this.authUseCase.updateCodeUser(response._id, newCode);
+                    const { success, message } = yield (0, emailer_1.sendCodeMail)(response.email, response.fullname, newCode);
+                    this.invoke(success, 200, res, `${message}`, next);
+                    // } catch (error) {
+                    //     next(new ErrorHandler('Error', 500));
+                    // }
+                    // }
+                    // if (attemps === 0) {
+                    //     next(new ErrorHandler('Has alcanzado el limite de intentos', 500));
+                    // }
                 }
                 else {
-                    try {
-                        yield this.authUseCase.updateCodeUser(response._id, newCode, NoAttempts);
-                        const { success, message } = yield (0, emailer_1.sendCodeMail)(response.email, response.fullname, newCode);
-                        this.invoke(success, 201, res, `${message}`, next);
-                    }
-                    catch (error) {
-                        next(new ErrorHandler_1.ErrorHandler('Error', 500));
-                    }
+                    // try {
+                    yield this.authUseCase.updateCodeUser(response._id, newCode);
+                    const { success, message } = yield (0, emailer_1.sendCodeMail)(response.email, response.fullname, newCode);
+                    this.invoke(success, 201, res, `${message}`, next);
+                    // } catch (error) {
+                    //     next(new ErrorHandler('Error', 500));
+                    // }
                 }
             }
             catch (error) {
