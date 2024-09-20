@@ -423,16 +423,23 @@ export class ProductController extends ResponseData {
       if (!(response instanceof ErrorHandler)) {
         const updatedResponse = await Promise.all(
           response.map(async (item: any) => {
-            const thumbnail= await this.s3Service.getUrlObject(item.thumbnail + ".jpg");                         
-            item.thumbnail = thumbnail;
-            return item;
+            console.log(item);
+            
+            const thumbnail = item.thumbnail
+            if (thumbnail.startsWith("https://")) {
+              item.thumbnail = thumbnail
+          } else {
+            item.thumbnail =  await this.s3Service.getUrlObject(
+              thumbnail + ".jpg"
+            );
+          }
+          return item
           })
         );
-
         this.invoke(updatedResponse, 200, res, "", next);
       }
     } catch (error) {
-      console.log(error);      
+          
       next(new ErrorHandler("Hubo un error al buscar", 500));
     }
 
@@ -449,15 +456,26 @@ export class ProductController extends ResponseData {
       resCategory.category_image = await this.s3Service.getUrlObject(resCategory.category_image + ".jpg");
       await Promise.all(
         resCategory.products.map(async (product: any) => {
-          const thumbnail= await this.s3Service.getUrlObject(product.thumbnail + ".jpg");       
-          product.thumbnail = thumbnail;
-          const parsed = await Promise.all(
-            product.images.map(async (image: any) => {
-              image = await this.s3Service.getUrlObject(image + ".jpg");
-              return image
-            })
-          )
-          product.images = parsed;
+          const thumbnail = product.thumbnail
+            if (thumbnail.startsWith("https://")) {
+              product.thumbnail = thumbnail
+          } else {
+            product.thumbnail =  await this.s3Service.getUrlObject(
+              thumbnail + ".jpg"
+            );
+          }
+          if (product?.images && product?.images.length > 0) {
+
+            const parsed = await Promise.all(
+              product.images.map(async (image: any) => {
+                image = await this.s3Service.getUrlObject(image + ".jpg");
+                return image
+              })
+            )
+            product.images = parsed;
+          }
+
+
         })
       )
 
@@ -480,15 +498,24 @@ export class ProductController extends ResponseData {
       resSubCategory.subcategory_image = await this.s3Service.getUrlObject(resSubCategory.subcategory_image + ".jpg");
       await Promise.all(
         resSubCategory.products.map(async (product: any) => {
-          const thumbnail= await this.s3Service.getUrlObject(product.thumbnail + ".jpg");       
-          product.thumbnail = thumbnail;
-          const parsed = await Promise.all(
-            product.images.map(async (image: any) => {
-              image = await this.s3Service.getUrlObject(image + ".jpg");
-              return image
-            })
-          )
-          product.images = parsed;
+
+          const thumbnail = product.thumbnail
+            if (thumbnail.startsWith("https://")) {
+              product.thumbnail = thumbnail
+          } else {
+            product.thumbnail =  await this.s3Service.getUrlObject(
+              thumbnail + ".jpg"
+            );
+          }
+          if (product?.images && product?.images.length > 0) {
+            const parsed = await Promise.all(
+              product.images.map(async (image: any) => {
+                image = await this.s3Service.getUrlObject(image + ".jpg");
+                return image
+              })
+            )
+            product.images = parsed;
+          }
         })
       )
       this.invoke(response, 201, res, '', next);
@@ -500,19 +527,30 @@ export class ProductController extends ResponseData {
 
   public async getProductsByCategories(req: Request, res: Response, next: NextFunction) {
     try {
-      const categories = ["Hogar, Muebles y jardín", "Industrias y Oficinas", "Tecnología"]
+      const categories = [ "Belleza y Cuidado Personal"]
       // const categories = ["Nueva categoria"]
       const response: any | null = await this.categoryUseCase.getCategoriesAndProducts(categories, this.onlineStoreHouse);
-      const updatedResponse = await Promise.all(response.map(async (category: any) => {
+      
+      await Promise.all(response.map(async (category: any) => {
+       
+        
         await Promise.all(
           category.products.map(async (product: any) => {
-            const thumbnail= await this.s3Service.getUrlObject(product.thumbnail + ".jpg");       
-            product.thumbnail = thumbnail;
+            const thumbnail = product.thumbnail
+            if (thumbnail.startsWith("https://")) {
+              product.thumbnail = thumbnail
+          } else {
+            product.thumbnail =  await this.s3Service.getUrlObject(
+              thumbnail + ".jpg"
+            );
+          }
+          if (product?.images && product?.images.length > 0) {
             const parsedImages = await Promise.all(product.images.map(async (image: any) => {
               const url = await this.s3Service.getUrlObject(image + ".jpg");
               return url
             }));
             product.images = parsedImages;
+          }
             return product
           }))
         return category
@@ -521,7 +559,7 @@ export class ProductController extends ResponseData {
       this.invoke(response, 201, res, '', next);
 
     } catch (error) {
-      console.log(error);
+      console.log(error, 'ok');
 
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
     }
@@ -534,7 +572,14 @@ export class ProductController extends ResponseData {
       if (!(response instanceof ErrorHandler)) {
         const updatedResponse = await Promise.all(
           response.map(async (item: any) => {
-            const thumbnail= await this.s3Service.getUrlObject(item.thumbnail + ".jpg");             
+            const thumbnail = item.thumbnail
+            if (thumbnail.startsWith("https://")) {
+              item.thumbnail = thumbnail
+          } else {
+            item.thumbnail =  await this.s3Service.getUrlObject(
+              thumbnail + ".jpg"
+            );
+          }            
             const videos = item.videos
             const updatedVideos = await Promise.all(
               videos.map(async (video: any) => {
@@ -544,7 +589,6 @@ export class ProductController extends ResponseData {
                 return video_url;
               })
             );
-            item.thumbnail = thumbnail;
             item.videos = updatedVideos;
             return item;
           })
@@ -570,8 +614,14 @@ export class ProductController extends ResponseData {
       if (!(response instanceof ErrorHandler)) {         
         const updatedResponse = await Promise.all(
           response.map(async (item: any) => {          
-            const thumbnail= await this.s3Service.getUrlObject(item.thumbnail + ".jpg");       
-            item.thumbnail = thumbnail;
+            const thumbnail = item.thumbnail
+            if (thumbnail.startsWith("https://")) {
+              item.thumbnail = thumbnail
+          } else {
+            item.thumbnail =  await this.s3Service.getUrlObject(
+              thumbnail + ".jpg"
+            );
+          }           
             return item                
           })
         );
