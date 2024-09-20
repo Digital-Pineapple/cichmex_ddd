@@ -527,7 +527,7 @@ export class ProductController extends ResponseData {
 
   public async getProductsByCategories(req: Request, res: Response, next: NextFunction) {
     try {
-      const categories = [ "Belleza y Cuidado Personal"]
+      const categories = ["Hogar, Muebles y jardín", "Belleza y Cuidado Personal"]
       // const categories = ["Nueva categoria"]
       const response: any | null = await this.categoryUseCase.getCategoriesAndProducts(categories, this.onlineStoreHouse);
       
