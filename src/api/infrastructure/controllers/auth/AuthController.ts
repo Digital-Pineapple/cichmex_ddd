@@ -223,36 +223,35 @@ export class AuthController extends ResponseData {
         const { email } = req.body;
 
         try {
-            const response: any = await this.authUseCase.findUser(email)
+            const response: any = await this.authUseCase.findUser({ email: email })
+            if(!response) return next(new ErrorHandler('No existe el usuario', 404));
 
             const newCode = parseInt(generateRandomCode())
-            const NoAttempts = 2
+            // const NoAttempts = 2
             if (!response.verify_code) {
-
-                const { attemps }: any = (response.verify_code);
-                if (attemps >= 1) {
-                    const newAttemps = attemps - 1
-                    try {
-                        await this.authUseCase.updateCodeUser(response._id, newCode, newAttemps)
+                // const { attemps }: any = (response.verify_code);
+                // if (attemps >= 1) {
+                    // const newAttemps = attemps - 1
+                    // try {
+                        await this.authUseCase.updateCodeUser(response._id, newCode)
                         const { success, message } = await sendCodeMail(response.email, response.fullname, newCode)
                         this.invoke(success, 200, res, `${message}`, next)
-                    } catch (error) {
-                        next(new ErrorHandler('Error', 500));
-                    }
-                }
-                if (attemps === 0) {
-                    next(new ErrorHandler('Has alcanzado el limite de intentos', 500));
-                }
-
+                    // } catch (error) {
+                    //     next(new ErrorHandler('Error', 500));
+                    // }
+                // }
+                // if (attemps === 0) {
+                //     next(new ErrorHandler('Has alcanzado el limite de intentos', 500));
+                // }
             } else {
-                try {
-                    await this.authUseCase.updateCodeUser(response._id, newCode, NoAttempts)
+                // try {
+                    await this.authUseCase.updateCodeUser(response._id, newCode)
                     const { success, message } = await sendCodeMail(response.email, response.fullname, newCode)
                     this.invoke(success, 201, res, `${message}`, next)
-                } catch (error) {
-                    next(new ErrorHandler('Error', 500));
+                // } catch (error) {
+                //     next(new ErrorHandler('Error', 500));
 
-                }
+                // }
             }
 
         } catch (error) {

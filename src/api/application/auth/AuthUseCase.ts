@@ -224,7 +224,7 @@ export class AuthUseCase extends Authentication {
     async updateCustomer(customer_id: string, email: string, fullname: string): Promise<UserEntity> {
         return await this.authRepository.updateOne(customer_id, { email, fullname });
     }
-    async updateCodeUser(user_id: string, code:number, attemps: number): Promise<UserEntity> {
+    async updateCodeUser(user_id: string, code:number, attemps?: number): Promise<UserEntity> {
         return await this.authRepository.updateOne(user_id, { verify_code: {code: code, attemps: attemps} });
     }
 

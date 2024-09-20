@@ -149,7 +149,7 @@ export class UserController extends ResponseData {
                 next(new ErrorHandler('telefono ya existe', 500))
             }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error envio codigo:', error);
             this.invoke(error, 500, res, 'Error interno del servidor', next);
         }
 
@@ -398,6 +398,11 @@ export class UserController extends ResponseData {
             
             next(new ErrorHandler("Hubo un error al editar la información", 500));
         }
+    }
+    
+    public async updatePhone(req: Request, res: Response, next: NextFunction) {
+        const { phone } = req.body;
+        const user = req.user;
     }
 
     public async updateCollectionPoint(req: Request, res: Response, next: NextFunction) {
