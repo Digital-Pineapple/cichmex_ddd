@@ -2,7 +2,7 @@ import { Authentication, IAuth, IGoogleResponse } from '../authentication/Authen
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { IPhone, UserEntity } from '../../domain/user/UserEntity';
 import { UserRepository } from '../../domain/user/UserRepository';
-import { TypeUserPopulateConfig, PhonePopulateConfig, PopulatePointStore, PopulateProductCS } from '../../../shared/domain/PopulateInterfaces';
+import { TypeUserPopulateConfig, PhonePopulateConfig, PopulatePointStore, PopulateProductCS, PopulateRegionUser } from '../../../shared/domain/PopulateInterfaces';
 export class UserUseCase extends Authentication {
 
   constructor(private readonly userRepository: UserRepository) {
@@ -24,6 +24,9 @@ export class UserUseCase extends Authentication {
   public async getOneUser(id: string): Promise<UserEntity | ErrorHandler | null > { 
      return await this.userRepository.findAllAll(id, TypeUserPopulateConfig,PhonePopulateConfig, PopulatePointStore)
   }
+  public async getOneCarrierDriver(id: string): Promise<UserEntity | ErrorHandler | null > { 
+    return await this.userRepository.findAllAll(id, TypeUserPopulateConfig,PhonePopulateConfig, PopulatePointStore, PopulateRegionUser )
+ }
   public async getUserEmail(id: string): Promise<IGoogleResponse | ErrorHandler | null > {
   const user = await this.userRepository.findOneItem({_id:id})
     const user2: IGoogleResponse = {user_id : user?._id, verified : user?.email_verified, email:user?.email}
@@ -51,6 +54,8 @@ export class UserUseCase extends Authentication {
     // return await this.userRepository.updateOne(id,{status:false})
     return await this.userRepository.PhysicalDelete(id)
   }
+
+
   public async findUser(email:string): Promise<UserEntity | ErrorHandler | null> {
     return await this.userRepository.findOneItem({email:email, status:true})
 

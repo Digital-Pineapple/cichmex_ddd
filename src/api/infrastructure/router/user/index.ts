@@ -67,6 +67,8 @@ userRouter
     .post('/create/address', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.createAddress)
     .delete('/delete/address/:id', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.deleteAddress)
     .put('/update/address/:id', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.updateAddress)
-    .get('/addresses/ok', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.getAddresses); 
+    .get('/addresses/ok', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.getAddresses) 
+    .delete('/carrier-driver/:id', userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN"]), userController.deleteCarrierDriver)
+
 
 export default userRouter;

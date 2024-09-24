@@ -26,6 +26,7 @@ export class UserController extends ResponseData {
         private readonly addressUseCase: AddressUseCase,
         private readonly twilioService: TwilioService,
         private readonly s3Service: S3Service,
+
     ) {
         super();
         this.allPhones = this.allPhones.bind(this);
@@ -54,6 +55,7 @@ export class UserController extends ResponseData {
         this.getAddresses = this.getAddresses.bind(this);
         this.deleteAddress = this.deleteAddress.bind(this);
         this.getOneCarrierDriver = this.getOneCarrierDriver.bind(this);
+        this.deleteCarrierDriver = this.deleteCarrierDriver.bind(this);
     }
 
 
@@ -134,9 +136,9 @@ export class UserController extends ResponseData {
     }
 
     public async getOneCarrierDriver(req: Request, res: Response, next: NextFunction): Promise<void> {
-        const {id} = req.params
+        const { id } = req.params
         try {
-            const response = await this.userUseCase.findUserById(id)
+            const response = await this.userUseCase.getOneCarrierDriver(id)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
 
@@ -150,18 +152,22 @@ export class UserController extends ResponseData {
         try {
             const code = generateRandomCode();
             const phoneC = prefix + phone_number
-            const phoneString = phoneC.toString()
-            const noRepeat = await this.phoneUserUseCase.findOnePhone(phone_number)
+            const phoneString = JSON.stringify(phoneC)
+            const noRepeat : any = await this.phoneUserUseCase.findOnePhone(phone_number)
             if (noRepeat == null) {
-                await this.twilioService.sendSMS(phoneString, `CICHMEX. Código de verificación - ${code}`)
+                 await this.twilioService.sendSMS(phoneString, `CICHMEX. Código de verificación - ${code}`)
                 const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
-                this.invoke(newPhone, 200, res, '', next);
+                this.invoke(newPhone, 200, res, 'Codigo enviado con éxito', next);
 
             } else {
-                next(new ErrorHandler('telefono ya existe', 500))
+                let response = {
+                    _id: noRepeat._id,
+                    phone_number: noRepeat.phone_number,
+                    verified: noRepeat.verified,
+                }
+                this.invoke(response, 500, res, 'El telefono ya existe', next);
             }
         } catch (error) {
-            console.error('Error envio codigo:', error);
             this.invoke(error, 500, res, 'Error interno del servidor', next);
         }
 
@@ -411,7 +417,7 @@ export class UserController extends ResponseData {
             next(new ErrorHandler("Hubo un error al editar la información", 500));
         }
     }
-    
+
     public async updatePhone(req: Request, res: Response, next: NextFunction) {
         const { phone } = req.body;
         const user = req.user;
@@ -582,6 +588,15 @@ export class UserController extends ResponseData {
             }
         } catch (error) {
             next(new ErrorHandler("Hubo un error al eliminar la dirección", 500));
+        }
+    }
+    public async deleteCarrierDriver(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        try {
+            const response = await this.userUseCase.updateUser(id, { status: false })
+            this.invoke(response, 200, res, 'Se elimino correctamente', next);
+        } catch (error) {
+            next(new ErrorHandler("Hubo un error al eliminar", 500));
         }
     }
 
