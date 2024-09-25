@@ -37,6 +37,7 @@ export class RegionController extends ResponseData {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
+
     public async createRegion(req: Request, res: Response, next: NextFunction) {
         const {values} = req.body
         try {

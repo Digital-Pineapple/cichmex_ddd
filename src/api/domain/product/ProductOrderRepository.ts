@@ -1,6 +1,6 @@
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler"
 import { MongoRepository } from "../../infrastructure/repository/MongoRepository"
-import { ProductEntity, ProductOrderEntity, ProductOrderResume } from "./ProductEntity"
+import {  ProductOrderEntity, ProductOrderResume } from "./ProductEntity"
 
 export interface ProductOrderRepository extends MongoRepository {
 

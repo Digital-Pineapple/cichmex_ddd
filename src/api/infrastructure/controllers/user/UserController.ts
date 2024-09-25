@@ -56,6 +56,7 @@ export class UserController extends ResponseData {
         this.deleteAddress = this.deleteAddress.bind(this);
         this.getOneCarrierDriver = this.getOneCarrierDriver.bind(this);
         this.deleteCarrierDriver = this.deleteCarrierDriver.bind(this);
+        this.UpdateCarrierDriver = this.UpdateCarrierDriver.bind(this)
     }
 
 
@@ -515,7 +516,9 @@ export class UserController extends ResponseData {
             response = await this.userUseCase.updateUser(id, { ...values })
             this.invoke(response, 200, res, 'Se actualizó de manera correcta', next);
         } catch (error) {
-            next(new ErrorHandler("Correo existente", 500));
+            console.log(error);
+            
+            next(new ErrorHandler("Error al acrualizar", 500));
         }
     }
 
