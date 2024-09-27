@@ -1,4 +1,5 @@
 import { BranchOfficeEntity } from "../branch_office/BranchOfficeEntity";
+import { RegionEntity } from "../regions/RegionEntity";
 import { storeHouseEntity } from "../storehouse/storeHouseEntity";
 import { TypeUserEntity } from "../typeUser/TypeUserEntity";
 import mongoose from "mongoose";
@@ -56,4 +57,5 @@ export interface UserVerifyCodeEntity{
     sales_commission_porcent       ?:number,
     branch_office                  ?: [BranchOfficeEntity],
     store_house                    ?: [storeHouseEntity]
+    operationRegions               ?: [RegionEntity]
  }

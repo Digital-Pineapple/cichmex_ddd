@@ -1,6 +1,7 @@
 import { Model } from 'mongoose';
 import { RegionRepository as RegionConfig } from '../../../domain/regions/RegionRepository';
 import { MongoRepository } from '../MongoRepository';
+import { RegionEntity } from '../../../domain/regions/RegionEntity';
 
 export class RegionRepository extends MongoRepository implements RegionConfig {
 
@@ -8,4 +9,5 @@ export class RegionRepository extends MongoRepository implements RegionConfig {
         super(RegionModel)
        
     }
+
 }

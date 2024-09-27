@@ -23,14 +23,28 @@ class TwilioService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const message = yield this.twilio.messages.create({
+                    body,
                     from: this.twilioNumber,
                     to: phone,
+                });
+                return message;
+            }
+            catch (error) {
+                throw new ErrorHandler_1.ErrorHandler('Hubo un error al enviar el mensaje - intenta más tarde', 400);
+            }
+        });
+    }
+    sendWhatsappMessage(phone, body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const message = yield this.twilio.messages.create({
+                    from: `whatsapp:${this.twilioNumber}`,
+                    to: `whatsapp:${phone}`,
                     body,
                 });
                 return message;
             }
             catch (error) {
-                console.error(error);
                 throw new ErrorHandler_1.ErrorHandler('Hubo un error al enviar el mensaje - intenta más tarde', 400);
             }
         });

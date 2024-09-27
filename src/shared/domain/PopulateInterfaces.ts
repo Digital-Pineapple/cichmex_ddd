@@ -9,6 +9,7 @@ import SubCategoryModel from '../../api/infrastructure/models/SubCategoryModel';
 import UserModel from '../../api/infrastructure/models/UserModel';
 import PaymentModel from '../../api/infrastructure/models/payments/PaymentModel';
 import StockStoreHouseModel from '../../api/infrastructure/models/stockStoreHouse/StockStoreHouseModel';
+import RegionModel from '../../api/infrastructure/models/Regions/RegionModel';
 export interface IAuthPopulateConfig {
     path    : string;
     select  : string;
@@ -164,6 +165,16 @@ export const PopulateCategory = {
     path: 'category_id',
     select: ["name"],
     model:CategoryModel
+}
+export const PopulateRegionUser : IStockPopulateConfig={
+    path: 'employee_detail.operationRegions',
+    select: ["name","regionCode","type","path"],
+    model: RegionModel
+}
+export const PopulateBranch : IStockPopulateConfig={
+    path: 'branch',
+    select: ["name","location"],
+    model: BranchOfficeModel
 }
 
 

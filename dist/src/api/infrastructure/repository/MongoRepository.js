@@ -19,9 +19,9 @@ class MongoRepository {
             return yield this.MODEL.find({ status: true }).populate(populateOne).populate(populateTwo).sort({ createdAt: -1 });
         });
     }
-    findAllAll(id, populateOne, populateTwo, populateThree) {
+    findAllAll(id, populateOne, populateTwo, populateThree, populateFour) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findById(id, { delted: false }).populate(populateOne).populate(populateTwo).populate(populateThree);
+            return yield this.MODEL.findById(id, { delted: false }).populate(populateOne).populate(populateTwo).populate(populateThree).populate(populateFour);
         });
     }
     findStockByBranch(branch_id) {
