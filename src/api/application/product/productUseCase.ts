@@ -1,3 +1,4 @@
+import { ObjectId } from "mongoose";
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
 import { PopulateProductCategory, PopulateProductSubCategory } from "../../../shared/domain/PopulateInterfaces";
 import { ProductEntity } from "../../domain/product/ProductEntity";
@@ -57,8 +58,15 @@ export class ProductUseCase {
   public async getRandomProductsByCategory(id: any, skiproduct: any, storehouse: any ): Promise<ProductEntity[] | ErrorHandler |  null> {
     return this.productRepository.findRandomProductsByCategory(id, skiproduct, storehouse)
   }
-  public async searchProducts(search: any): Promise<ProductEntity[] | null> {
-    return this.productRepository.findSearchProducts(search)
+  public async searchProducts(search: string, page: number): Promise<ProductEntity[] | ErrorHandler | null> {
+    return this.productRepository.findSearchProducts(search, page);
+  }
+
+  public async getProductsByCategory(categoryId: ObjectId, storehouse: string, page: number): Promise<ProductEntity[] | ErrorHandler | null> {
+    return this.productRepository.findProductsByCategory(categoryId, storehouse, page)
+  }
+  public async getProductsBySubCategory(subcategoryId: ObjectId, storehouse: string, page: number): Promise<ProductEntity[] | ErrorHandler | null> {
+    return this.productRepository.findProductsBySubCategory(subcategoryId, storehouse, page)
   }
 
 }

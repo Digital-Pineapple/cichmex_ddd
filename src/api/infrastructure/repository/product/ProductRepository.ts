@@ -1,4 +1,4 @@
-import { Model } from 'mongoose';
+import { Model, ObjectId as MongooseObjectId } from 'mongoose';
 import { ProductRepository as ProductConfig } from '../../../domain/product/ProductRepository'
 import { MongoRepository } from '../MongoRepository';
 import { ProductEntity } from '../../../domain/product/ProductEntity';
@@ -69,7 +69,7 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     // ]).
    }
 
-    async findSearchProducts(search: string): Promise<any> {
+    async findSearchProducts(search: string, page: number): Promise<any> {
     // Clean up the search term by removing special characters
     const noSpecialCharacters = search.replace(
       /[`~!@#$%^&*()_|+\-=?;:'"<>\{\}\[\]\\\/]/gi,
@@ -77,7 +77,7 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     );
   
     const storehouseId = new ObjectId(this.onlineStoreHouse);
-  
+    const PAGESIZE = 30; 
     // Use aggregation to find products and join with the storehouse
     const result = await this.MODEL.aggregate([
       {
@@ -113,9 +113,20 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
         stock: { $ifNull: [{ $arrayElemAt: ['$storehouseStock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
         },
       },
+      {
+        $facet: {
+          products: [ { $skip: (page - 1) * PAGESIZE }, // Obtener productos para la página actual
+            { $limit: PAGESIZE },],
+          total: [{$count: "total"}],
+        }
+      }
     ]);
   
-    return result;
+    return {
+      products: result[0].products,
+      total: result[0]?.total[0]?.total || 0
+    };
+    // return result;
   }
 
    async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
@@ -163,6 +174,94 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
           }
      ]) 
      return result;
+   }
+
+   async findProductsByCategory(categoryId : MongooseObjectId, storehouse: string, page: number = 1 ): Promise<ProductEntity[] | ErrorHandler | null> {
+    const storehouseId = new ObjectId(storehouse);
+    const PAGESIZE = 30;
+    const result = await this.MODEL.aggregate([
+        {$match: {
+            status: true,
+            category: categoryId,
+        }},       
+        {
+          $lookup: {
+              from: "storehousestocks",
+              let: { productId: '$_id' },
+              pipeline: [{
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$product_id', '$$productId'] },
+                        { $eq: ['$StoreHouse_id', storehouseId] } // Filtrar por el ID de almacén específico
+                      ]
+                    }
+            }}],
+              as: "stock"
+            },           
+        },
+        {
+          $addFields: {
+            // stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
+            stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
+          }
+        },
+        {
+          $facet: {
+            products: [ { $skip: (page - 1) * PAGESIZE }, // Obtener productos para la página actual
+              { $limit: PAGESIZE },],
+            total: [{$count: "total"}],
+          }
+        }
+       
+    ]) 
+    
+    return result;
+
+   }
+
+   async findProductsBySubCategory(subcategoryId : MongooseObjectId, storehouse: string, page: number = 1 ): Promise<ProductEntity[] | ErrorHandler | null> {
+    const storehouseId = new ObjectId(storehouse);
+    const PAGESIZE = 30;
+    const result = await this.MODEL.aggregate([
+        {$match: {
+            status: true,
+            subCategory: subcategoryId,
+        }},       
+        {
+          $lookup: {
+              from: "storehousestocks",
+              let: { productId: '$_id' },
+              pipeline: [{
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$product_id', '$$productId'] },
+                        { $eq: ['$StoreHouse_id', storehouseId] } // Filtrar por el ID de almacén específico
+                      ]
+                    }
+            }}],
+              as: "stock"
+            },           
+        },
+        {
+          $addFields: {
+            // stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
+            stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
+          }
+        },
+        {
+          $facet: {
+            products: [ { $skip: (page - 1) * PAGESIZE }, // Obtener productos para la página actual
+              { $limit: PAGESIZE },],
+            total: [{$count: "total"}],
+          }
+        }
+       
+    ]) 
+    
+    return result;
+
    }
 
 }

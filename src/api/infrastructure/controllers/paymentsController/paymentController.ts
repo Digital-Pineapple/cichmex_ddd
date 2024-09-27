@@ -292,7 +292,7 @@ export class PaymentController extends ResponseData {
         const productToSend = products.map((i:any)=>{
            const pr = { id: i.id,
             title:i.title,
-            picture_url: i.picture_url.url,
+            picture_url: i?.picture_url?.url || i?.thumbnail || "",
             unit_price:i.unit_price,
             quantity: i.quantity}
             return pr

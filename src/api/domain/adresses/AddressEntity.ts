@@ -17,6 +17,7 @@ export interface AddressEntity {
   country?: string;
   status?: boolean;
   default?: boolean;
+  coords?: Coords;
   createdAt: NativeDate;
   updatedAt: NativeDate;
 }

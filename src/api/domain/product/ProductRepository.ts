@@ -1,3 +1,4 @@
+import { ObjectId } from "mongoose"
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler"
 import { MongoRepository } from "../../infrastructure/repository/MongoRepository"
 import { ProductEntity } from "./ProductEntity"
@@ -10,6 +11,8 @@ export interface ProductRepository extends MongoRepository {
     findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null>
     startDeleteImageDetail(id: string, imageId: string): Promise<ProductEntity | ErrorHandler | null >
     findRandomProductsByCategory(id: any, skiproduct: any, storehouse: any): Promise<ProductEntity[] | ErrorHandler | null>
-    findSearchProducts(search: string): Promise<any>
+    findSearchProducts(search: string, page: number): Promise<ProductEntity[] | ErrorHandler | null>
+    findProductsByCategory(categoryId: ObjectId, storehouse: string, page: number): Promise<ProductEntity[] | ErrorHandler | null>
+    findProductsBySubCategory(categoryId: ObjectId, storehouse: string, page: number): Promise<ProductEntity[] | ErrorHandler | null>
 
 }

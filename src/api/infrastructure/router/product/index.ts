@@ -52,6 +52,6 @@ productRouter
   .post("/productsBySubCategory/ok", productController.getProductsBySubCategory)
   .get("/videos/ok", productController.getVideos)
   .get("/recommendProducts/ok/:id", productController.getSimilarProducts)
-  .delete("/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.deleteProduct)
+  .delete("/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.deleteProduct)  
 
 export default productRouter;

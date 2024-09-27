@@ -71,6 +71,10 @@ const AddressSchema = new Schema<AddressEntity>(
       required: false,
       default: false,
     },
+    coords:{
+      type: Object,
+      required: false
+    }
   },
   {
     timestamps: true,
