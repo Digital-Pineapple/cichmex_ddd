@@ -55,7 +55,7 @@ export const checkTypeUserAuth = (type_user: string | string[]) => async (req: R
             throw new ErrorHandler('Token es requerido', 401);
         }  
         const {uuid} = await verifyToken(token);
-        const userData = await UserModel.findOne({uuid:uuid}).populate(TypeUserPopulateConfig)
+        const userData = await UserModel.findOne({uuid:uuid}).populate(TypeUserPopulateConfig)        
         if (!userData) {
             throw new ErrorHandler('Usuario no encontrado', 404);
         }

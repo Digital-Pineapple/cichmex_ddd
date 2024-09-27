@@ -47,6 +47,10 @@ export class ProductOrderUseCase {
     const response =  await this.productOrderRepository.getPaidAndSuplyToPointPO()
     return response
   }
+  public async POReadyToRoute(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+    const response =  await this.productOrderRepository.getPaidAndVerifyPackageToPointPO()
+    return response
+  }
   public async PODeliveries(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
     const response =  await this.productOrderRepository.getDeliveriesPO()
     return response

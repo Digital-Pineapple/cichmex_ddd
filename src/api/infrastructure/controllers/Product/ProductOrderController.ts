@@ -7,6 +7,7 @@ import { RandomCodeShipping } from '../../../../shared/infrastructure/validation
 import { buildPDF } from '../../../../libs/pdfKit';
 import { UserUseCase } from '../../../application/user/UserUseCase';
 import { RegionUseCase } from '../../../application/regions/regionUseCase';
+import { RegionsService } from '../../../../shared/infrastructure/Regions/RegionsService';
 
 export class ProductOrderController extends ResponseData {
   protected path = "/productOrder";
@@ -14,7 +15,8 @@ export class ProductOrderController extends ResponseData {
   constructor(
     private productOrderUseCase: ProductOrderUseCase,
     private readonly regionUseCase : RegionUseCase,
-    private readonly s3Service: S3Service
+    private readonly s3Service: S3Service,
+    private readonly regionsService: RegionsService
   ) {
     super();
     this.getAllProductOrders = this.getAllProductOrders.bind(this);
@@ -40,6 +42,8 @@ export class ProductOrderController extends ResponseData {
     this.pdfOrder = this.pdfOrder.bind(this)
     this.pendingTransferPO = this.pendingTransferPO.bind(this)
     this.autoAssignProductOrders = this.autoAssignProductOrders.bind(this)
+    this.VerifyPackage = this.VerifyPackage.bind(this);
+    this.ReadyProductOrdersToPoint = this.ReadyProductOrdersToPoint.bind(this);
   }
 
   public async getAllProductOrders(req: Request, res: Response, next: NextFunction) {
@@ -122,8 +126,6 @@ export class ProductOrderController extends ResponseData {
 
   public async getAssignedPO(req: Request, res: Response, next: NextFunction) {
         const user = req.user
-        console.log(user);
-        
     try {
       const response = await this.productOrderUseCase.POGetAssigned()
 
@@ -218,6 +220,18 @@ export class ProductOrderController extends ResponseData {
       this.invoke(response, 200, res, "Comenzo el envio exitosamente", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+  public async VerifyPackage(req: Request, res: Response, next: NextFunction) {
+    const user = req.user
+    const {id} = req.params
+    const code = RandomCodeShipping()
+    try {
+      const response: any | null = await this.productOrderUseCase.updateProductOrder(id, {route_detail: { route_status: 'assigned', user: user._id }, verification: { verification_code: code, verification_status: false } })
+
+      this.invoke(response, 200, res, "Paquete tomado exitosamente", next);
+    } catch (error) {
+      next(new ErrorHandler("Hubo un error al tomar el paquete", 500));
     }
   }
 
@@ -359,52 +373,8 @@ export class ProductOrderController extends ResponseData {
   }
 
   public async autoAssignProductOrders(req: Request, res: Response, next: NextFunction) {
-    const { operationRegions } = req.body; // Corregido el nombre de la variable
-  
-    // Verificar si un punto está en un polígono
-    function isPointInPolygon(lat: number, lng: number, polygon: Array<{ lat: number, lng: number }>): boolean {
-      let inside = false;
-      for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-        const xi = polygon[i].lat, yi = polygon[i].lng;
-        const xj = polygon[j].lat, yj = polygon[j].lng;
-  
-        const intersect = ((yi > lng) !== (yj > lng)) && (lat < (xj - xi) * (lng - yi) / (yj - yi) + xi);
-        if (intersect) inside = !inside;
-      }
-      return inside;
-    }
-  
-    // Agrupar órdenes por región
-    function groupOrdersByRegion(orders: any[], regions: any[]): Record<string, any[]> {
-      const groupedOrders: Record<string, any[]> = {};
-      
-  
-      orders.forEach(order => {
-        const location = order.deliveryLocation || (order.branch?.location);
-        if (!location || !location.lat || !location.lgt) return;
-        
-        const lat = location.lat;
-        const lng = location.lgt;
-  
-        regions.forEach(region => {
-          let isInRegion = false;
-  
-          if (region.type === 'polygon') {
-            isInRegion = isPointInPolygon(lat, lng, region.path);
-
-          }
-  
-          if (isInRegion) {
-            if (!groupedOrders[region.name]) {
-              groupedOrders[region.name] = [];
-            }
-            groupedOrders[region.name].push(order);
-          }
-        });
-      });
-  
-      return groupedOrders;
-    }
+    const user = req.user
+    const operationRegions = user.employee_detail?.operationRegions || [] // Corregido el nombre de la variable
   
     try {
       const OPRegions: any[] = [];
@@ -426,10 +396,45 @@ export class ProductOrderController extends ResponseData {
       const points: any = await this.productOrderUseCase.POPaidAndSupplyToPoint();
 
       // Agrupar las órdenes por región
-      const response = groupOrdersByRegion(points, OPRegions);
+      const response = this.regionsService.groupOrdersByRegion(points, OPRegions);
   
       // Enviar respuesta
-      this.invoke(response, 201, res, 'Orden surtida con éxito', next);
+      this.invoke(response, 201, res, 'Consulta exitosa', next);
+      
+    } catch (error) {
+      console.log(error);
+      next(new ErrorHandler("Hubo un error", 500)); // Manejo de errores
+    }
+  }
+
+  public async ReadyProductOrdersToPoint(req: Request, res: Response, next: NextFunction) {
+    const user = req.user
+    const operationRegions = user.employee_detail?.operationRegions || [] // Corregido el nombre de la variable
+  
+    try {
+      const OPRegions: any[] = [];
+  
+      // Uso de for...of en lugar de map con await
+      for (const item of operationRegions) {
+        const i = item.toString()
+        
+        const region = await this.regionUseCase.getOneRegion(i);
+        
+        if (region instanceof ErrorHandler) {
+          return next(new ErrorHandler('No existe la región', 500)); // Manejo correcto de error
+        }
+  
+        OPRegions.push(region); // Si la región es válida, se agrega al arreglo
+      }
+  
+      // Obtener puntos de las órdenes pagadas y con suministro
+      const points: any = await this.productOrderUseCase.POReadyToRoute();
+
+      // Agrupar las órdenes por región
+      const response = this.regionsService.groupOrdersByRegion(points, OPRegions);
+  
+      // Enviar respuesta
+      this.invoke(response, 201, res, 'Consulta exitosa', next);
       
     } catch (error) {
       console.log(error);
