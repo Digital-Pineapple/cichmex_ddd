@@ -36,6 +36,7 @@ productOrderRouter
   .get("/autoAssignOrders/region",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER"]), productOrderController.autoAssignProductOrders)
   .get("/readyToPoint/ok",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER"]), productOrderController.ReadyProductOrdersToPoint)
   .get('/verifyPackage/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER"]), productOrderController.VerifyPackage)
+  .get('/optimation/RouteDelivery', userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER"]), productOrderController.VerifyPackage)
   .post('/', productOrderController.createProductOrder)
   .post('/end-shipping',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER"]), productOrderController.endShippingOrder)
   .post('/endShippingToPoint',userValidations.authTypeUserValidation(["PARTNER"]), productOrderController.endShippingOrdertoPoint)

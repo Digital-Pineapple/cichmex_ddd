@@ -441,6 +441,43 @@ export class ProductOrderController extends ResponseData {
       next(new ErrorHandler("Hubo un error", 500)); // Manejo de errores
     }
   }
+
+  public async OptimizedPackagesToPoint(req: Request, res: Response, next: NextFunction) {
+    const user = req.user
+    const operationRegions = user.employee_detail?.operationRegions || [] // Corregido el nombre de la variable
+  
+    try {
+      const OPRegions: any[] = [];
+  
+      // Uso de for...of en lugar de map con await
+      for (const item of operationRegions) {
+        const i = item.toString()
+        
+        const region = await this.regionUseCase.getOneRegion(i);
+        
+        if (region instanceof ErrorHandler) {
+          return next(new ErrorHandler('No existe la región', 500)); // Manejo correcto de error
+        }
+  
+        OPRegions.push(region); // Si la región es válida, se agrega al arreglo
+      }
+  
+      // Obtener puntos de las órdenes pagadas y con suministro
+      const points: any = await this.productOrderUseCase.POReadyToRoute();
+
+      // Agrupar las órdenes por región
+      const response = this.regionsService.groupOrdersByRegion(points, OPRegions);
+   
+      
+  
+      // Enviar respuesta
+      this.invoke(response, 201, res, 'Consulta exitosa', next);
+      
+    } catch (error) {
+      console.log(error);
+      next(new ErrorHandler("Hubo un error", 500)); // Manejo de errores
+    }
+  }
   
 
 
