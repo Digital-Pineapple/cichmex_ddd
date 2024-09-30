@@ -49,7 +49,11 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
     }
 
     async getPaidAndSuplyToPointPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: true, route_status: false, }).sort({ createdAt: -1 }).populate(PopulateBranch)
+        return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: true, route_status: false,  'route_detail.route_status': { $ne: 'assigned' } }).sort({ createdAt: -1 }).populate(PopulateBranch)
+    }
+
+    async getPaidAndVerifyPackageToPointPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+        return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: true, route_status: false,  'route_detail.route_status': { $eq:'assigned'} }).sort({ createdAt: -1 }).populate(PopulateBranch)
     }
 
     async getAssignedRou(): Promise<ProductOrderEntity[] | ErrorHandler | null> {

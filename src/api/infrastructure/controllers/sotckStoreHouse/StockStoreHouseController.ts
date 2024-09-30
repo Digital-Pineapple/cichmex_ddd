@@ -130,41 +130,61 @@ export class StockStoreHouseController extends ResponseData {
             type_user: user.type_user
         };
         const SH_id = '662fe69b9ba1d8b3cfcd3634';
-        const code_folio = RandomCodeId('FO');        
+        const code_folio = RandomCodeId('FO');
     
         try {
+            // Validar si existen los productos y demás campos requeridos
+            if (!products || !user_received || !user_delivery) {
+                return next(new ErrorHandler('Faltan datos necesarios', 400));
+            }
+    
             const operations = products.map(async (item: any) => {
                 const available = await this.stockStoreHouseUseCase.getProductStock(item._id, SH_id);
-                const available_id = available?._id;                
+                const available_id = available?._id;
+    
+                // Validar que item.quantity es un número válido
+                const itemQuantity = Number(item.quantity);
+                if (isNaN(itemQuantity) || itemQuantity < 0) {
+                    throw new Error(`La cantidad proporcionada no es válida para el producto ${item._id}`);
+                }
     
                 if (!available) {
                     const response = await this.stockStoreHouseUseCase.createStock({ product_id: item._id, StoreHouse_id: SH_id });
-                    console.log(response);
-                    
-                    const newQuantity = item.quantity;
+                    const newQuantity = itemQuantity; // Ya validado
+    
                     const entry = await this.stockSHinputUseCase.createInput({
                         SHStock_id: response?._id,
-                        quantity: item.quantity,
+                        quantity: itemQuantity, // Usamos la cantidad validada
                         newQuantity: newQuantity,
                         responsible: UserInfo,
                         folio: code_folio,
                         product_detail: item,
-                        user_received:user_received,
-                        user_delivery:user_delivery
+                        user_received: user_received,
+                        user_delivery: user_delivery
                     });
+    
                     await this.stockStoreHouseUseCase.updateStock(response?._id, { stock: entry.newQuantity });
                 } else {
-                    const newQuantity = item.quantity + available.stock ;
+                    // Asegurarse de que available?.stock es un número válido, si no, usar 0
+                    const availableStock = Number(available?.stock) || 0;
+    
+                    if (isNaN(availableStock)) {
+                        throw new Error(`El stock disponible no es válido para el producto ${item._id}`);
+                    }
+    
+                    const newQuantity = itemQuantity + availableStock; // Suma validada
+    
                     const entry = await this.stockSHinputUseCase.createInput({
                         SHStock_id: available?._id,
-                        quantity: item.quantity,
-                        newQuantity: newQuantity,
+                        quantity: itemQuantity, // Usamos la cantidad validada
+                        newQuantity: newQuantity, // Ya validado
                         responsible: UserInfo,
                         folio: code_folio,
                         product_detail: item,
-                        user_received:user_received,
-                        user_delivery:user_delivery
+                        user_received: user_received,
+                        user_delivery: user_delivery
                     });
+    
                     await this.stockStoreHouseUseCase.updateStock(available_id, { stock: entry.newQuantity });
                 }
             });
@@ -172,9 +192,13 @@ export class StockStoreHouseController extends ResponseData {
             await Promise.all(operations);
             this.invoke(code_folio, 200, res, 'Alta de stock exitosa', next);
         } catch (error) {
-            next(new ErrorHandler('Hubo un error', 500));
+            console.log(error);
+            
+            next(new ErrorHandler(`Hubo un error`, 500));
         }
     }
+    
+    
 
     public async createMultipleOutputs(req: Request, res: Response, next: NextFunction) {
         const { user_received, user_delivery, products } = req.body;
