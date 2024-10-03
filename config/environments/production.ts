@@ -15,6 +15,7 @@ const PRODUCTION : Configuration   = {
 
     GOOGLE_CLIENT_ID    :    process.env.GOOGLE_CLIENT_ID!,
     GOOGLE_SECRET_ID    :    process.env.GOOGLE_SECRET_ID!,
+    GOOGLE_MAP_KEY      :    process.env.GOOGLE_MAP_KEY!,
 
     AWS_REGION          :    process.env.AWS_REGION!,
     AWS_ACCESS_KEY      :    process.env.AWS_ACCESS_KEY!,

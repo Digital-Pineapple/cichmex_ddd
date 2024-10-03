@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.4.0",
     "@types/compression": "^1.7.2",
     "@types/mongoose-delete": "^1.0.4",
     "@types/pdfkit": "^0.13.4",

@@ -8,7 +8,6 @@ import { buildPDF } from '../../../../libs/pdfKit';
 import { UserUseCase } from '../../../application/user/UserUseCase';
 import { RegionUseCase } from '../../../application/regions/regionUseCase';
 import { RegionsService } from '../../../../shared/infrastructure/Regions/RegionsService';
-
 export class ProductOrderController extends ResponseData {
   protected path = "/productOrder";
 
@@ -44,6 +43,7 @@ export class ProductOrderController extends ResponseData {
     this.autoAssignProductOrders = this.autoAssignProductOrders.bind(this)
     this.VerifyPackage = this.VerifyPackage.bind(this);
     this.ReadyProductOrdersToPoint = this.ReadyProductOrdersToPoint.bind(this);
+    this.OptimizedPackagesToPoint = this.OptimizedPackagesToPoint.bind(this);
   }
 
   public async getAllProductOrders(req: Request, res: Response, next: NextFunction) {
@@ -443,39 +443,95 @@ export class ProductOrderController extends ResponseData {
   }
 
   public async OptimizedPackagesToPoint(req: Request, res: Response, next: NextFunction) {
-    const user = req.user
-    const operationRegions = user.employee_detail?.operationRegions || [] // Corregido el nombre de la variable
+    const user = req.user;
+    const {coords} = req.query
+    const operationRegions = user.employee_detail?.operationRegions || [];
+    
+
+
+const convertToNumericLocation = (coords: any) => {
+  // Verificar que lat y lgt sean strings, y no arrays
+  const lat = Array.isArray(coords.lat) ? coords.lat[0] : coords.lat;
+  const lgt = Array.isArray(coords.lgt) ? coords.lgt[0] : coords.lgt;
+
+  // Convertir las cadenas a números si son válidas
+  const numericLocation = {
+    lat: lat ? Number(lat) : NaN,
+    lgt: lgt ? Number(lgt) : NaN
+  };
+
+  // Verificar que la conversión sea válida
+  if (!isNaN(numericLocation.lat) && !isNaN(numericLocation.lgt)) {
+    return numericLocation;
+  } else {
+    throw new Error("Invalid latitude or longitude values.");
+  }
+};
+const numericLocation = convertToNumericLocation(coords);
   
     try {
       const OPRegions: any[] = [];
   
-      // Uso de for...of en lugar de map con await
+      // Uso de for...of con manejo de errores por región
       for (const item of operationRegions) {
-        const i = item.toString()
-        
-        const region = await this.regionUseCase.getOneRegion(i);
-        
-        if (region instanceof ErrorHandler) {
-          return next(new ErrorHandler('No existe la región', 500)); // Manejo correcto de error
-        }
+        const regionId = item.toString();
   
-        OPRegions.push(region); // Si la región es válida, se agrega al arreglo
+        try {
+          const region = await this.regionUseCase.getOneRegion(regionId);
+          
+          if (!region) {
+            console.warn(`No existe la región con ID: ${regionId}`);
+            continue; // Si no existe la región, pasamos a la siguiente
+          }
+  
+          OPRegions.push(region); // Agregar la región válida
+        } catch (err) {
+          console.warn(`Error al obtener la región con ID: ${regionId}`, err);
+          // Manejar el error, pero continuar con el resto de las regiones
+        }
       }
   
       // Obtener puntos de las órdenes pagadas y con suministro
       const points: any = await this.productOrderUseCase.POReadyToRoute();
-
+      
       // Agrupar las órdenes por región
       const response = this.regionsService.groupOrdersByRegion(points, OPRegions);
-   
+      const extractCoordinates = (orders: any) => {
+        return orders.map((order : any) => {
+          // Priorizar `deliveryLocation` si existe, sino usar `branch.location`
+          const location = order.deliveryLocation || order.branch?.location;
       
+          if (location && location.lat && location.lgt) {
+            return {
+              lat: location.lat,
+              lgt: location.lgt
+            };
+          } else {
+            console.warn("No valid location found for order:", order);
+            return null; // Devuelve null si no hay coordenadas válidas
+          }
+        }).filter(Boolean); // Filtrar los valores null o undefined
+      };
+      const points1 = extractCoordinates(response)
+
+      const pointsWithUserLocation = [
+        numericLocation,  // Ubicación actual como inicio
+        ...points1,  // Puntos intermedios
+        numericLocation,
+      ];
+      
+       const distanceMatrix = await this.regionsService.getDistanceMatrix(pointsWithUserLocation);
+       
+        const bestRoute = this.regionsService.simulatedAnnealingTSP(distanceMatrix);
+
+       const directions = await this.regionsService.getOptimizedRoute(pointsWithUserLocation, bestRoute);
   
       // Enviar respuesta
-      this.invoke(response, 201, res, 'Consulta exitosa', next);
-      
+      this.invoke(directions, 201, res, 'Consulta exitosa', next);
+  
     } catch (error) {
-      console.log(error);
-      next(new ErrorHandler("Hubo un error", 500)); // Manejo de errores
+      console.error(error);
+      next(new ErrorHandler("Hubo un error", 500)); // Manejo general de errores
     }
   }
   

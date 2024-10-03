@@ -19,6 +19,7 @@ export type Configuration = {
     SECRET_JWT_KEY      :   string;
     GOOGLE_CLIENT_ID    :   string;
     GOOGLE_SECRET_ID    :   string;
+    GOOGLE_MAP_KEY      :   string;
     AWS_REGION          :   string;
     AWS_ACCESS_KEY      :   string;
     AWS_SECRET_KEY      :   string;

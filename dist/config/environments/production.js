@@ -10,6 +10,7 @@ const PRODUCTION = {
     SECRET_JWT_KEY: process.env.SECRET_JWT_KEY,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_SECRET_ID: process.env.GOOGLE_SECRET_ID,
+    GOOGLE_MAP_KEY: process.env.GOOGLE_MAP_KEY,
     AWS_REGION: process.env.AWS_REGION,
     AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,
     AWS_SECRET_KEY: process.env.AWS_SECRET_KEY,
