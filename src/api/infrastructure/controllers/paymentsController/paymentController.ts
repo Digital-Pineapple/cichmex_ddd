@@ -578,13 +578,9 @@ export class PaymentController extends ResponseData {
     public async addTicket(req: Request, res: Response, next: NextFunction): Promise<void> {
         const { id, reference, amount } = req.body;
         const date = new MomentService().newDate();
-        console.log(id);
-        
-
 
         try {
             const payment: any = await this.paymentUseCase.getDetailPayment(id);
-            console.log(payment);
             
             if (!payment) {
                 return next(new ErrorHandler('No se encontró el pago', 400));

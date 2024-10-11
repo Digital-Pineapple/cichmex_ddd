@@ -44,6 +44,7 @@ export class ProductOrderController extends ResponseData {
     this.VerifyPackage = this.VerifyPackage.bind(this);
     this.ReadyProductOrdersToPoint = this.ReadyProductOrdersToPoint.bind(this);
     this.OptimizedPackagesToPoint = this.OptimizedPackagesToPoint.bind(this);
+    this.OutOfRegionsPO = this.OutOfRegionsPO.bind(this);
   }
 
   public async getAllProductOrders(req: Request, res: Response, next: NextFunction) {
@@ -432,6 +433,27 @@ export class ProductOrderController extends ResponseData {
 
       // Agrupar las órdenes por región
       const response = this.regionsService.groupOrdersByRegion(points, OPRegions);
+  
+      // Enviar respuesta
+      this.invoke(response, 201, res, 'Consulta exitosa', next);
+      
+    } catch (error) {
+      console.log(error);
+      next(new ErrorHandler("Hubo un error", 500)); // Manejo de errores
+    }
+  }
+
+  public async OutOfRegionsPO(req: Request, res: Response, next: NextFunction) {
+    
+    const OPRegions = await this.regionUseCase.getAllRegions()
+    try {
+      
+  
+      // Obtener puntos de las órdenes pagadas y con suministro
+      const points: any = await this.productOrderUseCase.POPaidAndSupplyToPoint();
+
+      // Agrupar las órdenes por región
+      const response = this.regionsService.groupOutOfRegion(points, OPRegions);
   
       // Enviar respuesta
       this.invoke(response, 201, res, 'Consulta exitosa', next);

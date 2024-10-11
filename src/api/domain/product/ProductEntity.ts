@@ -30,12 +30,31 @@ export interface ProductEntity {
   rating?: number;
   product_key ?: string;
   sku: string;
+  model ?: string;
+  gender ?: string;
   createdAt        :   NativeDate;
   updatedAt        :   NativeDate;
   seoDescription?: string,
   seoKeywords?: string[],
 }
 
+export interface VariantProductEntity  {
+  sku: String, 
+  attributes: {
+    color:  String,
+    size: String,
+    material:  String ,
+  },
+  stock : String, 
+  images: [ProductImageEntity],
+  dimensions: {
+    length:  Number ,
+    width:  Number ,
+    height:  Number ,
+    weight:  Number 
+  },
+  thumbnail?:string;
+}
 export interface ProductImageEntity  {  
     _id: ObjectId,
     url: string;

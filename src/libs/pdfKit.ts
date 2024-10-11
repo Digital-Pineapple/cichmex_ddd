@@ -23,12 +23,15 @@ export function buildPDF(orderData: any, dataCallback: any, endCallback: any) {
     const deliveryLocation = (data: any) => {
         if (data.deliveryLocation) {
             return [
-                `Código Postal: ${data.deliveryLocation.cp}`,
+                `Código Postal: ${data.deliveryLocation.zipcode}`,
                 `Estado: ${data.deliveryLocation.state}`,
                 `Municipio: ${data.deliveryLocation.municipality}`,
-                `Dirección: ${data.deliveryLocation.direction}`,
+                `Localidad: ${data.deliveryLocation.neighborhood}`,
+                `Calle: ${data.deliveryLocation.street}`,
+                `No Ext: ${data.deliveryLocation.numext}`,
+                `No Int: ${data.deliveryLocation.numint ?data.deliveryLocation.numint : 'S/N'}`,
                 `Referencia: ${data.deliveryLocation.reference ? data.deliveryLocation.reference:'Sin información'}`,
-                `Destinatario: ${data.deliveryLocation.receiver ? data.deliveryLocation.receiver : 'Sin información' }`
+                `Destinatario: ${data.deliveryLocation.btwstreet ? data.deliveryLocation.btwstreet : 'Sin información' }`
             ].join('\n');
         } else {
             return [
@@ -70,8 +73,8 @@ doc.moveDown(0.2);
 
 // Segunda columna
 currentY = doc.y; // Usar la misma coordenada Y después de la primera columna
-doc.text(`Dirección de envío:`, column2X, currentY);
-doc.text(`${deliveryLocation(orderData)}`, column2X, doc.y);
+doc.text(`Dirección de envío:`, column2X, currentY + 2);
+doc.text(`${deliveryLocation(orderData)}`, column2X , doc.y);
     // Insertar la imagen del código QR en el PDF
     doc.image(qrImage, column3X, 40, {
         fit: [200, 200], // Ajustar el tamaño de la imagen
@@ -102,13 +105,14 @@ function createTable(doc: PDFDocument, products: any[], orderData: any) {
     // Asegúrate de que `doc.table` sea un método válido
     doc.table(table, {
         width: 350,
-        y:140,
+        y:180,
         x:50
     });
 
     const tableBottomPosition = doc.y; // Obtiene la posición Y después de la tabla
     doc.text(`Descuento: $${orderData.discount ? orderData.discount.toFixed(2) : '0.00'}`, { align: 'center' });
     doc.text(`SubTotal: $${orderData.subTotal.toFixed(2)}`, { align: 'center' });
+    doc.text(`Costo de envio: $${orderData.shipping_cost ? orderData.shipping_cost : 'N/A' }`, { align: 'center' });
     doc.text(`Total: $${orderData.total.toFixed(2)}`, { align: 'center' });
 
     // Mover la posición Y hacia abajo si es necesario para el espaciado

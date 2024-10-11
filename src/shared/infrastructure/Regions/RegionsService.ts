@@ -47,6 +47,48 @@ export class RegionsService {
     
         return groupedOrders;
       }
+      groupOutOfRegion(orders: any[], regions: any[]): Record<string, any[]> {
+        const groupedOrders: any = []; 
+        
+        orders.forEach(order => {
+          // Obtener la ubicación de entrega o la ubicación de la sucursal
+          const location = order.deliveryLocation || order.branch?.location;
+          if (!location || !location.lat || !location.lgt) return;  // Saltar si no hay ubicación válida
+          
+          const lat = location.lat;
+          const lng = location.lgt;
+          
+          // Bandera para verificar si el pedido está dentro de alguna región
+          let isInAnyRegion = false;
+          
+          // Revisar cada región
+          regions.forEach(region => {
+            let isInRegion = false;
+            
+            // Verificar si el tipo de región es un polígono
+            if (region.type === 'polygon') {
+              isInRegion = this.isPointInPolygon(lat, lng, region.path); // Verificar si el punto está dentro del polígono   
+
+                         
+            }
+            
+            // Si el pedido está en alguna región, activar la bandera
+            if (isInRegion) {
+              isInAnyRegion = true;
+            }
+          });
+        
+          
+          // Si el pedido no está dentro de ninguna región, agregarlo al grupo
+          if (!isInAnyRegion) {
+            groupedOrders.push(order);
+          }
+        });
+      
+        return groupedOrders;
+      }
+      
+
 
    
       
