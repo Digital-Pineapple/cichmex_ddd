@@ -449,15 +449,15 @@ export class ProductController extends ResponseData {
   }
   
   public async getProductsByCategory(req: Request, res: Response, next: NextFunction){
-    const { category } = req.body 
-    try {
-      const page = Number(req.query.page) || 1;       
-      if(!category) return next(new ErrorHandler("El nombre de la categoria es requerida", 404));
+    const { category } = req.body;     
+    const queryparams = req.query;
+    try {         
+      if(!category) return next(new ErrorHandler("El nombre de la categoria es requerida", 404));          
       const categoria: any | null = await this.categoryUseCase.getDetailCategoryByName(category);
       if (categoria == null) return next(new ErrorHandler("La categoria no existe", 404));
-      const products : any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, page);
+      const products : any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);
       await Promise.all(
-        products[0].products.map(async (product: any) => {
+        products.products.map(async (product: any) => {
           const thumbnail = product.thumbnail
             if (thumbnail.startsWith("https://")) {
               product.thumbnail = thumbnail
@@ -477,13 +477,16 @@ export class ProductController extends ResponseData {
           }
         })
       )
+          
       const response= {
         category: categoria,
-        products: products[0].products,
-        total : products[0].total[0].total 
+        products: products.products,
+        total : products.total
       }
       this.invoke(response, 201, res, '', next);
+
     }catch (error) {          
+      // console.log();      
       next(new ErrorHandler("Hubo un error al buscar", 500));
       console.log("category product error", error);      
     }
@@ -491,14 +494,15 @@ export class ProductController extends ResponseData {
 
   public async getProductsBySubCategory(req: Request, res: Response, next: NextFunction){
     const { subcategory } = req.body 
-    try {
-      const page = Number(req.query.page) || 1;       
+    const queryparams = req.query;
+  
+    try {                
       if(!subcategory) return next(new ErrorHandler("El nombre de la subcategoria es requerida", 404));
       const subcategoria: any | null = await this.subCategoryUseCase.getDetailSubCategoryByName(subcategory);
       if (subcategoria == null) return next(new ErrorHandler("La subcategoria no existe", 404));
-      const products : any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, page);
+      const products : any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);
       await Promise.all(
-        products[0].products.map(async (product: any) => {
+        products.products.map(async (product: any) => {
           const thumbnail = product.thumbnail
             if (thumbnail.startsWith("https://")) {
               product.thumbnail = thumbnail
@@ -520,8 +524,8 @@ export class ProductController extends ResponseData {
       )
       const response= {
         subcategory: subcategoria,
-        products: products[0].products,
-        total : products[0].total[0].total 
+        products: products.products,
+        total : products.total 
       }
       this.invoke(response, 201, res, '', next);
     }catch (error) {          
@@ -532,40 +536,48 @@ export class ProductController extends ResponseData {
 
   public async getProductsByCategories(req: Request, res: Response, next: NextFunction) {
     try {
-      const categories = ["Hogar, Muebles y jardín", "Belleza y Cuidado Personal"]
-      // const categories = ["Nueva categoria"]
+      const categories = ["Hogar, Muebles y jardín", "Belleza y Cuidado Personal"];
+      // const categories = ["Nueva categoria"];
       const response: any | null = await this.categoryUseCase.getCategoriesAndProducts(categories, this.onlineStoreHouse);
       
-      await Promise.all(response.map(async (category: any) => {               
-        await Promise.all(
-          category.products.map(async (product: any) => {
-            const thumbnail = product.thumbnail
-            if (thumbnail.startsWith("https://")) {
-              product.thumbnail = thumbnail
-          } else {
-            product.thumbnail =  await this.s3Service.getUrlObject(
-              thumbnail + ".jpg"
-            );
-          }
-          if (product?.images && product?.images.length > 0) {
-            const parsedImages = await Promise.all(product.images.map(async (image: any) => {
-              const url = await this.s3Service.getUrlObject(image + ".jpg");
-              return url
-            }));
-            product.images = parsedImages;
-          }
-            return product
-          }))
-        return category
-      }));
-
+      await Promise.all(
+        response.map(async (category: any) => {
+          await Promise.all(
+            category.products.map(async (product: any) => {
+              const thumbnail = product.thumbnail;
+              
+              if (thumbnail.startsWith("https://")) {
+                product.thumbnail = thumbnail;
+              } else {
+                product.thumbnail = await this.s3Service.getUrlObject(thumbnail + ".jpg");
+              }
+              
+              if (product?.images && product.images.length > 0) {
+                const parsedImages = await Promise.all(
+                  product.images.map(async (image: any) => {
+                    const url = await this.s3Service.getUrlObject(image + ".jpg");
+                    return url;
+                  })
+                );
+                product.images = parsedImages;
+              }
+              
+              return product;
+            })
+          );
+          return category;
+        })
+      );
+  
+      // Llamada de invocación con la respuesta
       this.invoke(response, 201, res, '', next);
+      
     } catch (error) {
       console.log(error, 'ok');
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
     }
-
   }
+  
 
   public async getVideos(req: Request, res: Response, next: NextFunction) {
     try {

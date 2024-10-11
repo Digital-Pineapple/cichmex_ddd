@@ -176,13 +176,29 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
      return result;
    }
 
-   async findProductsByCategory(categoryId : MongooseObjectId, storehouse: string, page: number = 1 ): Promise<ProductEntity[] | ErrorHandler | null> {
+   async findProductsByCategory(categoryId : MongooseObjectId, storehouse: string, qparams: any ): Promise<ProductEntity[] | ErrorHandler | null> {    
+     const page = Number(qparams.page) || 1;
+     let matchStage: any = {};         
+     if(qparams.subcategory){
+        matchStage.subCategory = new ObjectId(qparams.subcategory)
+     }
+     if(qparams.minPrice || qparams.maxPrice) {
+      matchStage.price = {};  
+      if (qparams.minPrice) {
+        matchStage.price.$gte = Number(qparams.minPrice); // Si existe minPrice, lo añadimos
+      }    
+      if (qparams.maxPrice) {
+        matchStage.price.$lte = Number(qparams.maxPrice); // Si existe maxPrice, lo añadimos
+      }
+     }    
+    
     const storehouseId = new ObjectId(storehouse);
     const PAGESIZE = 30;
     const result = await this.MODEL.aggregate([
         {$match: {
             status: true,
             category: categoryId,
+            ...matchStage
         }},       
         {
           $lookup: {
@@ -216,17 +232,33 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
        
     ]) 
     
-    return result;
+    return {
+      products: result[0].products,
+      total: result[0]?.total[0]?.total || 0
+    };;
 
    }
 
-   async findProductsBySubCategory(subcategoryId : MongooseObjectId, storehouse: string, page: number = 1 ): Promise<ProductEntity[] | ErrorHandler | null> {
+   async findProductsBySubCategory(subcategoryId : MongooseObjectId, storehouse: string, qparams: any ): Promise<ProductEntity[] | ErrorHandler | null> {
+    const page = Number(qparams.page) || 1;
+    let matchStage: any = {};         
+
+    if(qparams.minPrice || qparams.maxPrice) {
+     matchStage.price = {};  
+     if (qparams.minPrice) {
+       matchStage.price.$gte = Number(qparams.minPrice); // Si existe minPrice, lo añadimos
+     }    
+     if (qparams.maxPrice) {
+       matchStage.price.$lte = Number(qparams.maxPrice); // Si existe maxPrice, lo añadimos
+     }
+    }    
     const storehouseId = new ObjectId(storehouse);
     const PAGESIZE = 30;
     const result = await this.MODEL.aggregate([
         {$match: {
             status: true,
             subCategory: subcategoryId,
+            ...matchStage
         }},       
         {
           $lookup: {
@@ -260,7 +292,10 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
        
     ]) 
     
-    return result;
+    return {
+      products: result[0].products,
+      total: result[0]?.total[0]?.total || 0
+    };
 
    }
 

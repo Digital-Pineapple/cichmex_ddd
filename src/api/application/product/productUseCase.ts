@@ -62,11 +62,11 @@ export class ProductUseCase {
     return this.productRepository.findSearchProducts(search, page);
   }
 
-  public async getProductsByCategory(categoryId: ObjectId, storehouse: string, page: number): Promise<ProductEntity[] | ErrorHandler | null> {
-    return this.productRepository.findProductsByCategory(categoryId, storehouse, page)
+  public async getProductsByCategory(categoryId: ObjectId, storehouse: string, queryparams: Object): Promise<ProductEntity[] | ErrorHandler | null> {
+    return this.productRepository.findProductsByCategory(categoryId, storehouse, queryparams)
   }
-  public async getProductsBySubCategory(subcategoryId: ObjectId, storehouse: string, page: number): Promise<ProductEntity[] | ErrorHandler | null> {
-    return this.productRepository.findProductsBySubCategory(subcategoryId, storehouse, page)
+  public async getProductsBySubCategory(subcategoryId: ObjectId, storehouse: string, queryparams: Object): Promise<ProductEntity[] | ErrorHandler | null> {
+    return this.productRepository.findProductsBySubCategory(subcategoryId, storehouse, queryparams)
   }
 
 }
