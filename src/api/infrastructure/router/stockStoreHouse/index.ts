@@ -49,7 +49,7 @@ stockStoreHouseRouter
     .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.updateStock)
     .patch('/add/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.addStock)
     .patch('/remove/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.removeStock)
-    .patch('/return/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.returnStock)
+    .patch('/return/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), stockStoreHouseController.returnStock)
     .delete('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.createStock)
     
 

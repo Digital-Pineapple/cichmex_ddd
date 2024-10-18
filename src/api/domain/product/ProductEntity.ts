@@ -4,6 +4,7 @@ import { Category } from "../category/CategoryEntity";
 import { PaymentEntity } from "../payments/PaymentEntity";
 import { BranchOfficeEntity, ILocation } from "../branch_office/BranchOfficeEntity";
 import { UserEntity } from "../user/UserEntity";
+import { SizeGuideEntity } from "../sizeGuide/SizeGuideEntity";
 
 
 export interface ProductEntity {
@@ -29,7 +30,6 @@ export interface ProductEntity {
   videos ?: string[];
   rating?: number;
   product_key ?: string;
-  sku: string;
   model ?: string;
   gender ?: string;
   createdAt        :   NativeDate;
@@ -45,15 +45,11 @@ export interface VariantProductEntity  {
     size: String,
     material:  String ,
   },
+  design : String,
   stock : String, 
   images: [ProductImageEntity],
-  dimensions: {
-    length:  Number ,
-    width:  Number ,
-    height:  Number ,
-    weight:  Number 
-  },
-  thumbnail?:string;
+  thumbnail?:String;
+  sizeGuide ?: SizeGuideEntity
 }
 export interface ProductImageEntity  {  
     _id: ObjectId,
