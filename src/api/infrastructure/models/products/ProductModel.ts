@@ -113,10 +113,6 @@ const ProductSchema = new Schema<ProductEntity>(
       type: String,
       required: false
     },
-    sku: {
-      type: String,
-      required: false
-    },
     seoDescription: {
       type: String,
       required: false

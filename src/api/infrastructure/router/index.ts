@@ -26,6 +26,7 @@ import discountCouponRouter from './discountCoupon';
 import socketsRouter from './sockets';
 import dynamicRouteRouter from './dynamicRoute';
 import regionRouter from './region';
+import sizeGuideRouter from './sizeGuide';
 
 export const apiRouter = (): Router => {
 
@@ -57,6 +58,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/storehouse', storeHouseRouter)
     apiRouter.use('/coupons', discountCouponRouter)
     apiRouter.use('/socket', socketsRouter)
+    apiRouter.use('/size-guide', sizeGuideRouter)
 
     return apiRouter;
 }
@@ -83,10 +85,10 @@ apiRouterx.use('/region', regionRouter)
 apiRouterx.use('/stock-branch', stockBranchRouter)
 apiRouterx.use('/shipping-cost', shippingCostRouter)
 apiRouterx.use('/shopping-cart', shoppingCartRouter)
-
 apiRouterx.use('/stock-StoreHouse', stockStoreHouseRouter)
 apiRouterx.use('/storehouse', storeHouseRouter)
 apiRouterx.use('/coupons', discountCouponRouter)
+apiRouterx.use('/size-guide', sizeGuideRouter)
 
 
 

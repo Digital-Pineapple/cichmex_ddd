@@ -8,6 +8,7 @@ import { buildPDF } from '../../../../libs/pdfKit';
 import { UserUseCase } from '../../../application/user/UserUseCase';
 import { RegionUseCase } from '../../../application/regions/regionUseCase';
 import { RegionsService } from '../../../../shared/infrastructure/Regions/RegionsService';
+import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 export class ProductOrderController extends ResponseData {
   protected path = "/productOrder";
 
@@ -565,6 +566,7 @@ const numericLocation = convertToNumericLocation(coords);
     const user = req.user.id
     try {
       const active: any = await this.productOrderUseCase.getOnePO({ order_id: order_id, status: true, user_id: user })
+    
       if (!active) {
         return new ErrorHandler('No se encontro el pedido', 500)
       }
