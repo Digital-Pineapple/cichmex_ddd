@@ -27,9 +27,9 @@ shoppingCartRouter
     .put('/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.updateShoppingCart )
     .delete('/membership/:id', shoppingCartController.deleteMembershipInCart)
     .delete('/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.deleteShoppingCart)
-    .delete('/product/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.deleteProductInCart)
-    .delete('/products/ok', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.deleteProductsInShoppingCart)
-    .put('/products/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.updateShoppingCartProducts)
+    .delete('/product/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.deleteProductCart)
+    .delete('/products/ok', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.emptyCart)
+    .put('/products/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.addToCart)
     .put('/product/quantity/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.updateProductQuantity)
     .put ('/merge/ok', shoppingCartController.mergeCart) 
 

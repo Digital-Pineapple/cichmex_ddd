@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 import { S3Service } from './../../../../shared/infrastructure/aws/S3Service';
 import { Request, Response, NextFunction } from 'express';
 import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
@@ -8,14 +9,17 @@ import { buildPDF } from '../../../../libs/pdfKit';
 import { UserUseCase } from '../../../application/user/UserUseCase';
 import { RegionUseCase } from '../../../application/regions/regionUseCase';
 import { RegionsService } from '../../../../shared/infrastructure/Regions/RegionsService';
+import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 export class ProductOrderController extends ResponseData {
   protected path = "/productOrder";
+  private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634";
 
   constructor(
     private productOrderUseCase: ProductOrderUseCase,
     private readonly regionUseCase : RegionUseCase,
     private readonly s3Service: S3Service,
-    private readonly regionsService: RegionsService
+    private readonly regionsService: RegionsService,
+    private stockStoreHouseUseCase: StockStoreHouseUseCase,
   ) {
     super();
     this.getAllProductOrders = this.getAllProductOrders.bind(this);
@@ -286,6 +290,7 @@ export class ProductOrderController extends ResponseData {
     const user: any = req.user;
     try {
       const response: any | null = await this.productOrderUseCase.ProductOrdersByUser(user?.id)
+      // console.log("response xdd", response);      
       // Promise.all(response.map(async (item: any) => {        
       //  const newParsedProducts = await Promise.all(item.products.map(async (product: any) => {
       //    const url = await this.s3Service.getUrlObject(product.item.thumbnail);
@@ -297,7 +302,6 @@ export class ProductOrderController extends ResponseData {
       // }))      
       this.invoke(response, 200, res, "", next);
     } catch (error) {
-
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
@@ -561,18 +565,28 @@ const numericLocation = convertToNumericLocation(coords);
 
 
   public async deleteProductOrder(req: Request, res: Response, next: NextFunction) {
-    const { order_id } = req.params;
+    const { id } = req.params;
     const user = req.user.id
     try {
-      const active: any = await this.productOrderUseCase.getOnePO({ order_id: order_id, status: true, user_id: user })
-      if (!active) {
-        return new ErrorHandler('No se encontro el pedido', 500)
+      if(!id) return next(new ErrorHandler('El id de la orden es requerido', 404));
+      const userOrder: any = await this.productOrderUseCase.getOnePO({ order_id: id, status: true, user_id: user })
+      const products = userOrder.products
+      await Promise.all(products.map(async (product: any) => {
+        const stockProduct = await this.stockStoreHouseUseCase.getProductStock(product.item._id, this.onlineStoreHouse)
+        const currentProductStock = stockProduct.stock;        
+        const stockToReturn = product.quantity; 
+        const newProductStock = currentProductStock + stockToReturn;
+        const updateStock = await this.stockStoreHouseUseCase.updateStock(stockProduct._id, { stock: newProductStock })                         
+      }))
+        
+      if (!userOrder) {
+        return next(new ErrorHandler('No se encontro el pedido', 500));
       }
-      const response = await this.productOrderUseCase.updateProductOrder(active._id, { status: false })
+      const response = await this.productOrderUseCase.updateProductOrder(userOrder._id, { status: false })
+      // const stock = await this.stockStoreHouseUseCase.getProductStock()
       this.invoke(response, 201, res, 'Se eliminó con éxito', next);
     } catch (error) {
-
-      next(new ErrorHandler("Hubo un error ", 500));
+      next(new ErrorHandler("Hubo un error al consultar la información ", 500));
     }
   }
 
