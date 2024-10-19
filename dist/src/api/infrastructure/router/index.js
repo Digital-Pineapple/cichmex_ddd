@@ -31,6 +31,7 @@ const discountCoupon_1 = __importDefault(require("./discountCoupon"));
 const sockets_1 = __importDefault(require("./sockets"));
 const dynamicRoute_1 = __importDefault(require("./dynamicRoute"));
 const region_1 = __importDefault(require("./region"));
+const sizeGuide_1 = __importDefault(require("./sizeGuide"));
 const apiRouter = () => {
     const apiRouter = (0, express_1.Router)();
     apiRouter.use('/auth', auth_1.default);
@@ -59,6 +60,7 @@ const apiRouter = () => {
     apiRouter.use('/storehouse', storeHouse_1.default);
     apiRouter.use('/coupons', discountCoupon_1.default);
     apiRouter.use('/socket', sockets_1.default);
+    apiRouter.use('/size-guide', sizeGuide_1.default);
     return apiRouter;
 };
 exports.apiRouter = apiRouter;
@@ -87,4 +89,5 @@ apiRouterx.use('/shopping-cart', shoppingCart_ts_1.default);
 apiRouterx.use('/stock-StoreHouse', stockStoreHouse_1.default);
 apiRouterx.use('/storehouse', storeHouse_1.default);
 apiRouterx.use('/coupons', discountCoupon_1.default);
+apiRouterx.use('/size-guide', sizeGuide_1.default);
 exports.default = exports.apiRouter;
