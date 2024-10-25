@@ -29,9 +29,9 @@ export class ShoppingCartController extends ResponseData {
         this.updateShoppingCart = this.updateShoppingCart.bind(this);
         this.deleteShoppingCart = this.deleteShoppingCart.bind(this);
         this.deleteMembershipInCart = this.deleteMembershipInCart.bind(this)
-        this.deleteProductInCart = this.deleteProductInCart.bind(this)
-        this.deleteProductsInShoppingCart = this.deleteProductsInShoppingCart.bind(this)
-        this.updateShoppingCartProducts = this.updateShoppingCartProducts.bind(this);
+        this.deleteProductCart = this.deleteProductCart.bind(this)
+        this.emptyCart = this.emptyCart.bind(this)
+        this.addToCart = this.addToCart.bind(this);
         this.updateProductQuantity = this.updateProductQuantity.bind(this);
         this.mergeCart = this.mergeCart.bind(this);
     }
@@ -48,18 +48,27 @@ export class ShoppingCartController extends ResponseData {
         const user = req.user;
         try {            
             const response: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id+"");
+            if(!response) return next(new ErrorHandler('No existe un carrito de compras asociado a este usuario', 404));
+        
             const mergeStockProducts = await Promise.all(
                 response.products.map(async (product: any) => {
                     const stock = await this.stockStoreHouseUseCase.getProductStock(product.item._id, this.onlineStoreHouse);
-                    return { ...product, stock: stock?.stock ? stock?.stock : 0 };
+                    return { ...product, stock: stock?.stock ?? 0 };
                 })
             )
             response.products = mergeStockProducts;
-            // console.log(mergeStockProducts, "jhgjhfghkfj stocks");            
             const updatedResponse = await Promise.all(
                 response.products.map(async (product:any)=>{
-                    const thumbnail= await this.s3Service.getUrlObject(product.item.thumbnail + ".jpg");       
-                    product.item.thumbnail = thumbnail;                                  
+                    const thumbnail = product.item.thumbnail
+                    if (thumbnail.startsWith("https://")) {
+                      product.item.thumbnail = thumbnail
+                  } else {
+                    product.item.thumbnail =  await this.s3Service.getUrlObject(
+                      thumbnail + ".jpg"
+                    );
+                  }   
+                    // const thumbnail= await this.s3Service.getUrlObject(product.item.thumbnail + ".jpg");       
+                    // product.item.thumbnail = thumbnail;                                  
                 })
             )                       
             this.invoke(response, 200, res, '', next);          
@@ -147,11 +156,29 @@ export class ShoppingCartController extends ResponseData {
     }
 
 
-    public async deleteProductInCart(req: Request, res: Response, next: NextFunction) {
+    
+    public async emptyCart(req: Request, res: Response, next: NextFunction) {
+        const user = req.user; 
+        try {
+            const cart: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
+            if(!cart){
+                return next(new ErrorHandler('Este usuario no tiene carrito de compras', 404));
+            }
+            const response = await this.shoppingCartUseCase.updateShoppingCart(cart._id.toString(), { products: [] });
+            this.invoke(response, 201, res, 'Carrito de compras vaciado', next);
+        } catch (error) {
+            console.log(error);            
+            next(new ErrorHandler('Hubo un error eliminar', 500));
+        }
+    }
+
+    public async deleteProductCart(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params; // product id
         const user = req.user;
         try {
+            if(!id) return next(new ErrorHandler('El id del producto es requerido', 404));
             const response : any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id)
+            if(!response) return next(new ErrorHandler('No existe un carrito de compras asociado a este usuario', 404));
             const products = response?.products;
             const productsFiltered = products?.filter((product: any) => product?.item?._id.toString() !== id);
             const response2 = await this.shoppingCartUseCase.updateShoppingCart(response._id.toString(), { products: productsFiltered })
@@ -164,85 +191,73 @@ export class ShoppingCartController extends ResponseData {
         }
     }
 
-    public async deleteProductsInShoppingCart(req: Request, res: Response, next: NextFunction) {
-        const user = req.user; 
-        try {
-            const cart: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
-            const response = await this.shoppingCartUseCase.updateShoppingCart(cart._id.toString(), { products: [] });
-            this.invoke(response, 201, res, 'Carrito de compras vaciado', next);
-        } catch (error) {
-            console.log(error);            
-            next(new ErrorHandler('Hubo un error eliminar', 500));
-        }
-    }
-
-    public async updateShoppingCartProducts(req: Request, res: Response, next: NextFunction) {
+    public async addToCart(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params; // ID del producto
         const user = req.user;
         const { quantity } = req.body;
-    
         try {                        
             // Validar entradas
-            if (!ObjectId.isValid(id)) {
-                return next(new ErrorHandler('ID de producto inválido', 400));
-            }
-            if (typeof quantity !== 'number') {
-                return next(new ErrorHandler('Cantidad inválida', 400));
-            }
-    
-            // Obtener carrito de compras del usuario
-            const responseShoppingCartUser : any = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
-            if (!responseShoppingCartUser) {
-                return next(new ErrorHandler('Carrito de compras no encontrado', 404));
-            }
-    
-            // Buscar el índice del producto en el carrito
-            const index = responseShoppingCartUser.products.findIndex((product: any) => product.item._id.equals(id));
+            if(!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));
+            if(!id) return next(new ErrorHandler('El id del producto es requerido', 404));
+            if (!ObjectId.isValid(id)) return next(new ErrorHandler('ID de producto inválido', 400));
+            if (typeof quantity !== 'number') return next(new ErrorHandler('La cantidad debe ser un número', 400));                 
+            let userCart;
             const newProduct = {
                 item: new ObjectId(id),
                 quantity
             };
-    
-            // Actualizar el carrito
-            if (index !== -1) {
-                if(responseShoppingCartUser.products[index].quantity === 1 && quantity <= 0 ){
-                    return next(new ErrorHandler('Cantidad inválida', 400));
-                }
-                // Si el producto ya está en el carrito, actualizar la cantidad
-                responseShoppingCartUser.products[index].quantity += quantity;
-            } else {
-                // Si el producto no está en el carrito, agregarlo
-                responseShoppingCartUser.products.push(newProduct);
+            // Obtener carrito de compras del usuario
+            const responseShoppingCartUser : any = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
+            if (!responseShoppingCartUser) {
+                userCart = await this.shoppingCartUseCase.createShoppingCart({user_id: user._id, products: [] });
+            }else{
+                userCart = responseShoppingCartUser
             }
-    
+            // Buscar el índice del producto en el carrito (si existe)
+            const index = userCart.products.findIndex((product: any) => product.item._id.equals(id));
+
+            if (index !== -1) {
+                // Si el producto ya está en el carrito, actualizar la cantidad
+                userCart.products[index].quantity += quantity;               
+            } 
+            if(index === -1 ){
+                // Si el producto no está en el carrito, agregarlo
+                userCart.products.push(newProduct);
+            }
+            // if(index !==-1 && quantity <= 0){
+            //     userCart.products.splice(index, 1);
+            // }
+            // Actualizar el carrito
+            // if (index !== -1 && quantity > 0)              
             // Guardar los cambios en el carrito
-            const response = await this.shoppingCartUseCase.updateShoppingCart(responseShoppingCartUser._id, { products: responseShoppingCartUser.products });
+            const response = await this.shoppingCartUseCase.updateShoppingCart(userCart._id, { products: responseShoppingCartUser.products });
             this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
         } catch (error) {
             console.error('Error actualizando el carrito de compras:', error);
             next(new ErrorHandler('Hubo un error al actualizar el carrito', 500));
         }
     }
+
     public async updateProductQuantity(req: Request, res: Response, next: NextFunction): Promise<void> {
         const { id } = req.params; // product_id
         const user = req.user;
-        const { quantity } = req.body;
-    
+        const { quantity } = req.body;    
         try {
+          // validar inputs  
+          if(!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));
+          if(!id) return next(new ErrorHandler('El id del producto es requerido', 404));
+          if (!ObjectId.isValid(id)) return next(new ErrorHandler('ID de producto inválido', 400));
+          if (typeof quantity !== 'number') return next(new ErrorHandler('La cantidad debe ser un número', 400)); 
           // Obtener el carrito de compras del usuario
-          const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
-    
+          const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);    
           if (responseShoppingCartUser && responseShoppingCartUser.products) {
             // Encontrar el índice del producto en el carrito
-            const index = responseShoppingCartUser.products.findIndex(product => product.item?._id.equals(id));
-    
+            const index = responseShoppingCartUser.products.findIndex(product => product.item?._id.equals(id));    
             // Validar si el producto fue encontrado
             if (index !== -1) {
               responseShoppingCartUser.products[index].quantity = quantity;
-    
               // Actualizar el carrito de compras
               const response = await this.shoppingCartUseCase.updateShoppingCart(responseShoppingCartUser._id.toString(), { products: responseShoppingCartUser.products });
-    
               // Enviar respuesta al cliente
               this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
             } else {
