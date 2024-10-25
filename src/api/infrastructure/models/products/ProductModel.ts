@@ -56,18 +56,14 @@ const ProductSchema = new Schema<ProductEntity>(
       type: String,
       required: false,
     },
-    dimensions: {
-      type: String,
-      required: false,
+    size_guide: {
+      type: mongoose.Types.ObjectId,
+      ref: 'SizeGuides',
+      required: false
     },
     brand: {
       type: String,
       required: false,
-    },
-    tag: {
-      type: String,
-      required: true,
-      unique: true
     },
     category: {
       type: mongoose.Types.ObjectId,
@@ -83,11 +79,6 @@ const ProductSchema = new Schema<ProductEntity>(
       type: String,
       default: 'MX'
     },
-    images: [ProductImageSchema],
-    thumbnail: {
-      type: String,
-      required: false,
-    },
     variants: {
       type: Array,
       required: false,
@@ -97,14 +88,6 @@ const ProductSchema = new Schema<ProductEntity>(
       required: false,
       default: true,
     },
-    weight: {
-      type: Number,
-      required: false,
-    },
-    videos: {
-      type: Array,
-      required: false
-    },
     rating: {
       type: Number,
       required: false
@@ -113,6 +96,14 @@ const ProductSchema = new Schema<ProductEntity>(
       type: String,
       required: false
     },
+    model:{
+      type:String,
+      required: false,
+    },
+    gender:{
+      type: String,
+      required:false,
+    },
     seoDescription: {
       type: String,
       required: false
@@ -120,7 +111,7 @@ const ProductSchema = new Schema<ProductEntity>(
     seoKeywords: {
       type: Array,
       required: false,
-    }
+    },
   },
   {
     versionKey: false,

@@ -16,30 +16,28 @@ export interface ProductEntity {
   description?: string;
   shortDescription?: string;
   slug?: string;
-  dimensions?: string;
+  size_guide ?: SizeGuideEntity;
   brand?: string;
-  tag: string;
   category?: Category;
   subCategory?: SubCategory;
   currency?:string;
-  images?: ProductImageEntity[];
-  thumbnail?:string;
-  variants?:string[]
+  variants?:VariantProductEntity[]
   status?:boolean;
-  weight ?: string;
-  videos ?: string[];
   rating?: number;
   product_key ?: string;
   model ?: string;
   gender ?: string;
-  createdAt        :   NativeDate;
-  updatedAt        :   NativeDate;
   seoDescription?: string,
   seoKeywords?: string[],
+  createdAt        :   NativeDate;
+  updatedAt        :   NativeDate;
 }
 
 export interface VariantProductEntity  {
+  _id : ObjectId,
   sku: String, 
+  tag: string;
+  main_variant?:Boolean
   attributes: {
     color:  String,
     size: String,
@@ -49,7 +47,9 @@ export interface VariantProductEntity  {
   stock : String, 
   images: [ProductImageEntity],
   thumbnail?:String;
-  sizeGuide ?: SizeGuideEntity
+  weight ?: string;
+  videos ?: string[];
+ 
 }
 export interface ProductImageEntity  {  
     _id: ObjectId,

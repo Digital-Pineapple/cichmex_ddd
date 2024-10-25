@@ -38,5 +38,5 @@ export interface SizeGuideEntity {
       units ?: number ;           // Unidades de producto por envase
       flavor ?: string ;          //Sabor del producto
       typeContainer ?: string;    //Contenedor del producto (Ej. Bolsa,Caja,Etc)
-      
+        
     }
