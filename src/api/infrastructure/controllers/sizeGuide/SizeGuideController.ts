@@ -45,9 +45,19 @@ export class SizeGuideController extends ResponseData {
     }
     public async createOneGuide(req: Request, res: Response, next: NextFunction) {
         const { id } = req.user;
-        const { values } = req.body    
+        const { values } = req.body   
+        console.log(values);
+        
+        const sizeGuide = {
+            name: values.name,
+            dimensions: values.dimensions,
+            user_id : id,
+            unit: 'cm',
+        }
+        
+         
         try {
-            const response = await this.sizeGuideUseCase.createOneGuide({...values,user_id: id,})
+            const response = await this.sizeGuideUseCase.createOneGuide({...sizeGuide})
             return this.invoke(response, 200, res, 'Creado con éxito', next);
         } catch (error) {
             return next(new ErrorHandler('Hubo un error ', 500));

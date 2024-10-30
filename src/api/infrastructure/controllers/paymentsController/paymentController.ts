@@ -292,11 +292,14 @@ export class PaymentController extends ResponseData {
         const productToSend = products.map((i:any)=>{
            const pr = { id: i.id,
             title:i.title,
-            picture_url: i?.picture_url?.url || i?.thumbnail || "",
+            picture_url: i?.picture_url ,
             unit_price:i.unit_price,
             quantity: i.quantity}
             return pr
         })
+        // const cartUser : any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
+        // if(!cartUser) return next(new ErrorHandler('No hay productos para comprar', 404));
+        // console.log(cartUser.products);
         
         try {
             await Promise.all(

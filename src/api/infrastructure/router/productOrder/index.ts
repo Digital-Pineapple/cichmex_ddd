@@ -1,3 +1,4 @@
+import { StockStoreHouseRepository } from './../../repository/stockStoreHouse/StockStoreHouseRepository';
 import { Router } from "express";
 import { ProductOrderRepository } from "../../repository/product/ProductOrderRepository";
 import { S3Service } from "../../../../shared/infrastructure/aws/S3Service";
@@ -9,16 +10,20 @@ import { RegionRepository } from "../../repository/region/RegionRepository";
 import RegionModel from "../../models/Regions/RegionModel";
 import { RegionUseCase } from "../../../application/regions/regionUseCase";
 import { RegionsService } from "../../../../shared/infrastructure/Regions/RegionsService";
+import StockStoreHouseModel from '../../models/stockStoreHouse/StockStoreHouseModel';
+import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 
 const productOrderRouter = Router();
+const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
 const regionRepository = new RegionRepository(RegionModel)
 const productOrderRepository = new ProductOrderRepository(ProductOrderModel);
 const productOrderUseCase = new ProductOrderUseCase(productOrderRepository);
 const regionUseCase = new RegionUseCase(regionRepository)
+const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository)
 const userValidations = new UserValidations();
 const s3Service = new S3Service();
 const regionsService = new RegionsService()
-const productOrderController = new ProductOrderController(productOrderUseCase,regionUseCase, s3Service, regionsService);
+const productOrderController = new ProductOrderController(productOrderUseCase,regionUseCase, s3Service, regionsService, stockStoreHouseUseCase);
 
 productOrderRouter
 
