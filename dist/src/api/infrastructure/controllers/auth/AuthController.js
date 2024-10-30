@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
+const express_1 = require("express");
 const ErrorHandler_1 = require("../../../../shared/domain/ErrorHandler");
 const ResponseData_1 = require("../../../../shared/infrastructure/validation/ResponseData");
 const Utils_1 = require("../../../../shared/infrastructure/validation/Utils");
@@ -41,6 +42,9 @@ class AuthController extends ResponseData_1.ResponseData {
         this.restorePasswordByEmail = this.restorePasswordByEmail.bind(this);
         this.verifyCodeByEmail = this.verifyCodeByEmail.bind(this);
         this.restorePassword = this.restorePassword.bind(this);
+        this.loginFacebook = this.loginFacebook.bind(this);
+        this.signupFacebook = this.signupFacebook.bind(this);
+        this.loginTikTok = this.loginTikTok.bind(this);
     }
     login(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -287,6 +291,7 @@ class AuthController extends ResponseData_1.ResponseData {
     }
     revalidateToken(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
+            // #swagger.tags = ['Auth']
             const user = req.user;
             try {
                 const userInfo = yield this.authUseCase.findUser({ email: user.email, status: true });
@@ -340,6 +345,56 @@ class AuthController extends ResponseData_1.ResponseData {
             }
             catch (error) {
                 next(new ErrorHandler_1.ErrorHandler('Error al cambiar contraseña', 500));
+            }
+        });
+    }
+    loginFacebook(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { token, system, role } = req.body;
+            try {
+                if (!token)
+                    return next(new ErrorHandler_1.ErrorHandler('No se proporcionó un token de acceso', 400));
+                const typeUser = yield this.typeUserUseCase.findTypeUser({ system: system, role: role });
+                if (!typeUser) {
+                    return next(new ErrorHandler_1.ErrorHandler('Hubo un error al inicar sesión', 500));
+                }
+                const facebookUser = yield this.authUseCase.signInWithFacebook(token, typeUser._id);
+                this.invoke(facebookUser, 200, res, 'Inicio de sesión exitoso', next);
+            }
+            catch (error) {
+                console.log("the error is: ", error);
+                next(new ErrorHandler_1.ErrorHandler('Hubo un error al iniciar sesión', 500));
+            }
+        });
+    }
+    signupFacebook(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { token, system, role } = req.body;
+            try {
+                if (!token)
+                    return next(new ErrorHandler_1.ErrorHandler('No se proporcionó un token de acceso', 400));
+                const typeUser = yield this.typeUserUseCase.findTypeUser({ system: system, role: role });
+                if (!typeUser) {
+                    return next(new ErrorHandler_1.ErrorHandler('Hubo un error al registar', 500));
+                }
+                const facebookUser = yield this.authUseCase.signUpWithFacebook(token, typeUser._id);
+                this.invoke(facebookUser, 200, res, 'Registro exitoso', next);
+            }
+            catch (error) {
+                console.log("the error is: ", error);
+                next(new ErrorHandler_1.ErrorHandler('Hubo un error al registrar', 500));
+            }
+        });
+    }
+    loginTikTok(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { token } = req.body;
+            try {
+                // const response = await this.authUseCase.signInWithFacebook(idToken);
+                this.invoke(express_1.response, 200, res, '', next);
+            }
+            catch (error) {
+                next(new ErrorHandler_1.ErrorHandler('Usuario no registrado', 500));
             }
         });
     }

@@ -10,6 +10,7 @@ import { IFileKeys, IPhoneRequest } from './interfaces';
 import { UserEntity } from '../../domain/user/UserEntity';
 import { BranchPopulateConfig, PhonePopulateConfig, PopulatePointStore, TypeUserPopulateConfig, UserPopulateConfig } from '../../../shared/domain/PopulateInterfaces'
 import { TokenEntity, TokenRPEntity } from '../../domain/auth/authEntities';
+import { generateUUID } from '../../../shared/infrastructure/validation/Utils';
 
 export class AuthUseCase extends Authentication {
 
@@ -159,6 +160,38 @@ export class AuthUseCase extends Authentication {
         return user
     }
 
+    async signInWithFacebook(accessToken: string, typeUser: any): Promise<any | ErrorHandler | null> {        
+        const { id  } = await this.validateFacebookToken(accessToken);           
+        let userFacebook = await this.authRepository.findOneItem({ facebook_id: id, facebook: true, status: true, type_user: typeUser }, TypeUserPopulateConfig, PhonePopulateConfig);
+        if(!userFacebook){
+            return new ErrorHandler('No se encontro una cuenta asociada, registrate para continuar', 404);
+        }
+        userFacebook = await this.generateJWT(userFacebook, userFacebook.uuid)
+        return userFacebook;
+    }                
+    
+
+    async signUpWithFacebook(accessToken: string, typeUser: any): Promise<any | ErrorHandler | null> {
+        const { id , email, name, last_name } = await this.validateFacebookToken(accessToken);
+        let findUser = await this.authRepository.findOneItem({ email: email, status: true, type_user: typeUser }, TypeUserPopulateConfig, PhonePopulateConfig);
+        if(findUser){
+            return new ErrorHandler('El correo con el que accede ya se encuentra registrado, inicie sesión', 409);
+        }        
+        const uuid = generateUUID();
+        let newUser = await this.authRepository.createOne({ 
+            facebook_id: id, 
+            facebook: true, 
+            email, 
+            fullname: `${name} ${last_name}`, 
+            status: true, 
+            uuid: uuid, 
+            type_user: typeUser 
+        });       
+        const user = await this.authRepository.findOneItem({uuid: newUser.uuid }, TypeUserPopulateConfig, PhonePopulateConfig)
+        return await this.generateJWT(user, user.uuid)
+        
+    }
+
     async signInWithGooglePartner(idToken: string): Promise<IGoogleResponseLogin | IAuth | ErrorHandler | null> {
         let { email, picture } = await this.validateGoogleToken(idToken);
         
@@ -271,5 +304,6 @@ export class AuthUseCase extends Authentication {
         return response
 
     }
+
 
 }

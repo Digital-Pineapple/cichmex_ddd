@@ -32,6 +32,7 @@ shoppingCartRouter
     .put('/products/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.addToCart)
     .put('/product/quantity/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.updateProductQuantity)
     .put ('/merge/ok', shoppingCartController.mergeCart) 
+    .get('/no-auth', shoppingCartController.getNoAuthCart)
 
 
 export default shoppingCartRouter;

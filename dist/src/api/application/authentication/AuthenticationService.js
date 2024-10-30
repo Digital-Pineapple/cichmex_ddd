@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Authentication = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const axios_1 = __importDefault(require("axios"));
 const generate_password_1 = __importDefault(require("generate-password"));
 const google_auth_library_1 = require("google-auth-library");
 class Authentication {
@@ -61,6 +62,21 @@ class Authentication {
                     reject('El token de google no es valido');
                 const payload = ticket.getPayload();
                 resolve({ fullname: payload === null || payload === void 0 ? void 0 : payload.name, email: payload === null || payload === void 0 ? void 0 : payload.email, picture: payload === null || payload === void 0 ? void 0 : payload.picture, });
+            }));
+        });
+    }
+    validateFacebookToken(token) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const url = `https://graph.facebook.com/me?access_token=${token}&fields=id,name,email,picture,last_name`;
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                try {
+                    const response = yield axios_1.default.get(url);
+                    const userData = response.data;
+                    resolve(userData);
+                }
+                catch (error) {
+                    reject("Error al validar el token de facebook");
+                }
             }));
         });
     }

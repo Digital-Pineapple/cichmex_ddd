@@ -36,6 +36,7 @@ export interface UserEntity {
     profile_image   ?:   string;
     google          ?:   Boolean;
     facebook        ?:   Boolean;
+    facebook_id     ?:   string;
     phone_id        ?:   IPhone;
     accountVerify   ?:   boolean;
     employee_detail ?:   EmployeeDetail;

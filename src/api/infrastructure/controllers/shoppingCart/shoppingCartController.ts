@@ -34,6 +34,7 @@ export class ShoppingCartController extends ResponseData {
         this.addToCart = this.addToCart.bind(this);
         this.updateProductQuantity = this.updateProductQuantity.bind(this);
         this.mergeCart = this.mergeCart.bind(this);
+        this.getNoAuthCart = this.getNoAuthCart.bind(this);
     }
 
     public async getAllShoppingCarts(req: Request, res: Response, next: NextFunction) {
@@ -276,42 +277,54 @@ export class ShoppingCartController extends ResponseData {
 
     public async mergeCart(req: Request, res: Response, next: NextFunction) {        
         const { user_id, products } = req.body;
-        try {
-            
+        try {            
             const parseProducts = JSON.parse(products);
-            if (!parseProducts || parseProducts.length === 0) {
-                return next(new ErrorHandler('No se encontraron productos', 404));                                            
-            }
-            const responseShoppingCart : any = await this.shoppingCartUseCase.getShoppingCartByUser(user_id);  
-            if (responseShoppingCart && responseShoppingCart.products) {
-
-                const productsCart =  responseShoppingCart?.products;
-
+            if (!parseProducts || parseProducts.length === 0) return next(new ErrorHandler('No se encontraron productos', 404));                                                                   
+            const cartUser : any = await this.shoppingCartUseCase.getShoppingCartByUser(user_id);  
+            if(!cartUser){
+                const newcart : any | null = await this.shoppingCartUseCase.createShoppingCart({user_id: user_id, products: []});     
+                const products = newcart?.products;
                 parseProducts.forEach((product: any) => {
-                    const index = productsCart.findIndex((item: any) => item.item?._id.equals(product.item));
-                    if (index !== -1) {
-                        productsCart[index].quantity += product.quantity;
-                    } else {
-                        const producto:any = {
-                            item: new ObjectId(product.item),
-                            quantity: product.quantity
-                        }
-                        productsCart.push(producto);
+                    const producto : any = {
+                        item: new ObjectId(product.item),
+                        quantity: product.quantity
                     }
-                })
-
-                const response  = await this.shoppingCartUseCase.updateShoppingCart(responseShoppingCart?._id, { products: productsCart });                   
-                this.invoke(response, 200, res, '', next);
-            }else{
-        // console.log(user_id,"cffgfg");
-
-                next(new ErrorHandler('Carrito de compras no encontrado', 404));
+                    products.push(producto);
+                }) 
+                const updatedCart = await this.shoppingCartUseCase.updateShoppingCart(newcart?._id, { products: products });
+                return this.invoke(updatedCart, 200, res, '', next);          
             }
-                        
-        } catch (error) {            
-            console.log(error);
-            next(new ErrorHandler('Hubo un error al fusionar', 500));
-        }
+
+            const productsCart =  cartUser?.products;
+            parseProducts.forEach((product: any) => {
+                const index = productsCart.findIndex((item: any) => item.item?._id.equals(product.item));
+                if (index !== -1) {
+                    productsCart[index].quantity += product.quantity;
+                } else {
+                    const producto:any = {
+                        item: new ObjectId(product.item),
+                        quantity: product.quantity
+                    }
+                    productsCart.push(producto);
+                }
+                })
+                const response  = await this.shoppingCartUseCase.updateShoppingCart(cartUser?._id, { products: productsCart });                   
+                return this.invoke(response, 200, res, '', next);                                 
+            } catch (error) {            
+                console.log(error);
+                next(new ErrorHandler('Hubo un error al fusionar el carrito', 500));
+            }
+    }
+
+    public async getNoAuthCart(req: Request, res: Response, next: NextFunction){
+        const { ids } = req.body
+        const products = JSON.parse(ids);        
+        console.log("products", products);
+        console.log("tipo", typeof products);
+        
+        
+        
+        // this.invoke(response, 200, res, '', next);
     }
 
 }

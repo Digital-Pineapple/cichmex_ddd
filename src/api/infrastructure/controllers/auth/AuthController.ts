@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { NextFunction, Request, Response, response } from 'express';
 
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
@@ -49,10 +50,12 @@ export class AuthController extends ResponseData {
         this.restorePasswordByEmail = this.restorePasswordByEmail.bind(this)
         this.verifyCodeByEmail = this.verifyCodeByEmail.bind(this);
         this.restorePassword = this.restorePassword.bind(this);
-
+        this.loginFacebook = this.loginFacebook.bind(this);
+        this.signupFacebook = this.signupFacebook.bind(this);
+        this.loginTikTok = this.loginTikTok.bind(this);
     }
 
-    public async login(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
+    public async login(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {            
         const { email, password } = req.body;
         try {
             const response: any = await this.authUseCase.signIn(email, password);
@@ -304,6 +307,7 @@ export class AuthController extends ResponseData {
 
 
     public async revalidateToken(req: Request, res: Response, next: NextFunction) {
+        // #swagger.tags = ['Auth']
         const user = req.user;
         try {
             const userInfo = await this.authUseCase.findUser({ email: user.email, status: true });
@@ -359,6 +363,48 @@ export class AuthController extends ResponseData {
         } catch (error) {
 
             next(new ErrorHandler('Error al cambiar contraseña', 500));
+        }
+    }
+
+    public async loginFacebook(req: Request, res: Response, next: NextFunction) {
+        const { token, system , role } = req.body;
+        try {            
+            if(!token) return next(new ErrorHandler('No se proporcionó un token de acceso', 400));
+            const typeUser = await this.typeUserUseCase.findTypeUser({ system: system, role: role });            
+            if (!typeUser) {
+                return next(new ErrorHandler('Hubo un error al inicar sesión', 500))
+            }
+            const facebookUser = await this.authUseCase.signInWithFacebook(token, typeUser._id);                                               
+            this.invoke(facebookUser, 200, res, 'Inicio de sesión exitoso', next);
+        } catch (error) {
+            console.log("the error is: ", error);
+            next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
+        }
+    }
+
+    public async signupFacebook(req: Request, res: Response, next: NextFunction) {
+        const { token, system , role } = req.body;
+        try {           
+            if(!token) return next(new ErrorHandler('No se proporcionó un token de acceso', 400));
+            const typeUser = await this.typeUserUseCase.findTypeUser({ system: system, role: role });
+            if (!typeUser) {
+                return next(new ErrorHandler('Hubo un error al registar', 500))
+            }
+            const facebookUser = await this.authUseCase.signUpWithFacebook(token, typeUser._id);
+            this.invoke(facebookUser, 200, res, 'Registro exitoso', next);
+        } catch (error) {
+            console.log("the error is: ", error);
+            next(new ErrorHandler('Hubo un error al registrar', 500));
+        }
+    }
+
+    public async loginTikTok(req: Request, res: Response, next: NextFunction) {
+        const { token } = req.body;
+        try {
+            // const response = await this.authUseCase.signInWithFacebook(idToken);
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler('Usuario no registrado', 500));
         }
     }
 

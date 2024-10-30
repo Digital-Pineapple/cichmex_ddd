@@ -53,6 +53,10 @@ const UserSchema = new Schema<UserEntity>({
         type: Boolean,
         required: false
     },
+    facebook_id: {
+        type: String,
+        required: false
+    },
     phone_id: {
         type: Schema.Types.ObjectId, 
         ref: 'Phone',

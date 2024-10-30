@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -69,5 +73,8 @@ authRouter
     .post('/restore-password', ValidateAuthentication_1.validateTokenRestorePassword, authController.restorePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', ValidateAuthentication_1.default, authController.verifyCode)
-    .post('/verify-phone', authController.savePhone);
+    .post('/verify-phone', authController.savePhone)
+    .post('/login-facebook', authController.loginFacebook)
+    .post('/signup-facebook', authController.signupFacebook)
+    .post('/login-tiktok', authController.loginFacebook);
 exports.default = authRouter;

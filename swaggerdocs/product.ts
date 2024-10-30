@@ -1,0 +1,6 @@
+const product = {
+
+}
+
+export { product };
+
