@@ -70,7 +70,7 @@ export class UserUseCase extends Authentication {
   }
   public async createUser(body:any): Promise<UserEntity | IAuth |  ErrorHandler | null> {
     const user = await this.userRepository.findOneItem({ email: body.email, status:true });
-        if (user) return new ErrorHandler('El usuario ya existe',400);
+        if (user) return new ErrorHandler('El correo ya ha sido registrado',400);
         const password = await this.encryptPassword(body.password);
         const {uuid} = await this.userRepository.createOne({ ...body, password });
         const userInfo = await this.userRepository.findOneItem({uuid: uuid}, TypeUserPopulateConfig, PhonePopulateConfig )

@@ -149,26 +149,28 @@ export class UserController extends ResponseData {
 
     public async sendCode(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
         const { phone_number, prefix } = req.body;
-
+  
         try {
             const code = generateRandomCode();
             const phoneC = prefix + phone_number
-            const phoneString = JSON.stringify(phoneC)
-            const noRepeat : any = await this.phoneUserUseCase.findOnePhone(phone_number)
-            if (noRepeat == null) {
-                 await this.twilioService.sendSMS(phoneString, `CICHMEX. Código de verificación - ${code}`)
+            const phoneString = JSON.stringify(phoneC)            
+            const phone : any = await this.phoneUserUseCase.findOnePhone(phone_number)
+            console.log("code", code);
+            
+            if(!phone){
+                await this.twilioService.sendSMS(phoneString, `CICHMEX. Código de verificación - ${code}`)
                 const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
-                this.invoke(newPhone, 200, res, 'Codigo enviado con éxito', next);
+                return this.invoke(newPhone, 200, res, `Codigo enviado con éxito al ${phoneString}`, next);
+            }    
+            const userPhoneOwner : any | null = await this.userUseCase.findUserByPhone(phone._id);                    
+            if(userPhoneOwner) return next(new ErrorHandler('El telefono ya esta registrado', 500))            
+            await this.twilioService.sendSMS(phoneString, `CICHMEX. Código de verificación - ${code}`)
+            const updated = await this.phoneUserUseCase.updateUserPhone(phone._id, { code: code })            
 
-            } else {
-                let response = {
-                    _id: noRepeat._id,
-                    phone_number: noRepeat.phone_number,
-                    verified: noRepeat.verified,
-                }
-                this.invoke(response, 500, res, 'El telefono ya existe', next);
-            }
+            return this.invoke(updated, 200, res, `Codigo enviado con éxito al ${phoneString}`, next);  
+
         } catch (error) {
+            
             this.invoke(error, 500, res, 'Error interno del servidor', next);
         }
 
@@ -270,27 +272,19 @@ export class UserController extends ResponseData {
 
     public async signUpByPhone(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
         const { fullname, email, password, phone_id, system } = req.body
-
-
         const uuid = generateUUID()
 
-
         try {
-
             const TypeUser = await this.typeUserUseCase.findTypeUser({ system: system, role: "CUSTOMER" })
-
+            console.log("TypeUser", TypeUser);            
             if (!(TypeUser?._id)) {
                 next(new ErrorHandler('No existe tipo de usuario', 500))
             }
             const response: any = await this.userUseCase.createUser({ fullname, email, password, phone_id, type_user: TypeUser?._id, uuid: uuid })
-            if (response?.user._id) {
-                await this.shoppingCartUseCase.createShoppingCart({ user_id: response?.user._id })
-            }
-
+            // console.log("response", response);                        
             this.invoke(response, 200, res, '', next);
-
         } catch (error) {
-
+            console.log("error:" , error);            
             next(new ErrorHandler('Hubo un error ', 500));
         }
     }

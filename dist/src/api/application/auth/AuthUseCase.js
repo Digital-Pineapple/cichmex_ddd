@@ -14,6 +14,7 @@ const AuthenticationService_1 = require("../authentication/AuthenticationService
 const ErrorHandler_1 = require("../../../shared/domain/ErrorHandler");
 const MomentService_1 = require("../../../shared/infrastructure/moment/MomentService");
 const PopulateInterfaces_1 = require("../../../shared/domain/PopulateInterfaces");
+const Utils_1 = require("../../../shared/infrastructure/validation/Utils");
 class AuthUseCase extends AuthenticationService_1.Authentication {
     constructor(authRepository) {
         super();
@@ -160,6 +161,38 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             user.profile_image = picture;
             user = yield this.generateJWT(user, user.uuid);
             return user;
+        });
+    }
+    signInWithFacebook(accessToken, typeUser) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = yield this.validateFacebookToken(accessToken);
+            let userFacebook = yield this.authRepository.findOneItem({ facebook_id: id, facebook: true, status: true, type_user: typeUser }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig);
+            if (!userFacebook) {
+                return new ErrorHandler_1.ErrorHandler('No se encontro una cuenta asociada, registrate para continuar', 404);
+            }
+            userFacebook = yield this.generateJWT(userFacebook, userFacebook.uuid);
+            return userFacebook;
+        });
+    }
+    signUpWithFacebook(accessToken, typeUser) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id, email, name, last_name } = yield this.validateFacebookToken(accessToken);
+            let findUser = yield this.authRepository.findOneItem({ email: email, status: true, type_user: typeUser }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig);
+            if (findUser) {
+                return new ErrorHandler_1.ErrorHandler('El correo con el que accede ya se encuentra registrado, inicie sesión', 409);
+            }
+            const uuid = (0, Utils_1.generateUUID)();
+            let newUser = yield this.authRepository.createOne({
+                facebook_id: id,
+                facebook: true,
+                email,
+                fullname: `${name} ${last_name}`,
+                status: true,
+                uuid: uuid,
+                type_user: typeUser
+            });
+            const user = yield this.authRepository.findOneItem({ uuid: newUser.uuid }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig);
+            return yield this.generateJWT(user, user.uuid);
         });
     }
     signInWithGooglePartner(idToken) {

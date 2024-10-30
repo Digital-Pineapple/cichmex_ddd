@@ -53,5 +53,8 @@ authRouter
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', validateAuthentication, authController.verifyCode)
     .post('/verify-phone', authController.savePhone)
+    .post('/login-facebook', authController.loginFacebook)
+    .post('/signup-facebook', authController.signupFacebook)
+    .post('/login-tiktok', authController.loginFacebook)
 export default authRouter;
 

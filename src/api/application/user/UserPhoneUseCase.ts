@@ -53,8 +53,10 @@ export class UserPhoneUseCase extends Authentication {
     return await this.phoneRepository.createOne({...phone})
   }
 
-  public async updateUserPhone(id: string, updated:object): Promise<IPhone | ErrorHandler | null> {
-    return await this.phoneRepository.updateOne(id,updated)
+  public async updateUserPhone(id: string, updated:object): Promise<IPhone | IPhoneResponse | ErrorHandler | null> {
+     const phone = await this.phoneRepository.updateOne(id,updated)
+     const phoneResponse : IPhoneResponse = { phone_id: phone._id, verified: phone.verified, phone_number: phone.phone_number };
+     return phoneResponse;    
   }
   public async verifyCode(id: string): Promise<IPhone | ErrorHandler | null> {
     return await this.phoneRepository.updateOne(id, { verified: true })

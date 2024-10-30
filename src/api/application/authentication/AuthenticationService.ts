@@ -1,10 +1,18 @@
 import Jwt from 'jsonwebtoken';
 import Bcrypt from 'bcrypt';
+import axios from 'axios';
 import Generator from 'generate-password';
 import { OAuth2Client } from 'google-auth-library';
 import { UserEntity } from '../../domain/user/UserEntity';
 import { TokenEntity, TokenRPEntity } from '../../domain/auth/authEntities';
 
+export interface IFacebook {
+    id          : string | undefined;
+    name        : string | undefined;
+    last_name   : string | undefined;
+    email       : string | undefined;
+    picture     : string | undefined;
+}
 export interface IGoogle {
     fullname    : string | undefined;
     email       : string | undefined;
@@ -95,6 +103,19 @@ export class Authentication {
             resolve({ fullname: payload?.name, email: payload?.email, picture: payload?.picture, });
         })
         
+    }
+
+    protected async validateFacebookToken(token: string): Promise<IFacebook> {
+        const url = `https://graph.facebook.com/me?access_token=${token}&fields=id,name,email,picture,last_name`;
+        return new Promise(async(resolve, reject)=>{
+            try{
+                const response = await axios.get(url);
+                const userData = response.data;              
+                resolve(userData);
+            }catch(error){
+                reject("Error al validar el token de facebook");
+            }
+        })        
     }
 
     protected encryptPassword(password: string): string {
