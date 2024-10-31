@@ -36,7 +36,7 @@ class S3Service {
                 const params = {
                     Bucket: this.bucket,
                     Key: this.environment + key,
-                    ContentType: contentType, //
+                    ContentType: contentType,
                     Body: fileContent,
                 };
                 yield this.s3.upload(params).promise();
@@ -65,7 +65,7 @@ class S3Service {
             const params = {
                 Bucket: this.bucket,
                 Key: this.environment + key,
-                // Expires : 300,
+                Expires: 25 * 60 * 60,
             };
             return yield this.s3.getSignedUrl('getObject', params);
         });
