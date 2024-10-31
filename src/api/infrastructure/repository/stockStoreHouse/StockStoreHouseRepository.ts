@@ -47,6 +47,47 @@ export class StockStoreHouseRepository extends MongoRepository implements  Stock
       return result;
     }
 
+    async dailyFeedStocks(id: any): Promise<any[]> {
+      const resp = await this.MODEL.aggregate([
+          { $match: { StoreHouse_id: id } },
+          { $lookup: { 
+              from: "products", 
+              localField: "product_id", 
+              foreignField: "_id", 
+              as: "product" 
+          }},
+          { $unwind: "$product" },
+          { $lookup: { 
+              from: "categories", 
+              localField: "product.category", 
+              foreignField: "_id", 
+              as: "Category" 
+          }},
+          { $lookup: { 
+              from: "subcategories", 
+              localField: "product.subCategory", 
+              foreignField: "_id", 
+              as: "SubCategory" 
+          }},
+          {
+            $project:{
+              id:  '$product._id' ,
+              title: '$product.name',
+              sku: '$product.sku',
+              price: '$product.price',
+              stock :'$stock',
+              discountPrice: '$product.discountPrice',
+              description: '$product.description', 
+              brand: '$product.brand',
+              category: { $arrayElemAt: ['$Category.name', 0] },
+              SubCategory: { $arrayElemAt: ['$SubCategory.name', 0] },
+              image: '$product.thumbnail',
+            }
+          }
+      ]);
+      return resp;
+  }
+  
 
   }
   

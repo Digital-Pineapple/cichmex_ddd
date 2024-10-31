@@ -10,6 +10,8 @@ export interface StockStoreHouseRepository extends MongoRepository {
     findAllInputs(): Promise <any>
 
     findAllOutputs(): Promise <any>
+    
+    dailyFeedStocks(id: any): Promise <any>
 
 }
 export interface StockSHInputRepository extends MongoRepository {
