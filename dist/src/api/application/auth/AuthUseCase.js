@@ -195,6 +195,11 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             return yield this.generateJWT(user, user.uuid);
         });
     }
+    signInWithTikTok(csrfState) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.redirectToTikTok(csrfState);
+        });
+    }
     signInWithGooglePartner(idToken) {
         return __awaiter(this, void 0, void 0, function* () {
             let { email, picture } = yield this.validateGoogleToken(idToken);

@@ -22,6 +22,21 @@ class Authentication {
     constructor() {
         this.googleKey = process.env.GOOGLE_CLIENT_ID;
         this.client = new google_auth_library_1.OAuth2Client(this.googleKey);
+        this.tiktokKey = process.env.TIKTOK_CLIENT_ID;
+        this.tiktokSecret = process.env.TIKTOK_CLIENT_SECRET;
+        // private redirectUri  = "https://localhost:4000/" 
+        this.redirectUri = "https://test.cichmex.mx/";
+    }
+    redirectToTikTok(csrfState) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let url = 'https://www.tiktok.com/v2/auth/authorize/';
+            url += `?client_key=${this.tiktokKey}`;
+            url += '&scope=user.info.basic';
+            url += '&response_type=code';
+            url += `&redirect_uri=${this.redirectUri}`;
+            url += '&state=' + csrfState;
+            return url;
+        });
     }
     generateJWT(user, uuid) {
         return __awaiter(this, void 0, void 0, function* () {

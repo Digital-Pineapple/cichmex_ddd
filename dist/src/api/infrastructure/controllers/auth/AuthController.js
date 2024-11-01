@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
-const express_1 = require("express");
 const ErrorHandler_1 = require("../../../../shared/domain/ErrorHandler");
 const ResponseData_1 = require("../../../../shared/infrastructure/validation/ResponseData");
 const Utils_1 = require("../../../../shared/infrastructure/validation/Utils");
@@ -388,13 +387,18 @@ class AuthController extends ResponseData_1.ResponseData {
     }
     loginTikTok(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { token } = req.body;
             try {
-                // const response = await this.authUseCase.signInWithFacebook(idToken);
-                this.invoke(express_1.response, 200, res, '', next);
+                const csrfState = Math.random().toString(36).substring(2);
+                const url = yield this.authUseCase.signInWithTikTok(csrfState);
+                // console.log(url, "url");
+                res.cookie('csrfState', csrfState, { maxAge: 60000 });
+                this.invoke({ url: url }, 200, res, '', next);
+                // res.redirect(url as string);
+                // return url;            
             }
             catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Usuario no registrado', 500));
+                console.log(error, "mi error");
+                next(new ErrorHandler_1.ErrorHandler('Ocurrio un error', 500));
             }
         });
     }

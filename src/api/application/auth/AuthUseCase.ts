@@ -191,7 +191,9 @@ export class AuthUseCase extends Authentication {
         return await this.generateJWT(user, user.uuid)
         
     }
-
+    async signInWithTikTok(csrfState: string): Promise<string | ErrorHandler | null>{
+        return await this.redirectToTikTok(csrfState);
+    }
     async signInWithGooglePartner(idToken: string): Promise<IGoogleResponseLogin | IAuth | ErrorHandler | null> {
         let { email, picture } = await this.validateGoogleToken(idToken);
         

@@ -30,7 +30,8 @@ export class AuthController extends ResponseData {
         private readonly shoppingCartUseCase: ShoppingCartUseCase,
         private readonly s3Service: S3Service,
         private readonly twilioService: TwilioService,
-        private readonly mpService: MPService
+        private readonly mpService: MPService,
+        // private readonly 
     ) {
         super();
         this.login = this.login.bind(this);
@@ -398,13 +399,19 @@ export class AuthController extends ResponseData {
         }
     }
 
-    public async loginTikTok(req: Request, res: Response, next: NextFunction) {
-        const { token } = req.body;
+    public async loginTikTok(req: Request, res: Response, next: NextFunction) {        
         try {
-            // const response = await this.authUseCase.signInWithFacebook(idToken);
-            this.invoke(response, 200, res, '', next);
+            const csrfState = Math.random().toString(36).substring(2);
+            const url = await this.authUseCase.signInWithTikTok(csrfState);
+            // console.log(url, "url");
+            
+            res.cookie('csrfState', csrfState, { maxAge: 60000 });   
+            this.invoke({ url: url }, 200, res, '', next);              
+            // res.redirect(url as string);
+            // return url;            
         } catch (error) {
-            next(new ErrorHandler('Usuario no registrado', 500));
+            console.log(error, "mi error");            
+            next(new ErrorHandler('Ocurrio un error', 500));
         }
     }
 

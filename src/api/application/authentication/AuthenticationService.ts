@@ -61,10 +61,24 @@ export interface Iuuid {
 
 
 
-export class Authentication {
+export class Authentication {   
 
     private googleKey   = process.env.GOOGLE_CLIENT_ID;
     private client      = new OAuth2Client(this.googleKey);
+    private tiktokKey   = process.env.TIKTOK_CLIENT_ID;
+    private tiktokSecret = process.env.TIKTOK_CLIENT_SECRET; 
+    // private redirectUri  = "https://localhost:4000/" 
+    private redirectUri  = "https://test.cichmex.mx/" 
+    
+    protected async redirectToTikTok(csrfState: string){
+        let url = 'https://www.tiktok.com/v2/auth/authorize/';
+        url += `?client_key=${this.tiktokKey}`;
+        url += '&scope=user.info.basic';
+        url += '&response_type=code';
+        url += `&redirect_uri=${this.redirectUri}`;
+        url += '&state=' + csrfState;
+        return url;
+    }
 
     protected async generateJWT(user: UserEntity | IGoogleReg , uuid: Iuuid ): Promise<IAuth> {
         return new Promise((resolve, reject) => {
