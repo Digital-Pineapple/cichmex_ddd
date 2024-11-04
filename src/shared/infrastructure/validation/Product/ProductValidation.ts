@@ -15,13 +15,13 @@ export class ProductValidations {
     // Validación para productos (ejemplo con videos)
     readonly productValidation = [
         this.upload.any(), // Permite subir cualquier archivo
-        this.validateVideoVertical, // Validación del video vertical
+        // this.validateVideoVertical, // Validación del video vertical
     ];
 
     // Validación para subir un solo video
     readonly videoValidation = [
         this.upload.array('videos', 1), 
-        this.validateVideoVertical, // Validación del video vertical
+        // this.validateVideoVertical, // Validación del video vertical
     ];
 
     // Validación para comprobante de pago
@@ -63,7 +63,7 @@ export class ProductValidations {
         ffmpeg.ffprobe(rutaVideo, (err, metadata) => {
             if (err) {
                 console.error('Error al procesar el video:', err);
-                return res.status(500).json({ error: 'Error al procesar el video.' });
+                return res.status(500).json({ error: `Error al procesar el video.` });
             }
     
             // Verifica que metadata y streams estén definidos
@@ -82,7 +82,7 @@ export class ProductValidations {
                 } else {
                     // Si el video no es vertical, elimina el archivo y responde con un error
                     fs.unlink(rutaVideo, (unlinkErr) => {
-                        if (unlinkErr) {
+                        if (unlinkErr) {    
                             console.error('Error al eliminar el archivo:', unlinkErr);
                         }
                     });
