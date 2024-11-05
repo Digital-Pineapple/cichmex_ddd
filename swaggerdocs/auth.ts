@@ -3,20 +3,35 @@ const auth: any = {
     post:{
       tags:["Login phone"],
       description:"Login user by phone",
-      parameters: [
-        {
-          name: "phone_number",
-          in: "body",
-          required: true,
-          schema: { type: "number" },
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              properties: {
+                phone_number: { type: "number" },
+                password: { type: "string" },
+              },
+              required: ["email", "password"],
+            },
+          },
         },
-        {
-          name: "password",
-          in: "body",
-          required: true,
-          schema: { type: "string" },
-        },
-      ],
+      },
+      // parameters: [
+      //   {
+      //     name: "phone_number",
+      //     in: "body",
+      //     required: true,
+      //     type: "string",                    
+      //   },
+      //   {
+      //     name: "password",
+      //     in: "body",
+      //     required: true,
+      //     type: "string",          
+      //   },
+      // ],
       responses: {
         "200": {
           description: "User authentication response",
@@ -110,20 +125,21 @@ const auth: any = {
     post: {
       tags: ["Register phone"],
       description: "Return a code to verify the phone number",
-      parameters: [
-        {
-          name: "prefix",
-          in: "body",
-          required: true,
-          schema: { type: "string" },
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              properties: {
+                prefix: { type: "number" },
+                phone_number: { type: "string" },
+              },
+              required: ["prefix", "phone_number"],
+            },
+          },
         },
-        {
-          name: "phone_number",
-          in: "body",
-          required: true,
-          schema: { type: "number" },
-        },
-      ],
+      },
       responses: {
         "200": {
           description: "Code sent successfully",

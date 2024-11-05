@@ -49,6 +49,7 @@ userRouter
     .get('/carrier-driver/all',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), userController.getAllCarrierDrivers)
     .get('/carrier-driver/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), userController.getOneCarrierDriver)
     .post('/send-code', userController.sendCode)
+    .post ('/whatsapp/send-code', userController.sendCodeWhatsapp)
     .put('/validate/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), userController.validateUser)
     .post ('/resend-code/:id', userController.resendCode)
     .post ('/update/:id', userValidations.ImageValidation, userController.updateUser)

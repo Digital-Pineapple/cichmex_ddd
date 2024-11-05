@@ -6,6 +6,7 @@ export class TwilioService {
     private accountSid   = process.env.TWILIO_ACCOUNT_SID;
     private authToken    = process.env.TWILIO_AUTH_TOKEN;
     private twilioNumber = process.env.TWILIO_PHONE_NUMBER;
+    private whatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER;
 
     constructor() {
         this.twilio = new Twilio(this.accountSid, this.authToken);
@@ -24,15 +25,16 @@ export class TwilioService {
             throw new ErrorHandler('Hubo un error al enviar el mensaje - intenta más tarde', 400);
         }
     }
-    async sendWhatsappMessage(phone: string, body: string): Promise<any> {
+    async sendWhatsappMessage(phone: string, body: string): Promise<any> {              
         try {
             const message = await this.twilio.messages.create({
-                from: `whatsapp:${this.twilioNumber}`,
-                to: `whatsapp:${phone}`,
+                from:`whatsapp:${this.whatsappNumber}`,
                 body,
+                to:`whatsapp:${phone}`,
             });
             return message;
         } catch (error) {
+            console.log("via whatsapp", error);            
             throw new ErrorHandler('Hubo un error al enviar el mensaje - intenta más tarde', 400);
         }
     }

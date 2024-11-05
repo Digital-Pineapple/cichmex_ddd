@@ -72,5 +72,6 @@ authRouter
     .post('/verify-phone', authController.savePhone)
     .post('/login-facebook', authController.loginFacebook)
     .post('/signup-facebook', authController.signupFacebook)
-    .post('/login-tiktok', authController.loginFacebook);
+    .get('/login-tiktok/callback', authController.redirectTikTok)
+    .post('/login-tiktok', authController.loginTikTok);
 exports.default = authRouter;
