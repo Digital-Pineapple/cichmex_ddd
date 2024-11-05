@@ -191,9 +191,31 @@ export class AuthUseCase extends Authentication {
         return await this.generateJWT(user, user.uuid)
         
     }
-    async signInWithTikTok(csrfState: string): Promise<string | ErrorHandler | null>{
-        return await this.redirectToTikTok(csrfState);
+    async getLoginUrlTikTok(csrfState: string): Promise<string | ErrorHandler | null>{        
+        return await this.getUrlTikTok(csrfState);
     }
+    async loginWithTikTok(code: string, typeUser: any): Promise<any | IAuth | ErrorHandler | null> {
+        const accessToken = await this.validateTikTokAccessToken(code);         
+        const userInfo = await this.getUserInfoTikTok(accessToken.access_token);  
+        let user = await this.authRepository.findOneItem({ tiktok_id: userInfo.open_id, tiktok: true, status: true, type_user: typeUser }, TypeUserPopulateConfig, PhonePopulateConfig);              
+        if(!user){
+            const uuid = generateUUID();
+            let newUser = await this.authRepository.createOne({ 
+                tiktok_id: userInfo.open_id, 
+                tiktok: true,             
+                fullname: userInfo.display_name,  
+                status:true,           
+                uuid: uuid, 
+                type_user: typeUser 
+            });       
+            const user = await this.authRepository.findOneItem({uuid: newUser.uuid }, TypeUserPopulateConfig, PhonePopulateConfig)
+            return await this.generateJWT(user, user.uuid);
+        }
+        user = await this.generateJWT(user, user.uuid)
+        return user;                    
+    }
+  
+
     async signInWithGooglePartner(idToken: string): Promise<IGoogleResponseLogin | IAuth | ErrorHandler | null> {
         let { email, picture } = await this.validateGoogleToken(idToken);
         

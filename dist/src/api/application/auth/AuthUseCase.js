@@ -195,9 +195,31 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             return yield this.generateJWT(user, user.uuid);
         });
     }
-    signInWithTikTok(csrfState) {
+    getLoginUrlTikTok(csrfState) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.redirectToTikTok(csrfState);
+            return yield this.getUrlTikTok(csrfState);
+        });
+    }
+    loginWithTikTok(code, typeUser) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const accessToken = yield this.validateTikTokAccessToken(code);
+            const userInfo = yield this.getUserInfoTikTok(accessToken.access_token);
+            let user = yield this.authRepository.findOneItem({ tiktok_id: userInfo.open_id, tiktok: true, status: true, type_user: typeUser }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig);
+            if (!user) {
+                const uuid = (0, Utils_1.generateUUID)();
+                let newUser = yield this.authRepository.createOne({
+                    tiktok_id: userInfo.open_id,
+                    tiktok: true,
+                    fullname: userInfo.display_name,
+                    status: true,
+                    uuid: uuid,
+                    type_user: typeUser
+                });
+                const user = yield this.authRepository.findOneItem({ uuid: newUser.uuid }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig);
+                return yield this.generateJWT(user, user.uuid);
+            }
+            user = yield this.generateJWT(user, user.uuid);
+            return user;
         });
     }
     signInWithGooglePartner(idToken) {

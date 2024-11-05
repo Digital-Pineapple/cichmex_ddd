@@ -37,6 +37,8 @@ export interface UserEntity {
     google          ?:   Boolean;
     facebook        ?:   Boolean;
     facebook_id     ?:   string;
+    tiktok_id       ?:   string;
+    tiktok          ?:   Boolean;
     phone_id        ?:   IPhone;
     accountVerify   ?:   boolean;
     employee_detail ?:   EmployeeDetail;

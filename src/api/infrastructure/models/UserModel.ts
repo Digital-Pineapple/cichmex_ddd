@@ -25,7 +25,6 @@ const UserSchema = new Schema<UserEntity>({
     password: {
         type: String,
         required: false,
-
     },
     privacity: {
         type: String,
@@ -39,7 +38,6 @@ const UserSchema = new Schema<UserEntity>({
         type: Object,
         ref: 'TypeUser',
         required: true
-
     },
     profile_image: {
         type: String,
@@ -54,6 +52,14 @@ const UserSchema = new Schema<UserEntity>({
         required: false
     },
     facebook_id: {
+        type: String,
+        required: false
+    },
+    tiktok: {
+        type: Boolean,
+        required: false,
+    },
+    tiktok_id: {
         type: String,
         required: false
     },

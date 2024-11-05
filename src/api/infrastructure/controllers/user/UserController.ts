@@ -34,7 +34,8 @@ export class UserController extends ResponseData {
         this.allUsers = this.allUsers.bind(this);
         this.getUser = this.getUser.bind(this);
         this.getVerifyEmail = this.getVerifyEmail.bind(this)
-        this.sendCode = this.sendCode.bind(this);
+        this.sendCode = this.sendCode.bind(this); 
+        this.sendCodeWhatsapp = this.sendCodeWhatsapp.bind(this);       
         this.resendCode = this.resendCode.bind(this);
         this.verifyPhone = this.verifyPhone.bind(this);
         this.verifyEmail = this.verifyEmail.bind(this);
@@ -148,8 +149,7 @@ export class UserController extends ResponseData {
     }
 
     public async sendCode(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
-        const { phone_number, prefix } = req.body;
-  
+        const { phone_number, prefix, system = "CICHMEX" } = req.body;
         try {
             const code = generateRandomCode();
             const phoneC = prefix + phone_number
@@ -158,23 +158,41 @@ export class UserController extends ResponseData {
             console.log("code", code);
             
             if(!phone){
-                await this.twilioService.sendSMS(phoneString, `CICHMEX. Código de verificación - ${code}`)
+                await this.twilioService.sendSMS(phoneString, `${system}. Código de verificación - ${code}`)
                 const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
                 return this.invoke(newPhone, 200, res, `Codigo enviado con éxito al ${phoneString}`, next);
             }    
             const userPhoneOwner : any | null = await this.userUseCase.findUserByPhone(phone._id);                    
             if(userPhoneOwner) return next(new ErrorHandler('El telefono ya esta registrado', 500))            
-            await this.twilioService.sendSMS(phoneString, `CICHMEX. Código de verificación - ${code}`)
+            await this.twilioService.sendSMS(phoneString, `${system}. Código de verificación - ${code}`)
             const updated = await this.phoneUserUseCase.updateUserPhone(phone._id, { code: code })            
-
             return this.invoke(updated, 200, res, `Codigo enviado con éxito al ${phoneString}`, next);  
-
-        } catch (error) {
-            
+        } catch (error) {            
             this.invoke(error, 500, res, 'Error interno del servidor', next);
         }
+    }  
+    public async sendCodeWhatsapp(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
+        const { phone_number, prefix, system = "CICHMEX" } = req.body;
+        try {
+            const code = generateRandomCode();
+            const phoneC = prefix + phone_number;
+            const phoneString = JSON.stringify(phoneC)            
+            const phone : any = await this.phoneUserUseCase.findOnePhone(phone_number)                        
+            if(!phone){
+                await this.twilioService.sendWhatsappMessage(phoneString, `${system}. Código de verificación - ${code}`)
+                const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
+                return this.invoke(newPhone, 200, res, `Codigo enviado con éxito al ${phoneString}`, next);
+            }    
+            const userPhoneOwner : any | null = await this.userUseCase.findUserByPhone(phone._id);                    
+            if(userPhoneOwner) return next(new ErrorHandler('El telefono ya esta registrado', 500))            
+            await this.twilioService.sendWhatsappMessage(phoneString, `${system}. Código de verificación - ${code}`)
+            const updated = await this.phoneUserUseCase.updateUserPhone(phone._id, { code: code })            
+            return this.invoke(updated, 200, res, `Codigo enviado con éxito al ${phoneString}`, next);  
+        } catch (error) {            
+            this.invoke(error, 500, res, 'Error interno del servidor', next);
+        }
+    }  
 
-    }
     public async resendCode(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
         const { id } = req.params;
         try {

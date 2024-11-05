@@ -53,6 +53,7 @@ export class AuthController extends ResponseData {
         this.restorePassword = this.restorePassword.bind(this);
         this.loginFacebook = this.loginFacebook.bind(this);
         this.signupFacebook = this.signupFacebook.bind(this);
+        this.redirectTikTok = this.redirectTikTok.bind(this);
         this.loginTikTok = this.loginTikTok.bind(this);
     }
 
@@ -399,22 +400,32 @@ export class AuthController extends ResponseData {
         }
     }
 
-    public async loginTikTok(req: Request, res: Response, next: NextFunction) {        
+    public async redirectTikTok(req: Request, res: Response, next: NextFunction) { 
         try {
             const csrfState = Math.random().toString(36).substring(2);
-            const url = await this.authUseCase.signInWithTikTok(csrfState);
-            // console.log(url, "url");
-            
+            const url = await this.authUseCase.getLoginUrlTikTok(csrfState);                        
             res.cookie('csrfState', csrfState, { maxAge: 60000 });   
             this.invoke({ url: url }, 200, res, '', next);              
-            // res.redirect(url as string);
-            // return url;            
         } catch (error) {
             console.log(error, "mi error");            
             next(new ErrorHandler('Ocurrio un error', 500));
         }
     }
 
+    public async loginTikTok(req: Request, res: Response, next: NextFunction) {
+        const { code, system, role } = req.body;                
+        try {            
+            if(!code) return next(new ErrorHandler('No se proporcionó un codigo de acceso', 404));
+            const typeUser: any | null = await this.typeUserUseCase.findTypeUser({ system: system, role: role }); 
+            if (!typeUser) return next(new ErrorHandler('Hubo un error al iniciar sesión', 500))
+            const user = await this.authUseCase.loginWithTikTok(code, typeUser._id);            
+            // console.log("the user info is : ", user);  
+            this.invoke(user, 200, res, 'Inicio de sesión exitoso', next);
+        } catch (error) {
+            console.log("the error is: ", error);
+            next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
+        }
+    }   
 
 
 

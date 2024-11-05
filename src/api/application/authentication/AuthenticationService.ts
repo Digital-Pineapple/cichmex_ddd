@@ -4,6 +4,7 @@ import axios from 'axios';
 import Generator from 'generate-password';
 import { OAuth2Client } from 'google-auth-library';
 import { UserEntity } from '../../domain/user/UserEntity';
+import qs from 'qs';
 import { TokenEntity, TokenRPEntity } from '../../domain/auth/authEntities';
 
 export interface IFacebook {
@@ -67,10 +68,14 @@ export class Authentication {
     private client      = new OAuth2Client(this.googleKey);
     private tiktokKey   = process.env.TIKTOK_CLIENT_ID;
     private tiktokSecret = process.env.TIKTOK_CLIENT_SECRET; 
-    // private redirectUri  = "https://localhost:4000/" 
-    private redirectUri  = "https://test.cichmex.mx/" 
+    private redirectUri  =  process.env.REDIRECT_URI_LOGIN;   
+    private redirectUriRegister  =  process.env.REDIRECT_URI_REGISTER;   
+    private isSignIn : boolean = true;
     
-    protected async redirectToTikTok(csrfState: string){
+    public async isSignUp(){
+        this.isSignIn = false;
+    }
+    protected async getUrlTikTok(csrfState: string){
         let url = 'https://www.tiktok.com/v2/auth/authorize/';
         url += `?client_key=${this.tiktokKey}`;
         url += '&scope=user.info.basic';
@@ -78,6 +83,41 @@ export class Authentication {
         url += `&redirect_uri=${this.redirectUri}`;
         url += '&state=' + csrfState;
         return url;
+    }
+
+    protected async validateTikTokAccessToken(code: string){
+        const url = 'https://open.tiktokapis.com/v2/oauth/token/';    
+        const data = {
+            grant_type: 'authorization_code',
+            code: code,
+            client_key: this.tiktokKey,
+            client_secret: this.tiktokSecret,
+            redirect_uri: this.redirectUri
+        };                  
+        try {
+            const response = await axios.post(url, qs.stringify(data), {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded'}
+            });
+            return response.data; // Devuelve solo los datos necesarios
+        } catch (error) {
+            console.error('Error al validar el token de acceso de TikTok:', error);
+            throw new Error('Error al validar el token de acceso de TikTok'); // O maneja el error de otra forma
+        }
+    }
+
+    protected async getUserInfoTikTok(accessToken: string){                           
+        try{
+            const url = "https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name";
+            const { data } = await axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            }); 
+            const user  = data.data.user;
+            return user;
+        }catch(error){
+            throw new Error('Error al obtener la información del usuario de TikTok');
+        }        
     }
 
     protected async generateJWT(user: UserEntity | IGoogleReg , uuid: Iuuid ): Promise<IAuth> {
