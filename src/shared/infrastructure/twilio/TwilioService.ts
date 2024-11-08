@@ -22,6 +22,8 @@ export class TwilioService {
             
             return message;
         } catch (error) {
+            console.log(error);
+            // console.log("via sms", phone);            
             throw new ErrorHandler('Hubo un error al enviar el mensaje - intenta más tarde', 400);
         }
     }

@@ -14,10 +14,13 @@ import { sendMail } from '../../../../shared/infrastructure/nodemailer/emailer';
 import { IGoogleResponse } from '../../../application/authentication/AuthenticationService';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import { AddressUseCase } from '../../../application/address/AddressUseCase';
+import { SNService } from '../../../../shared/infrastructure/aws/SNService';
+import { whatsappService } from '../../../../shared/infrastructure/whatsapp/WhatsappService..external';
 
 
 export class UserController extends ResponseData {
-    protected path = '/user';
+    protected path = '/user';    
+    protected whatsappService =  whatsappService
 
     constructor(private readonly phoneUserUseCase: UserPhoneUseCase,
         private readonly userUseCase: UserUseCase,
@@ -26,6 +29,7 @@ export class UserController extends ResponseData {
         private readonly addressUseCase: AddressUseCase,
         private readonly twilioService: TwilioService,
         private readonly s3Service: S3Service,
+        private readonly snsService: SNService,        
 
     ) {
         super();
@@ -152,19 +156,24 @@ export class UserController extends ResponseData {
         const { phone_number, prefix, system = "CICHMEX" } = req.body;
         try {
             const code = generateRandomCode();
-            const phoneC = prefix + phone_number
-            const phoneString = JSON.stringify(phoneC)            
+            const phoneString = prefix + phone_number
+            // const phoneString = JSON.stringify(phoneC)            
             const phone : any = await this.phoneUserUseCase.findOnePhone(phone_number)
-            console.log("code", code);
+            // console.log("code", code);
             
             if(!phone){
-                await this.twilioService.sendSMS(phoneString, `${system}. Código de verificación - ${code}`)
+                console.log("no existe este telefono y se va a registrar");           
+                await this.whatsappService.sendMessage(phone_number, `${system}. Código de verificación - ${code}`)
+                // await this.snsService.publishMessage(phoneString, `${system}. Código de verificación - ${code}`);     
+                // await this.twilioService.sendSMS(phoneString, `${system}. Código de verificación - ${code}`)
                 const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
                 return this.invoke(newPhone, 200, res, `Codigo enviado con éxito al ${phoneString}`, next);
             }    
             const userPhoneOwner : any | null = await this.userUseCase.findUserByPhone(phone._id);                    
             if(userPhoneOwner) return next(new ErrorHandler('El telefono ya esta registrado', 500))            
-            await this.twilioService.sendSMS(phoneString, `${system}. Código de verificación - ${code}`)
+            // await this.twilioService.sendSMS(phoneString, `${system}. Código de verificación - ${code}`)
+            // await this.snsService.publishMessage(phoneString, `${system}. Código de verificación - ${code}`); 
+            await this.whatsappService.sendMessage(phone_number, `${system}. Código de verificación - ${code}`)
             const updated = await this.phoneUserUseCase.updateUserPhone(phone._id, { code: code })            
             return this.invoke(updated, 200, res, `Codigo enviado con éxito al ${phoneString}`, next);  
         } catch (error) {            

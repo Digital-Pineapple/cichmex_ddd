@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RandomCodeShipping = exports.RandomCodeId = exports.generateUUID = exports.generateRandomCode = void 0;
+exports.createSlug = exports.RandomCodeShipping = exports.RandomCodeId = exports.generateUUID = exports.generateRandomCode = void 0;
 const generate_password_1 = __importDefault(require("generate-password"));
 const uuid_1 = require("uuid");
 const generateRandomCode = () => generate_password_1.default.generate({
@@ -34,3 +34,12 @@ const RandomCodeShipping = () => generate_password_1.default.generate({
     uppercase: true
 });
 exports.RandomCodeShipping = RandomCodeShipping;
+const createSlug = (slug) => {
+    let processedSlug = slug
+        .replace(/[`~!@#$%^&*()_\-+=\[\]{};:'"\\|\/,.<>?\s]/g, ' ') // Caracteres especiales
+        .toLowerCase() // Minúsculas
+        .trim() // Espacios al principio y al final
+        .replace(/\s+/g, '_'); // Reemplazo de espacios con guiones bajos
+    return processedSlug;
+};
+exports.createSlug = createSlug;
