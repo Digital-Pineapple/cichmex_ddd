@@ -3,3 +3,4 @@
 .env.production
 /dist
 /wwwebjs_auth
+*.env
