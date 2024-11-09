@@ -121,7 +121,7 @@ export class ProductController extends ResponseData {
       let response2: any = []
       if (req.files && Array.isArray(req.files)) {
         const paths: {}[] = [];
-        const urls: string[] = [];
+        const urls: {}[] = [];
         let video_paths: string[] = [];
         let video_urls: string[] = [];
         let thumbnail_path: string = '';
@@ -143,7 +143,7 @@ export class ProductController extends ResponseData {
                   'image/webp'
                 );
                 paths.push({ url: pathObject });
-                urls.push(url.split("?")[0]);
+                urls.push({ url: url.split("?")[0] ?? "" });
               }
               if (item.fieldname === 'thumbnail') {
 
@@ -154,7 +154,7 @@ export class ProductController extends ResponseData {
                   'image/webp'
                 );
                 thumbnail_path = pathThumbnail
-                thumbnail_url = url.split("?")[0]               
+                thumbnail_url = url.split("?")[0] ?? "";         
               }
               if (item.fieldname === 'videos') {
                 const pathVideo = `${this.path}/${response?._id}/${index}`;
@@ -164,7 +164,7 @@ export class ProductController extends ResponseData {
                   "video/mp4"
                 );
                 video_paths.push(pathVideo);
-                video_urls.push(url.split("?")[0]);
+                video_urls.push(url.split("?")[0] ?? "");
               }
             })
           );
@@ -236,7 +236,7 @@ export class ProductController extends ResponseData {
               "video/mp4"
             );
             video_paths.push(pathVideo);
-            video_urls.push(url.split("?")[0]);
+            video_urls.push(url.split("?")[0] ?? "");
           }
           )
         );
@@ -267,7 +267,7 @@ export class ProductController extends ResponseData {
         'image/webp'
       );
       thumbnail_path = pathThumbnail
-      thumbnail_url = url.split("?")[0];
+      thumbnail_url = url.split("?")[0] ?? "";
       response = await this.productUseCase.updateProduct(id, { thumbnail: thumbnail_url })
       response.thumbnail = thumbnail_url
       this.invoke(response, 201, res, 'Se actualizó con éxito', next);
