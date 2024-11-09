@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Container_1 = require("./src/shared/infrastructure/Container");
+// import { whatsappService } from './src/shared/infrastructure/whatsapp/WhatsappService..external';
 const container = new Container_1.Container();
 const server = container.invoke().resolve('server');
 const config = container.invoke().resolve('config');
@@ -18,6 +19,7 @@ server
     .then(() => __awaiter(void 0, void 0, void 0, function* () {
     yield container.invoke().resolve('db');
     console.log(`Env: ${config.NODE_ENV}`);
+    // console.log(`S3: ${process.env.S3_ENVIRONMENT}`);              
 })).catch((err) => {
     console.error('Error starting server:', err);
 });

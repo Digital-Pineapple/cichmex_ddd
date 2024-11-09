@@ -22,10 +22,10 @@ export class S3Service {
         
     }
 
-    async uploadToS3(key: string, file?: Express.Multer.File, contentType?: string | undefined) {
+    async uploadToS3(key: string, file?:  Express.Multer.File, contentType?: string | undefined) {
         
         try {
-            const fileContent = Fs.readFileSync(file!.path);
+            const fileContent =  Fs.readFileSync(file!.path);
             const params = {
                 Bucket  : this.bucket,
                 Key     : this.environment + key,
@@ -46,10 +46,10 @@ export class S3Service {
         return await this.uploadToS3(key, file, contentType).then(async({ message, success }) => {
             const params = {
                 Bucket  : this.bucket,
-                Key     : this.environment + key,
+                Key     : this.environment + key,                
                 // Expires : 300,
             }
-            const url = await this.s3.getSignedUrl('getObject', params);
+            const url = await this.s3.getSignedUrl('getObject', params);            
             return { url, message, success, key }
         })
     }
@@ -63,6 +63,18 @@ export class S3Service {
     return await this.s3.getSignedUrl('getObject', params);
 
     
+    }
+
+    async deleteObject(key: any) {
+        try{
+            const params = {
+                Bucket  : this.bucket,
+                Key     :  this.environment + key,
+            }
+            return await this.s3.deleteObject(params).promise();
+        }catch(error){
+            console.log(error);
+        }
     }
 
 }

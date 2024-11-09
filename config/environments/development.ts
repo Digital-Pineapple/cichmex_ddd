@@ -19,7 +19,7 @@ const DEVELOPMENT : Configuration  = {
     AWS_REGION          :    process.env.AWS_REGION!,
     AWS_ACCESS_KEY      :    process.env.AWS_ACCESS_KEY!,
     AWS_SECRET_KEY      :    process.env.AWS_SECRET_KEY!,
-    AWS_BUCKET_NAME     :    process.env.AWS_BUCKET_NAME!,
+    AWS_BUCKET_NAME     :    process.env.AWS_BUCKET_NAME!,    
     S3_ENVIRONMENT      :    process.env.S3_ENVIRONMENT!,
 
     TWILIO_ACCOUNT_SID  :   process.env.TWILIO_ACCOUNT_SID!,
@@ -28,6 +28,9 @@ const DEVELOPMENT : Configuration  = {
     MY_NUMBER           :   process.env.MY_NUMBER!,
     DIR_NODEMAILER      :   process.env.DIR_NODEMAILER!,
     MERCADOPAGO_TOKEN   :   process.env.MERCADOPAGO_TOKEN!,
+    AWS_ACCESS_KEY_TEST :   process.env.AWS_ACCESS_KEY_TEST!,
+    AWS_ACCESS_SECRET_TEST :   process.env.AWS_ACCESS_SECRET_TEST!,
+    AWS_REGION_TEST     :   process.env.AWS_REGION_TEST!,
 }
 
 

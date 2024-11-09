@@ -70,5 +70,19 @@ class S3Service {
             return yield this.s3.getSignedUrl('getObject', params);
         });
     }
+    deleteObject(key) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const params = {
+                    Bucket: this.bucket,
+                    Key: this.environment + key,
+                };
+                return yield this.s3.deleteObject(params).promise();
+            }
+            catch (error) {
+                console.log(error);
+            }
+        });
+    }
 }
 exports.S3Service = S3Service;
