@@ -29,3 +29,12 @@ export const RandomCodeShipping = () => Generator.generate({
     lowercase   : true,
     uppercase   : true
 })
+
+export const createSlug = (slug: string): string => {
+    let processedSlug = slug
+      .replace(/[`~!@#$%^&*()_\-+=\[\]{};:'"\\|\/,.<>?\s]/g, ' ') // Caracteres especiales
+      .toLowerCase() // Minúsculas
+      .trim() // Espacios al principio y al final
+      .replace(/\s+/g, '_'); // Reemplazo de espacios con guiones bajos
+    return processedSlug;
+};

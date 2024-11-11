@@ -17,6 +17,7 @@ class TwilioService {
         this.accountSid = process.env.TWILIO_ACCOUNT_SID;
         this.authToken = process.env.TWILIO_AUTH_TOKEN;
         this.twilioNumber = process.env.TWILIO_PHONE_NUMBER;
+        this.whatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER;
         this.twilio = new twilio_1.Twilio(this.accountSid, this.authToken);
     }
     sendSMS(phone, body) {
@@ -30,6 +31,8 @@ class TwilioService {
                 return message;
             }
             catch (error) {
+                console.log(error);
+                // console.log("via sms", phone);            
                 throw new ErrorHandler_1.ErrorHandler('Hubo un error al enviar el mensaje - intenta más tarde', 400);
             }
         });
@@ -38,13 +41,14 @@ class TwilioService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const message = yield this.twilio.messages.create({
-                    from: `whatsapp:${this.twilioNumber}`,
-                    to: `whatsapp:${phone}`,
+                    from: `whatsapp:${this.whatsappNumber}`,
                     body,
+                    to: `whatsapp:${phone}`,
                 });
                 return message;
             }
             catch (error) {
+                console.log("via whatsapp", error);
                 throw new ErrorHandler_1.ErrorHandler('Hubo un error al enviar el mensaje - intenta más tarde', 400);
             }
         });

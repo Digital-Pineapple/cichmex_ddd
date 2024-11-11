@@ -436,7 +436,7 @@ public async feedDailyProduct(req: Request, res: Response, next: NextFunction) {
                     i.id = i.id.toString()
                     i.image_link = image.startsWith("https://") 
                         ? image 
-                        : await this.s3Service.getUrlObject(image + ".jpg");
+                        : await this.s3Service.getUrlObject(image + ".jpeg");
                     i.available = i.stock > 0 ? 'En Stock' :'Fuera de Stock'
                     i.condition = 'Nuevo'
                     i.price = i.discountPrice ? `${i.discountPrice} MXN`: `${i.price} MXN`

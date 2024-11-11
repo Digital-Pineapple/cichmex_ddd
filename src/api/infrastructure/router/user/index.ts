@@ -20,6 +20,7 @@ import ShoppingCartModel from '../../models/ShoppingCartModel';
 import { AddressRepository } from '../../repository/address/AddressRepository';
 import AddressModel from '../../models/AddressModel';
 import { AddressUseCase } from '../../../application/address/AddressUseCase';
+import { SNService } from '../../../../shared/infrastructure/aws/SNService';
 
 const userRouter = Router();
 
@@ -36,9 +37,9 @@ const typeUserUseCase = new TypeUserUseCase(typeUserRepository)
 const shoppingCartUseCase = new ShoppingCartUseCase(shoppingCartRepository)
 const s3Service = new S3Service()
 const userValidations = new UserValidations()
-
+const snsService = new SNService();
 const twilioService = new TwilioService();
-const userController = new UserController(userPhoneserUseCase, userUseCase, typeUserUseCase,shoppingCartUseCase,  addressUseCase, twilioService, s3Service);
+const userController = new UserController(userPhoneserUseCase, userUseCase, typeUserUseCase,shoppingCartUseCase,  addressUseCase, twilioService, s3Service, snsService);
 
 userRouter
     .get('/',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), userController.allUsers)
@@ -49,6 +50,7 @@ userRouter
     .get('/carrier-driver/all',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), userController.getAllCarrierDrivers)
     .get('/carrier-driver/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), userController.getOneCarrierDriver)
     .post('/send-code', userController.sendCode)
+    .post ('/whatsapp/send-code', userController.sendCodeWhatsapp)
     .put('/validate/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), userController.validateUser)
     .post ('/resend-code/:id', userController.resendCode)
     .post ('/update/:id', userValidations.ImageValidation, userController.updateUser)
