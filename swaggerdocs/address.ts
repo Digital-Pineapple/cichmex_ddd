@@ -27,14 +27,7 @@ const address: any = {
                 "status": { "type": "boolean" },
                 "default": { "type": "boolean" },
                 "lat": { "type": "number" },
-                "lgt": { "type": "number" },
-                "coords": { 
-                  "type": "object",
-                  "properties": {
-                    "lat": { "type": "number" },
-                    "lgt": { "type": "number" }
-                  }
-                }
+                "lgt": { "type": "number" },              
               },
               // "required": [ "street", "zipcode", "city", "country"]
             }
