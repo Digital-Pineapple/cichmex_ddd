@@ -3,3 +3,4 @@
 .env.production
 /dist
 /wwebjs_auth
+.env*

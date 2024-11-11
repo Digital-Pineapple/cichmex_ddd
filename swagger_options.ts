@@ -1,4 +1,4 @@
-import { branchoffice, category, subcategory, auth, user, cart, product, orders } from "./swaggerdocs";
+import { branchoffice, category, subcategory, auth, user, cart, product, orders, address } from "./swaggerdocs";
 export const options = {
   definition: {
     openapi: "3.0.0",
@@ -39,6 +39,50 @@ export const options = {
             fullname: { type: "string" },
             phone: { type: "string" },
           },
+        },
+        "AddressEntity": {
+          "type": "object",
+          "properties": {
+            "user_id": {
+              "type": "string",
+              "description": "ID del usuario propietario de la dirección"
+            },
+            "name": { "type": "string" },
+            "phone": { "type": "string" },
+            "street": { "type": "string" },
+            "numext": { "type": "string" },
+            "numint": { "type": "string" },
+            "zipcode": { "type": "string" },
+            "city": { "type": "string" },
+            "state": { "type": "string" },
+            "municipality": { "type": "string" },
+            "neighborhood": { "type": "string" },
+            "reference": { "type": "string" },
+            "btwstreet": { "type": "string" },
+            "country": { "type": "string" },
+            "status": { "type": "boolean" },
+            "default": { "type": "boolean" },
+            "lat": { "type": "number" },
+            "lgt": { "type": "number" },
+            "coords": {
+              "$ref": "#/components/schemas/Coords"
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "Coords": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lgt": { "type": "number" }
+          }
         },
         AuthResponse: {
           type: "object",
@@ -176,7 +220,8 @@ export const options = {
       ...orders,
       ...category,
       ...subcategory,
-      ...branchoffice,
+      ...branchoffice,      
+      ...address
     },
   },
   apis: ["./src/shared/infrastructure/routes/Router.ts"],
