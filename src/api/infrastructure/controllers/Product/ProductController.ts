@@ -69,13 +69,14 @@ export class ProductController extends ResponseData {
               video + ".mp4"
             )
             const thumbnail = item.thumbnail
-            if (thumbnail.startsWith("https://")) {
-              item.thumbnail = thumbnail
-            } else {
+            if (typeof thumbnail === 'string' && thumbnail.startsWith("https://")) {
+              item.thumbnail = thumbnail;
+          } else {
               item.thumbnail = await this.s3Service.getUrlObject(
-                thumbnail + ".jpg"
+                  (thumbnail || "") + ".jpg"
               );
-            }
+          }
+          
             item.images = updatedImages;
             item.video = video_url
             return item;
@@ -86,6 +87,8 @@ export class ProductController extends ResponseData {
       }
 
     } catch (error) {
+      console.log(error);
+      
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
