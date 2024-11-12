@@ -138,7 +138,7 @@ export class ProductController extends ResponseData {
         const thumbnail = response.thumbnail
         if (typeof thumbnail === 'string' && thumbnail.startsWith("https://")) {
           response.thumbnail = thumbnail;
-        } else {
+        } else if (!!thumbnail) {
           response.thumbnail = await this.s3Service.getUrlObject(
             (thumbnail) + ".jpg"
           );
@@ -448,37 +448,43 @@ export class ProductController extends ResponseData {
     const queryparams = req.query;
     try {
       if (!category) return next(new ErrorHandler("El nombre de la categoria es requerida", 404));
+
       const categoria: any | null = await this.categoryUseCase.getDetailCategoryByName(category);
       if (categoria == null) return next(new ErrorHandler("La categoria no existe", 404));
+      
       const products: any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);
+      
       await Promise.all(
         products.products.map(async (product: any) => {
-          const thumbnail = product.thumbnail
-          if (thumbnail.startsWith("https://")) {
-            product.thumbnail = thumbnail
-          } else {
-            product.thumbnail = await this.s3Service.getUrlObject(
-              thumbnail + ".jpg"
-            );
+          // Procesar thumbnail
+          const thumbnail = product.thumbnail;
+          if (thumbnail && !thumbnail.startsWith("https://")) {
+            product.thumbnail = await this.s3Service.getUrlObject(thumbnail + ".jpg");
           }
-          if (product?.images && product?.images.length > 0) {
-            const parsed = await Promise.all(
+      
+          // Procesar imágenes
+          if (product?.images && product.images.length > 0) {
+            const parsedImages = await Promise.all(
               product.images.map(async (image: any) => {
-                image = await this.s3Service.getUrlObject(image + ".jpg");
-                return image
+                if (!image.url.startsWith("https://")) {
+                  image.url = await this.s3Service.getUrlObject(image.url + ".jpg");
+                }
+                return image; // Retornar el objeto completo de la imagen
               })
-            )
-            product.images = parsed;
+            );
+            product.images = parsedImages;
           }
         })
-      )
-
+      );
+      
       const response = {
         category: categoria,
         products: products.products,
         total: products.total
-      }
+      };
+      
       this.invoke(response, 201, res, '', next);
+      
 
     } catch (error) {
       // console.log();      
@@ -493,37 +499,44 @@ export class ProductController extends ResponseData {
 
     try {
       if (!subcategory) return next(new ErrorHandler("El nombre de la subcategoria es requerida", 404));
+
       const subcategoria: any | null = await this.subCategoryUseCase.getDetailSubCategoryByName(subcategory);
       if (subcategoria == null) return next(new ErrorHandler("La subcategoria no existe", 404));
+      
       const products: any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);
+      
       await Promise.all(
         products.products.map(async (product: any) => {
-          const thumbnail = product.thumbnail
-          if (thumbnail.startsWith("https://")) {
-            product.thumbnail = thumbnail
-          } else {
-            product.thumbnail = await this.s3Service.getUrlObject(
-              thumbnail + ".jpg"
-            );
+          // Procesar thumbnail
+          const thumbnail = product.thumbnail;
+          if (thumbnail && !thumbnail.startsWith("https://")) {
+            product.thumbnail = await this.s3Service.getUrlObject(thumbnail + ".jpg");
           }
-          if (product?.images && product?.images.length > 0) {
-            const parsed = await Promise.all(
+      
+          // Procesar imágenes
+          if (product?.images && product.images.length > 0) {
+            const parsedImages = await Promise.all(
               product.images.map(async (image: any) => {
-                image = await this.s3Service.getUrlObject(image + ".jpg");
-                return image
+                // Verificar si la imagen tiene una URL completa o solo el path relativo
+                if (!image.url.startsWith("https://")) {
+                  image.url = await this.s3Service.getUrlObject(image.url + ".jpg");
+                }
+                return image; // Retornar el objeto completo de la imagen
               })
-            )
-            product.images = parsed;
+            );
+            product.images = parsedImages;
           }
         })
-      )
-
+      );
+      
       const response = {
         subcategory: subcategoria,
         products: products.products,
         total: products.total
-      }
+      };
+      
       this.invoke(response, 201, res, '', next);
+      
     } catch (error) {
       next(new ErrorHandler("Hubo un error al buscar", 500));
       console.log("subcategory product error", error);
@@ -535,37 +548,44 @@ export class ProductController extends ResponseData {
       const categories = ["Hogar, Muebles y jardín", "Belleza y Cuidado Personal"];
       // const categories = ["Nueva categoria"];
       const response: any | null = await this.categoryUseCase.getCategoriesAndProducts(categories, this.onlineStoreHouse);
+      
       await Promise.all(
         response.map(async (category: any) => {
           await Promise.all(
             category.products.map(async (product: any) => {
+              // Procesar thumbnail
               const thumbnail = product.thumbnail;
-
-              if (thumbnail.startsWith("https://")) {
-                product.thumbnail = thumbnail;
-              } else {
+              if (thumbnail && !thumbnail.startsWith("https://")) {
+                // Si el thumbnail no es una URL completa y no está vacío, obtener la URL desde S3
                 product.thumbnail = await this.s3Service.getUrlObject(thumbnail + ".jpg");
               }
-
+      
+              // Procesar imágenes
               if (product?.images && product.images.length > 0) {
                 const parsedImages = await Promise.all(
                   product.images.map(async (image: any) => {
-                    const url = await this.s3Service.getUrlObject(image + ".jpg");
-                    return url;
+                    // Verificar si la imagen tiene una URL completa o solo el path relativo
+                    if (!image.url.startsWith("https://")) {
+                      // Actualizar la URL de la imagen con la URL completa desde S3
+                      image.url = await this.s3Service.getUrlObject(image.url + ".jpg");
+                    }
+                    return image; // Retornar el objeto completo de la imagen
                   })
                 );
                 product.images = parsedImages;
               }
-
+      
               return product;
             })
           );
           return category;
         })
       );
-
+      
       // Llamada de invocación con la respuesta
       this.invoke(response, 201, res, '', next);
+      
+      
 
     } catch (error) {
       console.log(error, 'ok');
@@ -617,24 +637,43 @@ export class ProductController extends ResponseData {
     try {
       const productDetail: any | null = await this.productUseCase.getProduct(id);
       const category = productDetail?.category._id;
+      
       if (productDetail == null) return next(new ErrorHandler("Este producto no existe", 404));
+      
       let response: any | null = await this.productUseCase.getRandomProductsByCategory(category, productDetail._id, this.onlineStoreHouse);
+      
       if (!(response instanceof ErrorHandler)) {
         const updatedResponse = await Promise.all(
           response.map(async (item: any) => {
-            const thumbnail = item.thumbnail
-            if (thumbnail.startsWith("https://")) {
-              item.thumbnail = thumbnail
-            } else {
-              item.thumbnail = await this.s3Service.getUrlObject(
-                thumbnail + ".jpg"
-              );
+            // Procesar thumbnail
+            const thumbnail = item.thumbnail;
+            if (thumbnail && !thumbnail.startsWith("https://")) {
+              item.thumbnail = await this.s3Service.getUrlObject(thumbnail + ".jpg");
             }
-            return item
+      
+            // Procesar imágenes
+            if (item?.images && item.images.length > 0) {
+              const parsedImages = await Promise.all(
+                item.images.map(async (image: any) => {
+                  // Verificar si la imagen tiene una URL completa o solo el path relativo
+                  if (!image.url.startsWith("https://")) {
+                    image.url = await this.s3Service.getUrlObject(image.url + ".jpg");
+                  }
+                  return image; // Retornar el objeto completo de la imagen
+                })
+              );
+              item.images = parsedImages;
+            }
+      
+            return item;
           })
         );
+      
+        response = updatedResponse; // Asignar el array actualizado a response
       }
+      
       this.invoke(response, 200, res, "", next);
+      
     } catch (error) {
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
     }
