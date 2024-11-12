@@ -54,8 +54,43 @@ export class ProductController extends ResponseData {
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
     try {
       const response = await this.productUseCase.getProducts();
-      this.invoke(response, 200, res, "", next)
+      if (!(response instanceof ErrorHandler)) {
+        const updatedResponse = await Promise.all(
+          response.map(async (item: any) => {
+            const images = item.images;
+            const updatedImages = await Promise.all(
+              images.map(async (image: any) => {
+                const url = await this.s3Service.getUrlObject(
+                  image + ".jpg"
+                );
+                return url;
+              })
+            );
+            const video = item.video
+            const video_url = await this.s3Service.getUrlObject(
+              video + ".mp4"
+            )
+            const thumbnail = item.thumbnail
+            if (typeof thumbnail === 'string' && thumbnail.startsWith("https://")) {
+              item.thumbnail = thumbnail;
+          } else {
+              item.thumbnail = await this.s3Service.getUrlObject(
+                  (thumbnail || "") + ".jpg"
+              );
+          }
+          
+            item.images = updatedImages;
+            item.video = video_url
+            return item;
+          })
+        );
+
+        this.invoke(updatedResponse, 200, res, "", next);
+      }
+
     } catch (error) {
+      console.log(error);
+      
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
