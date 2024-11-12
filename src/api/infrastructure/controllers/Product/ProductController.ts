@@ -76,7 +76,7 @@ export class ProductController extends ResponseData {
             }
             if (thumbnail) {
               item.thumbnail = await this.s3Service.getUrlObject(
-                (thumbnail) + ".jpeg"
+                (thumbnail) + ".jpg"
               );
             }
 
@@ -117,6 +117,9 @@ export class ProductController extends ResponseData {
         if (response.images) {
           const updatedImages = await Promise.all(
             response.images.map(async (image: any) => {
+              if (typeof image.url === 'string' && image.url.startsWith("https://")) {
+                return { url: image.url, _id: image._id };
+              }
               const url = await this.s3Service.getUrlObject(image.url + ".jpg");
               return { url: url, _id: image._id };
             })
@@ -135,10 +138,9 @@ export class ProductController extends ResponseData {
         const thumbnail = response.thumbnail
         if (typeof thumbnail === 'string' && thumbnail.startsWith("https://")) {
           response.thumbnail = thumbnail;
-        }
-        if (thumbnail) {
+        } else {
           response.thumbnail = await this.s3Service.getUrlObject(
-            (thumbnail) + ".jpeg"
+            (thumbnail) + ".jpg"
           );
         }
       }
