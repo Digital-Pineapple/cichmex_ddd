@@ -430,12 +430,43 @@ export class ProductController extends ResponseData {
     const { search } = req.body
     try {
       if (!search) return next(new ErrorHandler("ingresa una busqueda", 404));
+
       const page = Number(req.query.page) || 1;
       const response: any | null = await this.productUseCase.searchProducts(search, page);
-      this.invoke({
-        products: response?.products,
-        total: response.total
-      }, 200, res, "", next);
+      
+      if (response && response.products) {
+        const updatedProducts = await Promise.all(
+          response.products.map(async (product: any) => {
+            // Procesar thumbnail
+            const thumbnail = product.thumbnail;
+            if (thumbnail && typeof thumbnail === 'string' && !thumbnail.startsWith("https://")) {
+              product.thumbnail = await this.s3Service.getUrlObject(thumbnail + ".jpg");
+            }
+      
+            // Procesar imágenes
+            if (product?.images && product.images.length > 0) {
+              const updatedImages = await Promise.all(
+                product.images.map(async (image: any) => {
+                  if (typeof image.url === 'string' && !image.url.startsWith("https://")) {
+                    image.url = await this.s3Service.getUrlObject(image.url + ".jpg");
+                  }
+                  return image; // Retornar el objeto completo de la imagen
+                })
+              );
+              product.images = updatedImages;
+            }
+      
+            return product;
+          })
+        );
+      
+        // Preparar la respuesta final
+        this.invoke({
+          products: updatedProducts,
+          total: response.total
+        }, 200, res, "", next);
+      }
+      
     } catch (error) {
       console.log("search product error", error);
       next(new ErrorHandler("Hubo un error al buscar", 500));
@@ -600,30 +631,31 @@ export class ProductController extends ResponseData {
       if (!(response instanceof ErrorHandler)) {
         const updatedResponse = await Promise.all(
           response.map(async (item: any) => {
-            const thumbnail = item.thumbnail
-            if (thumbnail.startsWith("https://")) {
-              item.thumbnail = thumbnail
-            } else {
-              item.thumbnail = await this.s3Service.getUrlObject(
-                thumbnail + ".jpg"
-              );
+            // Procesar thumbnail
+            const thumbnail = item.thumbnail;
+            if (thumbnail && typeof thumbnail === 'string' && !thumbnail.startsWith("https://")) {
+              item.thumbnail = await this.s3Service.getUrlObject(thumbnail + ".jpg");
             }
-            const videos = item.videos
+      
+            // Procesar videos
+            const videos = item.videos;
             const updatedVideos = await Promise.all(
               videos.map(async (video: any) => {
-                const video_url = await this.s3Service.getUrlObject(
-                  video + ".mp4"
-                );
-                return video_url;
+                if (typeof video === 'string' && !video.startsWith("https://")) {
+                  video = await this.s3Service.getUrlObject(video + ".mp4");
+                }
+                return video; // Retornar el objeto completo del video
               })
             );
             item.videos = updatedVideos;
+      
             return item;
           })
         );
-
+      
         this.invoke(updatedResponse, 200, res, "", next);
       }
+      
     } catch (error) {
       console.log(error);
 
