@@ -111,12 +111,42 @@ export class ProductController extends ResponseData {
       } else {
         response = responseProduct
       }
+      if (!(response instanceof ErrorHandler) && response !== null) {
+
+        if (response.images) {
+          const updatedImages = await Promise.all(
+            response.images.map(async (image: any) => {
+              const url = await this.s3Service.getUrlObject(image.url + ".jpg");
+              return { url: url, _id: image._id };
+            })
+          );
+          response.images = updatedImages;
+        }
+        if (response.videos) {
+          const updatedVideos = await Promise.all(
+            response.videos.map(async (video: any) => {
+              const url = await this.s3Service.getUrlObject(video + ".mp4");
+              return url;
+            })
+          );
+          response.videos = updatedVideos;
+        }
+        const thumbnail = response.thumbnail
+        if (thumbnail.startsWith("https://")) {
+          response.thumbnail = thumbnail
+        } else {
+          response.thumbnail = await this.s3Service.getUrlObject(
+            thumbnail + ".jpg"
+          );
+        }
+      }
 
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
+
 
   async getNoStockProducts(req: Request, res: Response, next: NextFunction) {
     try {
@@ -417,6 +447,28 @@ export class ProductController extends ResponseData {
       const categoria: any | null = await this.categoryUseCase.getDetailCategoryByName(category);
       if (categoria == null) return next(new ErrorHandler("La categoria no existe", 404));
       const products: any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);  
+      await Promise.all(
+        products.products.map(async (product: any) => {
+          const thumbnail = product.thumbnail
+          if (thumbnail.startsWith("https://")) {
+            product.thumbnail = thumbnail
+          } else {
+            product.thumbnail = await this.s3Service.getUrlObject(
+              thumbnail + ".jpg"
+            );
+          }
+          if (product?.images && product?.images.length > 0) {
+            const parsed = await Promise.all(
+              product.images.map(async (image: any) => {
+                image = await this.s3Service.getUrlObject(image + ".jpg");
+                return image
+              })
+            )
+            product.images = parsed;
+          }
+        })
+      )
+     
       const response = {
         category: categoria,
         products: products.products,
@@ -440,6 +492,28 @@ export class ProductController extends ResponseData {
       const subcategoria: any | null = await this.subCategoryUseCase.getDetailSubCategoryByName(subcategory);
       if (subcategoria == null) return next(new ErrorHandler("La subcategoria no existe", 404));
       const products: any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);   
+      await Promise.all(
+        products.products.map(async (product: any) => {
+          const thumbnail = product.thumbnail
+          if (thumbnail.startsWith("https://")) {
+            product.thumbnail = thumbnail
+          } else {
+            product.thumbnail = await this.s3Service.getUrlObject(
+              thumbnail + ".jpg"
+            );
+          }
+          if (product?.images && product?.images.length > 0) {
+            const parsed = await Promise.all(
+              product.images.map(async (image: any) => {
+                image = await this.s3Service.getUrlObject(image + ".jpg");
+                return image
+              })
+            )
+            product.images = parsed;
+          }
+        })
+      )
+
       const response = {
         subcategory: subcategoria,
         products: products.products,
@@ -457,6 +531,35 @@ export class ProductController extends ResponseData {
       const categories = ["Hogar, Muebles y jardín", "Belleza y Cuidado Personal"];
       // const categories = ["Nueva categoria"];
       const response: any | null = await this.categoryUseCase.getCategoriesAndProducts(categories, this.onlineStoreHouse);
+      await Promise.all(
+        response.map(async (category: any) => {
+          await Promise.all(
+            category.products.map(async (product: any) => {
+              const thumbnail = product.thumbnail;
+
+              if (thumbnail.startsWith("https://")) {
+                product.thumbnail = thumbnail;
+              } else {
+                product.thumbnail = await this.s3Service.getUrlObject(thumbnail + ".jpg");
+              }
+
+              if (product?.images && product.images.length > 0) {
+                const parsedImages = await Promise.all(
+                  product.images.map(async (image: any) => {
+                    const url = await this.s3Service.getUrlObject(image + ".jpg");
+                    return url;
+                  })
+                );
+                product.images = parsedImages;
+              }
+
+              return product;
+            })
+          );
+          return category;
+        })
+      );
+
       // Llamada de invocación con la respuesta
       this.invoke(response, 201, res, '', next);
 
@@ -470,9 +573,36 @@ export class ProductController extends ResponseData {
   public async getVideos(req: Request, res: Response, next: NextFunction) {
     try {
       const response: any | null = await this.productUseCase.getVideoProducts();
-      this.invoke(response, 200, res, "", next);
+      if (!(response instanceof ErrorHandler)) {
+        const updatedResponse = await Promise.all(
+          response.map(async (item: any) => {
+            const thumbnail = item.thumbnail
+            if (thumbnail.startsWith("https://")) {
+              item.thumbnail = thumbnail
+            } else {
+              item.thumbnail = await this.s3Service.getUrlObject(
+                thumbnail + ".jpg"
+              );
+            }
+            const videos = item.videos
+            const updatedVideos = await Promise.all(
+              videos.map(async (video: any) => {
+                const video_url = await this.s3Service.getUrlObject(
+                  video + ".mp4"
+                );
+                return video_url;
+              })
+            );
+            item.videos = updatedVideos;
+            return item;
+          })
+        );
+
+        this.invoke(updatedResponse, 200, res, "", next);
+      }
     } catch (error) {
       console.log(error);
+
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
@@ -485,6 +615,21 @@ export class ProductController extends ResponseData {
       const category = productDetail?.category._id;
       if (productDetail == null) return next(new ErrorHandler("Este producto no existe", 404));
       let response: any | null = await this.productUseCase.getRandomProductsByCategory(category, productDetail._id, this.onlineStoreHouse);
+      if (!(response instanceof ErrorHandler)) {
+        const updatedResponse = await Promise.all(
+          response.map(async (item: any) => {
+            const thumbnail = item.thumbnail
+            if (thumbnail.startsWith("https://")) {
+              item.thumbnail = thumbnail
+            } else {
+              item.thumbnail = await this.s3Service.getUrlObject(
+                thumbnail + ".jpg"
+              );
+            }
+            return item
+          })
+        );
+      }
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
