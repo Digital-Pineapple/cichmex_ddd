@@ -73,12 +73,13 @@ export class ProductController extends ResponseData {
             const thumbnail = item.thumbnail
             if (typeof thumbnail === 'string' && thumbnail.startsWith("https://")) {
               item.thumbnail = thumbnail;
-          } else {
+            }
+            if (thumbnail) {
               item.thumbnail = await this.s3Service.getUrlObject(
-                  (thumbnail || "") + ".jpg"
+                (thumbnail) + ".jpeg"
               );
-          }
-          
+            }
+
             item.images = updatedImages;
             item.video = video_url
             return item;
@@ -90,7 +91,7 @@ export class ProductController extends ResponseData {
 
     } catch (error) {
       console.log(error);
-      
+
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
@@ -132,11 +133,12 @@ export class ProductController extends ResponseData {
           response.videos = updatedVideos;
         }
         const thumbnail = response.thumbnail
-        if (thumbnail.startsWith("https://")) {
-          response.thumbnail = thumbnail
-        } else {
+        if (typeof thumbnail === 'string' && thumbnail.startsWith("https://")) {
+          response.thumbnail = thumbnail;
+        }
+        if (thumbnail) {
           response.thumbnail = await this.s3Service.getUrlObject(
-            thumbnail + ".jpg"
+            (thumbnail) + ".jpeg"
           );
         }
       }
@@ -191,16 +193,16 @@ export class ProductController extends ResponseData {
         let video_urls: string[] = [];
         let thumbnail_path: string = '';
         let thumbnail_url: string = '';
-        
+
 
         let response: any = await this.productUseCase.createProduct({ ...data, slug, sku });
         if (!(response instanceof ErrorHandler)) {
           await Promise.all(
             req.files.map(async (item: any, index: number) => {
               if (item.fieldname === 'images') {
-          //       const webpBuffer = await sharp(item.buffer) // `item.buffer` es el contenido del archivo cargado por Multer
-          // .webp()
-          // .toBuffer();
+                //       const webpBuffer = await sharp(item.buffer) // `item.buffer` es el contenido del archivo cargado por Multer
+                // .webp()
+                // .toBuffer();
                 const pathObject = `${this.path}/${response?._id}/${index}`;
                 const { url } = await this.s3Service.uploadToS3AndGetUrl(
                   pathObject,
@@ -219,7 +221,7 @@ export class ProductController extends ResponseData {
                   'image/webp'
                 );
                 thumbnail_path = pathThumbnail
-                thumbnail_url = url.split("?")[0] ?? "";         
+                thumbnail_url = url.split("?")[0] ?? "";
               }
               if (item.fieldname === 'videos') {
                 const pathVideo = `${this.path}/${response?._id}/${index}`;
@@ -254,9 +256,9 @@ export class ProductController extends ResponseData {
 
       this.invoke(response2, 201, res, 'Producto creado con éxito', next);
 
-    } catch (error : any) {
+    } catch (error: any) {
       console.log(error);
-      
+
       if (error?.code === 11000) {
         const duplicatedField = Object.keys(error.keyPattern)[0]; // Campo que causó el error
         const duplicatedValue = error.keyValue[duplicatedField]; // Valor duplicado
@@ -352,7 +354,7 @@ export class ProductController extends ResponseData {
       if (req.file) {
         const imageId = generateUUID()
         const pathObject = `${this.path}/${response?._id}/${imageId}`;
-        const {url} = await this.s3Service.uploadToS3AndGetUrl(
+        const { url } = await this.s3Service.uploadToS3AndGetUrl(
           pathObject,
           req.file,
           'image/webp'
@@ -427,7 +429,7 @@ export class ProductController extends ResponseData {
     try {
       if (!search) return next(new ErrorHandler("ingresa una busqueda", 404));
       const page = Number(req.query.page) || 1;
-      const response: any | null = await this.productUseCase.searchProducts(search, page);  
+      const response: any | null = await this.productUseCase.searchProducts(search, page);
       this.invoke({
         products: response?.products,
         total: response.total
@@ -446,7 +448,7 @@ export class ProductController extends ResponseData {
       if (!category) return next(new ErrorHandler("El nombre de la categoria es requerida", 404));
       const categoria: any | null = await this.categoryUseCase.getDetailCategoryByName(category);
       if (categoria == null) return next(new ErrorHandler("La categoria no existe", 404));
-      const products: any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);  
+      const products: any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);
       await Promise.all(
         products.products.map(async (product: any) => {
           const thumbnail = product.thumbnail
@@ -468,7 +470,7 @@ export class ProductController extends ResponseData {
           }
         })
       )
-     
+
       const response = {
         category: categoria,
         products: products.products,
@@ -491,7 +493,7 @@ export class ProductController extends ResponseData {
       if (!subcategory) return next(new ErrorHandler("El nombre de la subcategoria es requerida", 404));
       const subcategoria: any | null = await this.subCategoryUseCase.getDetailSubCategoryByName(subcategory);
       if (subcategoria == null) return next(new ErrorHandler("La subcategoria no existe", 404));
-      const products: any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);   
+      const products: any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);
       await Promise.all(
         products.products.map(async (product: any) => {
           const thumbnail = product.thumbnail
@@ -637,54 +639,55 @@ export class ProductController extends ResponseData {
   }
 
 
-  public async updateURLS (req: Request, res: Response, next: NextFunction) {    
+  public async updateURLS(req: Request, res: Response, next: NextFunction) {
     try {
       const response = await this.productUseCase.getProducts();
 
-        if (!(response instanceof ErrorHandler)) {
+      if (!(response instanceof ErrorHandler)) {
 
         const updatedResponse = await Promise.all(
-          response.map(async (item: any) => {    
+          response.map(async (item: any) => {
 
-            const urls: string[] = [];        
+            const urls: string[] = [];
             let video_urls: string[] = [];
             let thumbnail_url: string = '';
 
             const images = item.images;
 
-            if(images && images.length > 0) {
-                  const updatedImages = await Promise.all(
-                    images.map(async (image: any) => {
-                      if (image.startsWith("https://")) {
-                        return ;
-                      } else {   
-                        const newImageItem = image                     
-                        const url = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}` + image.url + ".jpg";
-                        newImageItem.url = url;
-                        urls.push(newImageItem);
-                      }})
-                );
+            if (images && images.length > 0) {
+              const updatedImages = await Promise.all(
+                images.map(async (image: any) => {
+                  if (image.startsWith("https://")) {
+                    return;
+                  } else {
+                    const newImageItem = image
+                    const url = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}` + image.url + ".jpg";
+                    newImageItem.url = url;
+                    urls.push(newImageItem);
+                  }
+                })
+              );
             }
-            if (item.videos && item.videos.length > 0) {            
+            if (item.videos && item.videos.length > 0) {
               const updatedVideos = await Promise.all(
                 item.videos.map(async (video: any) => {
                   if (video.startsWith("https://")) {
-                    return ;
+                    return;
                   } else {
                     const res = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}` + video + ".mp4";
                     video_urls.push(res);
-                  }                  
+                  }
                 })
-              );              
+              );
             }
-           
+
 
 
 
 
             const thumbnail = item.thumbnail
             if (thumbnail.startsWith("https://")) {
-              return ;
+              return;
             } else {
               const res = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}` + thumbnail + ".jpg";
               thumbnail_url = res;
@@ -695,19 +698,19 @@ export class ProductController extends ResponseData {
               thumbnail: thumbnail_url
             });
 
-            
 
-           
-          
+
+
+
           })
-        );        
+        );
       }
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
   }
-  
+
 
 
 }
