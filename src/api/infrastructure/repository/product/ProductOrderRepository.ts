@@ -18,8 +18,8 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
     }
 
 
-    async findAllProductOrders(populateConfig1?: any): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        const response: any = await this.ProductOrderModel.find().populate(populateConfig1).sort({ createdAt: -1 })
+    async findAllProductOrders(populateConfig1?: any, populateConfig2?: any): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+        const response: any = await this.ProductOrderModel.find().populate(populateConfig1).populate(populateConfig2).sort({ createdAt: -1 })
         return response
     }
 

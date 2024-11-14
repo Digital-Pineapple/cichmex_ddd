@@ -18,6 +18,8 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { MomentService } from '../../../../shared/infrastructure/moment/MomentService';
 import { PaymentEntity, PaymentVoucher } from '../../../domain/payments/PaymentEntity';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
+import mongoose from 'mongoose';
+import { errorMonitor } from 'nodemailer/lib/xoauth2';
 
 
 export class PaymentController extends ResponseData {
@@ -82,18 +84,21 @@ export class PaymentController extends ResponseData {
             const payment1 = new Payment(client);
             const PaymentMP: any = await this.paymentUseCase.getPaymentsMPExpired();
             const PaymentsTransfer: any = await this.paymentUseCase.getPaymentsTransferExpired()
-    
+            
             // Procesar todos los pagos expirados
             await Promise.all(
                 PaymentMP.map(async (payment: any) => {
+
                     try {
                         // Obtener información de pago de MercadoPago
                         const infoPayment = await payment1.get({ id: payment.MP_info.id.toString() });
-    
                         // Actualizar estado del pago y orden de producto basado en el estado del pago
+                        
                         await this.updatePaymentAndOrder(payment, infoPayment);
                     } catch (err) {
                         console.error(`Error al obtener información de pago con id ${payment.MP_info.id}:`, err);
+
+                        
                     }
                 })
             );
@@ -102,7 +107,7 @@ export class PaymentController extends ResponseData {
                 PaymentsTransfer.map(async (payment: any) => {
                     try {
                         await this.paymentUseCase.updateOnePayment(payment._id,{status:false, payment_status:'cancelled'})
-                        const PO = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id, status: true });
+                        const PO = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id });
                         await this.productOrderUseCase.updateProductOrder(PO._id, { status: false,payment_status:'cancelled' });
                     } catch (err) {
                         console.error(`Error al obtener información de pago con id ${payment.MP_info.id}:`, err);
@@ -119,13 +124,15 @@ export class PaymentController extends ResponseData {
     
     private async updatePaymentAndOrder(payment: any, infoPayment: any) {
         const status = infoPayment.status;
-    
+        const payment_id = payment._id.toString()
+        console.log(status);
+        
         // Actualizar el estado del pago en tu base de datos
-        await this.paymentUseCase.updateOnePayment(payment._id, { payment_status: status });
+        await this.paymentUseCase.updateOnePayment(payment_id, { payment_status: status });
     
         // Obtener la orden de producto asociada
-        const PO = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id, status: true });
-    
+        const PO = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id});
+        
         if (PO) {
             if (status === "approved" || status === "in_process") {
                 // Actualizar la orden de producto si el pago fue aprobado o está en proceso
@@ -135,6 +142,7 @@ export class PaymentController extends ResponseData {
                 await this.productOrderUseCase.updateProductOrder(PO._id, { payment_status: status, status: false });
             }
         } else {
+            
             console.error(`No se encontró una orden de producto con order_id ${payment.order_id}`);
         }
     }
@@ -287,16 +295,17 @@ export class PaymentController extends ResponseData {
         const uuid4 = generateUUID();
         const order_id = RandomCodeId('CIC')
         const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
-        const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+        const expDate = moment(currentDate).add(1, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
 
         const productToSend = products.map((i:any)=>{
            const pr = { id: i.id,
             title:i.title,
-            picture_url: i?.picture_url ,
+            picture_url: i?.picture_url?.url ,
             unit_price:i.unit_price,
             quantity: i.quantity}
             return pr
         })
+        
         // const cartUser : any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
         // if(!cartUser) return next(new ErrorHandler('No hay productos para comprar', 404));
         // console.log(cartUser.products);
@@ -347,6 +356,8 @@ export class PaymentController extends ResponseData {
                 requestOptions: { idempotencyKey: uuid4 },
                 body: body1,
             });
+            console.log(payment);
+            
             const { additional_info, id, status, transaction_details, payment_method } = payment
             
             if (payment) {
