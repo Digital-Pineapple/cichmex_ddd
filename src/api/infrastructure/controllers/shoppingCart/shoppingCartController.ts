@@ -12,6 +12,7 @@ import { ProductShopping } from '../../../domain/product/ProductEntity';
 import mongoose from 'mongoose';
 import { ShoppingCartEntity } from '../../../domain/shoppingCart/shoppingCartEntity';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
+import { ShippingCostUseCase } from '../../../application/shippingCost/ShippingCostUseCase';
 
 export class ShoppingCartController extends ResponseData {
     protected path = '/shoppingCart'
@@ -20,6 +21,7 @@ export class ShoppingCartController extends ResponseData {
     constructor(
         private shoppingCartUseCase: ShoppingCartUseCase,
         private stockStoreHouseUseCase: StockStoreHouseUseCase,
+        private shippingCostUseCase: ShippingCostUseCase,
         private readonly s3Service: S3Service
     ) {
         super();
@@ -49,8 +51,13 @@ export class ShoppingCartController extends ResponseData {
         const user = req.user;
         try {            
             const response: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id+"");
-            if(!response) return next(new ErrorHandler('No existe un carrito de compras asociado a este usuario', 404));
-        
+            if(!response) return next(new ErrorHandler('No existe un carrito de compras asociado a este usuario', 404));            
+            const products = response?.products;   
+            const totalCart = await this.shoppingCartUseCase.getTotalCart(products);    
+            const weight = await this.shoppingCartUseCase.getTotalWeight(products);                             
+            const shippingCost = await this.shippingCostUseCase.findShippingCost(weight);             
+            // console.log(weight, "weight"); 
+            // console.log(shippingCost, "shippingCost");                               
             const mergeStockProducts = await Promise.all(
                 response.products.map(async (product: any) => {
                     const stock = await this.stockStoreHouseUseCase.getProductStock(product.item._id, this.onlineStoreHouse);
@@ -58,21 +65,14 @@ export class ShoppingCartController extends ResponseData {
                 })
             )
             response.products = mergeStockProducts;
-            const updatedResponse = await Promise.all(
-                response.products.map(async (product:any)=>{
-                    const thumbnail = product.item.thumbnail
-                    if (thumbnail.startsWith("https://")) {
-                      product.item.thumbnail = thumbnail
-                  } else {
-                    product.item.thumbnail =  await this.s3Service.getUrlObject(
-                      thumbnail + ".jpg"
-                    );
-                  }   
-                    // const thumbnail= await this.s3Service.getUrlObject(product.item.thumbnail + ".jpg");       
-                    // product.item.thumbnail = thumbnail;                                  
-                })
-            )                       
-            this.invoke(response, 200, res, '', next);          
+            const updatedResponse = {
+                ...response.toJSON(),
+                total_cart: totalCart,
+                shipping_cost: shippingCost?.price_weight,
+                totalWithShipping: totalCart + shippingCost?.price_weight
+            }    
+            // console.log(updatedResponse, "response xdxd");                              
+            this.invoke( updatedResponse, 200, res, '', next);          
         } catch (error) {           
             console.log(error, "error");            
             next(new ErrorHandler('Hubo un error al consultar la información', 500));

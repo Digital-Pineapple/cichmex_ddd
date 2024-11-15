@@ -36,5 +36,26 @@ export class ShoppingCartUseCase {
     public async deletePInCart(item_id:any): Promise<ShoppingCartEntity | null> {
         return await this.shoppingCartRepository.DeletePinC(item_id)
     }
+
+    public async getTotalCart(products: any): Promise<number> {
+        const totalCart =  products?.reduce(
+            (accumulator: number, currentValue: any) => {
+                const discount = currentValue?.item?.porcentDiscount;
+                const isDiscount = Boolean(discount);
+                if(isDiscount){
+                    const priceWithDiscount = currentValue?.item?.discountPrice;
+                    return accumulator + Number(priceWithDiscount) * currentValue.quantity
+                }
+                return accumulator + Number(currentValue?.item?.price) * currentValue.quantity;
+            }, 0);  
+        return totalCart;        
+    }
+    public async getTotalWeight(products: any): Promise<number> {
+        const weight = await products?.reduce((acc: number, product: any) => { 
+            const currentWeight = Number(product?.item?.weight) || 0;                
+            return acc + currentWeight * product.quantity
+        }, 0);      
+        return weight;
+    }
 }
     

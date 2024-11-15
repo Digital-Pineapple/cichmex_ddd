@@ -53,6 +53,6 @@ productRouter
   .get("/videos/ok", productController.getVideos)
   .get("/recommendProducts/ok/:id", productController.getSimilarProducts)
   .delete("/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.deleteProduct)  
-  .get("/updateurls", productController.updateURLS)  
+  .get("/products/urls", productController.updateURLS)  
 
 export default productRouter;
