@@ -8,6 +8,9 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { StockStoreHouseRepository } from '../../repository/stockStoreHouse/StockStoreHouseRepository';
 import StockStoreHouseModel from '../../models/stockStoreHouse/StockStoreHouseModel';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
+import { ShippingCostRepository } from '../../repository/shippingCostRepository/ShippingCostRepository';
+import ShippingCostModel from '../../models/ShippingCostModel';
+import { ShippingCostUseCase } from '../../../application/shippingCost/ShippingCostUseCase';
 
 const shoppingCartRouter = Router();
 
@@ -16,7 +19,9 @@ const shoppingCartUseCase      = new ShoppingCartUseCase(shoppingCartRepository)
 const s3Service = new S3Service();
 const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
 const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository);
-const shoppingCartController   = new ShoppingCartController(shoppingCartUseCase, stockStoreHouseUseCase, s3Service);
+const shippingCostRepository = new ShippingCostRepository(ShippingCostModel);
+const shippingCostUseCase = new ShippingCostUseCase(shippingCostRepository);
+const shoppingCartController   = new ShoppingCartController(shoppingCartUseCase, stockStoreHouseUseCase, shippingCostUseCase, s3Service);
 
 const userValidations = new UserValidations();
 

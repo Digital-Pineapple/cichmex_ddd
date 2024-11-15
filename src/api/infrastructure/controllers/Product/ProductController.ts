@@ -460,73 +460,49 @@ export class ProductController extends ResponseData {
   public async updateURLS (req: Request, res: Response, next: NextFunction) {    
     try {
       const response = await this.productUseCase.getProducts();
-
-        if (!(response instanceof ErrorHandler)) {
-
-        const updatedResponse = await Promise.all(
+  
+      if (!(response instanceof ErrorHandler)) {
+        await Promise.all(
           response.map(async (item: any) => {    
-
-            const urls: string[] = [];        
-            let video_urls: string[] = [];
-            let thumbnail_url: string = '';
-
-            const images = item.images;
-
-            if(images && images.length > 0) {
-                  const updatedImages = await Promise.all(
-                    images.map(async (image: any) => {
-                      if (image.startsWith("https://")) {
-                        return ;
-                      } else {   
-                        const newImageItem = image                     
-                        const url = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}` + image.url + ".jpg";
-                        newImageItem.url = url;
-                        urls.push(newImageItem);
-                      }})
-                );
+  
+            // Update image URLs
+            item.images = item.images?.map((image: any) => {
+              if (image && !image.url.startsWith("https://")) {
+                image.url = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}${image.url}`;
+              }
+              return image;
+            }) || [];
+  
+            // Update video URLs
+            item.videos = item.videos?.map((video: any) => {
+              if (!video.startsWith("https://")) {
+                return `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}${video}`;
+              }
+              return video;
+            }) || [];
+  
+            // Update thumbnail URL
+            if (item.thumbnail && !item.thumbnail.startsWith("https://")) {
+              item.thumbnail = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}${item.thumbnail}`;
             }
-            if (item.videos && item.videos.length > 0) {            
-              const updatedVideos = await Promise.all(
-                item.videos.map(async (video: any) => {
-                  if (video.startsWith("https://")) {
-                    return ;
-                  } else {
-                    const res = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}` + video + ".mp4";
-                    video_urls.push(res);
-                  }                  
-                })
-              );              
-            }
-           
-
-
-
-
-            const thumbnail = item.thumbnail
-            if (thumbnail.startsWith("https://")) {
-              return ;
-            } else {
-              const res = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}` + thumbnail + ".jpg";
-              thumbnail_url = res;
-            }
-            const product = await this.productUseCase.updateProduct(item?._id, {
-              images: urls,
-              videos: video_urls,
-              thumbnail: thumbnail_url
+  
+            // Update product in the database
+            await this.productUseCase.updateProduct(item._id, {
+              images: item.images,
+              videos: item.videos,
+              thumbnail: item.thumbnail
             });
-
-            
-
-           
-          
           })
-        );        
+        );
       }
+  
       this.invoke(response, 200, res, "", next);
     } catch (error) {
+      console.log("Error:", error);
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
   }
+  
   
 
 
