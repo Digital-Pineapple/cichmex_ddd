@@ -2,5 +2,5 @@
 .env
 .env.production
 /dist
-/wwebjs_auth
-.env*
+/wwwebjs_auth
+*.env
