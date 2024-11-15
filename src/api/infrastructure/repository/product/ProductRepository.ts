@@ -129,15 +129,48 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     // return result;
   }
 
-   async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
-    const result = await this.MODEL.aggregate([
-        {$match: {
-            status: true,
-            videos: { $exists: true, $ne: [] } // Asegura que el campo "video" exista y no sea nulo
-        }},
-        {$limit: 10}
-    ])    
-    return result
+   async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {   
+        const result = await this.MODEL.aggregate([
+          {
+              $match: {
+                  status: true,
+                  videos: { $exists: true, $ne: [] }, // Ensures "videos" field exists and is not empty
+              },
+          },
+          {
+              $limit: 10,
+          },
+          {
+            $lookup: {
+                from: 'categories', // The name of the Categories collection
+                localField: 'category', // Field in ProductEntity
+                foreignField: '_id', // Field in Categories collection
+                as: 'category', // Alias for the joined data
+            },
+        },
+        {
+            $unwind: {
+                path: '$category', // Convert the array into a single object
+                preserveNullAndEmptyArrays: true, // Keeps documents even if no match is found
+            },
+        },
+        {
+            $lookup: {
+                from: 'subcategories', // The name of the SubCategory collection
+                localField: 'subCategory', // Field in ProductEntity
+                foreignField: '_id', // Field in SubCategory collection
+                as: 'subCategory', // Alias for the joined data
+            },
+        },
+        {
+            $unwind: {
+                path: '$subCategory', // Convert the array into a single object
+                preserveNullAndEmptyArrays: true, // Keeps documents even if no match is found
+            },
+        },
+      ]);
+      return result;
+
    }
 
    async findRandomProductsByCategory(categoryId : any, skiproduct:any , storehouse: any ): Promise<ProductEntity[] | ErrorHandler | null> {

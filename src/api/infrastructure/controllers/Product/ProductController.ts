@@ -723,7 +723,7 @@ export class ProductController extends ResponseData {
             // Update image URLs
             item.images = item.images?.map((image: any) => {
               if (image && !image.url.startsWith("https://")) {
-                image.url = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}${image.url}`;
+                image.url = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}${image.url}.jpg`;
               }
               return image;
             }) || [];
@@ -731,14 +731,14 @@ export class ProductController extends ResponseData {
             // Update video URLs
             item.videos = item.videos?.map((video: any) => {
               if (!video.startsWith("https://")) {
-                return `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}${video}`;
+                return `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}${video}.mp4`;
               }
               return video;
             }) || [];
   
             // Update thumbnail URL
             if (item.thumbnail && !item.thumbnail.startsWith("https://")) {
-              item.thumbnail = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}${item.thumbnail}`;
+              item.thumbnail = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}${item.thumbnail}.jpg`;
             }
   
             // Update product in the database
