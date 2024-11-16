@@ -15,7 +15,7 @@ import { StockStoreHouseEntity } from '../../../domain/storehouse/stockStoreHous
 import { Category } from '../../../domain/category/CategoryEntity';
 import { SubCategoryUseCase } from '../../../application/subCategory/SubCategoryUseCase';
 import { createSlug, generateUUID, RandomCodeId } from '../../../../shared/infrastructure/validation/Utils';
-import mongoose from 'mongoose';
+import mongoose, { AnyObject } from 'mongoose';
 import sharp from 'sharp';
 
 
@@ -48,6 +48,8 @@ export class ProductController extends ResponseData {
     this.deleteOneImageDetail = this.deleteOneImageDetail.bind(this);
     this.getSimilarProducts = this.getSimilarProducts.bind(this);
     this.updateURLS = this.updateURLS.bind(this);
+    this.deleteVideoDetail = this.deleteVideoDetail.bind(this);
+    this.addOneVideoProduct = this.addOneVideoProduct.bind(this);
 
   }
 
@@ -184,87 +186,70 @@ export class ProductController extends ResponseData {
 
   public async createProduct(req: Request, res: Response, next: NextFunction) {
     const data = { ...req.body };
+    
     try {
       const slug = createSlug(data.name);
-      const sku = RandomCodeId('PR')
-      let response2: any = []
-      if (req.files && Array.isArray(req.files)) {
-        const paths: {}[] = [];
-        const urls: {}[] = [];
-        let video_paths: string[] = [];
-        let video_urls: string[] = [];
-        let thumbnail_path: string = '';
-        let thumbnail_url: string = '';
-
-
-        let response: any = await this.productUseCase.createProduct({ ...data, slug, sku });
-        if (!(response instanceof ErrorHandler)) {
+      const sku = RandomCodeId('PR');
+      let response2: any = [];
+      
+      let response : any = await this.productUseCase.createProduct({ ...data, slug, sku });
+  
+      if (!(response instanceof ErrorHandler)) {
+        const urls: { url: string }[] = [];
+        const video_urls: { url: string; type: string }[] = [];
+        let thumbnail_url = '';
+  
+        if (req.files && Array.isArray(req.files)) {
           await Promise.all(
             req.files.map(async (item: any, index: number) => {
               if (item.fieldname === 'images') {
-                //       const webpBuffer = await sharp(item.buffer) // `item.buffer` es el contenido del archivo cargado por Multer
-                // .webp()
-                // .toBuffer();
-                const pathObject = `${this.path}/${response?._id}/${index}`;
-                const { url } = await this.s3Service.uploadToS3AndGetUrl(
-                  pathObject,
-                  item,
-                  'image/webp'
-                );
-                paths.push({ url: pathObject });
-                urls.push({ url: url.split("?")[0] ?? "" });
+                const pathObject = `${this.path}/${response._id}/images/${index}`;
+                const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, item, 'image/webp');
+                urls.push({ url: url.split("?")[0] });
               }
+  
               if (item.fieldname === 'thumbnail') {
-
-                const pathThumbnail = `${this.path}/thumbnail/${response?._id}`;
-                const { url } = await this.s3Service.uploadToS3AndGetUrl(
-                  pathThumbnail,
-                  item,
-                  'image/webp'
-                );
-                thumbnail_path = pathThumbnail
-                thumbnail_url = url.split("?")[0] ?? "";
+                const pathThumbnail = `${this.path}/thumbnail/${response._id}`;
+                const { url } = await this.s3Service.uploadToS3AndGetUrl(pathThumbnail, item, 'image/webp');
+                thumbnail_url = url.split("?")[0];
               }
-              if (item.fieldname === 'videos') {
-                const pathVideo = `${this.path}/${response?._id}/${index}`;
-                const { url } = await this.s3Service.uploadToS3AndGetUrl(
-                  pathVideo + ".mp4",
-                  item,
-                  "video/mp4"
-                );
-                video_paths.push(pathVideo);
-                video_urls.push(url.split("?")[0] ?? "");
+  
+              const match = item.fieldname.match(/videos\[(\d+)\]\[file\]/);
+              if (match) {
+                const index = parseInt(match[1], 10);
+                const videoType = req.body.videos?.[index]?.type || 'unknown';
+                const pathVideo = `${this.path}/${response._id}/videos/${index}`;
+  
+                const { url } = await this.s3Service.uploadToS3AndGetUrl(`${pathVideo}.mp4`, item, "video/mp4");
+                video_urls.push({ url: url.split("?")[0], type: videoType });
               }
             })
           );
-          response = await this.productUseCase.updateProduct(response?._id, {
+  
+          // Actualizar producto con las nuevas URLs.
+          response = await this.productUseCase.updateProduct(response._id, {
             images: urls,
             videos: video_urls,
-            thumbnail: thumbnail_url
+            thumbnail: thumbnail_url,
           });
+  
           response.images = urls;
-          response.videos = video_urls
-          response.thumbnail = thumbnail_url
-          response2 = response
+          response.videos = video_urls;
+          response.thumbnail = thumbnail_url;
         }
-        else {
-          response2 = response
-        }
-
+  
+        response2 = response;
       } else {
-        let response = await this.productUseCase.createProduct({ ...data, slug, sku });
-        response2 = response
+        response2 = response;
       }
-
+  
       this.invoke(response2, 201, res, 'Producto creado con éxito', next);
-
     } catch (error: any) {
-      console.log(error);
-
+      console.error(error);
+  
       if (error?.code === 11000) {
-        const duplicatedField = Object.keys(error.keyPattern)[0]; // Campo que causó el error
-        const duplicatedValue = error.keyValue[duplicatedField]; // Valor duplicado
-
+        const duplicatedField = Object.keys(error.keyPattern)[0];
+        const duplicatedValue = error.keyValue[duplicatedField];
         return res.status(400).json({
           error: `El campo ${duplicatedField} con valor '${duplicatedValue}' ya está en uso.`,
         });
@@ -273,7 +258,7 @@ export class ProductController extends ResponseData {
       }
     }
   }
-
+  
 
   public async updateProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
@@ -379,6 +364,44 @@ export class ProductController extends ResponseData {
     }
   }
 
+  public async addOneVideoProduct(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const { type } = req.body;
+  
+    try {
+      const response : any = await this.productUseCase.getProduct(id);
+  
+      if (!Array.isArray(req.files) || req.files.length === 0) {
+        return next(new ErrorHandler('No se subieron videos', 400)); // Error 400 para peticiones incorrectas
+      }
+  
+      const newVideos = await Promise.all(
+        req.files.map(async (item: any) => {
+          const pathVideo = `${this.path}/${id}/${type}`;
+          const { url } = await this.s3Service.uploadToS3AndGetUrl(
+            pathVideo + ".mp4",
+            item,
+            "video/mp4"
+          );
+  
+          return { url, type };
+        })
+      );
+  
+      // Combinar correctamente los videos existentes con los nuevos
+      const updatedVideos = [...(response.videos || []), ...newVideos];
+  
+      const updatedResponse = await this.productUseCase.updateProduct(id, { videos: updatedVideos });
+  
+      this.invoke(updatedResponse, 201, res, 'Se actualizó con éxito', next);
+    } catch (error) {
+      console.error('Error updating video product:', error); // Mensaje de error más descriptivo para logging
+      next(new ErrorHandler('Hubo un error al actualizar', 500));
+    }
+  }
+  
+
+
   public async deleteOneImageDetail(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params; // ID del producto
     const { imageId } = req.body; // ID de la imagen a elimina
@@ -401,6 +424,26 @@ export class ProductController extends ResponseData {
       updated.images = updatedImagesWithUrls;
 
       // Respuesta exitosa
+      this.invoke(updated, 201, res, 'Se actualizó con éxito', next);
+    } catch (error) {
+      console.error(error);
+      next(new ErrorHandler('Hubo un error al actualizar', 500));
+    }
+  }
+
+  public async deleteVideoDetail(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params; // ID del producto
+    const { video_id } = req.body; // ID de la imagen a elimina
+
+    try {
+      // Obtiene el producto por su ID
+      const product: any = await this.productUseCase.getProduct(id);
+
+      if (!product) {
+        return next(new ErrorHandler('Producto no encontrado', 404));
+      }
+      const updated: any = await this.productUseCase.deleteVideoProduct(id, video_id)
+      
       this.invoke(updated, 201, res, 'Se actualizó con éxito', next);
     } catch (error) {
       console.error(error);
