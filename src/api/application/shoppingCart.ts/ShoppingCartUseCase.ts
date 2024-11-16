@@ -13,7 +13,15 @@ export class ShoppingCartUseCase {
         return await this.shoppingCartRepository.findAll()
     }
     public async getShoppingCartByUser(id: any): Promise<ShoppingCartEntity  | null> {
-        return await this.shoppingCartRepository.findOneItem({user_id:id}, PopulateProductCS, PopulateMembershipInSC)
+        let cart = await this.shoppingCartRepository.findOneItem({user_id:id}, PopulateProductCS, PopulateMembershipInSC)        
+        let products = cart.products;
+        const existsNullableProduct = products.map((product: any) => product.item).some((item: any) => item === null)
+        if(existsNullableProduct){
+            const noNullableProducts = products.filter((product: any) => product.item !== null)
+            await this.shoppingCartRepository.updateOne(cart._id,{products: noNullableProducts})
+            cart = await this.shoppingCartRepository.findOneItem({user_id:id}, PopulateProductCS, PopulateMembershipInSC)     
+        }
+        return cart;
     }
     public async createShoppingCart(body:any): Promise<ShoppingCartEntity | null> {
         

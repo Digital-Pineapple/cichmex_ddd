@@ -17,6 +17,7 @@ import { SubCategoryUseCase } from '../../../application/subCategory/SubCategory
 import { createSlug, generateUUID, RandomCodeId } from '../../../../shared/infrastructure/validation/Utils';
 import mongoose from 'mongoose';
 import sharp from 'sharp';
+import { ObjectId } from 'mongodb';
 
 
 export class ProductController extends ResponseData {
@@ -678,17 +679,21 @@ export class ProductController extends ResponseData {
         const updatedResponse = await Promise.all(
           response.map(async (item: any) => {
             // Procesar thumbnail
-            const thumbnail = item.thumbnail;
+            const thumbnail = item?.thumbnail;
             if (thumbnail && !thumbnail.startsWith("https://")) {
               item.thumbnail = await this.s3Service.getUrlObject(thumbnail + ".jpg");
             }
+            
       
             // Procesar imágenes
             if (item?.images && item.images.length > 0) {
               const parsedImages = await Promise.all(
                 item.images.map(async (image: any) => {
+                  if (typeof image === "string" && !image.startsWith("https://")) {
+                    image = await this.s3Service.getUrlObject(image + ".jpg");
+                  }
                   // Verificar si la imagen tiene una URL completa o solo el path relativo
-                  if (!image.url.startsWith("https://")) {
+                  if (image.url && !image?.url?.startsWith("https://")) {
                     image.url = await this.s3Service.getUrlObject(image.url + ".jpg");
                   }
                   return image; // Retornar el objeto completo de la imagen
@@ -707,10 +712,13 @@ export class ProductController extends ResponseData {
       this.invoke(response, 200, res, "", next);
       
     } catch (error) {
+      console.log(error, 'ok');
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
     }
   }
 
+
+  
 
   public async updateURLS(req: Request, res: Response, next: NextFunction) {
     try {
@@ -718,12 +726,19 @@ export class ProductController extends ResponseData {
   
       if (!(response instanceof ErrorHandler)) {
         await Promise.all(
-          response.map(async (item: any) => {    
-  
+          response.map(async (item: any) => {
             // Update image URLs
             item.images = item.images?.map((image: any) => {
-              if (image && !image.url.startsWith("https://")) {
-                image.url = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}${image.url}.jpg`;
+              if (typeof image === "string" && !image.startsWith("https://")) {
+                return {
+                  _id: new ObjectId(),
+                  url: `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}${image}.jpg`,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                };
+              } else if (image?.url && !image.url.startsWith("https://")) {
+                image.url = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}${image.url}`;
+                image.updatedAt = new Date(); // Update timestamp
               }
               return image;
             }) || [];
@@ -738,20 +753,15 @@ export class ProductController extends ResponseData {
   
             // Update thumbnail URL
             if (item.thumbnail && !item.thumbnail.startsWith("https://")) {
-              item.thumbnail = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}${item.thumbnail}.jpg`;
+              item.thumbnail = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}${item.thumbnail}`;
             }
   
             // Update product in the database
             await this.productUseCase.updateProduct(item._id, {
               images: item.images,
               videos: item.videos,
-              thumbnail: item.thumbnail
+              thumbnail: item.thumbnail,
             });
-
-            
-
-           
-          
           })
         );
       }
@@ -762,6 +772,7 @@ export class ProductController extends ResponseData {
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
   }
+  
   
 
 
