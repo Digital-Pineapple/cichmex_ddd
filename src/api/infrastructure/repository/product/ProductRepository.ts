@@ -61,6 +61,34 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
         }
     }
     
+    async startDeleteVideoDetail(id: string, video_id: string): Promise<ProductEntity | ErrorHandler | null> {
+      try {
+          // Busca el producto por su ID
+          const product: any = await this.ProductModel.findById(id);
+          
+          // Verifica si el producto existe
+          if (!product) {
+              return new ErrorHandler('Product not found', 404);
+          }
+  
+          // Filtra las imágenes y elimina la que coincide con imageId
+          const videosUpdated = product.videos.filter((i: any) => !i._id.equals(video_id));
+  
+          // Actualiza el producto con el nuevo arreglo de imágenes y devuelve el documento actualizado
+          const updatedProduct = await this.ProductModel.findOneAndUpdate(
+              { _id: id }, 
+              { videos: videosUpdated }, 
+              { new: true } // Devuelve el producto actualizado
+          );
+  
+          // Retorna el producto actualizado o null si no se encuentra
+          return updatedProduct ? updatedProduct : null;
+      } catch (error) {
+          // Maneja cualquier error inesperado
+          return new ErrorHandler('Error while updating product', 500);
+      }
+  }
+  
     
    async  findDetailProductById(id:string, populateCofig1?:any, populateConfig2?:any, populateConfig3?:any): Promise<ProductEntity| ErrorHandler | null> {
     return await this.MODEL.findById(id).populate(populateCofig1).populate(populateConfig2).populate(populateConfig3)
@@ -129,49 +157,23 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     // return result;
   }
 
-   async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {   
-        const result = await this.MODEL.aggregate([
-          {
-              $match: {
-                  status: true,
-                  videos: { $exists: true, $ne: [] }, // Ensures "videos" field exists and is not empty
-              },
-          },
-          {
-              $limit: 10,
-          },
-          {
-            $lookup: {
-                from: 'categories', // The name of the Categories collection
-                localField: 'category', // Field in ProductEntity
-                foreignField: '_id', // Field in Categories collection
-                as: 'category', // Alias for the joined data
-            },
-        },
+  async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
+    const result = await this.MODEL.aggregate([
         {
-            $unwind: {
-                path: '$category', // Convert the array into a single object
-                preserveNullAndEmptyArrays: true, // Keeps documents even if no match is found
-            },
+            $match: {
+                status: true,
+                videos: { 
+                    $exists: true, 
+                    $ne: [], 
+                    $elemMatch: { type: 'vertical' } 
+                }
+            }
         },
-        {
-            $lookup: {
-                from: 'subcategories', // The name of the SubCategory collection
-                localField: 'subCategory', // Field in ProductEntity
-                foreignField: '_id', // Field in SubCategory collection
-                as: 'subCategory', // Alias for the joined data
-            },
-        },
-        {
-            $unwind: {
-                path: '$subCategory', // Convert the array into a single object
-                preserveNullAndEmptyArrays: true, // Keeps documents even if no match is found
-            },
-        },
-      ]);
-      return result;
+        { $limit: 10 }
+    ]);
+    return result;
+}
 
-   }
 
    async findRandomProductsByCategory(categoryId : any, skiproduct:any , storehouse: any ): Promise<ProductEntity[] | ErrorHandler | null> {
     const storehouseId = new ObjectId(storehouse);  
