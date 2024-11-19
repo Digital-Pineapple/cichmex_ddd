@@ -1,6 +1,5 @@
 /node_modules
 .env
-.env.production
 /dist
-/wwwebjs_auth
-*.env
+/wwebjs_auth
+.env*

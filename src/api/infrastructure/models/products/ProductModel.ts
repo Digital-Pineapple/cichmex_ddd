@@ -1,5 +1,5 @@
 import mongoose, { model, Schema } from "mongoose";
-import { ProductEntity, ProductImageEntity } from "../../../domain/product/ProductEntity";
+import { ProductEntity, ProductImageEntity, ProductVideoEntity } from "../../../domain/product/ProductEntity";
 
 const ProductImageSchema = new Schema<ProductImageEntity>(
   {
@@ -10,6 +10,29 @@ const ProductImageSchema = new Schema<ProductImageEntity>(
     url: {
       type: String,
       required: false
+    }
+  },
+
+  {
+    versionKey: false,
+    timestamps: true,
+  }
+
+)
+
+const ProductVideoSchema = new Schema<ProductVideoEntity>(
+  {
+    _id: {
+      type: Schema.Types.ObjectId,
+      default: () => new mongoose.Types.ObjectId
+    },
+    url: {
+      type: String,
+      required: false
+    },
+    type:{
+      type: String,
+      required:false,
     }
   },
 
@@ -101,10 +124,7 @@ const ProductSchema = new Schema<ProductEntity>(
       type: Number,
       required: false,
     },
-    videos: {
-      type: Array,
-      required: false
-    },
+    videos: [ProductVideoSchema],
     rating: {
       type: Number,
       required: false
