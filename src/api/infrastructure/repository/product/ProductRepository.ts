@@ -157,16 +157,23 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     // return result;
   }
 
-   async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
+  async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
     const result = await this.MODEL.aggregate([
-        {$match: {
-            status: true,
-            videos: { $exists: true, $ne: [] } // Asegura que el campo "video" exista y no sea nulo
-        }},
-        {$limit: 10}
-    ])    
-    return result
-   }
+        {
+            $match: {
+                status: true,
+                videos: { 
+                    $exists: true, 
+                    $ne: [], 
+                    $elemMatch: { type: 'vertical' } 
+                }
+            }
+        },
+        { $limit: 10 }
+    ]);
+    return result;
+}
+
 
    async findRandomProductsByCategory(categoryId : any, skiproduct:any , storehouse: any ): Promise<ProductEntity[] | ErrorHandler | null> {
     const storehouseId = new ObjectId(storehouse);  

@@ -295,7 +295,7 @@ export class PaymentController extends ResponseData {
         const uuid4 = generateUUID();
         const order_id = RandomCodeId('CIC')
         const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
-        const expDate = moment(currentDate).add(1, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+        const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
 
         const productToSend = products.map((i:any)=>{
            const pr = { id: i.id,

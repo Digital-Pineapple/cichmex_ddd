@@ -165,7 +165,6 @@ export class ProductController extends ResponseData {
           );
         }
       }
-console.log(response);
 
       this.invoke(response, 200, res, "", next);
     } catch (error) {
@@ -346,8 +345,6 @@ console.log(response);
       response.thumbnail = thumbnail_url
       this.invoke(response, 201, res, 'Se actualizó con éxito', next);
     } catch (error) {
-      console.log(error);
-
       next(new ErrorHandler('Hubo un error al actualizar', 500));
     }
   }
@@ -415,6 +412,7 @@ console.log(response);
 
       this.invoke(updatedResponse, 201, res, 'Se actualizó con éxito', next);
     } catch (error) {
+      
       console.error('Error updating video product:', error); // Mensaje de error más descriptivo para logging
       next(new ErrorHandler('Hubo un error al actualizar', 500));
     }
@@ -701,16 +699,18 @@ console.log(response);
             }
 
             // Procesar videos
-            const videos = item.videos;
-            const updatedVideos = await Promise.all(
-              videos.map(async (video: any) => {
-                if (typeof video === 'string' && !video.startsWith("https://")) {
-                  video = await this.s3Service.getUrlObject(video + ".mp4");
-                }
-                return video; // Retornar el objeto completo del video
-              })
-            );
-            item.videos = updatedVideos;
+            const videos = item.videos.find((i: any)=> i.type === 'vertical')
+            const video_url = videos ? videos.url : null
+            // const updatedVideos = await Promise.all(
+            //   videos.map(async (video: any) => {
+            //     if (typeof video === 'string' && !video.startsWith("https://")) {
+            //       video = await this.s3Service.getUrlObject(video + ".mp4");
+            //     }
+            //     return video; // Retornar el objeto completo del video
+            //   })
+            // );
+            // item.videos = updatedVideos;
+            item.videos = [video_url]
 
             return item;
           })
