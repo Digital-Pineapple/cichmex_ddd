@@ -148,13 +148,18 @@ class AuthController extends ResponseData_1.ResponseData {
     }
     loginWithGoogle(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { idToken } = req.body;
+            const { idToken, system, role } = req.body;
             try {
-                const response = yield this.authUseCase.signInWithGoogle(idToken);
-                this.invoke(response, 200, res, '', next);
+                if (!idToken)
+                    return next(new ErrorHandler_1.ErrorHandler('No se proporcionó un token de acceso', 400));
+                const typeUser = yield this.typeUserUseCase.findTypeUser({ system: system, role: role });
+                if (!typeUser)
+                    return next(new ErrorHandler_1.ErrorHandler('Hubo un error al inicar sesión', 500));
+                const googleUserResponse = yield this.authUseCase.signInWithGoogle(idToken, typeUser._id);
+                this.invoke(googleUserResponse, 200, res, '', next);
             }
             catch (error) {
-                next(new ErrorHandler_1.ErrorHandler('Usuario no registrado', 500));
+                next(new ErrorHandler_1.ErrorHandler('Hubo un error al iniciar sesión', 500));
             }
         });
     }
@@ -171,35 +176,17 @@ class AuthController extends ResponseData_1.ResponseData {
         });
     }
     registerByGoogle(req, res, next) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            const { idToken, system } = req.body;
+            const { idToken, system, role } = req.body;
             try {
-                const response = yield this.authUseCase.signUpWithGoogle(idToken);
-                const uuid = (0, Utils_1.generateUUID)();
-                if (!(response instanceof ErrorHandler_1.ErrorHandler)) {
-                    const typeUser = yield this.typeUserUseCase.findTypeUser({ system: system, role: "CUSTOMER" });
-                    if (!(typeUser === null || typeUser === void 0 ? void 0 : typeUser._id)) {
-                        return next(new ErrorHandler_1.ErrorHandler('No existe tipo de usuario', 500));
-                    }
-                    const response2 = yield this.authUseCase.signUpPlatform({
-                        fullname: response === null || response === void 0 ? void 0 : response.fullname,
-                        email: response === null || response === void 0 ? void 0 : response.email,
-                        type_user: typeUser === null || typeUser === void 0 ? void 0 : typeUser._id,
-                        uuid: uuid,
-                        google: true
-                    });
-                    if ((_a = response2 === null || response2 === void 0 ? void 0 : response2.user) === null || _a === void 0 ? void 0 : _a._id) {
-                        yield this.shoppingCartUseCase.createShoppingCart({ user_id: response2.user._id });
-                        this.invoke(response2, 201, res, 'Registro Exitoso', next);
-                    }
-                    else {
-                        next(new ErrorHandler_1.ErrorHandler("correo existente", 500));
-                    }
-                }
-                else {
-                    this.invoke(response, 200, res, '', next);
-                }
+                if (!idToken)
+                    return next(new ErrorHandler_1.ErrorHandler('No se proporcionó un token de acceso', 400));
+                const typeUser = yield this.typeUserUseCase.findTypeUser({ system: system, role: role });
+                if (!typeUser)
+                    return next(new ErrorHandler_1.ErrorHandler('Hubo un error al registrar con gooole', 500));
+                const googleUserResponse = yield this.authUseCase.signUpWithGoogle(idToken, typeUser === null || typeUser === void 0 ? void 0 : typeUser._id);
+                ;
+                this.invoke(googleUserResponse, 200, res, '', next);
             }
             catch (error) {
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al registrar', 500));
