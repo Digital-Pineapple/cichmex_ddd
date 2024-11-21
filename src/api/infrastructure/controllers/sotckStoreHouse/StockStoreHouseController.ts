@@ -129,7 +129,7 @@ export class StockStoreHouseController extends ResponseData {
     }
 
     public async createMultipleStock(req: Request, res: Response, next: NextFunction) {
-        const { user_received, user_delivery, products } = req.body;
+        const { products } = req.body;
         const user = req.user;
         const UserInfo = {
             _id: user._id,
@@ -142,7 +142,7 @@ export class StockStoreHouseController extends ResponseData {
 
         try {
             // Validar si existen los productos y demás campos requeridos
-            if (!products || !user_received || !user_delivery) {
+            if (!products ) {
                 return next(new ErrorHandler('Faltan datos necesarios', 400));
             }
 
@@ -167,8 +167,6 @@ export class StockStoreHouseController extends ResponseData {
                         responsible: UserInfo,
                         folio: code_folio,
                         product_detail: item,
-                        user_received: user_received,
-                        user_delivery: user_delivery
                     });
 
                     await this.stockStoreHouseUseCase.updateStock(response?._id, { stock: entry.newQuantity });
@@ -189,8 +187,6 @@ export class StockStoreHouseController extends ResponseData {
                         responsible: UserInfo,
                         folio: code_folio,
                         product_detail: item,
-                        user_received: user_received,
-                        user_delivery: user_delivery
                     });
 
                     await this.stockStoreHouseUseCase.updateStock(available_id, { stock: entry.newQuantity });

@@ -63,10 +63,7 @@ export const options = {
             "status": { "type": "boolean" },
             "default": { "type": "boolean" },
             "lat": { "type": "number" },
-            "lgt": { "type": "number" },
-            "coords": {
-              "$ref": "#/components/schemas/Coords"
-            },
+            "lgt": { "type": "number" },           
             "createdAt": {
               "type": "string",
               "format": "date-time"

@@ -10,7 +10,7 @@ export class ProductOrderUseCase {
   constructor(private readonly productOrderRepository: ProductOrderRepository) {}
 
   public async getProductOrders(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-    return await this.productOrderRepository.findAllProductOrders(InfoBranchOrder)
+    return await this.productOrderRepository.findAllProductOrders(InfoBranchOrder, PopulatePayment)
   }
   public async getProductOrdersExpired(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
     return await this.productOrderRepository.getPOExpired()
@@ -33,6 +33,10 @@ export class ProductOrderUseCase {
   }
   public async ProductOrdersPaid(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
     const response =  await this.productOrderRepository.getPaidProductOrders()
+    return response
+  }
+  public async ProductOrdersPaidAndFill(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+    const response =  await this.productOrderRepository.findAllItems({payment_status: 'approved',storeHouseStatus:true})
     return response
   }
   public async PendingTransferPO(): Promise<ProductOrderEntity[] | ErrorHandler| null > {

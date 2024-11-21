@@ -24,6 +24,12 @@ export class ProductUseCase {
   ): Promise<ProductEntity | ErrorHandler| null > {
     return  await this.productRepository.startDeleteImageDetail(_id,imageId) 
   }
+  public async deleteVideoProduct(
+    _id: string,
+    video_id: any
+  ): Promise<ProductEntity | ErrorHandler| null > {
+    return  await this.productRepository.startDeleteVideoDetail(_id,video_id) 
+  }
 
   public async createProduct(body:any): Promise<ProductEntity | ErrorHandler | null> {
     const product = await this.productRepository.findOneItem({ name:body.name, status:true });

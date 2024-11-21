@@ -49,6 +49,7 @@ export class ProductOrderController extends ResponseData {
     this.ReadyProductOrdersToPoint = this.ReadyProductOrdersToPoint.bind(this);
     this.OptimizedPackagesToPoint = this.OptimizedPackagesToPoint.bind(this);
     this.OutOfRegionsPO = this.OutOfRegionsPO.bind(this);
+    this.paidAndFillProductOrders = this.paidAndFillProductOrders.bind(this);
   }
 
   public async getAllProductOrders(req: Request, res: Response, next: NextFunction) {
@@ -92,6 +93,15 @@ export class ProductOrderController extends ResponseData {
 
     try {
       const response = await this.productOrderUseCase.ProductOrdersPaid()
+      this.invoke(response, 200, res, "", next);
+    } catch (error) {
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+  public async paidAndFillProductOrders(req: Request, res: Response, next: NextFunction) {
+
+    try {
+      const response = await this.productOrderUseCase.ProductOrdersPaidAndFill()
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
