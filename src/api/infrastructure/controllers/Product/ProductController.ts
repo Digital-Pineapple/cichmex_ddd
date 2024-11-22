@@ -772,6 +772,35 @@ export class ProductController extends ResponseData {
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
   }
+
+  
+  public async getProductVariantDetail(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.body // id de la variante 
+    try{
+      const response = {}
+      this.invoke(response, 200, res, "", next);
+    }catch(error){  
+      next(new ErrorHandler("Hubo un error al obtener la información", 500));
+    }
+  }
+  public async deleteProductVariant(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.body // id de la variante
+    try{
+      const response = {}
+      this.invoke(response, 200, res, "", next);
+    }catch(error){  
+      next(new ErrorHandler("Hubo un error al elimianr la variante", 500));
+    }
+  }
+  public async updateProductVariant(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.body // id de la variante
+    try{
+      const response = {}
+      this.invoke(response, 200, res, "", next);
+    }catch(error){  
+      next(new ErrorHandler("Hubo un error al actualizar la variante", 500));
+    }
+  }
   
   
 

@@ -39,6 +39,7 @@ export interface ProductEntity {
 }
 
 export interface VariantProductEntity  {
+  _id: ObjectId,
   sku: String, 
   attributes: {
     color:  String,
