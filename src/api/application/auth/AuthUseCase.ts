@@ -1,3 +1,4 @@
+import { google } from 'googleapis';
 import { Authentication, IGoogle, IGoogleReg, IGoogleRegister, IGoogleResponse, IGoogleResponseLogin, IdUserAndVerified } from '../authentication/AuthenticationService';
 
 import { AuthRepository } from '../../domain/auth/AuthRepository';
@@ -150,11 +151,10 @@ export class AuthUseCase extends Authentication {
         return await this.generateJWT(user, user.uuid);
     }
 
-    async signInWithGoogle(idToken: string): Promise<IGoogleResponseLogin | IAuth | ErrorHandler | null> {
-        let { email, picture } = await this.validateGoogleToken(idToken);
-        
-        let user = await this.authRepository.findOneItem({ email },TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
-        if (!user) return new ErrorHandler('No existe usuario', 409)
+    async signInWithGoogle(idToken: string, typeUser: any): Promise<IGoogleResponseLogin | IAuth | ErrorHandler | null> {
+        let { email, picture } = await this.validateGoogleToken(idToken);        
+        let user = await this.authRepository.findOneItem({ email: email, google: true , status: true, type_user: typeUser },TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
+        if (!user) return new ErrorHandler('No existe el usuario, Registrate', 409)
         user.profile_image = picture
         user = await this.generateJWT(user, user.uuid)
         return user
@@ -231,22 +231,21 @@ export class AuthUseCase extends Authentication {
         return user
     }
 
-    async signUpWithGoogle(idToken: string): Promise<IGoogle | ErrorHandler | null> {
-
-        let {email,fullname,picture} = await this.validateGoogleToken(idToken);
-        
-        
-        let user = await this.authRepository.findOneItem({ email: email, status:true }, TypeUserPopulateConfig,PhonePopulateConfig)
-        if (user) {
-            return new ErrorHandler('El usuario ya exite favor de iniciar sesión', 401)
-        }
-        if (!user) {
-            user = { email, fullname, picture }
-        }
-
-        return user
-       
-
+    async signUpWithGoogle(idToken: string, typeUser: any): Promise<IGoogle | ErrorHandler | null> {        
+        let { email, fullname, picture } = await this.validateGoogleToken(idToken);                
+        let user = await this.authRepository.findOneItem({ email: email, status:true, google: true, type_user: typeUser }, TypeUserPopulateConfig,PhonePopulateConfig)
+        if (user) return new ErrorHandler('El usuario ya existe, inicia sesión', 401)
+        const uuid = generateUUID();
+        let newUser = await this.authRepository.createOne({ 
+            google: true,         
+            fullname: fullname,  
+            status: true,           
+            uuid: uuid, 
+            type_user: typeUser 
+        });    
+        user = await this.authRepository.findOneItem({uuid: newUser.uuid }, TypeUserPopulateConfig, PhonePopulateConfig)
+        user = await this.generateJWT(user, user.uuid);                  
+        return user                    
     }
 
     async changePassword(password: string, newPassword: string, id: string): Promise<ErrorHandler | IAuth | null> {

@@ -164,13 +164,15 @@ export class AuthController extends ResponseData {
     }
 
     public async loginWithGoogle(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
-        const { idToken } = req.body;
-        try {
-            const response = await this.authUseCase.signInWithGoogle(idToken);
-
-            this.invoke(response, 200, res, '', next);
+        const { idToken, system, role } = req.body;
+        try {       
+            if(!idToken) return next(new ErrorHandler('No se proporcionó un token de acceso', 400));
+            const typeUser = await this.typeUserUseCase.findTypeUser({ system: system, role: role });            
+            if (!typeUser) return next(new ErrorHandler('Hubo un error al inicar sesión', 500))            
+            const googleUserResponse = await this.authUseCase.signInWithGoogle(idToken, typeUser._id);            
+            this.invoke(googleUserResponse, 200, res, '', next);           
         } catch (error) {
-            next(new ErrorHandler('Usuario no registrado', 500));
+            next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }
     }
     public async loginWithGooglePartner(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
@@ -185,39 +187,14 @@ export class AuthController extends ResponseData {
     }
 
     public async registerByGoogle(req: Request, res: Response, next: NextFunction): Promise<void> {
-        const { idToken, system } = req.body;
-
+        const { idToken, system, role } = req.body;
         try {
-            const response = await this.authUseCase.signUpWithGoogle(idToken);
-
-            const uuid = generateUUID();
-
-            if (!(response instanceof ErrorHandler)) {
-                const typeUser = await this.typeUserUseCase.findTypeUser({ system: system, role: "CUSTOMER" });
-
-                if (!typeUser?._id) {
-                    return next(new ErrorHandler('No existe tipo de usuario', 500));
-                }
-
-                const response2: any = await this.authUseCase.signUpPlatform({
-                    fullname: response?.fullname,
-                    email: response?.email,
-                    type_user: typeUser?._id,
-                    uuid: uuid,
-                    google: true
-                });
-
-                if (response2?.user?._id) {
-                    await this.shoppingCartUseCase.createShoppingCart({ user_id: response2.user._id });
-                    this.invoke(response2, 201, res, 'Registro Exitoso', next)
-                } else {
-                    next(new ErrorHandler("correo existente", 500));
-                }
-            } else {
-                this.invoke(response, 200, res, '', next);
-            }
+            if(!idToken) return next(new ErrorHandler('No se proporcionó un token de acceso', 400));
+            const typeUser = await this.typeUserUseCase.findTypeUser({ system: system, role: role });            
+            if (!typeUser) return next(new ErrorHandler('Hubo un error al registrar con gooole', 500))            
+            const googleUserResponse = await this.authUseCase.signUpWithGoogle(idToken, typeUser?._id);;            
+            this.invoke(googleUserResponse, 200, res, '', next);                                        
         } catch (error) {
-
             next(new ErrorHandler('Hubo un error al registrar', 500));
         }
     }
