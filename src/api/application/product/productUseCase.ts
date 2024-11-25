@@ -33,7 +33,7 @@ export class ProductUseCase {
 
   public async createProduct(body:any): Promise<ProductEntity | ErrorHandler | null> {
     const product = await this.productRepository.findOneItem({ name:body.name, status:true });
-    if (product) return new ErrorHandler("Producto ya registrado", 400);
+    if (product) return new ErrorHandler(`Producto con nombre ${product.name} ya esta en uso `, 400);
     return await this.productRepository.createOne({...body});
   }
 

@@ -51,6 +51,7 @@ export class ProductController extends ResponseData {
     this.updateURLS = this.updateURLS.bind(this);
     this.deleteVideoDetail = this.deleteVideoDetail.bind(this);
     this.addOneVideoProduct = this.addOneVideoProduct.bind(this);
+    this.processFiles = this.processFiles.bind(this);
 
   }
 
@@ -206,78 +207,83 @@ export class ProductController extends ResponseData {
 
   public async createProduct(req: Request, res: Response, next: NextFunction) {
     const data = { ...req.body };
-
+  
     try {
+      // Generar slug y SKU
       const slug = createSlug(data.name);
       const sku = RandomCodeId('PR');
-      let response2: any = [];
-
-      let response: any = await this.productUseCase.createProduct({ ...data, slug, sku });
-
-      if (!(response instanceof ErrorHandler)) {
-        const urls: { url: string }[] = [];
-        const video_urls: { url: string; type: string }[] = [];
-        let thumbnail_url = '';
-
-        if (req.files && Array.isArray(req.files)) {
-          await Promise.all(
-            req.files.map(async (item: any, index: number) => {
-              if (item.fieldname === 'images') {
-                const pathObject = `${this.path}/${response._id}/images/${index}`;
-                const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, item, 'image/webp');
-                urls.push({ url: url.split("?")[0] });
-              }
-
-              if (item.fieldname === 'thumbnail') {
-                const pathThumbnail = `${this.path}/thumbnail/${response._id}`;
-                const { url } = await this.s3Service.uploadToS3AndGetUrl(pathThumbnail, item, 'image/webp');
-                thumbnail_url = url.split("?")[0];
-              }
-
-              const match = item.fieldname.match(/videos\[(\d+)\]\[file\]/);
-              if (match) {
-                const index = parseInt(match[1], 10);
-                const videoType = req.body.videos?.[index]?.type || 'unknown';
-                const pathVideo = `${this.path}/${response._id}/videos/${index}`;
-
-                const { url } = await this.s3Service.uploadToS3AndGetUrl(`${pathVideo}.mp4`, item, "video/mp4");
-                video_urls.push({ url: url.split("?")[0], type: videoType });
-              }
-            })
-          );
-
-          // Actualizar producto con las nuevas URLs.
-          response = await this.productUseCase.updateProduct(response._id, {
-            images: urls,
-            videos: video_urls,
-            thumbnail: thumbnail_url,
-          });
-
-          response.images = urls;
-          response.videos = video_urls;
-          response.thumbnail = thumbnail_url;
-        }
-
-        response2 = response;
-      } else {
-        response2 = response;
+  
+      // Crear el producto base
+      let product : any  = await this.productUseCase.createProduct({ ...data, slug, sku });
+      if (product instanceof ErrorHandler) {
+        return this.invoke(product, 400, res, 'Error al crear el producto', next);
       }
-
-      this.invoke(response2, 201, res, 'Producto creado con éxito', next);
+  
+      // Procesar archivos por lotes si existen
+      if (req.files && Array.isArray(req.files)) {
+        const batchSize = 5; // Tamaño del lote (ajústalo según tus necesidades)
+        const { images, videos, thumbnail } = await this.processFiles(req.files, product._id, req.body);
+  
+        // Actualizar producto con las URLs generadas
+        product = await this.productUseCase.updateProduct(product._id, {
+          images,
+          videos,
+          thumbnail,
+        });
+  
+        Object.assign(product, { images, videos, thumbnail });
+      }
+  
+      this.invoke(product, 201, res, 'Producto creado con éxito', next);
     } catch (error: any) {
       console.error(error);
-
+  
       if (error?.code === 11000) {
         const duplicatedField = Object.keys(error.keyPattern)[0];
         const duplicatedValue = error.keyValue[duplicatedField];
         return res.status(400).json({
           error: `El campo ${duplicatedField} con valor '${duplicatedValue}' ya está en uso.`,
         });
-      } else {
-        next(new ErrorHandler(error, 500));
       }
+  
+      next(new ErrorHandler(error, 500));
     }
   }
+  
+  /**
+   * Procesa los archivos subidos al servidor.
+   */
+  public async processFiles(files: any[], productId: string, body: any) {
+    const images: { url: string }[] = [];
+    const videos: { url: string; type: string }[] = [];
+    let thumbnail = '';
+  
+    await Promise.all(
+      files.map(async (file: any, index: number) => {
+        if (file.fieldname === 'images') {
+          const path = `${this.path}/${productId}/images/${index}`;
+          const { url } = await this.s3Service.uploadToS3AndGetUrl(path, file, 'image/webp');
+          images.push({ url: url.split('?')[0] });
+        } else if (file.fieldname === 'thumbnail') {
+          const path = `${this.path}/thumbnail/${productId}`;
+          const { url } = await this.s3Service.uploadToS3AndGetUrl(path, file, 'image/webp');
+          thumbnail = url.split('?')[0];
+        } else if (file.fieldname.startsWith('videos')) {
+          const match = file.fieldname.match(/videos\[(\d+)\]\[file\]/);
+          if (match) {
+            const index = parseInt(match[1], 10);
+            const videoType = body.videos?.[index]?.type || 'unknown';
+            const path = `${this.path}/${productId}/videos/${index}.mp4`;
+            const { url } = await this.s3Service.uploadToS3AndGetUrl(path, file, 'video/mp4');
+            videos.push({ url: url.split('?')[0], type: videoType });
+          }
+        }
+      })
+    );
+  
+    return { images, videos, thumbnail };
+  }
+  
 
 
   public async updateProduct(req: Request, res: Response, next: NextFunction) {
