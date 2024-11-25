@@ -97,65 +97,76 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     // ]).
    }
 
-    async findSearchProducts(search: string, page: number): Promise<any> {
-    // Clean up the search term by removing special characters
-    const noSpecialCharacters = search.replace(
-      /[`~!@#$%^&*()_|+\-=?;:'"<>\{\}\[\]\\\/]/gi,
-      ""
-    );
-  
+   async findSearchProducts(search: string, page: number): Promise<any> {
+    const PAGESIZE = 30;
     const storehouseId = new ObjectId(this.onlineStoreHouse);
-    const PAGESIZE = 30; 
-    // Use aggregation to find products and join with the storehouse
+  
+    // Limpia espacios innecesarios en el término de búsqueda
+    const cleanSearch = search.trim().toLocaleLowerCase();    
+    
+    // Verificar y crear índice de texto si no existe
+    const indexes = await this.MODEL.collection.indexes();
+    const hasTextIndex = indexes.some(index => Object.values(index.key).includes("text"));
+
+    if (!hasTextIndex) {
+      console.log("Creando índice de texto...");
+      await this.MODEL.collection.createIndex(
+        { name: "text" }, // Ajusta los campos según tu modelo
+        // { name: "TextIndex" } // Nombre opcional del índice
+      );
+    }
+
+  
+  //  return 
     const result = await this.MODEL.aggregate([
       {
-        $match: {
-          // Find products that match the search criteria
-          slug: { $regex: ".*" + noSpecialCharacters + ".*", $options: "i" },
-        },
+        $match: { $text: { $search: cleanSearch } }         
       },
       {
-        // Join with the storehouse data
         $lookup: {
-          from: "storehousestocks", // The collection containing storehouse stocks
+          from: "storehousestocks",
           let: { productId: "$_id" },
           pipeline: [
             {
               $match: {
                 $expr: {
                   $and: [
-                    { $eq: ["$product_id", "$$productId"] }, // Match product ID
-                    { $eq: ["$StoreHouse_id", storehouseId] }, // Match specific storehouse ID
+                    { $eq: ["$product_id", "$$productId"] },
+                    { $eq: ["$StoreHouse_id", storehouseId] },
                   ],
                 },
               },
             },
           ],
-          as: "storehouseStock", // Alias for the joined data
+          as: "storehouseStock",
         },
       },
       {
-        // Optionally, you can add fields or transform data here
         $addFields: {
-        //   stock: { $arrayElemAt: ["$storehouseStock.stock", 0] }, // Extract stock value if needed
-        stock: { $ifNull: [{ $arrayElemAt: ['$storehouseStock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
+          stock: { $ifNull: [{ $arrayElemAt: ["$storehouseStock.stock", 0] }, 0] },
         },
       },
       {
         $facet: {
-          products: [ { $skip: (page - 1) * PAGESIZE }, // Obtener productos para la página actual
-            { $limit: PAGESIZE },],
-          total: [{$count: "total"}],
-        }
-      }
+          products: [
+            { $skip: (page - 1) * PAGESIZE },
+            { $limit: PAGESIZE },
+          ],
+          total: [{ $count: "total" }],
+        },
+      },
     ]);
   
     return {
-      products: result[0].products,
-      total: result[0]?.total[0]?.total || 0
+      products: result[0]?.products || [],
+      total: result[0]?.total[0]?.total || 0,
     };
-    // return result;
   }
+  
+  
+  
+  
+  
 
   async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
     const result = await this.MODEL.aggregate([

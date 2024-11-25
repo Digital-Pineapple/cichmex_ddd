@@ -490,7 +490,7 @@ export class ProductController extends ResponseData {
   }
   public async searchProduct(req: Request, res: Response, next: NextFunction) {
     const { search } = req.body
-    try {
+    try {            
       if (!search) return next(new ErrorHandler("ingresa una busqueda", 404));
 
       const page = Number(req.query.page) || 1;
