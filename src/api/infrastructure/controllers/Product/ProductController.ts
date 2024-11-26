@@ -52,6 +52,7 @@ export class ProductController extends ResponseData {
     this.deleteVideoDetail = this.deleteVideoDetail.bind(this);
     this.addOneVideoProduct = this.addOneVideoProduct.bind(this);
     this.processFiles = this.processFiles.bind(this);
+    this.AddProdcutWithVariants = this.AddProdcutWithVariants.bind(this);
 
   }
 
@@ -832,6 +833,23 @@ export class ProductController extends ResponseData {
           })
         );
       }
+  
+      this.invoke(response, 200, res, "", next);
+    } catch (error) {
+      console.log("Error:", error);
+      next(new ErrorHandler("Hubo un error al actualizar la información", 500));
+    }
+  }
+
+  public async AddProdcutWithVariants(req: Request, res: Response, next: NextFunction) {
+    const data = {...req.body}
+    console.log(data.variants,'sdfj');
+    
+    
+
+    try {
+     
+      // const response = await this.productUseCase.createProduct({...data})
   
       this.invoke(response, 200, res, "", next);
     } catch (error) {

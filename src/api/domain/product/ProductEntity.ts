@@ -5,6 +5,7 @@ import { PaymentEntity } from "../payments/PaymentEntity";
 import { BranchOfficeEntity, ILocation } from "../branch_office/BranchOfficeEntity";
 import { UserEntity } from "../user/UserEntity";
 import { SizeGuideEntity } from "../sizeGuide/SizeGuideEntity";
+import { VariantProductEntity } from "../variantProduct/variantProductEntity";
 
 
 export interface ProductEntity {
@@ -24,7 +25,7 @@ export interface ProductEntity {
   currency?: string;
   images?: ProductImageEntity[];
   thumbnail?: string;
-  variants?: string[]
+  variants?: VariantProductEntity[]
   status?: boolean;
   weight?: string;
   videos?: ProductVideoEntity[];
@@ -36,21 +37,9 @@ export interface ProductEntity {
   updatedAt: NativeDate;
   seoDescription?: string,
   seoKeywords?: string[],
+  condition ?: string,
 }
 
-export interface VariantProductEntity {
-  sku: String,
-  attributes: {
-    color: String,
-    size: String,
-    material: String,
-  },
-  design: String,
-  stock: String,
-  images: [ProductImageEntity],
-  thumbnail?: String;
-  sizeGuide?: SizeGuideEntity
-}
 export interface ProductImageEntity {
   _id: ObjectId,
   url: string;
