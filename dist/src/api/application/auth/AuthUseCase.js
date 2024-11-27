@@ -244,6 +244,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
                 return new ErrorHandler_1.ErrorHandler('El usuario ya existe, inicia sesión', 401);
             const uuid = (0, Utils_1.generateUUID)();
             let newUser = yield this.authRepository.createOne({
+                email: email,
                 google: true,
                 fullname: fullname,
                 status: true,

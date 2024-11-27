@@ -195,6 +195,7 @@ export class AuthController extends ResponseData {
             const googleUserResponse = await this.authUseCase.signUpWithGoogle(idToken, typeUser?._id);;            
             this.invoke(googleUserResponse, 200, res, '', next);                                        
         } catch (error) {
+            console.log(error);            
             next(new ErrorHandler('Hubo un error al registrar', 500));
         }
     }
