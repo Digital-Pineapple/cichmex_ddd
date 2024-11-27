@@ -52,6 +52,7 @@ export class ProductController extends ResponseData {
     this.deleteVideoDetail = this.deleteVideoDetail.bind(this);
     this.addOneVideoProduct = this.addOneVideoProduct.bind(this);
     this.processFiles = this.processFiles.bind(this);
+    this.updatePositionImages = this.updatePositionImages.bind(this);
 
   }
 
@@ -254,16 +255,19 @@ export class ProductController extends ResponseData {
    * Procesa los archivos subidos al servidor.
    */
   public async processFiles(files: any[], productId: string, body: any) {
-    const images: { url: string }[] = [];
+    // Predefinir arreglo de imágenes con una longitud inicial adecuada
+    const images: { url: string }[] = Array(files.filter(file => file.fieldname === 'images').length);
     const videos: { url: string; type: string }[] = [];
     let thumbnail = '';
   
     await Promise.all(
       files.map(async (file: any, index: number) => {
         if (file.fieldname === 'images') {
-          const path = `${this.path}/${productId}/images/${index}`;
+          // Usar el índice para colocar las imágenes en orden
+          const imageIndex = index;
+          const path = `${this.path}/${productId}/images/${imageIndex}`;
           const { url } = await this.s3Service.uploadToS3AndGetUrl(path, file, 'image/webp');
-          images.push({ url: url.split('?')[0] });
+          images[imageIndex] = { url: url.split('?')[0] }; // Asignar en el índice correcto
         } else if (file.fieldname === 'thumbnail') {
           const path = `${this.path}/thumbnail/${productId}`;
           const { url } = await this.s3Service.uploadToS3AndGetUrl(path, file, 'image/webp');
@@ -271,28 +275,33 @@ export class ProductController extends ResponseData {
         } else if (file.fieldname.startsWith('videos')) {
           const match = file.fieldname.match(/videos\[(\d+)\]\[file\]/);
           if (match) {
-            const index = parseInt(match[1], 10);
-            const videoType = body.videos?.[index]?.type || 'unknown';
-            const path = `${this.path}/${productId}/videos/${index}.mp4`;
+            const videoIndex = parseInt(match[1], 10);
+            const videoType = body.videos?.[videoIndex]?.type || 'unknown';
+            const path = `${this.path}/${productId}/videos/${videoIndex}.mp4`;
             const { url } = await this.s3Service.uploadToS3AndGetUrl(path, file, 'video/mp4');
-            videos.push({ url: url.split('?')[0], type: videoType });
+            videos[videoIndex] = { url: url.split('?')[0], type: videoType }; // Asignar en el índice correcto
           }
         }
       })
     );
   
-    return { images, videos, thumbnail };
+    // Filtrar imágenes para eliminar posiciones vacías
+    return { 
+      images: images.filter(Boolean), 
+      videos: videos.filter(Boolean), 
+      thumbnail 
+    };
   }
-  
 
 
   public async updateProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const { values } = req.body
     try {
-      const response = await this.productUseCase.updateProduct(id, { ...values });
+       await this.productUseCase.updateProduct(id, { ...values });
+      const product = await this.productUseCase.getProduct(id)
 
-      this.invoke(response, 201, res, 'Se actualizó con éxito', next);
+      this.invoke(product, 201, res, 'Se actualizó con éxito', next);
 
     } catch (error) {
       next(new ErrorHandler('Hubo un error al actualizar', 500));
@@ -323,9 +332,9 @@ export class ProductController extends ResponseData {
       }
 
       response = await this.productUseCase.updateProduct(id, { videos: video_urls });
-      response.videos = video_urls
+     const newResponse = await this.productUseCase.getProduct(id) 
 
-      this.invoke(response, 201, res, 'Se actualizó con éxito', next);
+      this.invoke(newResponse, 201, res, 'Se actualizó con éxito', next);
 
     } catch (error) {
       next(new ErrorHandler('Hubo un error al actualizar', 500));
@@ -415,9 +424,10 @@ export class ProductController extends ResponseData {
       // Combinar correctamente los videos existentes con los nuevos
       const updatedVideos = [...(response.videos || []), ...newVideos];
 
-      const updatedResponse = await this.productUseCase.updateProduct(id, { videos: updatedVideos });
+       await this.productUseCase.updateProduct(id, { videos: updatedVideos });
+      const newResponse = await this.productUseCase.getProduct(id)
 
-      this.invoke(updatedResponse, 201, res, 'Se actualizó con éxito', next);
+      this.invoke(newResponse, 201, res, 'Se actualizó con éxito', next);
     } catch (error) {
       
       console.error('Error updating video product:', error); // Mensaje de error más descriptivo para logging
@@ -468,8 +478,9 @@ export class ProductController extends ResponseData {
         return next(new ErrorHandler('Producto no encontrado', 404));
       }
       const updated: any = await this.productUseCase.deleteVideoProduct(id, video_id)
-
-      this.invoke(updated, 201, res, 'Se actualizó con éxito', next);
+      const newResponse  = await this.productUseCase.getProduct(updated._id)
+      
+      this.invoke(newResponse, 201, res, 'Se actualizó con éxito', next);
     } catch (error) {
       console.error(error);
       next(new ErrorHandler('Hubo un error al actualizar', 500));
@@ -733,6 +744,40 @@ export class ProductController extends ResponseData {
     }
   }
 
+  public async updatePositionImages(req: Request, res: Response, next: NextFunction) {
+    const { images } = req.body; // Recibe el arreglo con el nuevo orden
+    const { id } = req.params; // ID del producto
+
+    
+    
+    try {
+      // Obtener el producto actual
+      const product: any | null = await this.productUseCase.getProduct(id);
+      
+      if (!product) {
+        return next(new ErrorHandler("Producto no encontrado", 404));
+      }
+
+      // Adaptar el arreglo de imágenes al nuevo orden
+      const reorderedImages = images.map((newImage: any) => {
+        const existingImage = product.images.find((img: any) => img.id === newImage.id);
+        if (existingImage) {
+          return existingImage; // Conservar los datos existentes
+        }
+        throw new Error(`La imagen con ID ${newImage.id} no existe en el producto`);
+      });
+
+      // Actualizar el producto con el nuevo orden de imágenes
+      product.images = reorderedImages;
+      await this.productUseCase.updateProduct(id, {images : reorderedImages})
+
+      // Responder con éxito
+      this.invoke(product, 200, res, "Se guardo correctamente", next);
+    } catch (error) {
+      console.error(error);
+      return next(new ErrorHandler("Hubo un error al reordenar las imágenes", 500));
+    }
+  }
 
   public async getSimilarProducts(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params //product id
