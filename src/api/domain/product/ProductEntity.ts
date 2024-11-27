@@ -11,15 +11,15 @@ import { VariantProductEntity } from "../variantProduct/variantProductEntity";
 export interface ProductEntity {
   _id: ObjectId,
   name: string;
-  price: number;
-  discountPrice: number;
-  porcentDiscount: number;
+  price?: number;
+  discountPrice?: number;
+  porcentDiscount?: number;
   description?: string;
   shortDescription?: string;
   slug?: string;
   dimensions?: string;
   brand?: string;
-  tag: string;
+  tag?: string;
   category?: Category;
   subCategory?: SubCategory;
   currency?: string;

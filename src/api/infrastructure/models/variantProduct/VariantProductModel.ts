@@ -1,22 +1,21 @@
-import mongoose, { model, Schema } from "mongoose";
-import { SHLocation, storeHouseEntity } from '../../../domain/storehouse/storeHouseEntity';
-import { ProductImageEntity } from "../../../domain/product/ProductEntity";
-import { VariantProductEntity } from "../../../domain/variantProduct/variantProductEntity";
-import { StockStoreHouseEntity } from '../../../domain/storehouse/stockStoreHouseEntity'
+import mongoose, { model,  Schema } from "mongoose";
+import {  storeHouseEntity } from '../../../domain/storehouse/storeHouseEntity';
+import { AttributesVariantEntity, VariantProductEntity } from "../../../domain/variantProduct/variantProductEntity";
 
-const ProductImageSchema = new mongoose.Schema<ProductImageEntity>(
+const AttributesSchema = new mongoose.Schema<AttributesVariantEntity>(
     {
-        _id: {
-            type: Schema.Types.ObjectId,
-            default: () => new mongoose.Types.ObjectId
-        },
-        url: {
+      
+        color: {
             type: String,
-            required: true,
+            required: false,
         },
-        status: {
-            type: Boolean,
-            default: true
+        size: {
+            type: String,
+            default: false
+
+        }, material: {
+            type: String,
+            default: false
 
         },
 
@@ -38,7 +37,7 @@ const variantProductSchema = new mongoose.Schema<VariantProductEntity>(
             required: true,
         },
         attributes: {
-            type: Object,
+            type: AttributesSchema,
             required: false,
         },
         design: {
@@ -47,8 +46,8 @@ const variantProductSchema = new mongoose.Schema<VariantProductEntity>(
         },
 
         stock: {
-            type: StockStoreHouseEntity,
-            ref:
+            type: mongoose.Types.ObjectId,
+            ref: 'StoreHouseStocks',
             required: false,
         },
         status:{
@@ -65,9 +64,9 @@ const variantProductSchema = new mongoose.Schema<VariantProductEntity>(
 );
 
 
-export const StoreHouseModel = model<storeHouseEntity>(
-    'StoreHouses',
-    StoreHouseSchema
+export const VariantProductModel = model<VariantProductEntity>(
+    'variant-product',
+    variantProductSchema
 );
 
 

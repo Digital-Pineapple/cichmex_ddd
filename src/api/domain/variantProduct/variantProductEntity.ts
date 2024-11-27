@@ -6,11 +6,7 @@ import { StockStoreHouseEntity } from "../storehouse/stockStoreHouseEntity";
 export interface VariantProductEntity {
     _id : mongoose.Types.ObjectId,
     sku: String,
-    attributes: {
-      color: String,
-      size: String,
-      material: String,
-    },
+    attributes: AttributesVariantEntity,
     design: String,
     stock: StockStoreHouseEntity,
     images: [ProductImageEntity],
@@ -27,4 +23,10 @@ export interface VariantProductEntity {
     product_key?: string;
  
 
+  }
+
+  export interface AttributesVariantEntity {
+    color?: String,
+    size?: String,
+    material?: String,
   }

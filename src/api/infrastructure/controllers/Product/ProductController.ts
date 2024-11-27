@@ -843,15 +843,9 @@ export class ProductController extends ResponseData {
 
   public async AddProdcutWithVariants(req: Request, res: Response, next: NextFunction) {
     const data = {...req.body}
-    console.log(data.variants,'sdfj');
-    
-    
-
     try {
-     
-      // const response = await this.productUseCase.createProduct({...data})
-  
-      this.invoke(response, 200, res, "", next);
+       const response = await this.productUseCase.createProduct({...data})
+      this.invoke(response, 200, res, "Se agregó exitosamente", next);
     } catch (error) {
       console.log("Error:", error);
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));

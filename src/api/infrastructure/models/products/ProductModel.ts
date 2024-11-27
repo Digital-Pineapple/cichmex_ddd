@@ -53,11 +53,11 @@ const ProductSchema = new Schema<ProductEntity>(
     name: {
       type: String,
       required: true,
-      unique:false  
+      unique:true  
     },
     price: {
       type: Number,
-      required: true,
+      required: false,
     },
     discountPrice: {
       type: Number,
@@ -89,8 +89,7 @@ const ProductSchema = new Schema<ProductEntity>(
     },
     tag: {
       type: String,
-      required: true,
-      unique: true
+      required: false,
     },
     category: {
       type: mongoose.Types.ObjectId,
