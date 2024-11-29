@@ -1,12 +1,12 @@
-import mongoose, { model,  Schema } from "mongoose";
-import {  storeHouseEntity } from '../../../domain/storehouse/storeHouseEntity';
+import mongoose, { model, Schema } from "mongoose";
+import { storeHouseEntity } from '../../../domain/storehouse/storeHouseEntity';
 import { AttributesVariantEntity, VariantProductEntity } from "../../../domain/variantProduct/variantProductEntity";
 
 const AttributesSchema = new mongoose.Schema<AttributesVariantEntity>(
     {
-      
+
         color: {
-            type: String,
+            type: Object,
             required: false,
         },
         size: {
@@ -32,6 +32,11 @@ const variantProductSchema = new mongoose.Schema<VariantProductEntity>(
             type: Schema.Types.ObjectId,
             default: () => new mongoose.Types.ObjectId
         },
+        product_id: {
+            type: mongoose.Types.ObjectId,
+            ref: 'products',
+            required: true,
+        },
         sku: {
             type: String,
             required: true,
@@ -44,16 +49,22 @@ const variantProductSchema = new mongoose.Schema<VariantProductEntity>(
             type: String,
             required: false,
         },
-
-        stock: {
-            type: mongoose.Types.ObjectId,
-            ref: 'StoreHouseStocks',
+        status: {
+            type: Boolean,
+            required: false,
+            default: true,
+        },
+        images: {
+            type: Array,
             required: false,
         },
-        status:{
-            type:Boolean,
-            required:false,
-        }
+        price: { type: Number, required: true },
+        discountPrice: { type: Number, required: false },
+        porcentDiscount: { type: Number, required: false },
+        dimensions: { type: String, required: false },
+        currency: { type: String, required: false, default: 'MX' },
+        weight: { type: Number, required: false },
+        rating: { type: Number, required: false },
 
     },
     {

@@ -9,8 +9,14 @@ import { StockStoreHouseEntity } from '../../../domain/storehouse/stockStoreHous
         required: true,
       },
       product_id: {
-        type: mongoose.Types.ObjectId, ref: "products",
+        type: mongoose.Types.ObjectId,
+         ref: "products",
         required:true,
+      },
+      variant_id:{
+        type: mongoose.Types.ObjectId, 
+        ref: "variant-product",
+        required: true,
       },
       stock:{
           type:Number,

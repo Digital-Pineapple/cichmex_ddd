@@ -55,7 +55,7 @@ export class ShoppingCartController extends ResponseData {
             const products = response?.products;   
             const totalCart = await this.shoppingCartUseCase.getTotalCart(products);    
             const weight = await this.shoppingCartUseCase.getTotalWeight(products);                             
-            const shippingCost = await this.shippingCostUseCase.findShippingCost(weight);             
+            const shippingCost : any = await this.shippingCostUseCase.findShippingCost(weight);             
             // console.log(weight, "weight"); 
             // console.log(shippingCost, "shippingCost");                               
             const mergeStockProducts = await Promise.all(

@@ -6,6 +6,7 @@ import { BranchOfficeEntity, ILocation } from "../branch_office/BranchOfficeEnti
 import { UserEntity } from "../user/UserEntity";
 import { SizeGuideEntity } from "../sizeGuide/SizeGuideEntity";
 import { VariantProductEntity } from "../variantProduct/variantProductEntity";
+import { Size } from "aws-sdk/clients/s3";
 
 
 export interface ProductEntity {
@@ -25,7 +26,6 @@ export interface ProductEntity {
   currency?: string;
   images?: ProductImageEntity[];
   thumbnail?: string;
-  variants?: VariantProductEntity[]
   status?: boolean;
   weight?: string;
   videos?: ProductVideoEntity[];
@@ -38,6 +38,7 @@ export interface ProductEntity {
   seoDescription?: string,
   seoKeywords?: string[],
   condition ?: string,
+  size_guide ?: SizeGuideEntity,
 }
 
 export interface ProductImageEntity {

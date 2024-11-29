@@ -1,32 +1,28 @@
 import mongoose from "mongoose";
-import { ProductImageEntity } from "../product/ProductEntity";
+import { ProductEntity, ProductImageEntity } from "../product/ProductEntity";
 import { SizeGuideEntity } from "../sizeGuide/SizeGuideEntity";
 import { StockStoreHouseEntity } from "../storehouse/stockStoreHouseEntity";
 
 export interface VariantProductEntity {
     _id : mongoose.Types.ObjectId,
+    product_id : ProductEntity,
     sku: String,
     attributes: AttributesVariantEntity,
     design: String,
-    stock: StockStoreHouseEntity,
-    images: [ProductImageEntity],
-    thumbnail?: String;
-    sizeGuide?: SizeGuideEntity,
+    images?: [ProductImageEntity],
     price: number,
-    discountPrice: number;
-    porcentDiscount: number;
+    discountPrice?: number;
+    porcentDiscount?: number;
     dimensions?: string;
     currency?: string;
     status?: boolean;
-    weight?: string;
+    weight?: number;
     rating?: number;
-    product_key?: string;
- 
 
   }
 
   export interface AttributesVariantEntity {
-    color?: String,
+    color?: Object,
     size?: String,
     material?: String,
   }

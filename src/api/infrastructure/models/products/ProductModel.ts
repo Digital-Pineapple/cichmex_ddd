@@ -110,10 +110,6 @@ const ProductSchema = new Schema<ProductEntity>(
       type: String,
       required: false,
     },
-    variants: {
-      type: Array,
-      required: false,
-    },
     status: {
       type: Boolean,
       required: false,
@@ -139,6 +135,15 @@ const ProductSchema = new Schema<ProductEntity>(
     seoKeywords: {
       type: Array,
       required: false,
+    },
+    condition:{
+      type:String,
+      required : false,
+    },
+    size_guide:{
+      type: mongoose.Types.ObjectId,
+      ref: 'sizeguides',
+      required: false
     }
   },
   {
