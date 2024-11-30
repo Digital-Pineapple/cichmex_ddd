@@ -61,6 +61,7 @@ export class ProductController extends ResponseData {
     this.SelectSizeGuide = this.SelectSizeGuide.bind(this);
     this.AddVariants = this.AddVariants.bind(this);
     this.addDescriptionAndVideo = this.addDescriptionAndVideo.bind(this);
+    this.updateMainFeatures = this.updateMainFeatures.bind(this);
 
   }
 
@@ -996,6 +997,29 @@ export class ProductController extends ResponseData {
     }
   }
   
+  public async updateMainFeatures(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const {values} = req.body;
+      
+    try {
+     await this.productUseCase.updateProduct(id, { ...values });
+     const response = await this.productUseCase.getProduct(id);
+      this.invoke(response, 200, res, "Se Actualizó con éxito", next);
+    } catch (error : any) {
+       // Manejo específico para errores de clave duplicada
+    if (error.code === 11000) {
+      const duplicateField = Object.keys(error.keyValue).join(", ");
+      const duplicateValue = Object.values(error.keyValue).join(", ");
+      const message = `El campo único '${duplicateField}' ya está en uso con el valor '${duplicateValue}'. Por favor, usa otro valor.`;
+
+      // Pasa un error personalizado al middleware de manejo de errores
+      return next(new ErrorHandler(message, 409)); // 409 Conflict
+    }
+
+    // Manejo genérico de errores
+    next(new ErrorHandler("Hubo un error al actualizar la información", 500));
+    }
+  }
 
 
 

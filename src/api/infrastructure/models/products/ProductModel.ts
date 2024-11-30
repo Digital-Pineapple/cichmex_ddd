@@ -144,7 +144,15 @@ const ProductSchema = new Schema<ProductEntity>(
       type: mongoose.Types.ObjectId,
       ref: 'sizeguides',
       required: false
-    }
+    },
+    gender:{
+      type:String,
+      required:false,
+    },
+    model:{
+      type:String,
+      required:false,
+    },
   },
   {
     versionKey: false,

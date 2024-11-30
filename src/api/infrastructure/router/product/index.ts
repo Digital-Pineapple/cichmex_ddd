@@ -72,7 +72,6 @@ productRouter
   .delete("/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.deleteProduct)  
   .get("/products/urls", productController.updateURLS)  
   .post("/addDescriptionAndVideos/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.addDescriptionAndVideo)
-
-  
+  .post("/updateMainFeatures/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateMainFeatures)
 
 export default productRouter;
