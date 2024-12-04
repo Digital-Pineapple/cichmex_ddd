@@ -100,68 +100,67 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
    async findSearchProducts(search: string, page: number): Promise<any> {
     const PAGESIZE = 30;
     const storehouseId = new ObjectId(this.onlineStoreHouse);
-  
+
     // Limpia espacios innecesarios en el término de búsqueda
-    const cleanSearch = search.trim().toLocaleLowerCase();    
-    
-    // Verificar y crear índice de texto si no existe
-    const indexes = await this.MODEL.collection.indexes();
-    const hasTextIndex = indexes.some(index => Object.values(index.key).includes("text"));
+    const cleanSearch = search.trim().toLocaleLowerCase();
 
-    if (!hasTextIndex) {
-      console.log("Creando índice de texto...");
-      await this.MODEL.collection.createIndex(
-        { name: "text" }, // Ajusta los campos según tu modelo
-        // { name: "TextIndex" } // Nombre opcional del índice
-      );
-    }
+    // Usa $text si el término es suficientemente largo, de lo contrario $regex
+    const isTextSearch = cleanSearch.split(" ").length > 1 || cleanSearch.length > 3;
 
-  
-  //  return 
+    // Expresión regular para búsqueda parcial
+    const regexSearch = new RegExp(cleanSearch, "i");
+
+    // Filtro condicional basado en $text o $regex
+    const searchFilter = isTextSearch
+        ? { $text: { $search: cleanSearch } } // Búsqueda por texto
+        : { name: { $regex: regexSearch } }; // Búsqueda parcial
+
     const result = await this.MODEL.aggregate([
-      {
-        $match: { $text: { $search: cleanSearch } }         
-      },
-      {
-        $lookup: {
-          from: "storehousestocks",
-          let: { productId: "$_id" },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ["$product_id", "$$productId"] },
-                    { $eq: ["$StoreHouse_id", storehouseId] },
-                  ],
-                },
-              },
+        {
+            $match: searchFilter, // Filtro dinámico
+        },
+        {
+            $lookup: {
+                from: "storehousestocks",
+                let: { productId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$product_id", "$$productId"] },
+                                    { $eq: ["$StoreHouse_id", storehouseId] },
+                                ],
+                            },
+                        },
+                    },
+                ],
+                as: "storehouseStock",
             },
-          ],
-          as: "storehouseStock",
         },
-      },
-      {
-        $addFields: {
-          stock: { $ifNull: [{ $arrayElemAt: ["$storehouseStock.stock", 0] }, 0] },
+        {
+            $addFields: {
+                stock: { $ifNull: [{ $arrayElemAt: ["$storehouseStock.stock", 0] }, 0] },
+            },
         },
-      },
-      {
-        $facet: {
-          products: [
-            { $skip: (page - 1) * PAGESIZE },
-            { $limit: PAGESIZE },
-          ],
-          total: [{ $count: "total" }],
+        {
+            $facet: {
+                products: [
+                    { $skip: (page - 1) * PAGESIZE },
+                    { $limit: PAGESIZE },
+                ],
+                total: [{ $count: "total" }],
+            },
         },
-      },
     ]);
-  
+
     return {
-      products: result[0]?.products || [],
-      total: result[0]?.total[0]?.total || 0,
+        products: result[0]?.products || [],
+        total: result[0]?.total[0]?.total || 0,
     };
-  }
+}
+
+
   
   
   
