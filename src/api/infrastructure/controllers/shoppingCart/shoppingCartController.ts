@@ -1,3 +1,4 @@
+import { ProductUseCase } from './../../../application/product/productUseCase';
 import { StockStoreHouseUseCase } from './../../../application/storehouse/stockStoreHouseUseCase';
 import { body } from 'express-validator';
 import { ObjectId } from 'mongodb';
@@ -22,6 +23,7 @@ export class ShoppingCartController extends ResponseData {
         private shoppingCartUseCase: ShoppingCartUseCase,
         private stockStoreHouseUseCase: StockStoreHouseUseCase,
         private shippingCostUseCase: ShippingCostUseCase,
+        private productUseCase: ProductUseCase,
         private readonly s3Service: S3Service
     ) {
         super();
@@ -36,7 +38,7 @@ export class ShoppingCartController extends ResponseData {
         this.addToCart = this.addToCart.bind(this);
         this.updateProductQuantity = this.updateProductQuantity.bind(this);
         this.mergeCart = this.mergeCart.bind(this);
-        this.getNoAuthCart = this.getNoAuthCart.bind(this);
+        this.noAuthCart = this.noAuthCart.bind(this);
     }
 
     public async getAllShoppingCarts(req: Request, res: Response, next: NextFunction) {
@@ -224,13 +226,7 @@ export class ShoppingCartController extends ResponseData {
             if(index === -1 ){
                 // Si el producto no está en el carrito, agregarlo
                 userCart.products.push(newProduct);
-            }
-            // if(index !==-1 && quantity <= 0){
-            //     userCart.products.splice(index, 1);
-            // }
-            // Actualizar el carrito
-            // if (index !== -1 && quantity > 0)              
-            // Guardar los cambios en el carrito
+            }          
             const response = await this.shoppingCartUseCase.updateShoppingCart(userCart._id, { products: responseShoppingCartUser.products });
             this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
         } catch (error) {
@@ -275,14 +271,16 @@ export class ShoppingCartController extends ResponseData {
         }
     }
 
-    public async mergeCart(req: Request, res: Response, next: NextFunction) {        
-        const { user_id, products } = req.body;
-        try {            
+    public async mergeCart(req: Request, res: Response, next: NextFunction) {    
+        const user = req.user;
+        const { products } = req.body;
+        try {                                                        
             const parseProducts = JSON.parse(products);
             if (!parseProducts || parseProducts.length === 0) return next(new ErrorHandler('No se encontraron productos', 404));                                                                   
-            const cartUser : any = await this.shoppingCartUseCase.getShoppingCartByUser(user_id);  
+            const cartUser : any = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);  
+            console.log(cartUser, "cartUser");            
             if(!cartUser){
-                const newcart : any | null = await this.shoppingCartUseCase.createShoppingCart({user_id: user_id, products: []});     
+                const newcart : any | null = await this.shoppingCartUseCase.createShoppingCart({user_id: user._id, products: []});     
                 const products = newcart?.products;
                 parseProducts.forEach((product: any) => {
                     const producto : any = {
@@ -316,15 +314,27 @@ export class ShoppingCartController extends ResponseData {
             }
     }
 
-    public async getNoAuthCart(req: Request, res: Response, next: NextFunction){
-        const { ids } = req.body
-        const products = JSON.parse(ids);        
-        console.log("products", products);
-        console.log("tipo", typeof products);
-        
-        
-        
-        // this.invoke(response, 200, res, '', next);
+    public async noAuthCart(req: Request, res: Response, next: NextFunction) {
+        let { items } = req.body
+        try {
+          items = JSON.parse(items);
+          if(!items) return next(new ErrorHandler("Hubo un error al obtener la información", 500));
+          if(items.length >= 10) return next(new ErrorHandler("Inicia sesión para agregar mas productos a tu carrito", 400)); 
+          const noAuthCart = await Promise.all(items.map(async (item: any) => {
+            const product: any | null = await this.productUseCase.getProduct(item.item); 
+            if(!product) return ;               
+            const stock: any | null = await this.stockStoreHouseUseCase.getProductStock(item.item, this.onlineStoreHouse);  
+            return {
+              item: product,              
+              stock: stock.stock ?? 0,
+              quantity: item.quantity
+            }           
+          }))
+          this.invoke(noAuthCart, 200, res, "", next);
+        } catch (error) {
+          console.log("error no auth cart:", error);            
+          next(new ErrorHandler("Hubo un error al obtener la información", 500));
+        }
     }
 
 }
