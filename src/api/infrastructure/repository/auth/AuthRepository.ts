@@ -22,13 +22,13 @@ export class AuthRepository extends MongoRepository implements AuthConfig {
     }
 
    async findUser(query: any, populateConfig1?:any,populateConfig2?:any, populateConfig3?:any): Promise<UserEntity | null>{
-    return await this.MODEL.findOne({...query}).populate(populateConfig1).populate(populateConfig2).populate(populateConfig3)    
+    return await this.UserModel.findOne({...query}).populate(populateConfig1).populate(populateConfig2).populate(populateConfig3)    
     
    }
 
    async verifyUserCode(email: string, code: any): Promise<UserEntity | null> {
     const newCode = parseInt(code) 
-      return await this.MODEL.findOne({ email: email, 'verify_code.code': newCode} );
+      return await this.UserModel.findOne({ email: email, 'verify_code.code': newCode} );
        
    
 }

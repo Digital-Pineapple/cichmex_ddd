@@ -31,7 +31,7 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     }
     
     async getProductsByCategory(query:any, populateConfig1?:any): Promise<ProductEntity[] | ErrorHandler | null > {
-        return await this.MODEL.find({...query}).populate(populateConfig1)
+        return await this.ProductModel.find({...query}).populate(populateConfig1)
     }
     async startDeleteImageDetail(id: string, imageId: string): Promise<ProductEntity | ErrorHandler | null> {
         try {
@@ -91,7 +91,7 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
   
     
    async  findDetailProductById(id:string, populateCofig1?:any, populateConfig2?:any, populateConfig3?:any): Promise<ProductEntity| ErrorHandler | null> {
-    return await this.MODEL.findById(id).populate(populateCofig1).populate(populateConfig2).populate(populateConfig3)
+    return await this.ProductModel.findById(id).populate(populateCofig1).populate(populateConfig2).populate(populateConfig3)
     // return await this.MODEL.aggregate([
         
     // ]).

@@ -35,7 +35,7 @@ export class SubCategoryRepository extends MongoRepository implements SubCategor
         return await this.createOne(body);
     }
     async getDetailSubCategory (id:string): Promise<SubCategory  | null>{
-      return  await this.MODEL.findById(id).populate(PopulateCategory)
+      return  await this.SubCategoryModel.findById(id).populate(PopulateCategory)
   }
     
     async findProductsBySubCategory(subcat_id: any, storehouse:any): Promise<SubCategory[] | null> {        
