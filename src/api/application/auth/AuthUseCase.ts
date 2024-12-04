@@ -152,8 +152,9 @@ export class AuthUseCase extends Authentication {
     }
 
     async signInWithGoogle(idToken: string, typeUser: any): Promise<IGoogleResponseLogin | IAuth | ErrorHandler | null> {
-        let { email, picture } = await this.validateGoogleToken(idToken);        
-        let user = await this.authRepository.findOneItem({ email: email, google: true , status: true, type_user: typeUser },TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
+        let { email, picture } = await this.validateGoogleToken(idToken); 
+              
+        let user = await this.authRepository.findOneItem({ email: email, google: true , status: true,},TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
         if (!user) return new ErrorHandler('No existe el usuario, Registrate', 409)
         user.profile_image = picture
         user = await this.generateJWT(user, user.uuid)

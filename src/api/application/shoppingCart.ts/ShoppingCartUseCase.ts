@@ -14,10 +14,13 @@ export class ShoppingCartUseCase {
     }
     public async getShoppingCartByUser(id: any): Promise<ShoppingCartEntity  | null> {
         let cart = await this.shoppingCartRepository.findOneItem({user_id:id}, PopulateProductCS, PopulateMembershipInSC)        
-        let products = cart.products;
-        const existsNullableProduct = products.map((product: any) => product.item).some((item: any) => item === null)
+        if(!cart){
+            return null
+        }
+        let products = cart?.products;
+        const existsNullableProduct = products?.map((product: any) => product.item).some((item: any) => item === null)
         if(existsNullableProduct){
-            const noNullableProducts = products.filter((product: any) => product.item !== null)
+            const noNullableProducts = products?.filter((product: any) => product.item !== null)
             await this.shoppingCartRepository.updateOne(cart._id,{products: noNullableProducts})
             cart = await this.shoppingCartRepository.findOneItem({user_id:id}, PopulateProductCS, PopulateMembershipInSC)     
         }
