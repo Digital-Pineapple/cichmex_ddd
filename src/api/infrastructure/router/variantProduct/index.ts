@@ -19,7 +19,8 @@ const variantProductController     = new VariantProductController(variantProduct
 const userValidations = new UserValidations();
 
 variantProductRouter
-    .post('/',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.createVariant)
+.post('/',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.createVariant)
+.delete('/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.deleteVariant)
    
 
 export default variantProductRouter;

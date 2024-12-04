@@ -65,6 +65,7 @@ const variantProductSchema = new mongoose.Schema<VariantProductEntity>(
         currency: { type: String, required: false, default: 'MX' },
         weight: { type: Number, required: false },
         rating: { type: Number, required: false },
+        tag: {type:String, required: true}
 
     },
     {

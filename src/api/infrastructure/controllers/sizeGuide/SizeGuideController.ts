@@ -37,7 +37,7 @@ export class SizeGuideController extends ResponseData {
         const { id } = req.params;
     
         try {
-            const response = await this.sizeGuideUseCase.getAllMyGuides(id);
+            const response = await this.sizeGuideUseCase.getOneGuide(id);
             return this.invoke(response, 200, res, '', next);
         } catch (error) {
             return next(new ErrorHandler('Hubo un error al consultar la información', 500));
@@ -46,7 +46,6 @@ export class SizeGuideController extends ResponseData {
     public async createOneGuide(req: Request, res: Response, next: NextFunction) {
         const { id } = req.user;
         const { values } = req.body   
-        console.log(values);
         
         const sizeGuide = {
             name: values.name,

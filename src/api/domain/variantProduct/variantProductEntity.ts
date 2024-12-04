@@ -18,6 +18,7 @@ export interface VariantProductEntity {
     status?: boolean;
     weight?: number;
     rating?: number;
+    tag: String;
 
   }
 

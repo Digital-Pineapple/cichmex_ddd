@@ -20,6 +20,7 @@ import sharp from 'sharp';
 import { ObjectId } from 'mongodb';
 import { VariantProductUseCase } from '../../../application/variantProduct/VariantProductUseCase';
 import { StockSHinputUseCase } from '../../../application/storehouse/stockSHinputUseCase';
+import { parse } from 'dotenv';
 
 
 export class ProductController extends ResponseData {
@@ -62,6 +63,7 @@ export class ProductController extends ResponseData {
     this.AddVariants = this.AddVariants.bind(this);
     this.addDescriptionAndVideo = this.addDescriptionAndVideo.bind(this);
     this.updateMainFeatures = this.updateMainFeatures.bind(this);
+    this.UpdateVariants = this.UpdateVariants.bind(this)
 
   }
 
@@ -127,14 +129,16 @@ export class ProductController extends ResponseData {
     try {
       const responseStock = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse)
       const responseProduct: any | null = await this.productUseCase.getProduct(id);
+
       const parsed = responseProduct.toJSON();
       let response = null;
-      if (responseStock && responseStock.stock) {
+      if (responseStock && responseProduct.stock) {
         response = {
           ...parsed,
           stock: responseStock.stock
         }
-      } else {
+      }
+      else {
         response = responseProduct
       }
       if (!(response instanceof ErrorHandler) && response !== null) {
@@ -177,8 +181,21 @@ export class ProductController extends ResponseData {
           );
         }
       }
+      const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(id);
 
-      this.invoke(response, 200, res, "", next);
+      // Espera a que todas las promesas se resuelvan
+      const newVariants =  await Promise.all(
+        variants.map(async (variant: any) => {
+          const stockVariant = await this.stockStoreHouseUseCase.getVariantStock(
+            variant._id,
+            this.onlineStoreHouse
+          );
+          return { ...variant._doc, stock: stockVariant.stock };
+        })
+      );
+      const AllResponse ={...response._doc, variants:newVariants}
+
+      this.invoke(AllResponse, 200, res, "", next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
@@ -198,7 +215,7 @@ export class ProductController extends ResponseData {
       const productsNotInStock = products.filter((product: any) => !stockProductIds.has(product._id.toString()));
 
       // Filtrar elementos de stock que no están asociados a productos
-      const stockNotInProducts = stock.filter((item : any ) => !productIds.has(item.product_id.toString()));
+      const stockNotInProducts = stock.filter((item: any) => !productIds.has(item.product_id.toString()));
 
       // Combinar ambos resultados
       const uniqueElements = [...productsNotInStock, ...stockNotInProducts];
@@ -919,10 +936,10 @@ export class ProductController extends ResponseData {
       await Promise.all(
         parsedVariants.map(async (variant: any, variantIndex: number) => {
           const sku = generateUUID()
-          const addVariant: any = await this.variantProductUseCase.CreateVariant({...variant, sku: sku, product_id: id});
+          const addVariant: any = await this.variantProductUseCase.CreateVariant({ ...variant, sku: sku, product_id: id });
           const folio = RandomCodeId('PR')
-          const stock = JSON.parse(variant.stock) 
-        
+          const stock = JSON.parse(variant.stock)
+
           const createStock: any = await this.stockStoreHouseUseCase.createStock({
             StoreHouse_id: SH_id,
             product_id: id,
@@ -970,24 +987,24 @@ export class ProductController extends ResponseData {
   public async addDescriptionAndVideo(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const data = { ...req.body };
-  
+
     try {
       let videos: { url: string; type: string }[] = [];
-  
+
       if (req.files && Array.isArray(req.files)) {
         videos = await Promise.all(
           req.files.map(async (video: Express.Multer.File) => {
             const type = video.fieldname.split("/")[1]; // Validar el formato
             const pathObject = `${this.path}/${id}/${video.fieldname}`;
-  
+
             // Subir archivo a S3
             const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, video, 'video/.mp4');
-  
+
             return { url: url.split("?")[0], type }; // Guardar solo la URL sin parámetros
           })
         );
       }
-  
+
       // Actualizar producto con los nuevos datos
       const update = await this.productUseCase.updateProduct(id, { ...data, videos });
       this.invoke(update, 200, res, "Se creó éxitosamente", next);
@@ -996,28 +1013,119 @@ export class ProductController extends ResponseData {
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
   }
-  
+
   public async updateMainFeatures(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const {values} = req.body;
-      
+    const { values } = req.body;
+
     try {
-     await this.productUseCase.updateProduct(id, { ...values });
-     const response = await this.productUseCase.getProduct(id);
+      await this.productUseCase.updateProduct(id, { ...values });
+      const response = await this.productUseCase.getProduct(id);
       this.invoke(response, 200, res, "Se Actualizó con éxito", next);
-    } catch (error : any) {
-       // Manejo específico para errores de clave duplicada
-    if (error.code === 11000) {
-      const duplicateField = Object.keys(error.keyValue).join(", ");
-      const duplicateValue = Object.values(error.keyValue).join(", ");
-      const message = `El campo único '${duplicateField}' ya está en uso con el valor '${duplicateValue}'. Por favor, usa otro valor.`;
+    } catch (error: any) {
+      // Manejo específico para errores de clave duplicada
+      if (error.code === 11000) {
+        const duplicateField = Object.keys(error.keyValue).join(", ");
+        const duplicateValue = Object.values(error.keyValue).join(", ");
+        const message = `El campo único '${duplicateField}' ya está en uso con el valor '${duplicateValue}'. Por favor, usa otro valor.`;
 
-      // Pasa un error personalizado al middleware de manejo de errores
-      return next(new ErrorHandler(message, 409)); // 409 Conflict
+        // Pasa un error personalizado al middleware de manejo de errores
+        return next(new ErrorHandler(message, 409)); // 409 Conflict
+      }
+
+      // Manejo genérico de errores
+      next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
+  }
 
-    // Manejo genérico de errores
-    next(new ErrorHandler("Hubo un error al actualizar la información", 500));
+  public async UpdateVariants(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const { variants } = req.body;
+    const user = req.user
+    const SH_id = '662fe69b9ba1d8b3cfcd3634'
+    console.log(variants,'informacion de variantes');
+    
+
+    try {
+      // Validar y transformar las variantes
+      const parsedVariants = variants.map((variant: any) => ({
+        ...variant,
+        attributes:
+          typeof variant.attributes === "string"
+            ? JSON.parse(variant.attributes) // Parsear si es una cadena
+            : variant.attributes, // Dejar como está si ya es un objeto
+      }));
+
+      // Organizar los archivos por variante y mantener el orden de las imágenes
+      const filesByVariant: { [key: number]: Express.Multer.File[] } = {};
+      if (req.files) {
+        const files = req.files as Express.Multer.File[];
+        files.forEach((file) => {
+          const match = file.fieldname.match(/variants\[(\d+)\]\[images\]\[(\d+)\]/);
+          if (match) {
+            const [_, variantIndex, imageIndex] = match.map(Number); // Extraer índices como números
+            filesByVariant[variantIndex] = filesByVariant[variantIndex] || [];
+            filesByVariant[variantIndex][imageIndex] = file; // Mantener el orden
+          }
+        });
+      }
+      
+
+      await Promise.all(
+        parsedVariants.map(async (variant: any, variantIndex: number) => {
+          const sku = generateUUID()
+          if (variant._id) {
+            'variante con id'
+          }
+          const addVariant: any = await this.variantProductUseCase.CreateVariant({ ...variant, sku: sku, product_id: id });
+          const folio = RandomCodeId('PR')
+          const stock = JSON.parse(variant.stock)
+
+          const createStock: any = await this.stockStoreHouseUseCase.createStock({
+            StoreHouse_id: SH_id,
+            product_id: id,
+            variant_id: addVariant._id,
+            stock: stock
+          })
+          await this.stockSHinputUseCase.createInput({
+            folio: folio,
+            SHStock_id: createStock._id,
+            quantity: stock,
+            newQuantity: variant.stock,
+            responsible: user,
+            product_detail: id,
+          })
+
+          // Si hay imágenes para esta variante
+          if (filesByVariant[variantIndex]) {
+            const files = filesByVariant[variantIndex];
+
+            // Procesar imágenes en orden
+            const parsedImages = await Promise.all(
+              files.map(async (file: Express.Multer.File) => {
+                const pathObject = `${this.path}/${addVariant._id}/${file.originalname}`;
+                const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, file, 'image/webp');
+                return { url: url.split("?")[0] }; // Guardar solo la URL sin parámetros
+              })
+            );
+            console.log(parsedImages);
+            
+
+            // Actualizar la variante con las imágenes procesadas
+            // await this.variantProductUseCase.UpdateVariant(addVariant._id, { images: parsedImages });
+          }
+
+          return addVariant._id;
+        })
+      );
+      const response = await this.productUseCase.getProduct(id);
+
+      this.invoke(response, 200, res, "Variantes agregadas exitosamente", next);
+    } catch (error) {
+      console.log(error);
+      
+      console.error("Error al agregar variantes:", error);
+      next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
   }
 
