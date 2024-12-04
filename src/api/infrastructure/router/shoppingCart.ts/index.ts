@@ -11,17 +11,21 @@ import { StockStoreHouseUseCase } from '../../../application/storehouse/stockSto
 import { ShippingCostRepository } from '../../repository/shippingCostRepository/ShippingCostRepository';
 import ShippingCostModel from '../../models/ShippingCostModel';
 import { ShippingCostUseCase } from '../../../application/shippingCost/ShippingCostUseCase';
+import { ProductUseCase } from '../../../application/product/productUseCase';
+import ProductModel from '../../models/products/ProductModel';
+import { ProductRepository } from '../../repository/product/ProductRepository';
 
 const shoppingCartRouter = Router();
-
-const shoppingCartRepository    = new ShoppingCartRepository(ShoppingCartModel);
-const shoppingCartUseCase      = new ShoppingCartUseCase(shoppingCartRepository);
-const s3Service = new S3Service();
 const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
 const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository);
+const productRepository = new ProductRepository(ProductModel);
+const shoppingCartRepository    = new ShoppingCartRepository(ShoppingCartModel);
+const shoppingCartUseCase      = new ShoppingCartUseCase(shoppingCartRepository);
+const productUseCase = new ProductUseCase(productRepository);
+const s3Service = new S3Service();
 const shippingCostRepository = new ShippingCostRepository(ShippingCostModel);
 const shippingCostUseCase = new ShippingCostUseCase(shippingCostRepository);
-const shoppingCartController   = new ShoppingCartController(shoppingCartUseCase, stockStoreHouseUseCase, shippingCostUseCase, s3Service);
+const shoppingCartController  = new ShoppingCartController(shoppingCartUseCase, stockStoreHouseUseCase, shippingCostUseCase, productUseCase, s3Service);
 
 const userValidations = new UserValidations();
 
@@ -36,8 +40,8 @@ shoppingCartRouter
     .delete('/products/ok', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.emptyCart)
     .put('/products/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.addToCart)
     .put('/product/quantity/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.updateProductQuantity)
-    .put ('/merge/ok', shoppingCartController.mergeCart) 
-    .get('/no-auth', shoppingCartController.getNoAuthCart)
+    .put ('/merge/ok', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.mergeCart) 
+    .post('/no-auth', shoppingCartController.noAuthCart)
 
 
 export default shoppingCartRouter;
