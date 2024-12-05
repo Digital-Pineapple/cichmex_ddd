@@ -51,7 +51,7 @@ productRouter
   .get("/", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProducts)
   .get("/:id", productController.getProduct)
   .get('/non-existent/get', productController.getNoStockProducts)
-  .post("/video/addVideo/:id",productvalidations.videoValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.addOneVideoProduct)
+  .post("/video/addVideo/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.addOneVideoProduct)
   .post("/addProduct", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.createProduct)
   .post("/createProductWithVariants/ok", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.AddProdcutWithVariants)
   .post("/conditionProduct/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.conditionProduct)
@@ -74,5 +74,6 @@ productRouter
   .post("/addDescriptionAndVideos/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.addDescriptionAndVideo)
   .post("/updateMainFeatures/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateMainFeatures)
   .post("/updateVariants/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.UpdateVariants)
+  .post("/updateOrder/images/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updatePositionImages)
 
 export default productRouter;

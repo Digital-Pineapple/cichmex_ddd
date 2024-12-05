@@ -57,7 +57,7 @@ const StockSHoutputChema = new Schema<SHProductOutput>({
   }
 );
 
-const StockSHoutputModel = model<SHProductOutput>(
+const StockSHoutputModel = model< SHProductOutput>(
   'SHStockOutputs',
   StockSHoutputChema
 );

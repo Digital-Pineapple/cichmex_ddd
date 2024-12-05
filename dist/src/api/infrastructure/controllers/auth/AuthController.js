@@ -189,6 +189,7 @@ class AuthController extends ResponseData_1.ResponseData {
                 this.invoke(googleUserResponse, 200, res, '', next);
             }
             catch (error) {
+                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al registrar', 500));
             }
         });

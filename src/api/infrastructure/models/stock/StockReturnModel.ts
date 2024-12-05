@@ -1,4 +1,4 @@
-import mongoose, { model, Schema } from "mongoose";
+import mongoose, {model, Schema } from "mongoose";
 import { IProductReturn } from '../../../domain/stockBranch/StockBranchEntity';
 
 // Definición del esquema para devoluciones de stock

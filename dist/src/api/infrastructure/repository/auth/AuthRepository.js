@@ -39,7 +39,7 @@ class AuthRepository extends MongoRepository_1.MongoRepository {
     verifyUserCode(email, code) {
         return __awaiter(this, void 0, void 0, function* () {
             const newCode = parseInt(code);
-            return yield this.MODEL.findOne({ email: email, 'verify_code.code': newCode });
+            return yield this.UserModel.findOne({ email: email, 'verify_code.code': newCode });
         });
     }
 }

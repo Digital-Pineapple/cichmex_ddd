@@ -28,7 +28,7 @@ export class AuthRepository extends MongoRepository implements AuthConfig {
 
    async verifyUserCode(email: string, code: any): Promise<UserEntity | null> {
     const newCode = parseInt(code) 
-      return await this.MODEL.findOne({ email: email, 'verify_code.code': newCode} );
+      return await this.UserModel.findOne({ email: email, 'verify_code.code': newCode} );
        
    
 }
