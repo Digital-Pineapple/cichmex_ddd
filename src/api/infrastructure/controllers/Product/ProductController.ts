@@ -184,7 +184,7 @@ export class ProductController extends ResponseData {
       const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(id);
 
       // Espera a que todas las promesas se resuelvan
-      const newVariants =  await Promise.all(
+      const newVariants = await Promise.all(
         variants.map(async (variant: any) => {
           const stockVariant = await this.stockStoreHouseUseCase.getVariantStock(
             variant._id,
@@ -193,10 +193,13 @@ export class ProductController extends ResponseData {
           return { ...variant._doc, stock: stockVariant.stock };
         })
       );
-      const AllResponse ={...response._doc, variants:newVariants}
+      const AllResponse = { ...response._doc, variants: newVariants }
 
       this.invoke(AllResponse, 200, res, "", next);
     } catch (error) {
+      console.log(error);
+
+
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
@@ -1041,93 +1044,90 @@ export class ProductController extends ResponseData {
   public async UpdateVariants(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const { variants } = req.body;
-    const user = req.user
-    const SH_id = '662fe69b9ba1d8b3cfcd3634'
-    console.log(variants,'informacion de variantes');
-    
+    console.log(variants, req.files);
+
+    const user = req.user;
+    const SH_id = '662fe69b9ba1d8b3cfcd3634';
+
+    if (!id || !Array.isArray(variants)) {
+      return next(new ErrorHandler("Datos inválidos para actualizar variantes", 400));
+    }
 
     try {
-      // Validar y transformar las variantes
       const parsedVariants = variants.map((variant: any) => ({
         ...variant,
-        attributes:
-          typeof variant.attributes === "string"
-            ? JSON.parse(variant.attributes) // Parsear si es una cadena
-            : variant.attributes, // Dejar como está si ya es un objeto
+        attributes: typeof variant.attributes === "string" ? JSON.parse(variant.attributes) : variant.attributes,
       }));
 
-      // Organizar los archivos por variante y mantener el orden de las imágenes
       const filesByVariant: { [key: number]: Express.Multer.File[] } = {};
-      if (req.files) {
-        const files = req.files as Express.Multer.File[];
-        files.forEach((file) => {
-          const match = file.fieldname.match(/variants\[(\d+)\]\[images\]\[(\d+)\]/);
-          if (match) {
-            const [_, variantIndex, imageIndex] = match.map(Number); // Extraer índices como números
-            filesByVariant[variantIndex] = filesByVariant[variantIndex] || [];
-            filesByVariant[variantIndex][imageIndex] = file; // Mantener el orden
-          }
-        });
-      }
-      
 
       await Promise.all(
         parsedVariants.map(async (variant: any, variantIndex: number) => {
-          const sku = generateUUID()
-          if (variant._id) {
-            'variante con id'
+          let addVariant: any;
+          if (variant._id && mongoose.isValidObjectId(variant._id)) {
+
+            await this.variantProductUseCase.UpdateVariant(variant._id, { ...variant });
+
+
+          } else {
+            if (!variant._id || variant._id === 'undefined') {
+              delete variant._id;
+            }
+            const sku = generateUUID();
+            addVariant = await this.variantProductUseCase.CreateVariant({ ...variant, sku, product_id: id });
+
+            const folio = RandomCodeId('PR');
+            const stock = JSON.parse(variant.stock);
+            const createStock: any = await this.stockStoreHouseUseCase.createStock({
+              StoreHouse_id: SH_id,
+              product_id: id,
+              variant_id: addVariant._id,
+              stock,
+            });
+
+            await this.stockSHinputUseCase.createInput({
+              folio,
+              SHStock_id: createStock._id,
+              quantity: stock,
+              newQuantity: stock,
+              responsible: user,
+              product_detail: id,
+            });
+
+
           }
-          const addVariant: any = await this.variantProductUseCase.CreateVariant({ ...variant, sku: sku, product_id: id });
-          const folio = RandomCodeId('PR')
-          const stock = JSON.parse(variant.stock)
-
-          const createStock: any = await this.stockStoreHouseUseCase.createStock({
-            StoreHouse_id: SH_id,
-            product_id: id,
-            variant_id: addVariant._id,
-            stock: stock
-          })
-          await this.stockSHinputUseCase.createInput({
-            folio: folio,
-            SHStock_id: createStock._id,
-            quantity: stock,
-            newQuantity: variant.stock,
-            responsible: user,
-            product_detail: id,
-          })
-
-          // Si hay imágenes para esta variante
           if (filesByVariant[variantIndex]) {
             const files = filesByVariant[variantIndex];
-
-            // Procesar imágenes en orden
             const parsedImages = await Promise.all(
               files.map(async (file: Express.Multer.File) => {
-                const pathObject = `${this.path}/${addVariant._id}/${file.originalname}`;
+                const pathObject = `${this.path}/${variant._id || addVariant._id}/${file.originalname}`;
                 const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, file, 'image/webp');
-                return { url: url.split("?")[0] }; // Guardar solo la URL sin parámetros
+                return { url: url.split("?")[0] };
               })
             );
-            console.log(parsedImages);
-            
 
-            // Actualizar la variante con las imágenes procesadas
-            // await this.variantProductUseCase.UpdateVariant(addVariant._id, { images: parsedImages });
+            // Combinar imágenes existentes con las nuevas
+            const existingImages = variant.images || [];
+            const updatedImages = [...existingImages, ...parsedImages];
+
+            await this.variantProductUseCase.UpdateVariant(
+              variant._id || addVariant._id,
+              { images: updatedImages }
+            );
           }
 
-          return addVariant._id;
+
         })
       );
-      const response = await this.productUseCase.getProduct(id);
 
+      const response = await this.productUseCase.getProduct(id);
       this.invoke(response, 200, res, "Variantes agregadas exitosamente", next);
     } catch (error) {
-      console.log(error);
-      
       console.error("Error al agregar variantes:", error);
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
   }
+
 
 
 

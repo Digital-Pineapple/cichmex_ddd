@@ -22,7 +22,6 @@ export class SizeGuideController extends ResponseData {
 
     public async getMySizeGuides(req: Request, res: Response, next: NextFunction) {
         const { id } = req.user;
-    
         try {
             if (!id) {
                 return next(new ErrorHandler('No tiene los permisos necesarios', 403));
