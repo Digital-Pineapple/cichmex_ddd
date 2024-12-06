@@ -2,7 +2,6 @@ import { VariantProductRepository as VariantConfig} from './../../../domain/prod
 import { Model, ObjectId as MongooseObjectId } from 'mongoose';
 
 import { MongoRepository } from '../MongoRepository';
-import { VariantProductEntity } from '../../../domain/product/ProductEntity';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ObjectId } from 'mongodb';
 

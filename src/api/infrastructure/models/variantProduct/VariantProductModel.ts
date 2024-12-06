@@ -1,12 +1,31 @@
 import mongoose, { model, Schema } from "mongoose";
 import { storeHouseEntity } from '../../../domain/storehouse/storeHouseEntity';
 import { AttributesVariantEntity, VariantProductEntity } from "../../../domain/variantProduct/variantProductEntity";
+import { ProductImageEntity } from "../../../domain/product/ProductEntity";
+
+const VariantImageSchema = new Schema<ProductImageEntity>(
+    {
+      _id: {
+        type: Schema.Types.ObjectId,
+        default: () => new mongoose.Types.ObjectId
+      },
+      url: {
+        type: String,
+        required: false
+      }
+    },
+    {
+        versionKey: false,
+        timestamps: true
+    }
+  
+  )
 
 const AttributesSchema = new mongoose.Schema<AttributesVariantEntity>(
     {
 
         color: {
-            type: Object,
+            type: String,
             required: false,
         },
         size: {
@@ -55,7 +74,7 @@ const variantProductSchema = new mongoose.Schema<VariantProductEntity>(
             default: true,
         },
         images: {
-            type: Array,
+            type: [VariantImageSchema],
             required: false,
         },
         price: { type: Number, required: true },

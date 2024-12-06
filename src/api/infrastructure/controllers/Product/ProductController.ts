@@ -902,38 +902,83 @@ export class ProductController extends ResponseData {
   public async UpdateVariants(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const { variants } = req.body;
-    console.log(variants, req.files);
-
+  
     const user = req.user;
     const SH_id = '662fe69b9ba1d8b3cfcd3634';
-
+  
     if (!id || !Array.isArray(variants)) {
       return next(new ErrorHandler("Datos inválidos para actualizar variantes", 400));
     }
-
+  
     try {
-      const parsedVariants = variants.map((variant: any) => ({
-        ...variant,
-        attributes: typeof variant.attributes === "string" ? JSON.parse(variant.attributes) : variant.attributes,
-      }));
-
+      const parsedVariants = variants.map((variant: any) => {
+        return {
+          ...variant, 
+          attributes: typeof variant.attributes === "string" ? JSON.parse(variant.attributes) : variant.attributes, // Procesar 'attributes'
+        };
+      });
+      
+  
       const filesByVariant: { [key: number]: Express.Multer.File[] } = {};
+  
+      // Procesar req.files
+      if (req.files) {
+        const files = req.files as Express.Multer.File[];
+        files.forEach((file) => {
+          const match = file.fieldname.match(/variants\[(\d+)\]\[images\]\[(\d+)\]/);
+          if (match) {
+            const [_, variantIndex] = match.map(Number);
+            filesByVariant[variantIndex] = filesByVariant[variantIndex] || [];
+            filesByVariant[variantIndex].push({ ...file });
+          }
+        });
+      }
 
+      
+  
       await Promise.all(
         parsedVariants.map(async (variant: any, variantIndex: number) => {
+
+          if (variant.images && variant._id) {
+            
+              const variantOld: any | null = await this.variantProductUseCase.findVariantById(variant._id)
+        
+              if (!variantOld) {
+                return next(new ErrorHandler("Variante no encontrado", 404));
+              }
+              let reorderedImages = Array.isArray(variant.images) ? [...variant.images] : [];
+              // Adaptar el arreglo de imágenes al nuevo orden
+               reorderedImages = variant.images.map((newImage: any) => {
+                const existingImage = variantOld.images.find((img: any) => img.url === newImage);
+                if (existingImage) {
+                  return existingImage; // Conservar los datos existentes
+                }
+              });
+              
+              reorderedImages = reorderedImages.filter(Boolean);
+              await this.variantProductUseCase.UpdateVariant( variant._id, {images : reorderedImages})
+            }
+           
+          
           let addVariant: any;
+  
           if (variant._id && mongoose.isValidObjectId(variant._id)) {
-
+            if (variant.images ) {
+              delete variant.images
+            }
             await this.variantProductUseCase.UpdateVariant(variant._id, { ...variant });
-
-
           } else {
             if (!variant._id || variant._id === 'undefined') {
               delete variant._id;
             }
+  
             const sku = generateUUID();
-            addVariant = await this.variantProductUseCase.CreateVariant({ ...variant, sku, product_id: id });
-
+            addVariant = await this.variantProductUseCase.CreateVariant({
+              ...variant,
+              sku,
+              product_id: id,
+            });
+  
             const folio = RandomCodeId('PR');
             const stock = JSON.parse(variant.stock);
             const createStock: any = await this.stockStoreHouseUseCase.createStock({
@@ -942,7 +987,7 @@ export class ProductController extends ResponseData {
               variant_id: addVariant._id,
               stock,
             });
-
+  
             await this.stockSHinputUseCase.createInput({
               folio,
               SHStock_id: createStock._id,
@@ -951,40 +996,63 @@ export class ProductController extends ResponseData {
               responsible: user,
               product_detail: id,
             });
-
-
           }
+          
+          
+  
+          // Procesar imágenes
           if (filesByVariant[variantIndex]) {
             const files = filesByVariant[variantIndex];
-            const parsedImages = await Promise.all(
-              files.map(async (file: Express.Multer.File) => {
-                const pathObject = `${this.path}/${variant._id || addVariant._id}/${file.originalname}`;
-                const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, file, 'image/webp');
-                return { url: url.split("?")[0] };
-              })
-            );
+            const variantOld : any = await this.variantProductUseCase.findVariantById(variant._id)
+            
+            let existingImages = Array.isArray(variantOld?.images) ? [...variantOld.images] : [];
 
-            // Combinar imágenes existentes con las nuevas
-            const existingImages = variant.images || [];
-            const updatedImages = [...existingImages, ...parsedImages];
+            for (const file of files) {
+              const match = file.fieldname.match(/variants\[(\d+)\]\[images\]\[(\d+)\]/);
+              if (!match) continue;
+  
+              const position = parseInt(match[2], 10); // Obtener la posición específica
+
+              const pathObject = `${this.path}/${variant._id || addVariant._id}/${file.originalname}`;
+              const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, file, 'image/webp');
+              const imageUrl = url.split("?")[0];
+  
+              const newImage = {
+                _id: new ObjectId(), // Generar un nuevo ID único
+                url: imageUrl,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              };
+              existingImages = [
+                ...existingImages.slice(0, position), // Todas las imágenes antes de la posición
+                newImage,                            // La nueva imagen a insertar
+                ...existingImages.slice(position),   // Todas las imágenes después de la posición
+              ];
+      
+            }
+    
+            existingImages = existingImages.filter(Boolean);
 
             await this.variantProductUseCase.UpdateVariant(
               variant._id || addVariant._id,
-              { images: updatedImages }
+              { images: existingImages }
             );
           }
-
-
         })
       );
-
+  
       const response = await this.productUseCase.getProduct(id);
+      if (!response) {
+        throw new ErrorHandler("El producto no pudo ser recuperado después de la actualización", 500);
+      }
+  
       this.invoke(response, 200, res, "Variantes agregadas exitosamente", next);
     } catch (error) {
       console.error("Error al agregar variantes:", error);
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
   }
+  
 
 
 

@@ -23,7 +23,7 @@ export interface VariantProductEntity {
   }
 
   export interface AttributesVariantEntity {
-    color?: Object,
+    color?: String,
     size?: String,
     material?: String,
   }

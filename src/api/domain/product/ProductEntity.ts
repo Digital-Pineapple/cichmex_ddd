@@ -45,8 +45,6 @@ export interface ProductImageEntity {
   _id: ObjectId,
   url: string;
   status: boolean;
-  createdAt: NativeDate;
-  updatedAt: NativeDate;
 }
 export interface ProductVideoEntity {
   _id: ObjectId,
