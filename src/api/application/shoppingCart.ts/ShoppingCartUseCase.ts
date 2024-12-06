@@ -63,8 +63,10 @@ export class ShoppingCartUseCase {
     }
     public async getTotalWeight(products: any): Promise<number> {
         const weight = await products?.reduce((acc: number, product: any) => { 
-            const currentWeight = Number(product?.item?.weight) || 0;                
-            return acc + currentWeight * product.quantity
+            const currentWeight = Number(product?.item?.weight) || 0; 
+            const total = acc + (currentWeight * product.quantity)
+            //  console.log("the total is"+ total);                                                    
+             return total
         }, 0);      
         return weight;
     }
