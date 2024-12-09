@@ -868,7 +868,7 @@ export class ProductController extends ResponseData {
 
       // Actualizar producto con los nuevos datos
       const update = await this.productUseCase.updateProduct(id, { ...data, videos });
-      this.invoke(update, 200, res, "Se creó éxitosamente", next);
+      this.invoke(update, 200, res, "Se autualizó éxitosamente", next);
     } catch (error) {
       console.error("Error:", error);
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
@@ -1040,13 +1040,23 @@ export class ProductController extends ResponseData {
           }
         })
       );
-  
-      const response = await this.productUseCase.getProduct(id);
-      if (!response) {
-        throw new ErrorHandler("El producto no pudo ser recuperado después de la actualización", 500);
-      }
-  
-      this.invoke(response, 200, res, "Variantes agregadas exitosamente", next);
+
+      const response : any = await this.productUseCase.getProduct(id)
+      const variantsAll: any = await this.variantProductUseCase.findAllVarinatsByProduct(id);
+
+      // Espera a que todas las promesas se resuelvan
+      const newVariants = await Promise.all(
+        variantsAll.map(async (variant: any) => {
+          const stockVariant = await this.stockStoreHouseUseCase.getVariantStock(
+            variant._id,
+            this.onlineStoreHouse
+          );
+          return { ...variant._doc, stock: stockVariant.stock };
+        })
+      );
+      const AllResponse = { ...response._doc, variants: newVariants }
+
+      this.invoke(AllResponse, 200, res, "Variantes editadas exitosamente", next);
     } catch (error) {
       console.error("Error al agregar variantes:", error);
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
