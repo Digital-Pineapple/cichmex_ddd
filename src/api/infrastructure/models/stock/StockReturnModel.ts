@@ -1,5 +1,5 @@
 import mongoose, {model, Schema } from "mongoose";
-import { StockBranchEntity, IProductReturn } from '../../../domain/stockBranch/StockBranchEntity';
+import { IProductReturn } from '../../../domain/stockBranch/StockBranchEntity';
 
 
 const StockReturnSchema = new Schema<IProductReturn> ({
@@ -34,9 +34,9 @@ const StockReturnSchema = new Schema<IProductReturn> ({
  
 
 
-const StockBranchModel = model<StockBranchEntity>(
+const StockReturnModel = model<IProductReturn>(
   'StockReturns',
   StockReturnSchema
 );
 
-export default StockBranchModel;
+export default StockReturnModel;

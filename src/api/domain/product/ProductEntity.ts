@@ -38,8 +38,9 @@ export interface ProductEntity {
   seoKeywords?: string[],
 }
 
-export interface VariantProductEntity {
-  sku: String,
+export interface VariantProductEntity  {
+  _id: ObjectId,
+  sku: String, 
   attributes: {
     color: String,
     size: String,

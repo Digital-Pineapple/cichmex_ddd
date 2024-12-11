@@ -155,7 +155,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     signInWithGoogle(idToken, typeUser) {
         return __awaiter(this, void 0, void 0, function* () {
             let { email, picture } = yield this.validateGoogleToken(idToken);
-            let user = yield this.authRepository.findOneItem({ email: email, google: true, status: true, type_user: typeUser }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
+            let user = yield this.authRepository.findOneItem({ email: email, google: true, status: true, }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
             if (!user)
                 return new ErrorHandler_1.ErrorHandler('No existe el usuario, Registrate', 409);
             user.profile_image = picture;
@@ -244,6 +244,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
                 return new ErrorHandler_1.ErrorHandler('El usuario ya existe, inicia sesión', 401);
             const uuid = (0, Utils_1.generateUUID)();
             let newUser = yield this.authRepository.createOne({
+                email: email,
                 google: true,
                 fullname: fullname,
                 status: true,
