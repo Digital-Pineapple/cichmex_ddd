@@ -848,32 +848,34 @@ export class ProductController extends ResponseData {
   public async addDescriptionAndVideo(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const data = { ...req.body };
-
+    let update: any = {};
+    let videos: { url: string; type: string }[] = [];
+  
     try {
-      let videos: { url: string; type: string }[] = [];
-
-      if (req.files && Array.isArray(req.files)) {
+      // Validar y procesar archivos de video si existen
+      if (req.files && Array.isArray(req.files) && req.files.length > 0) {
         videos = await Promise.all(
           req.files.map(async (video: Express.Multer.File) => {
-            const type = video.fieldname.split("/")[1]; // Validar el formato
-            const pathObject = `${this.path}/${id}/${video.fieldname}`;
+            const type = video.fieldname.split("/")[1]; // Obtener el formato desde el MIME type
+            const pathObject = `${this.path}/${id}/${video.originalname}`;
 
-            // Subir archivo a S3
-            const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, video, 'video/.mp4');
-
+            const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, video, 'video/mp4');
+  
             return { url: url.split("?")[0], type }; // Guardar solo la URL sin parámetros
           })
         );
+        update = await this.productUseCase.updateProduct(id, { ...data, videos});
       }
-
-      // Actualizar producto con los nuevos datos
-      const update = await this.productUseCase.updateProduct(id, { ...data, videos });
-      this.invoke(update, 200, res, "Se autualizó éxitosamente", next);
+      update = await this.productUseCase.updateProduct(id, { ...data });
+  
+      // Responder al cliente
+      this.invoke(update, 200, res, "Se actualizó exitosamente", next);
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error al actualizar el producto:", error);
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
   }
+  
 
   public async updateMainFeatures(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
