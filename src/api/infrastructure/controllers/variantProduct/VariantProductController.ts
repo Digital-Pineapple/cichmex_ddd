@@ -5,21 +5,24 @@ import { VariantProductUseCase } from '../../../application/variantProduct/Varia
 import { VariantProductEntity} from '../../../domain/variantProduct/variantProductEntity';
 import { body } from 'express-validator';
 import mongoose from 'mongoose';
+import { ProductEntity } from '../../../domain/product/ProductEntity';
+import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 
 
 
 export class VariantProductController extends ResponseData {
     protected path = '/variant-product';    
     constructor(private readonly variantProductUseCase: VariantProductUseCase,
+      private readonly stockStoreHouseUseCase: StockStoreHouseUseCase,
              
     ) {
         super();
+        
         this.createVariant = this.createVariant.bind(this);
         this.deleteVariant = this.deleteVariant.bind(this);
         this.deleteImageVariant = this.deleteImageVariant.bind(this)
 
     }
-
 
     public async createVariant(req: Request, res: Response, next: NextFunction): Promise<VariantProductEntity | ErrorHandler | void> {
         const {body} = req.body
@@ -32,7 +35,13 @@ export class VariantProductController extends ResponseData {
     }
     public async deleteVariant(req: Request, res: Response, next: NextFunction): Promise<VariantProductEntity | ErrorHandler | void> {
         const {id} = req.params
+        const SH_id = '662fe69b9ba1d8b3cfcd3634';
         try {
+          const stock = await this.stockStoreHouseUseCase.getVariantStock(id,SH_id)
+          
+          if (stock) {
+            return next(new ErrorHandler('Elimina primero el stock del producto', 400));
+          }
             const response = await this.variantProductUseCase.UpdateVariant(id,{status:false})
             this.invoke(response, 200, res, 'Se eliminó con éxito', next);
         } catch (error) {

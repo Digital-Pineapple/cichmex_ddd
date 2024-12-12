@@ -16,7 +16,7 @@ import { StockStoreHouseEntity } from '../../../domain/storehouse/stockStoreHous
       variant_id:{
         type: mongoose.Types.ObjectId, 
         ref: "variant-product",
-        required: true,
+        required: false,
       },
       stock:{
           type:Number,

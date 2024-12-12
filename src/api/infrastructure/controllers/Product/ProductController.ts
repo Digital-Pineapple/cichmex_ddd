@@ -1,27 +1,17 @@
-import { IProductInput } from './../../../domain/stockBranch/StockBranchEntity';
 import { CategoryUseCase } from './../../../application/category/CategoryUseCase';
-import { body } from 'express-validator';
 import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
 import { ProductUseCase } from "../../../application/product/productUseCase";
 import { S3Service } from "../../../../shared/infrastructure/aws/S3Service";
-import { stringify } from 'uuid';
-import { errorMonitor } from 'nodemailer/lib/xoauth2';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
-import { ProductEntity } from '../../../domain/product/ProductEntity';
-import { StockBranchEntity } from '../../../domain/stockBranch/StockBranchEntity';
 import { StockStoreHouseEntity } from '../../../domain/storehouse/stockStoreHouseEntity';
-import { Category } from '../../../domain/category/CategoryEntity';
 import { SubCategoryUseCase } from '../../../application/subCategory/SubCategoryUseCase';
-import { createSlug, generateRandomCode, generateUUID, RandomCodeId } from '../../../../shared/infrastructure/validation/Utils';
-import mongoose, { AnyObject } from 'mongoose';
-import sharp from 'sharp';
+import { createSlug, generateUUID, RandomCodeId } from '../../../../shared/infrastructure/validation/Utils';
+import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { VariantProductUseCase } from '../../../application/variantProduct/VariantProductUseCase';
 import { StockSHinputUseCase } from '../../../application/storehouse/stockSHinputUseCase';
-import { parse } from 'dotenv';
-
 
 export class ProductController extends ResponseData {
   protected path = "/product";
@@ -71,8 +61,7 @@ export class ProductController extends ResponseData {
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
     try {
       const response = await this.productUseCase.getProducts();
-      this.invoke(response, 200, res, "", next);
-      // if (!(response instanceof ErrorHandler)) {
+          // if (!(response instanceof ErrorHandler)) {
       //   const updatedResponse = await Promise.all(
       //     response.map(async (item: any) => {
       //       const images = item.images;
@@ -107,6 +96,7 @@ export class ProductController extends ResponseData {
 
       //   this.invoke(updatedResponse, 200, res, "", next);
       // }
+      this.invoke(response, 200, res, "", next);
     } catch (error) {
       console.log(error);
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
