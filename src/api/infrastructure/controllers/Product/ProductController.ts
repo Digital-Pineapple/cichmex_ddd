@@ -162,7 +162,6 @@ export class ProductController extends ResponseData {
         }
       }
       const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(id);
-
       // Espera a que todas las promesas se resuelvan
       const newVariants = await Promise.all(
         variants.map(async (variant: any) => {
@@ -173,7 +172,24 @@ export class ProductController extends ResponseData {
           return { ...variant._doc, stock: stockVariant.stock };
         })
       );
-      const AllResponse = { ...response._doc, variants: newVariants }
+      let stock  = 0
+      if ( Array.isArray(variants) && variants.length <= 0) {
+        
+        try {
+            const stockProduct = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse);
+    
+            // Verifica si stockProduct es válido
+            if (stockProduct && typeof stockProduct.stock === 'number') {
+                stock = stockProduct.stock;
+            } else {
+                stock = 0
+            }
+        } catch (error) {
+            console.error('Error al obtener el stock del producto:', error);
+            throw new ErrorHandler('Hubo un error al obtener el stock del producto', 500);
+        }
+    }
+      const AllResponse = { ...response._doc, variants: newVariants, stock: stock }
 
       this.invoke(AllResponse, 200, res, "", next);
     } catch (error) {
@@ -749,13 +765,15 @@ export class ProductController extends ResponseData {
 
     try {
       // Validar y transformar las variantes
-      const parsedVariants = variants.map((variant: any) => ({
-        ...variant,
-        attributes:
-          typeof variant.attributes === "string"
-            ? JSON.parse(variant.attributes) // Parsear si es una cadena
-            : variant.attributes, // Dejar como está si ya es un objeto
-      }));
+      const parsedVariants = variants.map((variant: any) => {
+        return {
+          ...variant,
+          attributes: Object.entries(variant.attributes).reduce((acc, [key, value]) => {
+            acc[key] = value === 'undefined' || value === 'null' ? null : value; // Convierte valores inválidos a null
+            return acc;
+          }, {} as Record<string, any>),
+        };
+      });
 
       // Organizar los archivos por variante y mantener el orden de las imágenes
       const filesByVariant: { [key: number]: Express.Multer.File[] } = {};
@@ -881,6 +899,9 @@ export class ProductController extends ResponseData {
   public async UpdateVariants(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const { variants } = req.body;
+    console.log(variants);
+    
+    
   
     const user = req.user;
     const SH_id = '662fe69b9ba1d8b3cfcd3634';
@@ -892,11 +913,13 @@ export class ProductController extends ResponseData {
     try {
       const parsedVariants = variants.map((variant: any) => {
         return {
-          ...variant, 
-          attributes: typeof variant.attributes === "string" ? JSON.parse(variant.attributes) : variant.attributes, // Procesar 'attributes'
+          ...variant,
+          attributes: Object.entries(variant.attributes).reduce((acc, [key, value]) => {
+            acc[key] = value === 'undefined' || value === 'null' ? null : value; // Convierte valores inválidos a null
+            return acc;
+          }, {} as Record<string, any>),
         };
       });
-      
   
       const filesByVariant: { [key: number]: Express.Multer.File[] } = {};
   

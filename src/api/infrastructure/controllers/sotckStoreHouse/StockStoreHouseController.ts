@@ -60,7 +60,7 @@ export class StockStoreHouseController extends ResponseData {
     public async getAllInputs(req: Request, res: Response, next: NextFunction) {
         try {
             const response = await this.stockSHinputUseCase.getInputs()
-
+            
             this.invoke(response, 200, res, '', next);
         } catch (error) {
 
@@ -168,7 +168,9 @@ export class StockStoreHouseController extends ResponseData {
                     throw new Error(`El stock disponible no es válido para el producto ${item.name}`);
                 }
     
-                const newQuantity = available ? availableStock + itemQuantity : itemQuantity;
+                const newQuantity =  availableStock + itemQuantity ;
+                console.log(newQuantity);
+                
     
                 const response = available ? available : isVariant ?
                 await this.stockStoreHouseUseCase.createStock({
@@ -186,7 +188,7 @@ export class StockStoreHouseController extends ResponseData {
                  await this.stockSHinputUseCase.createInput({
                     SHStock_id: response._id,
                     quantity: itemQuantity,
-                    newQuantity,
+                    newQuantity: newQuantity,
                     responsible: UserInfo,
                     folio: code_folio,
                     product_detail: item,
