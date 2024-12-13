@@ -777,6 +777,8 @@ export class ProductController extends ResponseData {
 
   public async AddProdcutWithVariants(req: Request, res: Response, next: NextFunction) {
     const data = { ...req.body }
+    console.log(data);
+    
 
     try {
       const response = await this.productUseCase.createProduct({ ...data })
@@ -953,8 +955,6 @@ export class ProductController extends ResponseData {
   public async UpdateVariants(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const { variants } = req.body;
-    console.log(variants);
-    
     
   
     const user = req.user;
