@@ -40,8 +40,9 @@ export class ProductUseCase {
   public async updateProduct(
     _id: string,
     updated: any
-  ): Promise<ProductEntity> {
-    
+  ): Promise<ProductEntity | ErrorHandler> {
+    // const product = await this.productRepository.findOneItem({name: updated.name, status: true})
+    // if (product) return new ErrorHandler(`Producto con nombre ${product.name} ya esta en uso `, 400);
     return await this.productRepository.updateOne(_id, {...updated});
   }
   

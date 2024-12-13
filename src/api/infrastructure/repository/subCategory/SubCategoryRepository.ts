@@ -1,4 +1,4 @@
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { SubCategoriesRepository as SubCategoryConfig } from '../../../domain/subCategory/SubCategoriesRepository'
 import { ObjectId } from 'mongodb';
 import { MongoRepository } from '../MongoRepository';
@@ -39,7 +39,7 @@ export class SubCategoryRepository extends MongoRepository implements SubCategor
   }
     
     async findProductsBySubCategory(subcat_id: any, storehouse:any): Promise<SubCategory[] | null> {        
-        const storehouseId = new ObjectId(storehouse);  
+        const storehouseId = new mongoose.Types.ObjectId(storehouse);  
         const result = await this.MODEL.aggregate([
           { $match: { _id: subcat_id } }, // Filtro por el ID de la sucategoría
           {

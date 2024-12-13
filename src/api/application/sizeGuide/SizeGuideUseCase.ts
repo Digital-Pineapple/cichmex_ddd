@@ -6,6 +6,9 @@ import { SizeGuideRepository } from "../../domain/sizeGuide/SizeGuideRepository"
 export class SizeGuideUseCase {
   constructor(private readonly sizeGuideRepository: SizeGuideRepository) {}
 
+  public async getAllGuides(): Promise<SizeGuideEntity[]> {
+    return await this.sizeGuideRepository.findAll()
+  }
   public async getAllMyGuides(id : string): Promise<SizeGuideEntity[]> {
     return await this.sizeGuideRepository.findByUser(id)
   }
