@@ -5,26 +5,27 @@ import { PaymentEntity } from "../payments/PaymentEntity";
 import { BranchOfficeEntity, ILocation } from "../branch_office/BranchOfficeEntity";
 import { UserEntity } from "../user/UserEntity";
 import { SizeGuideEntity } from "../sizeGuide/SizeGuideEntity";
+import { VariantProductEntity } from "../variantProduct/variantProductEntity";
+import { Size } from "aws-sdk/clients/s3";
 
 
 export interface ProductEntity {
   _id: ObjectId,
   name: string;
-  price: number;
-  discountPrice: number;
-  porcentDiscount: number;
+  price?: number;
+  discountPrice?: number;
+  porcentDiscount?: number;
   description?: string;
   shortDescription?: string;
   slug?: string;
   dimensions?: string;
   brand?: string;
-  tag: string;
+  tag?: string;
   category?: Category;
   subCategory?: SubCategory;
   currency?: string;
   images?: ProductImageEntity[];
   thumbnail?: string;
-  variants?: string[]
   status?: boolean;
   weight?: string;
   videos?: ProductVideoEntity[];
@@ -36,28 +37,14 @@ export interface ProductEntity {
   updatedAt: NativeDate;
   seoDescription?: string,
   seoKeywords?: string[],
+  condition ?: string,
+  size_guide ?: SizeGuideEntity,
 }
 
-export interface VariantProductEntity  {
-  _id: ObjectId,
-  sku: String, 
-  attributes: {
-    color: String,
-    size: String,
-    material: String,
-  },
-  design: String,
-  stock: String,
-  images: [ProductImageEntity],
-  thumbnail?: String;
-  sizeGuide?: SizeGuideEntity
-}
 export interface ProductImageEntity {
   _id: ObjectId,
   url: string;
   status: boolean;
-  createdAt: NativeDate;
-  updatedAt: NativeDate;
 }
 export interface ProductVideoEntity {
   _id: ObjectId,

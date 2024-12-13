@@ -31,7 +31,7 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     }
     
     async getProductsByCategory(query:any, populateConfig1?:any): Promise<ProductEntity[] | ErrorHandler | null > {
-        return await this.MODEL.find({...query}).populate(populateConfig1)
+        return await this.ProductModel.find({...query}).populate(populateConfig1)
     }
     async startDeleteImageDetail(id: string, imageId: string): Promise<ProductEntity | ErrorHandler | null> {
         try {
@@ -91,71 +91,81 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
   
     
    async  findDetailProductById(id:string, populateCofig1?:any, populateConfig2?:any, populateConfig3?:any): Promise<ProductEntity| ErrorHandler | null> {
-    return await this.MODEL.findById(id).populate(populateCofig1).populate(populateConfig2).populate(populateConfig3)
+    return await this.ProductModel.findById(id).populate(populateCofig1).populate(populateConfig2).populate(populateConfig3)
     // return await this.MODEL.aggregate([
         
     // ]).
    }
 
-    async findSearchProducts(search: string, page: number): Promise<any> {
-    // Clean up the search term by removing special characters
-    const noSpecialCharacters = search.replace(
-      /[`~!@#$%^&*()_|+\-=?;:'"<>\{\}\[\]\\\/]/gi,
-      ""
-    );
-  
+   async findSearchProducts(search: string, page: number): Promise<any> {
+    const PAGESIZE = 30;
     const storehouseId = new ObjectId(this.onlineStoreHouse);
-    const PAGESIZE = 30; 
-    // Use aggregation to find products and join with the storehouse
+
+    // Limpia espacios innecesarios en el término de búsqueda
+    const cleanSearch = search.trim().toLocaleLowerCase();
+
+    // Usa $text si el término es suficientemente largo, de lo contrario $regex
+    const isTextSearch = cleanSearch.split(" ").length > 1 || cleanSearch.length > 3;
+
+    // Expresión regular para búsqueda parcial
+    const regexSearch = new RegExp(cleanSearch, "i");
+
+    // Filtro condicional basado en $text o $regex
+    const searchFilter = isTextSearch
+        ? { $text: { $search: cleanSearch } } // Búsqueda por texto
+        : { name: { $regex: regexSearch } }; // Búsqueda parcial
+
     const result = await this.MODEL.aggregate([
-      {
-        $match: {
-          // Find products that match the search criteria
-          slug: { $regex: ".*" + noSpecialCharacters + ".*", $options: "i" },
+        {
+            $match: searchFilter, // Filtro dinámico
         },
-      },
-      {
-        // Join with the storehouse data
-        $lookup: {
-          from: "storehousestocks", // The collection containing storehouse stocks
-          let: { productId: "$_id" },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ["$product_id", "$$productId"] }, // Match product ID
-                    { $eq: ["$StoreHouse_id", storehouseId] }, // Match specific storehouse ID
-                  ],
-                },
-              },
+        {
+            $lookup: {
+                from: "storehousestocks",
+                let: { productId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$product_id", "$$productId"] },
+                                    { $eq: ["$StoreHouse_id", storehouseId] },
+                                ],
+                            },
+                        },
+                    },
+                ],
+                as: "storehouseStock",
             },
-          ],
-          as: "storehouseStock", // Alias for the joined data
         },
-      },
-      {
-        // Optionally, you can add fields or transform data here
-        $addFields: {
-        //   stock: { $arrayElemAt: ["$storehouseStock.stock", 0] }, // Extract stock value if needed
-        stock: { $ifNull: [{ $arrayElemAt: ['$storehouseStock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
+        {
+            $addFields: {
+                stock: { $ifNull: [{ $arrayElemAt: ["$storehouseStock.stock", 0] }, 0] },
+            },
         },
-      },
-      {
-        $facet: {
-          products: [ { $skip: (page - 1) * PAGESIZE }, // Obtener productos para la página actual
-            { $limit: PAGESIZE },],
-          total: [{$count: "total"}],
-        }
-      }
+        {
+            $facet: {
+                products: [
+                    { $skip: (page - 1) * PAGESIZE },
+                    { $limit: PAGESIZE },
+                ],
+                total: [{ $count: "total" }],
+            },
+        },
     ]);
-  
+
     return {
-      products: result[0].products,
-      total: result[0]?.total[0]?.total || 0
+        products: result[0]?.products || [],
+        total: result[0]?.total[0]?.total || 0,
     };
-    // return result;
-  }
+}
+
+
+  
+  
+  
+  
+  
 
   async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
     const result = await this.MODEL.aggregate([

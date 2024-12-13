@@ -1,11 +1,13 @@
 import { ProductEntity } from "../product/ProductEntity";
 import { UserEntity } from "../user/UserEntity";
+import { VariantProductEntity } from "../variantProduct/variantProductEntity";
 import { storeHouseEntity } from "./storeHouseEntity";
 
 export interface StockStoreHouseEntity  {
   _id: string;
   StoreHouse_id : storeHouseEntity;
-  product_id: ProductEntity;
+  product_id?: ProductEntity;
+  variant_id ?: VariantProductEntity;
   stock: number;
   status?: boolean;
   createdAt: NativeDate;

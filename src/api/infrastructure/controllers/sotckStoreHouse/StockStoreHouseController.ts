@@ -24,7 +24,7 @@ export class StockStoreHouseController extends ResponseData {
         private stockSHoutputUseCase: StockSHoutputUseCase,
         private stockSHreturnUseCase: StockSHreturnUseCase,
         private productUseCase: ProductUseCase,
-        private s3Service : S3Service,
+        private s3Service: S3Service,
     ) {
         super();
         this.getAllStock = this.getAllStock.bind(this);
@@ -131,76 +131,86 @@ export class StockStoreHouseController extends ResponseData {
     public async createMultipleStock(req: Request, res: Response, next: NextFunction) {
         const { products } = req.body;
         const user = req.user;
+        
+        if (!products || !Array.isArray(products)) {
+            return next(new ErrorHandler('Faltan datos necesarios o los productos no son válidos', 400));
+        }
+    
+        if (!user || !user._id || !user.fullname) {
+            return next(new ErrorHandler('Información del usuario no disponible', 400));
+        }
+    
         const UserInfo = {
             _id: user._id,
             fullname: user.fullname,
             email: user.email,
-            type_user: user.type_user
+            type_user: user.type_user,
         };
         const SH_id = '662fe69b9ba1d8b3cfcd3634';
         const code_folio = RandomCodeId('FO');
-
+    
         try {
-            // Validar si existen los productos y demás campos requeridos
-            if (!products ) {
-                return next(new ErrorHandler('Faltan datos necesarios', 400));
-            }
-
-            const operations = products.map(async (item: any) => {
-                const available = await this.stockStoreHouseUseCase.getProductStock(item._id, SH_id);
-                const available_id = available?._id;
-
-                // Validar que item.quantity es un número válido
+            const processProduct = async (item: any, isVariant: boolean = false) => {
+            
                 const itemQuantity = Number(item.quantity);
-                if (isNaN(itemQuantity) || itemQuantity < 0) {
-                    throw new Error(`La cantidad proporcionada no es válida para el producto ${item._id}`);
+
+                const  stockMethod : any = async()  => isVariant ? await this.stockStoreHouseUseCase.getVariantStock(item._id,SH_id) : await this.stockStoreHouseUseCase.getProductStock(item._id, SH_id);
+                
+                if ( isNaN(itemQuantity) || itemQuantity < 0) {
+                    throw new Error(`Datos incompletos `);
                 }
-
-                if (!available) {
-                    const response = await this.stockStoreHouseUseCase.createStock({ product_id: item._id, StoreHouse_id: SH_id });
-                    const newQuantity = itemQuantity; // Ya validado
-
-                    const entry = await this.stockSHinputUseCase.createInput({
-                        SHStock_id: response?._id,
-                        quantity: itemQuantity, // Usamos la cantidad validada
-                        newQuantity: newQuantity,
-                        responsible: UserInfo,
-                        folio: code_folio,
-                        product_detail: item,
-                    });
-
-                    await this.stockStoreHouseUseCase.updateStock(response?._id, { stock: entry.newQuantity });
+    
+                const available = await stockMethod();
+                
+                const availableStock = Number(available?.stock) || 0;
+    
+                if (isNaN(availableStock)) {
+                    throw new Error(`El stock disponible no es válido para el producto ${item.name}`);
+                }
+    
+                const newQuantity = available ? availableStock + itemQuantity : itemQuantity;
+    
+                const response = available ? available : isVariant ?
+                await this.stockStoreHouseUseCase.createStock({
+                   product_id: item.product_id,
+                   variant_id : item._id,
+                   StoreHouse_id: SH_id,
+                   stock: newQuantity,
+               }): await this.stockStoreHouseUseCase.createStock({
+                   product_id: item._id,
+                   StoreHouse_id: SH_id,
+                   stock: newQuantity,
+               })
+   
+    
+                 await this.stockSHinputUseCase.createInput({
+                    SHStock_id: response._id,
+                    quantity: itemQuantity,
+                    newQuantity,
+                    responsible: UserInfo,
+                    folio: code_folio,
+                    product_detail: item,
+                });
+            };
+    
+            const operations = products.map(async (item: any) => {
+                if (item._id && item.product_id) {
+                    await processProduct(item, true);
+                } else if (item._id) {
+                    await processProduct(item);
                 } else {
-                    // Asegurarse de que available?.stock es un número válido, si no, usar 0
-                    const availableStock = Number(available?.stock) || 0;
-
-                    if (isNaN(availableStock)) {
-                        throw new Error(`El stock disponible no es válido para el producto ${item._id}`);
-                    }
-
-                    const newQuantity = itemQuantity + availableStock; // Suma validada
-
-                    const entry = await this.stockSHinputUseCase.createInput({
-                        SHStock_id: available?._id,
-                        quantity: itemQuantity, // Usamos la cantidad validada
-                        newQuantity: newQuantity, // Ya validado
-                        responsible: UserInfo,
-                        folio: code_folio,
-                        product_detail: item,
-                    });
-
-                    await this.stockStoreHouseUseCase.updateStock(available_id, { stock: entry.newQuantity });
+                    throw new Error('Producto sin identificador válido');
                 }
             });
-
+    
             await Promise.all(operations);
             this.invoke(code_folio, 200, res, 'Alta de stock exitosa', next);
         } catch (error) {
-            console.log(error);
-
-            next(new ErrorHandler(`Hubo un error`, 500));
+            console.error('Error procesando stock:', error);
+            next(new ErrorHandler('Hubo un error procesando los productos', 500));
         }
     }
+    
 
 
 
@@ -413,78 +423,78 @@ export class StockStoreHouseController extends ResponseData {
 
             this.invoke(allCreatedStock, 201, res, 'Se actualizó con éxito', next);
 
-    } catch(error) {
+        } catch (error) {
 
-        next(new ErrorHandler('Hubo un error al actualizar', 500));
+            next(new ErrorHandler('Hubo un error al actualizar', 500));
+        }
     }
-}
 
-public async feedDailyProduct(req: Request, res: Response, next: NextFunction) {
-    const SH_id = new mongo.ObjectId('662fe69b9ba1d8b3cfcd3634');
+    public async feedDailyProduct(req: Request, res: Response, next: NextFunction) {
+        const SH_id = new mongo.ObjectId('662fe69b9ba1d8b3cfcd3634');
 
-    try {
-        const products: any = await this.stockStoreHouseUseCase.dailyFeed(SH_id);
-        
-        const response = await Promise.all(
-            products.map(async (i: any) => {
-                try {
-                    const image = i.image;
-                    i.id = i.id.toString()
-                    i.image_link = image.startsWith("https://") 
-                        ? image 
-                        : await this.s3Service.getUrlObject(image + ".jpeg");
-                    i.available = i.stock > 0 ? 'En Stock' :'Fuera de Stock'
-                    i.condition = 'Nuevo'
-                    i.price = i.discountPrice ? `${i.discountPrice} MXN`: `${i.price} MXN`
-                    i.link = `https://cichmex.mx/productos/${i.id}`
-                } catch (error) {
-                    console.log(`Error al obtener la URL de S3 para el producto ${i.id}:`, error);
-                    i.image_link = null; // Opcional: asigna `null` o un valor por defecto en caso de error
-                }
-                return i;
-            })
-        );
+        try {
+            const products: any = await this.stockStoreHouseUseCase.dailyFeed(SH_id);
 
-        const productsForXML = response.map((product) => {
+            const response = await Promise.all(
+                products.map(async (i: any) => {
+                    try {
+                        const image = i.image;
+                        i.id = i.id.toString()
+                        i.image_link = image.startsWith("https://")
+                            ? image
+                            : await this.s3Service.getUrlObject(image + ".jpeg");
+                        i.available = i.stock > 0 ? 'En Stock' : 'Fuera de Stock'
+                        i.condition = 'Nuevo'
+                        i.price = i.discountPrice ? `${i.discountPrice} MXN` : `${i.price} MXN`
+                        i.link = `https://cichmex.mx/productos/${i.id}`
+                    } catch (error) {
+                        console.log(`Error al obtener la URL de S3 para el producto ${i.id}:`, error);
+                        i.image_link = null; // Opcional: asigna `null` o un valor por defecto en caso de error
+                    }
+                    return i;
+                })
+            );
 
-            return {
-                'g:id': product.id,
-                'g:title': product.title,
-                'g:description': product.description,
-                'g:link': product.link,
-                'g:image_link': product.image_link,
-                'g:condition': product.condition,
-                'g:availability': product.available,
-                'g:price': product.price,
-                'g:brand': product.brand,
+            const productsForXML = response.map((product) => {
+
+                return {
+                    'g:id': product.id,
+                    'g:title': product.title,
+                    'g:description': product.description,
+                    'g:link': product.link,
+                    'g:image_link': product.image_link,
+                    'g:condition': product.condition,
+                    'g:availability': product.available,
+                    'g:price': product.price,
+                    'g:brand': product.brand,
+                };
+            });
+
+            const xmlObject = {
+                rss: {
+                    _attributes: {
+                        version: '2.0',
+                        'xmlns:g': 'http://base.google.com/ns/1.0',
+                    },
+                    channel: {
+                        title: 'Cichmex',
+                        link: 'https://cichmex.mx/',
+                        description: 'Tienda oficial Cichmex',
+                        item: productsForXML,
+                    },
+                },
             };
-        });
 
-        const xmlObject = {
-            rss: {
-                _attributes: {
-                    version: '2.0',
-                    'xmlns:g': 'http://base.google.com/ns/1.0',
-                },
-                channel: {
-                    title: 'Cichmex',
-                    link: 'https://cichmex.mx/',
-                    description: 'Tienda oficial Cichmex',
-                    item: productsForXML,
-                },
-            },
-        };
+            const xmlOptions = { compact: true, ignoreComment: true, spaces: 4 };
+            const xml = convert.js2xml(xmlObject, xmlOptions);
 
-        const xmlOptions = { compact: true, ignoreComment: true, spaces: 4 };
-        const xml = convert.js2xml(xmlObject, xmlOptions);
+            return res.type('application/xml').status(200).send(xml);
 
-        return res.type('application/xml').status(200).send(xml);
-
-    } catch (error) {
-        console.log('Error en feedDailyProduct:', error);
-        next(new ErrorHandler('Hubo un error', 500));
+        } catch (error) {
+            console.log('Error en feedDailyProduct:', error);
+            next(new ErrorHandler('Hubo un error', 500));
+        }
     }
-}
 
 
 }

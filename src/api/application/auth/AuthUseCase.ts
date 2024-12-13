@@ -152,8 +152,9 @@ export class AuthUseCase extends Authentication {
     }
 
     async signInWithGoogle(idToken: string, typeUser: any): Promise<IGoogleResponseLogin | IAuth | ErrorHandler | null> {
-        let { email, picture } = await this.validateGoogleToken(idToken);        
-        let user = await this.authRepository.findOneItem({ email: email, google: true , status: true, type_user: typeUser },TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
+        let { email, picture } = await this.validateGoogleToken(idToken); 
+              
+        let user = await this.authRepository.findOneItem({ email: email, google: true , status: true,},TypeUserPopulateConfig, PhonePopulateConfig,PopulatePointStore);
         if (!user) return new ErrorHandler('No existe el usuario, Registrate', 409)
         user.profile_image = picture
         user = await this.generateJWT(user, user.uuid)
@@ -232,11 +233,12 @@ export class AuthUseCase extends Authentication {
     }
 
     async signUpWithGoogle(idToken: string, typeUser: any): Promise<IGoogle | ErrorHandler | null> {        
-        let { email, fullname, picture } = await this.validateGoogleToken(idToken);                
+        let { email, fullname, picture } = await this.validateGoogleToken(idToken);                                
         let user = await this.authRepository.findOneItem({ email: email, status:true, google: true, type_user: typeUser }, TypeUserPopulateConfig,PhonePopulateConfig)
         if (user) return new ErrorHandler('El usuario ya existe, inicia sesión', 401)
         const uuid = generateUUID();
         let newUser = await this.authRepository.createOne({ 
+            email: email,
             google: true,         
             fullname: fullname,  
             status: true,           

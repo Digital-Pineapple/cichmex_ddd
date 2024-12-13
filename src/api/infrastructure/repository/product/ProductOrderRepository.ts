@@ -121,15 +121,15 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
             paymentType: { $ne: 'transfer' }
         };
 
-        const salesDay: ProductOrderEntity[] = await this.MODEL.find(queryDay).populate(InfoPayment);
+        const salesDay: ProductOrderEntity[] = await this.ProductOrderModel.find(queryDay).populate(InfoPayment);
 
-        const salesWeek: ProductOrderEntity[] = await this.MODEL.find(queryWeek).populate(InfoPayment);
+        const salesWeek: ProductOrderEntity[] = await this.ProductOrderModel.find(queryWeek).populate(InfoPayment);
 
-        const salesMonth: ProductOrderEntity[] = await this.MODEL.find(queryMonth).populate(InfoPayment);
+        const salesMonth: ProductOrderEntity[] = await this.ProductOrderModel.find(queryMonth).populate(InfoPayment);
 
-        const salesYear: ProductOrderEntity[] = await this.MODEL.find(queryYear).populate(InfoPayment);
+        const salesYear: ProductOrderEntity[] = await this.ProductOrderModel.find(queryYear).populate(InfoPayment);
 
-        const lastTenSales: any = await this.MODEL.find({ payment_status: 'approved' }).populate(InfoPayment).sort({ createdAt: -1 }).limit(10).exec()
+        const lastTenSales: any = await this.ProductOrderModel.find({ payment_status: 'approved' }).populate(InfoPayment).sort({ createdAt: -1 }).limit(10).exec()
 
         const hours = Array.from({ length: 24 }, (_, i) => i);
         const salesDayByHour = hours.map(hour => ({

@@ -57,7 +57,7 @@ export class ShoppingCartController extends ResponseData {
             const products = response?.products;   
             const totalCart = await this.shoppingCartUseCase.getTotalCart(products);    
             const weight = await this.shoppingCartUseCase.getTotalWeight(products);                             
-            const shippingCost = await this.shippingCostUseCase.findShippingCost(weight);             
+            const shippingCost : any = await this.shippingCostUseCase.findShippingCost(weight);             
             // console.log(weight, "weight"); 
             // console.log(shippingCost, "shippingCost");                               
             const mergeStockProducts = await Promise.all(
@@ -197,8 +197,8 @@ export class ShoppingCartController extends ResponseData {
     public async addToCart(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params; // ID del producto
         const user = req.user;
-        const { quantity } = req.body;
-        try {                        
+        const { quantity } = req.body;            
+        try {                                              
             // Validar entradas
             if(!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));
             if(!id) return next(new ErrorHandler('El id del producto es requerido', 404));
@@ -210,15 +210,15 @@ export class ShoppingCartController extends ResponseData {
                 quantity
             };
             // Obtener carrito de compras del usuario
-            const responseShoppingCartUser : any = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
-            if (!responseShoppingCartUser) {
-                userCart = await this.shoppingCartUseCase.createShoppingCart({user_id: user._id, products: [] });
-            }else{
+            const responseShoppingCartUser : any = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);                                                         
+            if (responseShoppingCartUser) {                         
                 userCart = responseShoppingCartUser
-            }
-            // Buscar el índice del producto en el carrito (si existe)
-            const index = userCart.products.findIndex((product: any) => product.item._id.equals(id));
+            }else{
+                userCart = await this.shoppingCartUseCase.createShoppingCart({user_id: user._id, products: [] });                         
+            }         
 
+            // Buscar el índice del producto en el carrito (si existe)
+            const index = userCart.products.findIndex((product: any) => product.item._id.equals(id));                       
             if (index !== -1) {
                 // Si el producto ya está en el carrito, actualizar la cantidad
                 userCart.products[index].quantity += quantity;               
@@ -226,10 +226,11 @@ export class ShoppingCartController extends ResponseData {
             if(index === -1 ){
                 // Si el producto no está en el carrito, agregarlo
                 userCart.products.push(newProduct);
-            }          
-            const response = await this.shoppingCartUseCase.updateShoppingCart(userCart._id, { products: responseShoppingCartUser.products });
+            }         
+                                                                                    
+            const response = await this.shoppingCartUseCase.updateShoppingCart(userCart._id, { products: userCart.products });                       
             this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
-        } catch (error) {
+        } catch (error) {          
             console.error('Error actualizando el carrito de compras:', error);
             next(new ErrorHandler('Hubo un error al actualizar el carrito', 500));
         }
