@@ -117,7 +117,10 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
 
     const result = await this.MODEL.aggregate([
         {
-            $match: searchFilter, // Filtro dinámico
+            $match: {
+              ...searchFilter,
+              status: true
+            }, // Filtro dinámico
         },
         {
             $lookup: {
