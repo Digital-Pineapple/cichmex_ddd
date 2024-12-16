@@ -33,6 +33,7 @@ const dynamicRoute_1 = __importDefault(require("./dynamicRoute"));
 const region_1 = __importDefault(require("./region"));
 const sizeGuide_1 = __importDefault(require("./sizeGuide"));
 const variantProduct_1 = __importDefault(require("./variantProduct"));
+const colorProduct_1 = __importDefault(require("./colorProduct"));
 const apiRouter = () => {
     const apiRouter = (0, express_1.Router)();
     apiRouter.use('/auth', auth_1.default);
@@ -63,6 +64,7 @@ const apiRouter = () => {
     apiRouter.use('/socket', sockets_1.default);
     apiRouter.use('/size-guide', sizeGuide_1.default);
     apiRouter.use('/variant-product', variantProduct_1.default);
+    apiRouter.use('/colorProduct', colorProduct_1.default);
     return apiRouter;
 };
 exports.apiRouter = apiRouter;
@@ -93,4 +95,5 @@ apiRouterx.use('/storehouse', storeHouse_1.default);
 apiRouterx.use('/coupons', discountCoupon_1.default);
 apiRouterx.use('/size-guide', sizeGuide_1.default);
 apiRouterx.use('/variant-product', variantProduct_1.default);
+apiRouterx.use('/colorProduct', colorProduct_1.default);
 exports.default = exports.apiRouter;

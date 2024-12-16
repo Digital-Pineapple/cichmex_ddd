@@ -12,7 +12,7 @@ export class VariantProductUseCase {
         return await this.variantProductRepository.updateOne(id,{...body})
     }
     public async findAllVarinatsByProduct(product_id: any): Promise<VariantProductEntity[] | ErrorHandler | null> {
-        return await this.variantProductRepository.findAllItems({product_id: product_id, status: true})
+        return await this.variantProductRepository.findVariantsByProduct({product_id: product_id, status: true})
     }
     public async findVariantById(variant_id: any): Promise<VariantProductEntity[] | ErrorHandler | null> {
         return await this.variantProductRepository.findOneItem({_id: variant_id})
