@@ -475,21 +475,14 @@ export class ProductController extends ResponseData {
     const queryparams = req.query;
     try {
       if (!category) return next(new ErrorHandler("El nombre de la categoria es requerida", 404));
-
       const categoria: any | null = await this.categoryUseCase.getDetailCategoryByName(category);
-      if (categoria == null) return next(new ErrorHandler("La categoria no existe", 404));
-      
-      const products: any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);         
-      
+      if (categoria == null) return next(new ErrorHandler("La categoria no existe", 404));      
+      const products: any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);               
       const response = {
         category: categoria,
-        products: products.products,
-        total: products.total
+        ...products
       };
-
       this.invoke(response, 201, res, '', next);
-
-
     } catch (error) {
       // console.log();      
       next(new ErrorHandler("Hubo un error al buscar", 500));
@@ -500,21 +493,15 @@ export class ProductController extends ResponseData {
   public async getProductsBySubCategory(req: Request, res: Response, next: NextFunction) {
     const { subcategory } = req.body
     const queryparams = req.query;
-
     try {
       if (!subcategory) return next(new ErrorHandler("El nombre de la subcategoria es requerida", 404));
-
       const subcategoria: any | null = await this.subCategoryUseCase.getDetailSubCategoryByName(subcategory);
-      if (subcategoria == null) return next(new ErrorHandler("La subcategoria no existe", 404));
-      
-      const products: any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);               
-
+      if (subcategoria == null) return next(new ErrorHandler("La subcategoria no existe", 404));      
+      const products: any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);                         
       const response = {
         subcategory: subcategoria,
-        products: products.products,
-        total: products.total
-      };
-      
+        ...products        
+      };            
       this.invoke(response, 201, res, '', next);      
     } catch (error) {
       next(new ErrorHandler("Hubo un error al buscar", 500));

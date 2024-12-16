@@ -57,8 +57,8 @@ export class ShoppingCartController extends ResponseData {
             const products = response?.products;   
             const totalCart = await this.shoppingCartUseCase.getTotalCart(products);    
             const weight = await this.shoppingCartUseCase.getTotalWeight(products);                             
-            const shippingCost : any = await this.shippingCostUseCase.findShippingCost(weight);             
             // console.log(weight, "weight"); 
+            const shippingCost : any = await this.shippingCostUseCase.findShippingCost(weight);             
             // console.log(shippingCost, "shippingCost");                               
             const mergeStockProducts = await Promise.all(
                 response.products.map(async (product: any) => {
@@ -67,13 +67,13 @@ export class ShoppingCartController extends ResponseData {
                 })
             )
             response.products = mergeStockProducts;
+            const price = shippingCost?.price_weight || 0
             const updatedResponse = {
                 ...response.toJSON(),
                 total_cart: totalCart,
-                shipping_cost: shippingCost?.price_weight,
-                totalWithShipping: totalCart + shippingCost?.price_weight
-            }    
-            // console.log(updatedResponse, "response xdxd");                              
+                shipping_cost: price,
+                totalWithShipping: totalCart + price
+            }                                            
             this.invoke( updatedResponse, 200, res, '', next);          
         } catch (error) {           
             console.log(error, "error");            

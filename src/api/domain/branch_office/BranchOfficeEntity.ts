@@ -15,6 +15,7 @@ export interface BranchOfficeEntity  {
   schedules?: ISchedules[];
   type?: string;
   services?: string[];
+  tag? : string;
   status?:boolean;
   createdAt        :   NativeDate;
   updatedAt        :   NativeDate;
