@@ -35,18 +35,25 @@ export class PaymentRepository extends MongoRepository implements PaymentReposit
         
         const exp = moment().subtract(48, 'hours').toDate();
         
-       // const response = await this.PaymentModel.find({ payment_status: { $ne: 'approved' },MP_info:{$exists:true}, status:true,  createdAt: { $lt: exp },}).sort({ createdAt: -1 })
-        const response = await this.PaymentModel.find({ payment_status: { $ne: 'approved' },}).sort({ createdAt: -1 })
+        const response = await this.PaymentModel.find({ payment_status: { $ne: 'approved' },MP_info:{$exists:true}, status:true})
+       // const response = await this.PaymentModel.find({ payment_status: { $ne: 'approved' }, }).sort({ createdAt: -1 })
         return response
     }
 
-    async getTransferPaymentsExpired(): Promise<PaymentEntity[]  | null> {
-        
-        const exp = moment().subtract(48, 'hours').toDate();
-        
-        const response = await this.PaymentModel.find({ payment_status: { $ne: 'approved' },verification:{$exists:true}, status:true,   createdAt: { $lt: exp },}).sort({ createdAt: -1 })
-        return response
+    async getTransferPaymentsExpired(): Promise<PaymentEntity[]> {
+        // Calcula el límite de tiempo de 48 horas atrás
+        const expirationDate = moment().subtract(48, 'hours').toDate();
+    
+        // Consulta los pagos que no están aprobados y han sido creados antes del límite
+        return this.PaymentModel.find(
+            {
+                payment_status: { $ne: 'approved' },
+                status: true,
+                createdAt: { $lt: expirationDate },
+            }
+        ).sort({ createdAt: -1 });
     }
+    
 
    
 }

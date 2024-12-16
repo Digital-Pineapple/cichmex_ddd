@@ -20,6 +20,8 @@ import { PaymentEntity, PaymentVoucher } from '../../../domain/payments/PaymentE
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import mongoose from 'mongoose';
 import { errorMonitor } from 'nodemailer/lib/xoauth2';
+import { InfoPayment } from '../../../../shared/domain/PopulateInterfaces';
+import { log } from 'console';
 
 
 export class PaymentController extends ResponseData {
@@ -82,45 +84,74 @@ export class PaymentController extends ResponseData {
             const access_token = config.MERCADOPAGO_TOKEN;
             const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
             const payment1 = new Payment(client);
-            const PaymentMP: any = await this.paymentUseCase.getPaymentsMPExpired();
-            const PaymentsTransfer: any = await this.paymentUseCase.getPaymentsTransferExpired()
-            
-            // Procesar todos los pagos expirados
-            await Promise.all(
-                PaymentMP.map(async (payment: any) => {
-
-                    try {
-                        // Obtener información de pago de MercadoPago
-                        const infoPayment = await payment1.get({ id: payment.MP_info.id.toString() });
-                        // Actualizar estado del pago y orden de producto basado en el estado del pago
-                        
-                        await this.updatePaymentAndOrder(payment, infoPayment);
-                    } catch (err) {
-                        console.error(`Error al obtener información de pago con id ${payment.MP_info.id}:`, err);
-
-                        
-                    }
-                })
-            );
-
-            await Promise.all(
-                PaymentsTransfer.map(async (payment: any) => {
-                    try {
-                        await this.paymentUseCase.updateOnePayment(payment._id,{status:false, payment_status:'cancelled'})
-                        const PO = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id });
-                        await this.productOrderUseCase.updateProductOrder(PO._id, { status: false,payment_status:'cancelled' });
-                    } catch (err) {
-                        console.error(`Error al obtener información de pago con id ${payment.MP_info.id}:`, err);
-                    }
-                })
-            );
     
-            this.invoke('', 200, res, "Verificacion completa", next);
+            // Obtener pagos expirados
+            const [PaymentMP , PaymentsTransfer] = await Promise.all([
+                this.paymentUseCase.getPaymentsMPExpired(),
+                this.paymentUseCase.getPaymentsTransferExpired(),
+            ]);
+    
+            // Función para actualizar pagos y órdenes
+            const cancelPaymentAndOrder = async (payment: any, statusReason: string) => {
+                
+                await this.paymentUseCase.updateOnePayment(payment._id, {
+                    status: false,
+                    payment_status: 'cancelled',
+    
+                });
+                
+                const PO = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id });
+               
+                await this.productOrderUseCase.updateProductOrder(PO._id, {
+                    status: false,
+                    payment_status: 'cancelled',
+                });
+            };
+            
+    
+   //         Procesar pagos de MercadoPago
+            const paymentMPPromises : any = PaymentMP?.map(async (payment: any) => {
+                
+                try {
+                    // Intentar obtener información de MercadoPago
+                    const infoPayment = await payment1.get({ id: payment.MP_info.id.toString() });
+                    await this.updatePaymentAndOrder(payment, infoPayment);
+                } catch (err: any) {
+                    console.log(err);
+                    
+                    if (err.status === 404) {
+                        // Si el pago no existe, cancelar pago y orden
+                        await cancelPaymentAndOrder(payment, 'Payment not found in MercadoPago');
+                    } else {
+                        console.error(`Error al obtener información de pago con id ${payment.MP_info.id}:`, err);
+                    }
+                }
+            });
+
+          //  Procesar pagos por transferencia
+            const paymentTransferPromises = PaymentsTransfer.map(async (payment: any) => {
+                console.log(payment,'sdbbj');
+                
+                try {
+                    // Cancelar pago y orden directamente
+                    await cancelPaymentAndOrder(payment, 'Expired transfer payment');
+                } catch (err: any) {
+                    console.error(`Error al procesar el pago por transferencia con id ${payment._id}:`, err);
+                }
+            });
+    
+            // Esperar a que todas las operaciones se completen
+            await Promise.all([...paymentMPPromises, ...paymentTransferPromises]);
+    
+            // Respuesta final
+            this.invoke('', 200, res, 'Verificación completa', next);
         } catch (error: any) {
+            console.log(error);
             
             next(new ErrorHandler(`Hubo un error al consultar la información: ${error.message}`, 500));
         }
     }
+    
     
     private async updatePaymentAndOrder(payment: any, infoPayment: any) {
         const status = infoPayment.status;
