@@ -104,16 +104,16 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     // Limpia espacios innecesarios en el término de búsqueda
     const cleanSearch = search.trim().toLocaleLowerCase();
 
-    // Usa $text si el término es suficientemente largo, de lo contrario $regex
-    const isTextSearch = cleanSearch.split(" ").length > 1 || cleanSearch.length > 3;
-
     // Expresión regular para búsqueda parcial
     const regexSearch = new RegExp(cleanSearch, "i");
 
-    // Filtro condicional basado en $text o $regex
-    const searchFilter = isTextSearch
-        ? { $text: { $search: cleanSearch } } // Búsqueda por texto
-        : { name: { $regex: regexSearch } }; // Búsqueda parcial
+    // Filtro que combina `$text` y `$regex` para máxima flexibilidad
+    const searchFilter = {
+        $or: [
+            { $text: { $search: cleanSearch } }, // Búsqueda por índice de texto
+            { name: { $regex: regexSearch } },  // Búsqueda parcial
+        ],
+    };
 
     const result = await this.MODEL.aggregate([
         {
