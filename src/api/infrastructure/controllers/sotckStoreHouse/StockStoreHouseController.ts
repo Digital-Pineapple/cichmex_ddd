@@ -213,6 +213,7 @@ export class StockStoreHouseController extends ResponseData {
             email: user.email,
             type_user: user.type_user
         };
+        
 
         const SH_id = '662fe69b9ba1d8b3cfcd3634';
         const code_folio = RandomCodeId('FO');
@@ -233,8 +234,8 @@ export class StockStoreHouseController extends ResponseData {
                         responsible: UserInfo,
                         folio: code_folio,
                         product_detail: item,
-                        user_received: user_received,
-                        user_delivery: user_delivery
+                        // user_received: user_received,
+                        // user_delivery: user_delivery
                     });
                     await this.stockStoreHouseUseCase.updateStock(available_id, { stock: output.newQuantity });
                 }

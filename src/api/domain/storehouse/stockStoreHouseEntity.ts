@@ -26,7 +26,7 @@ export interface SHProductInput {
   }
   export interface SHProductOutput {
     folio ?: string,
-    order_id : string,
+    order_id ?: string,
     SHStock_id ?: string,
     quantity: number,
     newQuantity: number,
