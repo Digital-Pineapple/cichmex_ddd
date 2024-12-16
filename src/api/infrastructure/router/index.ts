@@ -28,6 +28,7 @@ import dynamicRouteRouter from './dynamicRoute';
 import regionRouter from './region';
 import sizeGuideRouter from './sizeGuide';
 import variantProductRouter from './variantProduct';
+import colorProductRouter from './colorProduct';
 
 export const apiRouter = (): Router => {
 
@@ -61,6 +62,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/socket', socketsRouter)
     apiRouter.use('/size-guide', sizeGuideRouter)
     apiRouter.use('/variant-product', variantProductRouter)
+    apiRouter.use('/colorProduct', colorProductRouter)
 
     return apiRouter;
 }
@@ -92,6 +94,7 @@ apiRouterx.use('/storehouse', storeHouseRouter)
 apiRouterx.use('/coupons', discountCouponRouter)
 apiRouterx.use('/size-guide', sizeGuideRouter)
 apiRouterx.use('/variant-product', variantProductRouter)
+apiRouterx.use('/colorProduct', colorProductRouter)
 
 
 
