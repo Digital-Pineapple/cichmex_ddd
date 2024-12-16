@@ -10,6 +10,8 @@ import UserModel from '../../api/infrastructure/models/UserModel';
 import PaymentModel from '../../api/infrastructure/models/payments/PaymentModel';
 import StockStoreHouseModel from '../../api/infrastructure/models/stockStoreHouse/StockStoreHouseModel';
 import RegionModel from '../../api/infrastructure/models/Regions/RegionModel';
+import SizeGuideModel from '../../api/infrastructure/models/sizeGuide/SizeGuideModel';
+import { VariantProductModel } from '../../api/infrastructure/models/variantProduct/VariantProductModel';
 export interface IAuthPopulateConfig {
     path    : string;
     select  : string;
@@ -32,6 +34,12 @@ export interface IModelConfig {
     path : string;
     select : string[];
     model : any  
+}
+
+export interface IGuideConfig{
+    path : string;
+    // select : string[];
+    model : any
 }
 
 export const authPopulateConfing: IAuthPopulateConfig = {
@@ -113,8 +121,14 @@ export const InfoBranch : IStockPopulateConfig={
 
 export const PopulateProductCS = {
     path: 'products.item',
-    model:ProductModel
+    model: ProductModel
 }
+
+export const PopulateVariantProduct = {
+    path: 'variant-products.variant',
+    model: VariantProductModel
+}
+
 export const PopulateDetailMembership : IStockPopulateConfig={
     path: 'membershipBenefit_id',
     select: ["service_id" ],
@@ -175,6 +189,12 @@ export const PopulateBranch : IStockPopulateConfig={
     path: 'branch',
     select: ["name","location"],
     model: BranchOfficeModel
+}
+
+export const PopulateGuide : IGuideConfig = {
+    path: 'size_guide',
+    // select: ["*"],
+    model: SizeGuideModel    
 }
 
 
