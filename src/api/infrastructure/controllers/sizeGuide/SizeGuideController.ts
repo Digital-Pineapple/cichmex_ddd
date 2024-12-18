@@ -65,6 +65,7 @@ export class SizeGuideController extends ResponseData {
             dimensions: values.dimensions,
             user_id : id,
             unit: 'cm',
+            typePackage : values.typePackage ? values.typePackage : null
         }
         
          
