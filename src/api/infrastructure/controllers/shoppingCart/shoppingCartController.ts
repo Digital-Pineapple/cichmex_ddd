@@ -197,7 +197,12 @@ export class ShoppingCartController extends ResponseData {
     public async addToCart(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params; // ID del producto
         const user = req.user;
-        const { quantity } = req.body;            
+        const { quantity, variant_id } = req.body;        
+        interface Product {
+            item: ObjectId;
+            variant?: ObjectId | null;
+            quantity: number;
+        }                        
         try {                                              
             // Validar entradas
             if(!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));
@@ -205,29 +210,43 @@ export class ShoppingCartController extends ResponseData {
             if (!ObjectId.isValid(id)) return next(new ErrorHandler('ID de producto inválido', 400));
             if (typeof quantity !== 'number') return next(new ErrorHandler('La cantidad debe ser un número', 400));                 
             let userCart;
-            const newProduct = {
+            const newProduct : Product = {
                 item: new ObjectId(id),
-                quantity
+                variant: null,
+                quantity: quantity
             };
+            if(variant_id){                
+              newProduct['variant'] = new ObjectId(variant_id);                
+            }          
             // Obtener carrito de compras del usuario
-            const responseShoppingCartUser : any = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);                                                         
+            const responseShoppingCartUser : any = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);                                                                                 
             if (responseShoppingCartUser) {                         
                 userCart = responseShoppingCartUser
             }else{
                 userCart = await this.shoppingCartUseCase.createShoppingCart({user_id: user._id, products: [] });                         
-            }         
-
+            }                                 
+            let index;
             // Buscar el índice del producto en el carrito (si existe)
-            const index = userCart.products.findIndex((product: any) => product.item._id.equals(id));                       
+            if(variant_id){
+                index = userCart.products.findIndex((product: any) => { 
+                    if(product.variant){
+                        return product.variant._id.equals(variant_id)
+                    }
+                    return false
+                });
+            }else{
+                index = userCart.products.findIndex((product: any) => product.item._id.equals(id));                       
+            }
+            // console.log("index was setted");            
             if (index !== -1) {
                 // Si el producto ya está en el carrito, actualizar la cantidad
                 userCart.products[index].quantity += quantity;               
             } 
-            if(index === -1 ){
+            if(index === -1){
                 // Si el producto no está en el carrito, agregarlo
                 userCart.products.push(newProduct);
-            }         
-                                                                                    
+            }                     
+            // console.log(userCart._id, "userCart");                                                                                    
             const response = await this.shoppingCartUseCase.updateShoppingCart(userCart._id, { products: userCart.products });                       
             this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
         } catch (error) {          

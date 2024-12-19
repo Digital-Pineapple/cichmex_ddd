@@ -8,11 +8,30 @@ const ShoppingCartSchema = new Schema<ShoppingCartEntity>({
         required: true,
         ref:'User'
     },
-    products: {
-        type: Array,
-        required: false,
-        ref:'Products',
-    },
+    products: [
+        {
+          item: {
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: 'Product' // Apunta al modelo de productos
+          },
+          variant: {
+            type: Schema.Types.ObjectId,
+            required: false,
+            ref: 'Variant' // Apunta al modelo de variantes
+          },
+          quantity: {
+            type: Number,
+            required: true,
+            min: 1
+          }
+        }
+      ],    
+    // products: {
+    //     type: Array,
+    //     required: false,
+    //     ref:'Products',
+    // },
     memberships: {
         type: Array,
         required: false

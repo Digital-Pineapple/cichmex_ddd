@@ -1,7 +1,7 @@
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { ShoppingCartRepository } from '../../domain/shoppingCart/shoppingCartRepository';
 import { ShoppingCartEntity } from '../../domain/shoppingCart/shoppingCartEntity';
-import { PopulateMembershipInSC, PopulateProductCS } from '../../../shared/domain/PopulateInterfaces';
+import { PopulateMembershipInSC, PopulateProductCS, PopulateVariantProduct } from '../../../shared/domain/PopulateInterfaces';
 
 
 export class ShoppingCartUseCase {
@@ -13,7 +13,7 @@ export class ShoppingCartUseCase {
         return await this.shoppingCartRepository.findAll()
     }
     public async getShoppingCartByUser(id: any): Promise<ShoppingCartEntity  | null> {
-        let cart = await this.shoppingCartRepository.findOneItem({user_id:id}, PopulateProductCS, PopulateMembershipInSC)        
+        let cart = await this.shoppingCartRepository.findOneItem({user_id:id}, PopulateProductCS, PopulateVariantProduct, PopulateMembershipInSC)        
         if(!cart){
             return null
         }

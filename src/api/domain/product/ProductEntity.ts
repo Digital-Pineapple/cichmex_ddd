@@ -59,7 +59,6 @@ export interface ProductShopping {
   item: mongoose.Types.ObjectId,
   variant?: mongoose.Types.ObjectId, 
   quantity?: number
-
 }
 
 export interface ProductOrderEntity {

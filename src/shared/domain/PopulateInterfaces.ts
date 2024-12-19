@@ -125,7 +125,7 @@ export const PopulateProductCS = {
 }
 
 export const PopulateVariantProduct = {
-    path: 'variant-products.variant',
+    path: 'products.variant',
     model: VariantProductModel
 }
 
