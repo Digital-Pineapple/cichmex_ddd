@@ -13,6 +13,7 @@ export class SizeGuideController extends ResponseData {
     ) {
         super();
         this.getMySizeGuides = this.getMySizeGuides.bind(this);
+        this.getSizeGuides = this.getSizeGuides.bind(this);
         this.getOneGuide = this.getOneGuide.bind(this);
         this.createOneGuide = this.createOneGuide.bind(this);
         this.updateOneGuide = this.updateOneGuide.bind(this);
@@ -22,7 +23,6 @@ export class SizeGuideController extends ResponseData {
 
     public async getMySizeGuides(req: Request, res: Response, next: NextFunction) {
         const { id } = req.user;
-    
         try {
             if (!id) {
                 return next(new ErrorHandler('No tiene los permisos necesarios', 403));
@@ -33,11 +33,24 @@ export class SizeGuideController extends ResponseData {
             return next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
+
+    public async getSizeGuides(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.user;
+        try {
+            if (!id) {
+                return next(new ErrorHandler('No tiene los permisos necesarios', 403));
+            }
+            const response = await this.sizeGuideUseCase.getAllGuides()
+            return this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            return next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
     public async getOneGuide(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
     
         try {
-            const response = await this.sizeGuideUseCase.getAllMyGuides(id);
+            const response = await this.sizeGuideUseCase.getOneGuide(id);
             return this.invoke(response, 200, res, '', next);
         } catch (error) {
             return next(new ErrorHandler('Hubo un error al consultar la información', 500));
@@ -46,7 +59,6 @@ export class SizeGuideController extends ResponseData {
     public async createOneGuide(req: Request, res: Response, next: NextFunction) {
         const { id } = req.user;
         const { values } = req.body   
-        console.log(values);
         
         const sizeGuide = {
             name: values.name,
