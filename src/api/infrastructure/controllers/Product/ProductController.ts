@@ -262,8 +262,6 @@ export class ProductController extends ResponseData {
 
       this.invoke(product, 201, res, 'Producto creado con éxito', next);
     } catch (error: any) {
-      console.error(error);
-
       if (error?.code === 11000) {
         const duplicatedField = Object.keys(error.keyPattern)[0];
         const duplicatedValue = error.keyValue[duplicatedField];

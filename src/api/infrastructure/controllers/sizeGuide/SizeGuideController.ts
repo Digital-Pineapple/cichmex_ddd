@@ -58,29 +58,42 @@ export class SizeGuideController extends ResponseData {
     }
     public async createOneGuide(req: Request, res: Response, next: NextFunction) {
         const { id } = req.user;
-        const { values } = req.body   
-        
+        const { values } = req.body;
+    
+        // Validación para dimensions
+        if (values.dimensions && Array.isArray(values.dimensions) && values.dimensions.length === 0) {
+            return next(new ErrorHandler('Las dimensiones no pueden estar vacías', 400));
+        }
+    
+        // Crear objeto sizeGuide
         const sizeGuide = {
             name: values.name,
             dimensions: values.dimensions,
-            user_id : id,
+            user_id: id,
             unit: 'cm',
-            typePackage : values.typePackage ? values.typePackage : null
-        }
-        
-         
+            typePackage: values.typePackage || null, // Usar el operador de cortocircuito
+            type: values.type,
+        };
+    
         try {
-            const response = await this.sizeGuideUseCase.createOneGuide({...sizeGuide})
-            return this.invoke(response, 200, res, 'Creado con éxito', next);
+            // Llamar al caso de uso para crear la guía
+            const response = await this.sizeGuideUseCase.createOneGuide({ ...sizeGuide });
+    
+            // Devolver respuesta exitosa
+            return this.invoke(response, 200, res, 'Guía creada con éxito', next);
         } catch (error) {
-            return next(new ErrorHandler('Hubo un error ', 500));
+    
+            return next(new ErrorHandler(`Hubo un error al crear la guía`, 500));
         }
     }
+    
 
     public async updateOneGuide(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params
-        const { values } = req.body   
-
+        const { values } = req.body
+        if (values.dimensions && Array.isArray(values.dimensions && values.dimensions.length <= 0 )) {
+            return next(new ErrorHandler('Datos incompletos ', 500));
+        }  
         try {
             const response = await this.sizeGuideUseCase.updateOneGuide(id, {...values})
             return this.invoke(response, 200, res, 'Editado correctamente', next);
