@@ -40,6 +40,14 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
           as: "product"
         }
       },
+      {
+        $lookup: {
+          from: "variant-products",  // Quitar el signo de dólar
+          localField: "SHStock.variant_id",
+          foreignField: "_id",
+          as: "variant"
+        }
+      },
       { $unwind: "$product" },
 
       {

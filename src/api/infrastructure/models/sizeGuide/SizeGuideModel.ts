@@ -31,6 +31,10 @@ const SizeGuideSchema = new Schema<SizeGuideEntity>({
     status:{
         type: Boolean,
         default: true,
+    },
+    type:{
+        type: String,
+        required: true
     }
    
   },

@@ -53,11 +53,11 @@ const ProductSchema = new Schema<ProductEntity>(
     name: {
       type: String,
       required: true,
-      unique:false  
+      unique:true  
     },
     price: {
       type: Number,
-      required: true,
+      required: false,
     },
     discountPrice: {
       type: Number,
@@ -89,8 +89,7 @@ const ProductSchema = new Schema<ProductEntity>(
     },
     tag: {
       type: String,
-      required: true,
-      unique: true
+      required: false,
     },
     category: {
       type: mongoose.Types.ObjectId,
@@ -109,10 +108,6 @@ const ProductSchema = new Schema<ProductEntity>(
     images: [ProductImageSchema],
     thumbnail: {
       type: String,
-      required: false,
-    },
-    variants: {
-      type: Array,
       required: false,
     },
     status: {
@@ -140,7 +135,24 @@ const ProductSchema = new Schema<ProductEntity>(
     seoKeywords: {
       type: Array,
       required: false,
-    }
+    },
+    condition:{
+      type:String,
+      required : false,
+    },
+    size_guide:{
+      type: mongoose.Types.ObjectId,
+      ref: 'sizeguides',
+      required: false
+    },
+    gender:{
+      type:String,
+      required:false,
+    },
+    model:{
+      type:String,
+      required:false,
+    },
   },
   {
     versionKey: false,
