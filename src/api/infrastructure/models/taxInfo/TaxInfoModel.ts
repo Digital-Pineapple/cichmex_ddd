@@ -1,5 +1,5 @@
 import mongoose, { model, Schema } from "mongoose";
-import { ITaxInfoEntity } from "../../domain/user/TaxInfo";
+import { ITaxInfoEntity } from "../../../domain/taxInfo/TaxInfoEntity";
 
 const TaxAddressSchema = new Schema(
   {
@@ -94,6 +94,6 @@ const TaxInfoSchema = new Schema<ITaxInfoEntity>(
   }
 );
 
-const TaxInfoModel = model<ITaxInfoEntity>("TaxInfo", TaxInfoSchema);
+const TaxInfoModel = model("TaxInfo", TaxInfoSchema);
 
 export default TaxInfoModel;
