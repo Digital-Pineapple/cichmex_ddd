@@ -56,6 +56,7 @@ export interface ProductVideoEntity {
 }
 
 export interface ProductShopping {
+  _id: mongoose.Types.ObjectId,
   item: mongoose.Types.ObjectId,
   variant?: mongoose.Types.ObjectId, 
   quantity?: number

@@ -126,7 +126,7 @@ export const PopulateProductCS = {
 
 export const PopulateVariantProduct = {
     path: 'products.variant',
-    model: VariantProductModel
+    model: VariantProductModel, 
 }
 
 export const PopulateDetailMembership : IStockPopulateConfig={

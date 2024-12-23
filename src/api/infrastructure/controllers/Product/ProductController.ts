@@ -105,9 +105,7 @@ export class ProductController extends ResponseData {
 
 
   public async getProduct(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;
-    console.log(id, "idfihdhdffd");
-    
+    const { id } = req.params;        
     try {
       const responseStock = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse)
       const responseProduct: any | null = await this.productUseCase.getProduct(id);                

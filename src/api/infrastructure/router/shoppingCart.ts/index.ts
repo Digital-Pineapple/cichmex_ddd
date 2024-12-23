@@ -14,18 +14,23 @@ import { ShippingCostUseCase } from '../../../application/shippingCost/ShippingC
 import { ProductUseCase } from '../../../application/product/productUseCase';
 import ProductModel from '../../models/products/ProductModel';
 import { ProductRepository } from '../../repository/product/ProductRepository';
+import { VariantProductRepository } from '../../repository/variantProduct/VariantProductRepository';
+import { VariantProductModel } from '../../models/variantProduct/VariantProductModel';
+import { VariantProductUseCase } from '../../../application/variantProduct/VariantProductUseCase';
 
 const shoppingCartRouter = Router();
 const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
 const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository);
 const productRepository = new ProductRepository(ProductModel);
+const variantProductRepository = new VariantProductRepository(VariantProductModel);
 const shoppingCartRepository    = new ShoppingCartRepository(ShoppingCartModel);
 const shoppingCartUseCase      = new ShoppingCartUseCase(shoppingCartRepository);
 const productUseCase = new ProductUseCase(productRepository);
 const s3Service = new S3Service();
+const variantProductUseCase = new VariantProductUseCase(variantProductRepository);
 const shippingCostRepository = new ShippingCostRepository(ShippingCostModel);
 const shippingCostUseCase = new ShippingCostUseCase(shippingCostRepository);
-const shoppingCartController  = new ShoppingCartController(shoppingCartUseCase, stockStoreHouseUseCase, shippingCostUseCase, productUseCase, s3Service);
+const shoppingCartController  = new ShoppingCartController(shoppingCartUseCase, stockStoreHouseUseCase, shippingCostUseCase, productUseCase, variantProductUseCase, s3Service);
 
 const userValidations = new UserValidations();
 
@@ -38,8 +43,9 @@ shoppingCartRouter
     .delete('/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.deleteShoppingCart)
     .delete('/product/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.deleteProductCart)
     .delete('/products/ok', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.emptyCart)
-    .put('/products/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.addToCart)
-    .put('/product/quantity/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.updateProductQuantity)
+    .post('/products/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.addToCart)
+    .put('/product/update-quantity', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.updateProductQuantity)
+    .put('/product/replace-quantity', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.replaceProductQuantity)
     .put ('/merge/ok', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.mergeCart) 
     .post('/no-auth', shoppingCartController.noAuthCart)
 
