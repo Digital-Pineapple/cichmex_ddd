@@ -54,6 +54,7 @@ stockStoreHouseRouter
     .get('/seed/StockProducts',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), stockStoreHouseController.seedProductStock )
     .get('/feed/daily', stockStoreHouseController.feedDailyProduct )
     .post('/add/multiple-entries', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), stockStoreHouseController.createMultipleStock )
+    .post('/add/multiple-outputs', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), stockStoreHouseController.createMultipleOutputs )
     .post('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.createStock)
     .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.updateStock)
     .patch('/add/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.addStock)

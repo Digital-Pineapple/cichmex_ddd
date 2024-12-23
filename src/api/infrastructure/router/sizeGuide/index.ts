@@ -13,12 +13,12 @@ const sizeGuideController = new SizeGuideController(sizeGuideUseCase);
 const userValidations = new UserValidations();
 
 sizeGuideRouter
-    .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), sizeGuideController.getMySizeGuides)
+    .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), sizeGuideController.getMySizeGuides)
     .get('/allGuides', userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), sizeGuideController.getMySizeGuides)
     .get('/:id', sizeGuideController.getOneGuide)
     .post('/addOne', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), sizeGuideController.createOneGuide)
-    .put('/update/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN,ADMIN']), sizeGuideController.updateOneGuide)
-    .delete('/id', userValidations.authTypeUserValidation(['SUPER-ADMIN,ADMIN']), sizeGuideController.deleteOneGuide)
+    .put('/update/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), sizeGuideController.updateOneGuide)
+    .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), sizeGuideController.deleteOneGuide)
 
 
 

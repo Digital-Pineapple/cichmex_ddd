@@ -217,8 +217,18 @@ export class StockStoreHouseController extends ResponseData {
 
 
     public async createMultipleOutputs(req: Request, res: Response, next: NextFunction) {
-        const { user_received, user_delivery, products } = req.body;
+        const { products } = req.body;
+        
         const user = req.user;
+
+        if (!products || !Array.isArray(products)) {
+            return next(new ErrorHandler('Faltan datos necesarios o los productos no son válidos', 400));
+        }
+    
+        if (!user || !user._id || !user.fullname) {
+            return next(new ErrorHandler('Información del usuario no disponible', 400));
+        }
+     
         const UserInfo = {
             _id: user._id,
             fullname: user.fullname,
@@ -230,32 +240,49 @@ export class StockStoreHouseController extends ResponseData {
         const code_folio = RandomCodeId('FO');
 
         try {
-            const operations = products.map(async (item: any) => {
-                const available = await this.stockStoreHouseUseCase.getProductStock(item._id, SH_id);
-                const available_id = available?._id;
+            const processProduct = async (item: any, isVariant: boolean = false) => {
+            
+                const itemQuantity = Number(item.quantity);
 
-                if (!available) {
-                    return (new ErrorHandler(`Producto: ${item.name} no disponible`, 500))
-                } else {
-                    const newQuantity = available.stock - item.quantity;
-                    const output = await this.stockSHoutputUseCase.createOutput({
-                        SHStock_id: available?._id,
-                        quantity: item.quantity,
-                        newQuantity: newQuantity,
-                        responsible: UserInfo,
-                        folio: code_folio,
-                        product_detail: item,
-                        user_received: user_received,
-                        user_delivery: user_delivery
-                    });
-                    await this.stockStoreHouseUseCase.updateStock(available_id, { stock: output.newQuantity });
+                const  stockMethod : any = async()  =>  await this.stockStoreHouseUseCase.getDetailStock(item.stock_id)
+
+                
+                if ( isNaN(itemQuantity) || itemQuantity < 0) {
+                    throw new Error(`Datos incompletos `);
+                }
+    
+                const available = await stockMethod();
+                const availableStock = Number(available?.stock) || 0;
+    
+                if (isNaN(availableStock)) {
+                    throw new Error(`El stock disponible no es válido para el producto ${item.name}`);
+                }
+    
+                const newQuantity =  availableStock - itemQuantity ;
+                 await this.stockSHoutputUseCase.createOutput({
+                    SHStock_id: available._id,
+                    quantity: itemQuantity,
+                    newQuantity: newQuantity,
+                    responsible: UserInfo,
+                    folio: code_folio,
+                    product_detail: item,
+                });
+            await this.stockStoreHouseUseCase.updateStock(item.stock_id,{stock: newQuantity})
+            };
+    
+            const operations = products.map(async (item: any) => {
+                if (item._id && item.stock_id) {
+                    await processProduct(item, true);
+                 } else {
+                    throw new Error('Producto sin identificador válido');
                 }
             });
+    
             await Promise.all(operations);
-            this.invoke(code_folio, 200, res, 'Salida exitosa', next);
+            this.invoke(code_folio, 200, res, 'Baja de stock exitosa', next);
         } catch (error) {
-            console.error(error);
-            next(new ErrorHandler('Hubo un error', 500));
+            console.error('Error procesando stock:', error);
+            next(new ErrorHandler('Hubo un error procesando los productos', 500));
         }
     }
 

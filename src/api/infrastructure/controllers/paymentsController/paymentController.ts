@@ -86,7 +86,7 @@ export class PaymentController extends ResponseData {
             const payment1 = new Payment(client);
     
             // Obtener pagos expirados
-            const [PaymentMP , PaymentsTransfer] = await Promise.all([
+            const [PaymentMP , PaymentsTransfer ] = await Promise.all([
                 this.paymentUseCase.getPaymentsMPExpired(),
                 this.paymentUseCase.getPaymentsTransferExpired(),
             ]);
@@ -130,7 +130,6 @@ export class PaymentController extends ResponseData {
 
           //  Procesar pagos por transferencia
             const paymentTransferPromises = PaymentsTransfer.map(async (payment: any) => {
-                console.log(payment,'sdbbj');
                 
                 try {
                     // Cancelar pago y orden directamente

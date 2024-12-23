@@ -9,6 +9,7 @@ export interface SizeGuideEntity {
     unit?: 'cm' | 'inches';      // Unidad de medida utilizada (cm o pulgadas)
     typePackage ?: 'Granel'| 'Envasado' //Tipo de envsado
     status : boolean;
+    type: string
   
   }
    export interface DimensionEntity {
