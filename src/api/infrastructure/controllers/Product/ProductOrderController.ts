@@ -99,7 +99,6 @@ export class ProductOrderController extends ResponseData {
     }
   }
   public async paidAndFillProductOrders(req: Request, res: Response, next: NextFunction) {
-
     try {
       const response = await this.productOrderUseCase.ProductOrdersPaidAndFill()
       this.invoke(response, 200, res, "", next);
@@ -153,8 +152,16 @@ export class ProductOrderController extends ResponseData {
 
   public async AssignRoute(req: Request, res: Response, next: NextFunction) {
     const { order_id, user_id, guide, shipping_company } = req.body;
-
     try {
+      let guide_pdf = null
+     if (req.file) {
+      const path = `/${this.path}/${user_id}/${order_id}/${guide}`
+       const {url} = await this.s3Service.uploadToS3AndGetUrl(path , req.file, "application/pdf");
+       guide_pdf =  url.split("?")[0] 
+     }else{
+      return next( new ErrorHandler('No se subió archivo',500))
+     }
+  
       let response;
       if (user_id) {
         response = await this.productOrderUseCase.updateProductOrder(order_id, {
@@ -167,7 +174,8 @@ export class ProductOrderController extends ResponseData {
             guide: guide,
             route_status: 'assigned',
             shipping_company: shipping_company,
-            user_id: ''
+            user_id: '',
+            guide_pdf: guide_pdf
           },
         });
         this.invoke(response, 200, res, "Guía y Compañía de Envío Asignadas Correctamente", next);

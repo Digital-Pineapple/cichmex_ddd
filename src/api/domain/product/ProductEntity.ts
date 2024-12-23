@@ -136,4 +136,5 @@ export interface PORouteDetail {
   deliveryDate?: string,
   guide?: string,
   shipping_company?: string
+  guide_pdf ?: string,
 }
