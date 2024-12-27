@@ -53,7 +53,7 @@ const ProductSchema = new Schema<ProductEntity>(
     name: {
       type: String,
       required: true,
-      unique:true  
+      unique:false,
     },
     price: {
       type: Number,
