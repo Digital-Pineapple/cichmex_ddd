@@ -47,6 +47,10 @@ export class ProductOrderUseCase {
     const response =  await this.productOrderRepository.getAssignedPO()
     return response
   }
+  public async POGetAssignedUser(user_id:any): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+    const response =  await this.productOrderRepository.getAssignedPOUser(user_id)
+    return response
+  }
   public async POPaidAndSupplyToPoint(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
     const response =  await this.productOrderRepository.getPaidAndSuplyToPointPO()
     return response

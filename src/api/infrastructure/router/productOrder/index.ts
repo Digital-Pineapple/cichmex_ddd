@@ -31,6 +31,7 @@ productOrderRouter
 
   .get("/",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.getAllProductOrders)
   .get("/AssignedPO",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER"]), productOrderController.getAssignedPO)
+  .get("/AssignedPO/user",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER"]), productOrderController.getAssignedPOUser)
   .get("/deliveries",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CARRIER-DRIVER"]), productOrderController.getDeliveries)
   .get("/paid",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.paidProductOrders)
   .get("/paidAndFill/find",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.paidAndFillProductOrders)

@@ -1,4 +1,3 @@
-import { ObjectId } from 'mongodb';
 import { S3Service } from './../../../../shared/infrastructure/aws/S3Service';
 import { Request, Response, NextFunction } from 'express';
 import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
@@ -6,7 +5,6 @@ import { ResponseData } from "../../../../shared/infrastructure/validation/Respo
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
 import { RandomCodeShipping } from '../../../../shared/infrastructure/validation/Utils';
 import { buildPDF } from '../../../../libs/pdfKit';
-import { UserUseCase } from '../../../application/user/UserUseCase';
 import { RegionUseCase } from '../../../application/regions/regionUseCase';
 import { RegionsService } from '../../../../shared/infrastructure/Regions/RegionsService';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
@@ -50,6 +48,7 @@ export class ProductOrderController extends ResponseData {
     this.OptimizedPackagesToPoint = this.OptimizedPackagesToPoint.bind(this);
     this.OutOfRegionsPO = this.OutOfRegionsPO.bind(this);
     this.paidAndFillProductOrders = this.paidAndFillProductOrders.bind(this);
+  this.getAssignedPOUser = this.getAssignedPOUser.bind(this)
   }
 
   public async getAllProductOrders(req: Request, res: Response, next: NextFunction) {
@@ -149,18 +148,22 @@ export class ProductOrderController extends ResponseData {
     }
   }
 
+  public async getAssignedPOUser(req: Request, res: Response, next: NextFunction) {
+    const user = req.user
+try {
+  const response = await this.productOrderUseCase.POGetAssignedUser(user.id)
+
+  this.invoke(response, 200, res, "", next);
+} catch (error) {
+  next(new ErrorHandler("Hubo un error al consultar la información", 500));
+}
+}
+
 
   public async AssignRoute(req: Request, res: Response, next: NextFunction) {
-    const { order_id, user_id, guide, shipping_company } = req.body;
+    const { order_id, user_id, guide, shipping_company, guide_pdf } = req.body;
+    let updated_guide_pdf = guide_pdf  
     try {
-      let guide_pdf = null
-     if (req.file) {
-      const path = `/${this.path}/${user_id}/${order_id}/${guide}`
-       const {url} = await this.s3Service.uploadToS3AndGetUrl(path , req.file, "application/pdf");
-       guide_pdf =  url.split("?")[0] 
-     }else{
-      return next( new ErrorHandler('No se subió archivo',500))
-     }
   
       let response;
       if (user_id) {
@@ -169,13 +172,19 @@ export class ProductOrderController extends ResponseData {
         });
         this.invoke(response, 200, res, "Orden Asignada Correctamente", next);
       } else {
+        if (req.file) {
+          const path = `/${this.path}/${user_id}/${order_id}/${guide}`
+           const {url} = await this.s3Service.uploadToS3AndGetUrl(path , req.file, "application/pdf");
+           updated_guide_pdf =  url.split("?")[0] 
+         }  
+        
         response = await this.productOrderUseCase.updateProductOrder(order_id, {
           route_detail: {
             guide: guide,
             route_status: 'assigned',
             shipping_company: shipping_company,
             user_id: '',
-            guide_pdf: guide_pdf
+            guide_pdf: updated_guide_pdf
           },
         });
         this.invoke(response, 200, res, "Guía y Compañía de Envío Asignadas Correctamente", next);
@@ -189,7 +198,6 @@ export class ProductOrderController extends ResponseData {
   public async gerProductOrderResume(req: Request, res: Response, next: NextFunction) {
     try {
       const response = await this.productOrderUseCase.getProductOrdersResume()
-
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       
