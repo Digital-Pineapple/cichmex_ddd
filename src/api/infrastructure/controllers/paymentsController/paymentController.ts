@@ -844,7 +844,7 @@ export class PaymentController extends ResponseData {
                     await Promise.all(promises); // Espera a que todas las promesas se resuelvan
                   }
 
-                this.invoke(response, 201, res, 'Ticket aprovado', next);
+                this.invoke(response, 201, res, 'Ticket aprobado', next);
             }
         } catch (error) {
             console.error(error);

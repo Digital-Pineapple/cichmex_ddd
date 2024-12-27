@@ -1,5 +1,5 @@
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
-import { InfoBranchOrder, PopulateInfoUser, PopulatePayment } from "../../../shared/domain/PopulateInterfaces";
+import { InfoBranchOrder, PopulateBranch, PopulateInfoUser, PopulatePayment } from "../../../shared/domain/PopulateInterfaces";
 import { MomentService } from "../../../shared/infrastructure/moment/MomentService";
 import { RandomCodeId } from "../../../shared/infrastructure/validation/Utils";
 import {  ProductOrderEntity, ProductOrderResume } from "../../domain/product/ProductEntity";
@@ -36,7 +36,7 @@ export class ProductOrderUseCase {
     return response
   }
   public async ProductOrdersPaidAndFill(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
-    const response =  await this.productOrderRepository.findAllItems({payment_status: 'approved',storeHouseStatus:true})
+    const response =  await this.productOrderRepository.findAllItems({payment_status: 'approved',storeHouseStatus:true}, PopulateBranch)
     return response
   }
   public async PendingTransferPO(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
@@ -45,6 +45,10 @@ export class ProductOrderUseCase {
   }
   public async POGetAssigned(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
     const response =  await this.productOrderRepository.getAssignedPO()
+    return response
+  }
+  public async POGetAssignedUser(user_id:any): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+    const response =  await this.productOrderRepository.getAssignedPOUser(user_id)
     return response
   }
   public async POPaidAndSupplyToPoint(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
