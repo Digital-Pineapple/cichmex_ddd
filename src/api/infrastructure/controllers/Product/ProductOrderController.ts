@@ -8,6 +8,7 @@ import { buildPDF } from '../../../../libs/pdfKit';
 import { RegionUseCase } from '../../../application/regions/regionUseCase';
 import { RegionsService } from '../../../../shared/infrastructure/Regions/RegionsService';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
+import { log } from 'console';
 export class ProductOrderController extends ResponseData {
   protected path = "/productOrder";
   private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634";
@@ -556,7 +557,8 @@ const numericLocation = convertToNumericLocation(coords);
           if (location && location.lat && location.lgt) {
             return {
               lat: location.lat,
-              lgt: location.lgt
+              lgt: location.lgt,
+              order: order.order_id
             };
           } else {
             console.warn("No valid location found for order:", order);
@@ -571,18 +573,19 @@ const numericLocation = convertToNumericLocation(coords);
         ...points1,  // Puntos intermedios
         numericLocation,
       ];
-      
        const distanceMatrix = await this.regionsService.getDistanceMatrix(pointsWithUserLocation);
        
         const bestRoute = this.regionsService.simulatedAnnealingTSP(distanceMatrix);
-
+  
        const directions = await this.regionsService.getOptimizedRoute(pointsWithUserLocation, bestRoute);
+       
   
       // Enviar respuesta
-      this.invoke(directions, 201, res, 'Consulta exitosa', next);
+      this.invoke({...directions}, 201, res, 'Consulta exitosa', next);
   
     } catch (error) {
-      console.error(error);
+      console.log(error);
+      
       next(new ErrorHandler("Hubo un error", 500)); // Manejo general de errores
     }
   }
