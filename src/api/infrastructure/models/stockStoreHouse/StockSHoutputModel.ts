@@ -9,7 +9,7 @@ const StockSHoutputChema = new Schema<SHProductOutput>({
   },
   order_id: {
     type: String,
-    required: true,
+    required: false,
   },
   SHStock_id: {
     type: mongoose.Types.ObjectId,

@@ -2,6 +2,7 @@ import { Model } from 'mongoose';
 import {  StockStoreHouseRepository as StockSHConfig } from '../../../domain/storehouse/stockStoreHouseRepository';
 import { MongoRepository } from '../MongoRepository';
 import ProductModel from '../../models/products/ProductModel';
+import { VariantProductModel } from '../../models/variantProduct/VariantProductModel';
 
 
  interface IPopulateProducts {
@@ -15,7 +16,11 @@ const PopulateProduct : IPopulateProducts={
   select: ["name", "price", "tag", "size", "weight" ],
   model: ProductModel
 }
-
+const PopulateVariant : IPopulateProducts={
+  path: 'variant_id',
+  select: ["attributes", 'price', 'discountPrice', 'dimensions', 'tag' ],
+  model: VariantProductModel
+}
 
 export class StockStoreHouseRepository extends MongoRepository implements  StockSHConfig {
   
@@ -23,8 +28,9 @@ export class StockStoreHouseRepository extends MongoRepository implements  Stock
       super (StockBranchModel)
     }
   
-    async findStockByStoreHouse(branchId: string, populateConfig1?:any): Promise<any[]> {
-      return await this.StockBranchModel.find({StoreHouse_id:branchId}).populate(PopulateProduct)
+    async findStockByStoreHouse(branchId: string, populateConfig1?:any): Promise<any> {
+     return await this.StockBranchModel.find({StoreHouse_id:branchId}).populate(PopulateProduct).populate(PopulateVariant)
+      
     }
 
     async findStockByStoreHouseNoDetail(branchId: string): Promise<any[]> {

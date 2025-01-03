@@ -29,6 +29,7 @@ import regionRouter from './region';
 import sizeGuideRouter from './sizeGuide';
 import variantProductRouter from './variantProduct';
 import colorProductRouter from './colorProduct';
+import taxInfoRouter from './taxInfo';
 
 export const apiRouter = (): Router => {
 
@@ -63,6 +64,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/size-guide', sizeGuideRouter)
     apiRouter.use('/variant-product', variantProductRouter)
     apiRouter.use('/colorProduct', colorProductRouter)
+    apiRouter.use('/tax-info', taxInfoRouter)
 
     return apiRouter;
 }
@@ -95,6 +97,8 @@ apiRouterx.use('/coupons', discountCouponRouter)
 apiRouterx.use('/size-guide', sizeGuideRouter)
 apiRouterx.use('/variant-product', variantProductRouter)
 apiRouterx.use('/colorProduct', colorProductRouter)
+apiRouterx.use('/tax-info', taxInfoRouter)
+
 
 
 
