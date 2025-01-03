@@ -41,7 +41,7 @@ const AttributesSchema = new mongoose.Schema<AttributesVariantEntity>(
     },
     {
         versionKey: false,
-        timestamps: true
+        timestamps: false
     }
 
 );

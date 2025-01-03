@@ -315,7 +315,13 @@ export class PaymentController extends ResponseData {
         }
 
     }
-
+    public getProperties = (props: any) => {    
+        const array = Object.entries(props) || [];
+        const properties = array
+           .filter(([key, value]) => value !== null && value !== "N/A" && key !== "_id" && key !== "createdAt" && key !== "updatedAt")
+           .map(([_, value]) => value);
+        return properties.join(" ");
+    }  
     public async createPaymentProductMP(req: Request, res: Response, next: NextFunction) {
         const { products, branch_id, infoPayment, productsOrder, location, typeDelivery } = req.body;
         const user = req.user
@@ -326,26 +332,37 @@ export class PaymentController extends ResponseData {
         const order_id = RandomCodeId('CIC')
         const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
         const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
-
-        const productToSend = products.map((i:any)=>{
-           const pr = { id: i.id,
-            title:i.title,
-            picture_url: i?.picture_url?.url ,
-            unit_price:i.unit_price,
-            quantity: i.quantity}
-            return pr
-        })
-        
-        // const cartUser : any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
-        // if(!cartUser) return next(new ErrorHandler('No hay productos para comprar', 404));
-        // console.log(cartUser.products);
-        
+       
+        const productToSend = productsOrder.map((item: any) => {
+            const variant = item?.variant ?? null;
+            const product = item.item;
+            const quantity = item.quantity;
+            const isVariant = Boolean(variant);
+            const variantPrice = variant?.porcentDiscount ? variant?.discountPrice : variant?.price;
+            const productPrice = product?.porcentDiscount ? product?.discountPrice : product?.price; 
+            const newItem = {
+              id:  product._id,
+              title: product.name + (isVariant ? this.getProperties(variant?.attributes) : ""),
+              unit_price: isVariant ? variantPrice : productPrice,
+              picture_url:  isVariant ? variant.images[0].url : product.images[0].url,
+              quantity: quantity
+            };
+            return  newItem           
+        });                         
         try {
             await Promise.all(
                 productsOrder.map(async (product: any) => {
-                    const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);
+                    let available;                    
+                    const isVariant = Boolean(product?.variant ?? null);
+                    let name = product.item.name;                     
+                    if(isVariant){
+                       available = await this.stockStoreHouseUseCase.getVariantStock(product.variant._id)                           
+                       name = name + this.getProperties(product.variant.attributes)
+                    }else{
+                        available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);                          
+                    }
                     if (!available) {
-                        return next(new ErrorHandler(`Sin existencias del producto: ${product.item.name}`, 500))
+                        return next(new ErrorHandler(`Sin existencias del producto: ${name}`, 500))
                     }
                 })
             );
@@ -425,8 +442,13 @@ export class PaymentController extends ResponseData {
                     }
                     // if (payment?.status === 'approved') {
                     await Promise.all(
-                        products.map(async (product: any) => {
-                            const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.id);
+                        productsOrder.map(async (product: any) => {
+                            let available;                    
+                            if(Boolean(product?.variant ?? null)){
+                                available = await this.stockStoreHouseUseCase.getVariantStock(product.variant._id)
+                            }else{
+                                available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);
+                            }
                             if (available) {
                                 const newQuantity = available.stock - parseInt(product.quantity);
                                 const update = await this.stockSHoutputUseCase.createOutput({
@@ -436,9 +458,7 @@ export class PaymentController extends ResponseData {
                                     SHStock_id: available._id,
                                     product_detail: product,
                                     reason: 'Sale Cichmex'
-
                                 });
-
                                 await this.stockStoreHouseUseCase.updateStock(available._id, { stock: update?.newQuantity });
                             }
                         })
@@ -471,12 +491,22 @@ export class PaymentController extends ResponseData {
 
         try {
             // Verificación de existencia de productos
-            for (const product of productsOrder) {
-                const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);
-                if (!available) {
-                    return next(new ErrorHandler(`Sin existencias del producto: ${product.item.name}`, 500));
-                }
-            }
+            await Promise.all(
+                productsOrder.map(async (product: any) => {
+                    let available;
+                    const isVariant = Boolean(product?.variant ?? null);
+                    let name = product.item.name; 
+                    if(isVariant){
+                       available = await this.stockStoreHouseUseCase.getVariantStock(product.variant._id)                           
+                       name = name + this.getProperties(product?.variant?.attributes)
+                    }else{
+                        available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);                          
+                    }
+                    if (!available) {
+                        return next(new ErrorHandler(`Sin existencias del producto: ${name}`, 500))
+                    }
+                })
+            );
 
             // Creación de un nuevo pago en la base de datos
             const response1: any = await this.paymentUseCase.createNewPayment({
@@ -519,7 +549,12 @@ export class PaymentController extends ResponseData {
                 // Actualización del stock y creación de salida
                 await Promise.all(
                     productsOrder.map(async (product: any) => {
-                        const available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);
+                        let available;                    
+                        if(Boolean(product?.variant ?? null)){
+                            available = await this.stockStoreHouseUseCase.getVariantStock(product.variant._id)
+                        }else{
+                            available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);
+                        }
                         if (available) {
                             const newQuantity = available.stock - parseInt(product.quantity);
                             const update = await this.stockSHoutputUseCase.createOutput({
@@ -528,8 +563,8 @@ export class PaymentController extends ResponseData {
                                 quantity: product.quantity,
                                 SHStock_id: available._id,
                                 product_detail: product,
+                                reason: 'Sale Cichmex'
                             });
-
                             await this.stockStoreHouseUseCase.updateStock(available._id, { stock: update?.newQuantity });
                         }
                     })

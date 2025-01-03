@@ -37,9 +37,9 @@ const userValidations = new UserValidations();
 shoppingCartRouter
     .get('/all', shoppingCartController.getAllShoppingCarts)
     .get('/', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.getShoppingCart)
-    .post('/', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.createShoppingCart)
-    .put('/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.updateShoppingCart )
-    .delete('/membership/:id', shoppingCartController.deleteMembershipInCart)
+    // .post('/', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.createShoppingCart)
+    // .put('/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.updateShoppingCart )
+    // .delete('/membership/:id', shoppingCartController.deleteMembershipInCart)
     .delete('/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.deleteShoppingCart)
     .delete('/product/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.deleteProductCart)
     .delete('/products/ok', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.emptyCart)

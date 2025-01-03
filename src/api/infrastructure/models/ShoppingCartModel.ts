@@ -26,12 +26,7 @@ const ShoppingCartSchema = new Schema<ShoppingCartEntity>({
             min: 1
           }
         }
-      ],    
-    // products: {
-    //     type: Array,
-    //     required: false,
-    //     ref:'Products',
-    // },
+      ],       
     memberships: {
         type: Array,
         required: false
