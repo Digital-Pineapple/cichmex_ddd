@@ -69,7 +69,7 @@ export class ShoppingCartController extends ResponseData {
                         if(product?.variant){
                             stock = await this.stockStoreHouseUseCase.getVariantStock(product.variant?._id, this.onlineStoreHouse);
                         }else{
-                            stock = await this.stockStoreHouseUseCase.getProductStock(product.item._id, this.onlineStoreHouse);
+                            stock = await this.stockStoreHouseUseCase.getProductStock(product.item?._id, this.onlineStoreHouse);
                         }
                         return { ...product.toJSON(), stock: stock?.stock ?? 0 };
                     })
@@ -166,6 +166,7 @@ export class ShoppingCartController extends ResponseData {
                 userCart = await this.shoppingCartUseCase.createShoppingCart({user_id: user._id, products: [] });                         
             }                                 
             let index;
+            let stock;
             // Buscar el índice del producto en el carrito (si existe)
             if(variant_id){
                 index = userCart.products.findIndex((product: any) => { 
@@ -174,16 +175,26 @@ export class ShoppingCartController extends ResponseData {
                     }
                     return false
                 });
+                stock = await this.stockStoreHouseUseCase.getVariantStock(variant_id, this.onlineStoreHouse);
             }else{
-                index = userCart.products.findIndex((product: any) => product.item._id.equals(id));                       
-            }
-            // console.log("index was setted");            
+                index = userCart.products.findIndex((product: any) => product.item._id.equals(id));      
+                stock = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse);                 
+            }            
+            // Si el producto ya está en el carrito, actualizar la cantidad
             if (index !== -1) {
-                // Si el producto ya está en el carrito, actualizar la cantidad
-                userCart.products[index].quantity += quantity;               
+                const productInCart = userCart.products[index];
+                const stockProducto = stock?.stock;
+                const totalQuantity = productInCart?.quantity + quantity;
+                console.log("stock de producto", stockProducto);
+                
+                if(totalQuantity > stockProducto){
+                    productInCart.quantity = stockProducto
+                }else{
+                    productInCart.quantity += quantity;
+                }                           
             } 
+            // Si el producto no está en el carrito, agregarlo
             if(index === -1){
-                // Si el producto no está en el carrito, agregarlo
                 userCart.products.push(newProduct);
             }                     
             // console.log(userCart._id, "userCart");                                                                                    
@@ -285,8 +296,7 @@ export class ShoppingCartController extends ResponseData {
                     }
                     products.push(producto);
                 }) 
-                const updatedCart = await this.shoppingCartUseCase.updateShoppingCart(newcart?._id, { products: products });
-                console.log("entre xdxd");            
+                const updatedCart = await this.shoppingCartUseCase.updateShoppingCart(newcart?._id, { products: products });                         
                 return this.invoke(updatedCart, 200, res, '', next);                          
             }                        
             const productsCart = cartUser?.products;                                             
@@ -294,7 +304,7 @@ export class ShoppingCartController extends ResponseData {
                 parseProducts.map(async (product: any) => {
                     let stock;
                     const producto: any = {
-                        item: new ObjectId(product.item),
+                        item: new ObjectId(product?.item),
                         variant: product?.variant ? new ObjectId(product?.variant) : null,
                         quantity: product.quantity,
                     };
@@ -306,15 +316,14 @@ export class ShoppingCartController extends ResponseData {
                     } else {
                         stock = await this.stockStoreHouseUseCase.getProductStock(product.item, this.onlineStoreHouse);
                         index = productsCart.findIndex((item: any) => item.item?._id.equals(product.item));
-                    }
-            
+                    }                                                
                     if (index !== -1) {
                          const productInCart = productsCart[index];
                         const totalQuantity = productInCart?.quantity + product.quantity;
                         if(totalQuantity > stock.stock){
-                            productInCart.quantity = totalQuantity
+                            productInCart.quantity = stock.stock
                         }else{
-                            productsCart[index] += product.quantity;
+                            productInCart.quantity += product.quantity;
                         }
                     } else {
                         // Agregar el nuevo producto al carrito
@@ -322,7 +331,7 @@ export class ShoppingCartController extends ResponseData {
                     }
                 })
             );                                                              
-             const response  = await this.shoppingCartUseCase.updateShoppingCart(cartUser?._id, { products: productsCart });                   
+             const response  = await this.shoppingCartUseCase.updateShoppingCart(cartUser?._id, { products: productsCart });                                                       
              this.invoke(response, 200, res, '', next);                                 
             } catch (error) {            
                 console.log(error);

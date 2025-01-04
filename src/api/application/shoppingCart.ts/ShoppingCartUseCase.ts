@@ -14,6 +14,10 @@ export class ShoppingCartUseCase {
     }
     public async getShoppingCartByUser(id: any): Promise<ShoppingCartEntity  | null> {
         let cart = await this.shoppingCartRepository.findOneItem({user_id:id}, PopulateProductCS, PopulateVariantProduct, PopulateMembershipInSC)        
+        // console.log("the cart is", cart?.products);
+        
+        // await this.shoppingCartRepository.updateOne(cart._id,{products: []})
+        //  await this.shoppingCartRepository.findOneItem({user_id:id}, PopulateProductCS, PopulateVariantProduct, PopulateMembershipInSC)        
         if(!cart){
             return null
         }
