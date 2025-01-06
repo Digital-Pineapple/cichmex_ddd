@@ -12,6 +12,8 @@ import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { VariantProductUseCase } from '../../../application/variantProduct/VariantProductUseCase';
 import { StockSHinputUseCase } from '../../../application/storehouse/stockSHinputUseCase';
+import { VariantProductEntity } from '../../../domain/variantProduct/variantProductEntity';
+import { ProductImageEntity } from '../../../domain/product/ProductEntity';
 
 export class ProductController extends ResponseData {
   protected path = "/product";
@@ -43,7 +45,7 @@ export class ProductController extends ResponseData {
     this.addOneImageProduct = this.addOneImageProduct.bind(this)
     this.deleteOneImageDetail = this.deleteOneImageDetail.bind(this);
     this.getSimilarProducts = this.getSimilarProducts.bind(this);
-    this.updateURLS = this.updateURLS.bind(this);    
+    this.updateURLS = this.updateURLS.bind(this);
     this.deleteVideoDetail = this.deleteVideoDetail.bind(this);
     this.addOneVideoProduct = this.addOneVideoProduct.bind(this);
     this.processFiles = this.processFiles.bind(this);
@@ -55,13 +57,14 @@ export class ProductController extends ResponseData {
     this.updateMainFeatures = this.updateMainFeatures.bind(this);
     this.UpdateVariants = this.UpdateVariants.bind(this)
     this.updatePositionImages = this.updatePositionImages.bind(this);
+    this.AddVariantsClothesShoes = this.AddVariantsClothesShoes.bind(this);
 
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
     try {
       const response = await this.productUseCase.getProducts();
-          // if (!(response instanceof ErrorHandler)) {
+      // if (!(response instanceof ErrorHandler)) {
       //   const updatedResponse = await Promise.all(
       //     response.map(async (item: any) => {
       //       const images = item.images;
@@ -87,12 +90,12 @@ export class ProductController extends ResponseData {
       //         );
       //       }
 
-            // const updatedVideos = await Promise.all(
-            //   videos.map(async (video: any) => {
+      // const updatedVideos = await Promise.all(
+      //   videos.map(async (video: any) => {
 
-            //     if (typeof video.url === 'string' && video.url.startsWith("https://")) {
-            //       return video; // Retorna el video original si la URL ya es válida
-            //     }
+      //     if (typeof video.url === 'string' && video.url.startsWith("https://")) {
+      //       return video; // Retorna el video original si la URL ya es válida
+      //     }
 
       //   this.invoke(updatedResponse, 200, res, "", next);
       // }
@@ -172,23 +175,23 @@ export class ProductController extends ResponseData {
           return { ...variant._doc, stock: stockVariant.stock };
         })
       );
-      let stock  = 0
-      if ( Array.isArray(variants) && variants.length <= 0) {
-        
+      let stock = 0
+      if (Array.isArray(variants) && variants.length <= 0) {
+
         try {
-            const stockProduct = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse);
-    
-            // Verifica si stockProduct es válido
-            if (stockProduct && typeof stockProduct.stock === 'number') {
-                stock = stockProduct.stock;
-            } else {
-                stock = 0
-            }
+          const stockProduct = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse);
+
+          // Verifica si stockProduct es válido
+          if (stockProduct && typeof stockProduct.stock === 'number') {
+            stock = stockProduct.stock;
+          } else {
+            stock = 0
+          }
         } catch (error) {
-            console.error('Error al obtener el stock del producto:', error);
-            throw new ErrorHandler('Hubo un error al obtener el stock del producto', 500);
+          console.error('Error al obtener el stock del producto:', error);
+          throw new ErrorHandler('Hubo un error al obtener el stock del producto', 500);
         }
-    }
+      }
       const AllResponse = { ...response._doc, variants: newVariants, stock: stock }
 
       this.invoke(AllResponse, 200, res, "", next);
@@ -307,12 +310,12 @@ export class ProductController extends ResponseData {
         }
       })
     );
-  
+
     // Filtrar imágenes para eliminar posiciones vacías
-    return { 
-      images: images.filter(Boolean), 
-      videos: videos.filter(Boolean), 
-      thumbnail 
+    return {
+      images: images.filter(Boolean),
+      videos: videos.filter(Boolean),
+      thumbnail
     };
   }
 
@@ -321,7 +324,7 @@ export class ProductController extends ResponseData {
     const { id } = req.params;
     const { values } = req.body
     try {
-       await this.productUseCase.updateProduct(id, { ...values });
+      await this.productUseCase.updateProduct(id, { ...values });
       const product = await this.productUseCase.getProduct(id)
 
       this.invoke(product, 201, res, 'Se actualizó con éxito', next);
@@ -355,7 +358,7 @@ export class ProductController extends ResponseData {
       }
 
       response = await this.productUseCase.updateProduct(id, { videos: video_urls });
-     const newResponse = await this.productUseCase.getProduct(id) 
+      const newResponse = await this.productUseCase.getProduct(id)
 
       this.invoke(newResponse, 201, res, 'Se actualizó con éxito', next);
 
@@ -447,7 +450,7 @@ export class ProductController extends ResponseData {
       // Combinar correctamente los videos existentes con los nuevos
       const updatedVideos = [...(response.videos || []), ...newVideos];
 
-       await this.productUseCase.updateProduct(id, { videos: updatedVideos });
+      await this.productUseCase.updateProduct(id, { videos: updatedVideos });
       const newResponse = await this.productUseCase.getProduct(id)
 
       this.invoke(newResponse, 201, res, 'Se actualizó con éxito', next);
@@ -501,8 +504,8 @@ export class ProductController extends ResponseData {
         return next(new ErrorHandler('Producto no encontrado', 404));
       }
       const updated: any = await this.productUseCase.deleteVideoProduct(id, video_id)
-      const newResponse  = await this.productUseCase.getProduct(updated._id)
-      
+      const newResponse = await this.productUseCase.getProduct(updated._id)
+
       this.invoke(newResponse, 201, res, 'Se actualizó con éxito', next);
     } catch (error) {
       console.error(error);
@@ -530,10 +533,10 @@ export class ProductController extends ResponseData {
   }
   public async searchProduct(req: Request, res: Response, next: NextFunction) {
     const { search } = req.body
-    try {            
+    try {
       if (!search) return next(new ErrorHandler("ingresa una busqueda", 404));
       const page = Number(req.query.page) || 1;
-      const response: any | null = await this.productUseCase.searchProducts(search, page);            
+      const response: any | null = await this.productUseCase.searchProducts(search, page);
       // Preparar la respuesta final
       this.invoke({
         products: response.products,
@@ -554,9 +557,9 @@ export class ProductController extends ResponseData {
 
       const categoria: any | null = await this.categoryUseCase.getDetailCategoryByName(category);
       if (categoria == null) return next(new ErrorHandler("La categoria no existe", 404));
-      
-      const products: any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);         
-      
+
+      const products: any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);
+
       const response = {
         category: categoria,
         products: products.products,
@@ -582,16 +585,16 @@ export class ProductController extends ResponseData {
 
       const subcategoria: any | null = await this.subCategoryUseCase.getDetailSubCategoryByName(subcategory);
       if (subcategoria == null) return next(new ErrorHandler("La subcategoria no existe", 404));
-      
-      const products: any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);               
+
+      const products: any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);
 
       const response = {
         subcategory: subcategoria,
         products: products.products,
         total: products.total
       };
-      
-      this.invoke(response, 201, res, '', next);      
+
+      this.invoke(response, 201, res, '', next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al buscar", 500));
       console.log("subcategory product error", error);
@@ -602,9 +605,9 @@ export class ProductController extends ResponseData {
     try {
       const categories = ["Hogar, Muebles y jardín", "Belleza y Cuidado Personal"];
       // const categories = ["Nueva categoria"];
-      const response: any | null = await this.categoryUseCase.getCategoriesAndProducts(categories, this.onlineStoreHouse);            
+      const response: any | null = await this.categoryUseCase.getCategoriesAndProducts(categories, this.onlineStoreHouse);
       // Llamada de invocación con la respuesta
-      this.invoke(response, 201, res, '', next);            
+      this.invoke(response, 201, res, '', next);
     } catch (error) {
       console.log(error, 'ok');
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
@@ -614,7 +617,7 @@ export class ProductController extends ResponseData {
 
   public async getVideos(req: Request, res: Response, next: NextFunction) {
     try {
-      const response: any | null = await this.productUseCase.getVideoProducts();    
+      const response: any | null = await this.productUseCase.getVideoProducts();
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       console.log(error);
@@ -626,12 +629,12 @@ export class ProductController extends ResponseData {
     const { images } = req.body; // Recibe el arreglo con el nuevo orden
     const { id } = req.params; // ID del producto
 
-    
-    
+
+
     try {
       // Obtener el producto actual
       const product: any | null = await this.productUseCase.getProduct(id);
-      
+
       if (!product) {
         return next(new ErrorHandler("Producto no encontrado", 404));
       }
@@ -647,7 +650,7 @@ export class ProductController extends ResponseData {
 
       // Actualizar el producto con el nuevo orden de imágenes
       product.images = reorderedImages;
-      await this.productUseCase.updateProduct(id, {images : reorderedImages})
+      await this.productUseCase.updateProduct(id, { images: reorderedImages })
 
       // Responder con éxito
       this.invoke(product, 200, res, "Se guardo correctamente", next);
@@ -702,10 +705,10 @@ export class ProductController extends ResponseData {
 
       // this.invoke(response, 200, res, "", next);
 
-      const category = productDetail?.category._id;      
-      if (productDetail == null) return next(new ErrorHandler("Este producto no existe", 404));      
-      let response: any | null = await this.productUseCase.getRandomProductsByCategory(category, productDetail._id, this.onlineStoreHouse);      
-      this.invoke(response, 200, res, "", next);      
+      const category = productDetail?.category._id;
+      if (productDetail == null) return next(new ErrorHandler("Este producto no existe", 404));
+      let response: any | null = await this.productUseCase.getRandomProductsByCategory(category, productDetail._id, this.onlineStoreHouse);
+      this.invoke(response, 200, res, "", next);
     } catch (error) {
       console.log(error, 'ok');
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
@@ -715,7 +718,7 @@ export class ProductController extends ResponseData {
 
 
 
-  
+
 
   public async updateURLS(req: Request, res: Response, next: NextFunction) {
     try {
@@ -750,7 +753,7 @@ export class ProductController extends ResponseData {
             //   }
             //   return video;
             // }) || [];
-  
+
             // Update thumbnail URL
             if (item.thumbnail && !item.thumbnail?.startsWith("https://")) {
               item.thumbnail = `https://cichmex.s3.us-east-2.amazonaws.com/production${item.thumbnail}.jpg`;
@@ -775,8 +778,6 @@ export class ProductController extends ResponseData {
 
   public async AddProdcutWithVariants(req: Request, res: Response, next: NextFunction) {
     const data = { ...req.body }
-    console.log(data);
-    
 
     try {
       const response = await this.productUseCase.createProduct({ ...data })
@@ -893,13 +894,116 @@ export class ProductController extends ResponseData {
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
   }
+  public async AddVariantsClothesShoes(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const { variants } = req.body;
+    const user = req.user;
+    const SH_id = "662fe69b9ba1d8b3cfcd3634";
+  
+    if (!variants || !Array.isArray(variants)) {
+      return next(new ErrorHandler("Variantes no proporcionadas o inválidas", 400));
+    }
+  
+    try {
+      // Validar y transformar las variantes
+      const parsedVariants = variants.map((variant: any) => ({
+        ...variant,
+        attributes: Object.entries(variant.attributes).reduce((acc, [key, value]) => {
+          acc[key] = value === "undefined" || value === "null" ? null : value;
+          return acc;
+        }, {} as Record<string, any>),
+      }));
+  
+      // Construir filesByVariant agrupado por color
+      const filesByVariant: { [key: string]: Express.Multer.File[] } = {};
+      if (req.files) {
+        const files = req.files as Express.Multer.File[];
+  
+        let currentColor: string | null = null;
+        let imageIndex = 0;
+  
+        files.forEach((file) => {
+          const match = file.fieldname.match(/^(\d+)\[(.*?)\]$/);
+          if (match) {
+            const [_, index, color] = match;
+  
+            if (color !== currentColor) {
+              currentColor = color;
+              imageIndex = 0;
+            }
+  
+            filesByVariant[color] = filesByVariant[color] || [];
+            filesByVariant[color][imageIndex] = file;
+            imageIndex++;
+          }
+        });
+      }
+  
+      // Subir imágenes a S3 y construir imageUrlsByColor
+      const imageUrlsByColor: { [color: string]: { url: string; color: string }[] } = {};
+  
+      await Promise.all(
+        Object.entries(filesByVariant).map(async ([color, files]) => {
+          imageUrlsByColor[color] = await Promise.all(
+            files.map(async (file: Express.Multer.File, fileIndex: number) => {
+              const uniqueFileName = `${Date.now()}-${color}-${fileIndex}`;
+              const pathObject = `${this.path}/${uniqueFileName}`;
+              const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, file, "image/webp");
+              return { url: url.split("?")[0], color: color };
+            })
+          );
+        })
+      );
+
+  
+      // Procesar las variantes y asignar las imágenes
+      await Promise.all(
+        parsedVariants.map(async (variant: VariantProductEntity, variantIndex: number) => {
+          try {
+            const sku = generateUUID();
+            const addVariant: any = await this.variantProductUseCase.CreateVariant({
+              ...variant,
+              sku,
+              product_id: id,
+            });
+  
+            // Manejo de stock
+            const stock = typeof variant.weight === "string" ? JSON.parse(variant.weight) : variant.weight;
+            await this.stockStoreHouseUseCase.createStock({
+              StoreHouse_id: SH_id,
+              product_id: id,
+              variant_id: addVariant._id,
+              stock,
+            });
+  
+            // Asignar imágenes a la variante por color
+            const color : any = variant.attributes?.color; 
+            if (color && imageUrlsByColor[color]) {
+              const images = imageUrlsByColor[color];
+              await this.variantProductUseCase.UpdateVariant(addVariant._id, { images: images });
+            }
+          } catch (error) {
+            console.error(`Error procesando variante ${variantIndex}:`, error);
+          }
+        })
+      );
+  
+      const response = await this.productUseCase.getProduct(id);
+      this.invoke(response, 200, res, "Variantes agregadas exitosamente", next);
+    } catch (error) {
+      console.error("Error al agregar variantes:", error);
+      next(new ErrorHandler("Hubo un error al actualizar la información", 500));
+    }
+  }
+  
+
 
   public async addDescriptionAndVideo(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const data = { ...req.body };
     let update: any = {};
     let videos: { url: string; type: string }[] = [];
-  
+
     try {
       // Validar y procesar archivos de video si existen
       if (req.files && Array.isArray(req.files) && req.files.length > 0) {
@@ -909,14 +1013,14 @@ export class ProductController extends ResponseData {
             const pathObject = `${this.path}/${id}/${video.originalname}`;
 
             const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, video, 'video/mp4');
-  
+
             return { url: url.split("?")[0], type }; // Guardar solo la URL sin parámetros
           })
         );
-        update = await this.productUseCase.updateProduct(id, { ...data, videos});
+        update = await this.productUseCase.updateProduct(id, { ...data, videos });
       }
       update = await this.productUseCase.updateProduct(id, { ...data });
-  
+
       // Responder al cliente
       this.invoke(update, 200, res, "Se actualizó exitosamente", next);
     } catch (error) {
@@ -924,7 +1028,7 @@ export class ProductController extends ResponseData {
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
   }
-  
+
 
   public async updateMainFeatures(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
@@ -953,15 +1057,15 @@ export class ProductController extends ResponseData {
   public async UpdateVariants(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const { variants } = req.body;
-    
-  
+
+
     const user = req.user;
     const SH_id = '662fe69b9ba1d8b3cfcd3634';
-  
+
     if (!id || !Array.isArray(variants)) {
       return next(new ErrorHandler("Datos inválidos para actualizar variantes", 400));
     }
-  
+
     try {
       const parsedVariants = variants.map((variant: any) => {
         return {
@@ -972,9 +1076,9 @@ export class ProductController extends ResponseData {
           }, {} as Record<string, any>),
         };
       });
-  
+
       const filesByVariant: { [key: number]: Express.Multer.File[] } = {};
-  
+
       // Procesar req.files
       if (req.files) {
         const files = req.files as Express.Multer.File[];
@@ -988,36 +1092,36 @@ export class ProductController extends ResponseData {
         });
       }
 
-      
-  
+
+
       await Promise.all(
         parsedVariants.map(async (variant: any, variantIndex: number) => {
 
           if (variant.images && variant._id) {
-            
-              const variantOld: any | null = await this.variantProductUseCase.findVariantById(variant._id)
-        
-              if (!variantOld) {
-                return next(new ErrorHandler("Variante no encontrado", 404));
-              }
-              let reorderedImages = Array.isArray(variant.images) ? [...variant.images] : [];
-              // Adaptar el arreglo de imágenes al nuevo orden
-               reorderedImages = variant.images.map((newImage: any) => {
-                const existingImage = variantOld.images.find((img: any) => img.url === newImage);
-                if (existingImage) {
-                  return existingImage; // Conservar los datos existentes
-                }
-              });
-              
-              reorderedImages = reorderedImages.filter(Boolean);
-              await this.variantProductUseCase.UpdateVariant( variant._id, {images : reorderedImages})
+
+            const variantOld: any | null = await this.variantProductUseCase.findVariantById(variant._id)
+
+            if (!variantOld) {
+              return next(new ErrorHandler("Variante no encontrado", 404));
             }
-           
-          
+            let reorderedImages = Array.isArray(variant.images) ? [...variant.images] : [];
+            // Adaptar el arreglo de imágenes al nuevo orden
+            reorderedImages = variant.images.map((newImage: any) => {
+              const existingImage = variantOld.images.find((img: any) => img.url === newImage);
+              if (existingImage) {
+                return existingImage; // Conservar los datos existentes
+              }
+            });
+
+            reorderedImages = reorderedImages.filter(Boolean);
+            await this.variantProductUseCase.UpdateVariant(variant._id, { images: reorderedImages })
+          }
+
+
           let addVariant: any;
-  
+
           if (variant._id && mongoose.isValidObjectId(variant._id)) {
-            if (variant.images ) {
+            if (variant.images) {
               delete variant.images
             }
             await this.variantProductUseCase.UpdateVariant(variant._id, { ...variant });
@@ -1025,14 +1129,14 @@ export class ProductController extends ResponseData {
             if (!variant._id || variant._id === 'undefined') {
               delete variant._id;
             }
-  
+
             const sku = generateUUID();
             addVariant = await this.variantProductUseCase.CreateVariant({
               ...variant,
               sku,
               product_id: id,
             });
-  
+
             const folio = RandomCodeId('PR');
             const stock = JSON.parse(variant.stock);
             const createStock: any = await this.stockStoreHouseUseCase.createStock({
@@ -1041,7 +1145,7 @@ export class ProductController extends ResponseData {
               variant_id: addVariant._id,
               stock,
             });
-  
+
             await this.stockSHinputUseCase.createInput({
               folio,
               SHStock_id: createStock._id,
@@ -1051,26 +1155,26 @@ export class ProductController extends ResponseData {
               product_detail: id,
             });
           }
-          
-          
-  
+
+
+
           // Procesar imágenes
           if (filesByVariant[variantIndex]) {
             const files = filesByVariant[variantIndex];
-            const variantOld : any = await this.variantProductUseCase.findVariantById(variant._id)
-            
+            const variantOld: any = await this.variantProductUseCase.findVariantById(variant._id)
+
             let existingImages = Array.isArray(variantOld?.images) ? [...variantOld.images] : [];
 
             for (const file of files) {
               const match = file.fieldname.match(/variants\[(\d+)\]\[images\]\[(\d+)\]/);
               if (!match) continue;
-  
+
               const position = parseInt(match[2], 10); // Obtener la posición específica
 
               const pathObject = `${this.path}/${variant._id || addVariant._id}/${file.originalname}`;
               const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, file, 'image/webp');
               const imageUrl = url.split("?")[0];
-  
+
               const newImage = {
                 _id: new ObjectId(), // Generar un nuevo ID único
                 url: imageUrl,
@@ -1082,9 +1186,9 @@ export class ProductController extends ResponseData {
                 newImage,                            // La nueva imagen a insertar
                 ...existingImages.slice(position),   // Todas las imágenes después de la posición
               ];
-      
+
             }
-    
+
             existingImages = existingImages.filter(Boolean);
 
             await this.variantProductUseCase.UpdateVariant(
@@ -1095,7 +1199,7 @@ export class ProductController extends ResponseData {
         })
       );
 
-      const response : any = await this.productUseCase.getProduct(id)
+      const response: any = await this.productUseCase.getProduct(id)
       const variantsAll: any = await this.variantProductUseCase.findAllVarinatsByProduct(id);
 
       // Espera a que todas las promesas se resuelvan
@@ -1116,7 +1220,7 @@ export class ProductController extends ResponseData {
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
   }
-  
+
 
 
 

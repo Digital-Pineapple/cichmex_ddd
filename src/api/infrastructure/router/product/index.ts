@@ -56,6 +56,7 @@ productRouter
   .post("/createProductWithVariants/ok", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.AddProdcutWithVariants)
   .post("/conditionProduct/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.conditionProduct)
   .post("/addVariants/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.AddVariants)
+  .post("/addVariants/clothes-shoes/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.AddVariantsClothesShoes)
   .post("/selectSizeGuide/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.SelectSizeGuide)
   .post('/search-category', productController.getProductsByCategory)
   .post("/updateInfo/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProduct)

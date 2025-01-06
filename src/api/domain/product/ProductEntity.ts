@@ -44,6 +44,7 @@ export interface ProductEntity {
 export interface ProductImageEntity {
   _id: ObjectId,
   url: string;
+  color?: string;
   status: boolean;
 }
 export interface ProductVideoEntity {

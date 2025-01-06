@@ -9,7 +9,7 @@ export interface VariantProductEntity {
     sku: String,
     attributes: AttributesVariantEntity,
     design: String,
-    images?: [ProductImageEntity],
+    images: ProductImageEntity[],
     price: number,
     discountPrice?: number;
     porcentDiscount?: number;
