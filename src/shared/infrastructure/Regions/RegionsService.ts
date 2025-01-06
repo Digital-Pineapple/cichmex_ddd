@@ -1,6 +1,7 @@
 import Moment from 'moment-timezone';
 import {Client, DistanceMatrixResponseData} from '@googlemaps/google-maps-services-js'
 import { config } from '../../../../config';
+import { info, log } from 'console';
 
 const googleMapsClient = new Client({})
 const API_MAP_GOOGLE = config.GOOGLE_MAP_KEY
@@ -89,11 +90,7 @@ export class RegionsService {
       }
       
 
-
-   
-      
-
-      getDistanceMatrix = async (points: any): Promise<DistanceMatrixResponseData | null> => {
+      getDistanceMatrix = async (points: any): Promise<any> => {
         const maxWaypoints = 25;
         const origins = points.map((point: any) => `${point.lat},${point.lgt}`);
       
@@ -110,6 +107,7 @@ export class RegionsService {
               key: API_MAP_GOOGLE,
             },
           });
+          
           return response.data;
         } catch (error) {
           console.error('Error fetching distance matrix:', error);
@@ -138,6 +136,7 @@ export class RegionsService {
       };
       
       simulatedAnnealingTSP = (distanceMatrix: any): number[] => {
+        
         const n = distanceMatrix.rows.length;
         let currentRoute = [...Array(n).keys()];
         let bestRoute = [...currentRoute];
@@ -177,26 +176,60 @@ export class RegionsService {
           console.error('Invalid route');
           return null;
         }
+
+        // const orderedData = route.map((index: any) => points[index]);        
+        const waypointsArray = points.slice(1).map((point: any) => `${point.lat},${point.lgt}`);
         
-        // Construir los waypoints como un array de hasta 25 puntos
-        const waypoints: any = route.slice(1, -1).map((index: any) => `${points[index].lat},${points[index].lgt}`);
-      
         // Validación de límite de waypoints
-        if (waypoints.length > 25) {
+        if (waypointsArray.length > 25) {
           console.error('Error: Exceeded maximum number of waypoints (25).');
           return null;
         }
+        
       
         try {
+
           const response = await googleMapsClient.directions({
             params: {
-              origin: `${points[route[0]].lat},${points[route[0]].lgt}`,  // Origen
-              destination: `${points[route[0]].lat},${points[route[0]].lgt}`,  // Destino
-              waypoints: waypoints,  // Enviar los waypoints como un array
-              key: API_MAP_GOOGLE,
-              optimize: true,  // Solicitar la optimización de la ruta
+              origin: `${points[route[0]].lat},${points[route[0]].lgt}`, // Origen
+              destination: `${points[route[0]].lat},${points[route[0]].lgt}`, // Destino
+              waypoints: waypointsArray, // Waypoints formateados
+              key: API_MAP_GOOGLE, // Tu API key
+              optimize: true
             },
           });
+          const waypointOrder = response.data.routes[0].waypoint_order;
+
+// Reordenar los waypoints originales usando el orden optimizado
+      const optimizedWaypoints = waypointOrder.map(index => points[index+1]);
+      const legs = response.data.routes[0].legs; 
+
+      legs.forEach((leg: any, index) => {
+        if (optimizedWaypoints[index] && optimizedWaypoints[index].order) {
+          leg.order = optimizedWaypoints[index].order;
+        } else {
+          leg.order = null;
+        }
+      });
+      
+      // Agrupar legs por start_address y end_address, acumulando `order`
+      const groupedLegs = new Map();
+      
+      legs.forEach((leg: any ) => {
+        const key = `${leg.start_address} -> ${leg.end_address}`; // Clave única para identificar duplicados
+      
+        if (groupedLegs.has(key)) {
+          // Si ya existe, acumulamos los valores de `order`
+          const existingLeg = groupedLegs.get(key);
+          existingLeg.order = `${existingLeg.order}, ${leg.order}`; // Concatenar órdenes
+        } else {
+          // Si no existe, lo agregamos al mapa
+          groupedLegs.set(key, { ...leg });
+        }
+      });
+      // Reemplazar los legs en la respuesta con los agrupados
+      response.data.routes[0].legs = Array.from(groupedLegs.values());
+
           const totalDistance = response.data.routes[0].legs.reduce((acc, leg) => acc + leg.distance.value, 0)
           const TDis = `${ ((totalDistance / 1000).toFixed(2))} Kms`;
 
@@ -205,8 +238,7 @@ export class RegionsService {
           const hours = Math.floor(totalDuration / 3600);
           const minutes = Math.floor((totalDuration % 3600) / 60);
           const Duration = (`${hours} h ${minutes} min`);
-          
-          return {info:response.data, waypoints: points, totalDistance: TDis, totalDuration: Duration };
+          return {info:response.data, waypoints: waypointsArray, totalDistance: TDis, totalDuration: Duration };
         } catch (error) {
           console.error('Error fetching directions:', error);
           return null;  // Manejo de errores más claro

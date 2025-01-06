@@ -76,55 +76,74 @@ export class CategoryRepository extends MongoRepository implements CategoryConfi
     //       ]);
     //       return result;
     // }
-    async findCategoriesAndProducts (categoryNames: string[] , storehouse: string): Promise<Category[]  | null>{
-        const storehouseId = new ObjectId(storehouse);       
-        const result = await this.MODEL.aggregate([
-            // { $limit: 4 },
-            {$match:{
-              name: { $in: categoryNames }
-            }},
-            {
-              $lookup: {                
+ async findCategoriesAndProducts(categoryNames: string[], storehouse: string): Promise<Category[] | null> {
+    const storehouseId = new ObjectId(storehouse);
+    const result = await this.MODEL.aggregate([
+        {
+            $match: {
+                name: { $in: categoryNames }
+            }
+        },
+        {
+            $lookup: {
                 from: "products",
-                let: { categoryId: '$_id'},                                           
+                let: { categoryId: '$_id' },
                 pipeline: [
-                  {
-                    $match: {
-                      $expr: { $eq: ['$category', '$$categoryId'] },
-                      status: true
+                    {
+                        $match: {
+                            $expr: { $eq: ['$category', '$$categoryId'] },
+                            status: true
+                        }
+                    },
+                    { $limit: 10 },
+                    {
+                        $lookup: {
+                            from: "storehousestocks",
+                            let: { productId: '$_id' },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [
+                                                { $eq: ['$product_id', '$$productId'] },
+                                                { $eq: ['$StoreHouse_id', storehouseId] } // Filtrar por el ID de almacén específico
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            as: "stock"
+                        }
+                    },
+                    {
+                        $addFields: {
+                            stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "variant-products", // Colección de variantes
+                            let: { productId: '$_id' },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: { $eq: ['$product_id', '$$productId'] }, // Vincular por product_id
+                                        status: true // Solo variantes con status true
+                                    }
+                                }
+                            ],
+                            as: "variants"
+                        }
                     }
-                  },
-                  { $limit: 10 },
-                  {
-                    $lookup: {
-                      from: "storehousestocks",
-                      let: { productId: '$_id' },
-                      pipeline: [{
-                          $match: {
-                            $expr: {
-                              $and: [
-                                { $eq: ['$product_id', '$$productId'] },
-                                { $eq: ['$StoreHouse_id', storehouseId] } // Filtrar por el ID de almacén específico
-                              ]
-                            }
-                    }}],
-                      as: "stock"
-                    }
-                  },
-                  {
-                    $addFields: {
-                      // stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
-                      stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
-                    }
-                  }
                 ],
                 as: "products"
-              }
             }
-          ]);
-                 
-          return result;
-    }
+        }
+    ]);
+
+    return result;
+}
+
    async findProductsByCategory(category_id: any, storehouse:any): Promise<Category[] | null> {
     const storehouseId = new ObjectId(storehouse);  
     const result = await this.MODEL.aggregate([

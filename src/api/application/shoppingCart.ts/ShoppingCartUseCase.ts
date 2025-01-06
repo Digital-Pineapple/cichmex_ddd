@@ -1,7 +1,7 @@
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { ShoppingCartRepository } from '../../domain/shoppingCart/shoppingCartRepository';
 import { ShoppingCartEntity } from '../../domain/shoppingCart/shoppingCartEntity';
-import { PopulateMembershipInSC, PopulateProductCS } from '../../../shared/domain/PopulateInterfaces';
+import { PopulateMembershipInSC, PopulateProductCS, PopulateVariantProduct } from '../../../shared/domain/PopulateInterfaces';
 
 
 export class ShoppingCartUseCase {
@@ -13,7 +13,11 @@ export class ShoppingCartUseCase {
         return await this.shoppingCartRepository.findAll()
     }
     public async getShoppingCartByUser(id: any): Promise<ShoppingCartEntity  | null> {
-        let cart = await this.shoppingCartRepository.findOneItem({user_id:id}, PopulateProductCS, PopulateMembershipInSC)        
+        let cart = await this.shoppingCartRepository.findOneItem({user_id:id}, PopulateProductCS, PopulateVariantProduct, PopulateMembershipInSC)        
+        // console.log("the cart is", cart?.products);
+        
+        // await this.shoppingCartRepository.updateOne(cart._id,{products: []})
+        //  await this.shoppingCartRepository.findOneItem({user_id:id}, PopulateProductCS, PopulateVariantProduct, PopulateMembershipInSC)        
         if(!cart){
             return null
         }
@@ -48,25 +52,43 @@ export class ShoppingCartUseCase {
         return await this.shoppingCartRepository.DeletePinC(item_id)
     }
 
-    public async getTotalCart(products: any): Promise<number> {
+    public async getTotalCart(products: any): Promise<number> {                
         const totalCart =  products?.reduce(
             (accumulator: number, currentValue: any) => {
-                const discount = currentValue?.item?.porcentDiscount;
-                const isDiscount = Boolean(discount);
-                if(isDiscount){
-                    const priceWithDiscount = currentValue?.item?.discountPrice;
-                    return accumulator + Number(priceWithDiscount) * currentValue.quantity
+                const variant = currentValue?.variant;
+                const product = currentValue?.item;
+                const isVariant = Boolean(variant);
+                if(isVariant){
+                    const discount = variant?.porcentDiscount ?? null;
+                    const isDiscount = Boolean(discount);
+                    if(isDiscount){
+                        const priceWithDiscount = variant?.discountPrice;
+                        return accumulator + Number(priceWithDiscount) * currentValue.quantity
+                    }
+                    return accumulator + Number(variant?.price) * currentValue.quantity;
+                }else{
+                    const discount = product?.porcentDiscount ?? null;
+                    const isDiscount = Boolean(discount);
+                    if(isDiscount){
+                        const priceWithDiscount = product.discountPrice;
+                        return accumulator + Number(priceWithDiscount) * currentValue.quantity
+                    }
+                    return accumulator + Number(product?.price) * currentValue.quantity;
                 }
-                return accumulator + Number(currentValue?.item?.price) * currentValue.quantity;
-            }, 0);  
+            }, 
+            0);  
         return totalCart;        
     }
+
     public async getTotalWeight(products: any): Promise<number> {
         const weight = await products?.reduce((acc: number, product: any) => { 
-            const currentWeight = Number(product?.item?.weight) || 0; 
+            const variant = product?.variant;
+            const main= product?.item;
+            const isVariant = Boolean(variant);
+            let currentWeight = isVariant ? Number(variant?.weight) || 0 : Number(main?.weight) || 0;                                
             const total = acc + (currentWeight * product.quantity)
             //  console.log("the total is"+ total);                                                    
-             return total
+            return total
         }, 0);      
         return weight;
     }

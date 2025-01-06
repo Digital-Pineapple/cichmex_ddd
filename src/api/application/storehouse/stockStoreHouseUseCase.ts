@@ -5,6 +5,7 @@ import { StockStoreHouseEntity } from '../../domain/storehouse/stockStoreHouseEn
 
 export class StockStoreHouseUseCase {
     protected path = '/stock-store-house'
+    readonly storeHouseId = '662fe69b9ba1d8b3cfcd3634';
 
     constructor(private readonly stockStoreHouseRepository: StockStoreHouseRepository) { }
 
@@ -22,12 +23,12 @@ export class StockStoreHouseUseCase {
     public async getProductStock(product_id: string,StoreHouse_id?:any, populateConfig?:any,   ) : Promise <StockStoreHouseEntity > { 
           return await this.stockStoreHouseRepository.findOneItem({product_id: product_id, StoreHouse_id:StoreHouse_id, status:true}) 
     }
-    public async getVariantStock(variant_id: string,StoreHouse_id?:any, populateConfig?:any,   ) : Promise <StockStoreHouseEntity > { 
-        return await this.stockStoreHouseRepository.findOneItem({variant_id: variant_id, StoreHouse_id:StoreHouse_id, status:true}) 
+    public async getVariantStock(variant_id: string,StoreHouse_id?:any , populateConfig?:any,   ) : Promise <StockStoreHouseEntity > { 
+        return await this.stockStoreHouseRepository.findOneItem({variant_id: variant_id, StoreHouse_id: StoreHouse_id ?? this.storeHouseId, status:true}) 
   }
      
     public async getProductStockPayment(product_id: string,StoreHouse_id?:any, populateConfig?:any,   ) : Promise <StockStoreHouseEntity > { 
-        return await this.stockStoreHouseRepository.findOneItem({product_id: product_id, StoreHouse_id:'662fe69b9ba1d8b3cfcd3634', status:true}) 
+        return await this.stockStoreHouseRepository.findOneItem({product_id: product_id, StoreHouse_id: this.storeHouseId, status:true}) 
   } 
 
     public async getDetailStock(_id: string): Promise<StockStoreHouseEntity | null> {

@@ -98,6 +98,7 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
    }
 
    async findSearchProducts(search: string, page: number): Promise<any> {
+    // console.log('search', search);    
     const PAGESIZE = 30;
     const storehouseId = new ObjectId(this.onlineStoreHouse);
 
@@ -106,11 +107,11 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
 
     // Expresión regular para búsqueda parcial
     const regexSearch = new RegExp(cleanSearch, "i");
-
+    // await this.MODEL.createIndexes({ name: "xd" });
     // Filtro que combina `$text` y `$regex` para máxima flexibilidad
     const searchFilter = {
         $or: [
-            { $text: { $search: cleanSearch } }, // Búsqueda por índice de texto
+            // { $xdt: { $search: cleanSearch } }, // Búsqueda por índice de texto
             { name: { $regex: regexSearch } },  // Búsqueda parcial
         ],
     };
@@ -147,6 +148,21 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
             },
         },
         {
+          $lookup: {
+              from: "variant-products", // Colección de variantes
+              let: { productId: '$_id' },
+              pipeline: [
+                  {
+                      $match: {
+                          $expr: { $eq: ['$product_id', '$$productId'] }, // Vincular por product_id
+                          status: true // Solo variantes con status true
+                      }
+                  }
+              ],
+              as: "variants"
+          }
+        },
+        {
             $facet: {
                 products: [
                     { $skip: (page - 1) * PAGESIZE },
@@ -171,22 +187,109 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
   
   
 
-  async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
-    const result = await this.MODEL.aggregate([
-        {
-            $match: {
-                status: true,
-                videos: { 
-                    $exists: true, 
-                    $ne: [], 
-                    $elemMatch: { type: 'vertical' } 
-                }
-            }
-        },
-        { $limit: 10 }
-    ]);
-    return result;
+async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {    
+  const storehouseId = new ObjectId(this.onlineStoreHouse);
+  const result = await this.MODEL.aggregate([
+      {
+          $match: {
+              status: true,
+              videos: {
+                  $exists: true,
+                  $ne: [],
+                  $elemMatch: { type: 'vertical' }
+              }
+          }
+      },
+      {
+          $lookup: {
+              from: 'categories', // Colección de categorías
+              localField: 'category', // Campo en la colección de productos
+              foreignField: '_id', // Campo de referencia en categorías
+              as: 'category'
+          }
+      },
+      {
+        $unwind: {
+            path: '$category',
+            preserveNullAndEmptyArrays: true // Permite que productos sin categoría no generen errores
+        }
+    },
+      {
+          $lookup: {
+              from: 'subcategories', // Colección de subcategorías
+              localField: 'subCategory', // Campo en la colección de productos
+              foreignField: '_id', // Campo de referencia en subcategorías
+              as: 'subCategory'
+          }
+      },
+      {
+        $unwind: {
+            path: '$subCategory',
+            preserveNullAndEmptyArrays: true // Permite que productos sin subcategoría no generen errores
+        }
+    },
+      {
+          $lookup: {
+              from: 'variant-products', // Colección de variantes
+              localField: '_id', // Campo en la colección de productos
+              foreignField: 'product_id', // Campo de referencia en variantes
+              as: 'variants'
+          }
+      },
+      {
+        $unwind: {
+          path: '$variants',
+          preserveNullAndEmptyArrays: true // Opcional: incluir productos sin variantes
+        }
+      },
+      {
+        $lookup: {
+          from: 'storehousestocks',
+          let: { variantId: '$variants._id' }, // Pasamos el ID de la variante
+          pipeline: [
+            {
+              $match: {
+                  $expr: {
+                      $and: [
+                          { $eq: ['$variant_id', '$$variantId'] },
+                          { $eq: ["$StoreHouse_id", storehouseId] },
+                      ],
+                  },
+              },
+          },
+          ],
+          as: 'variants.storehouseStock'
+        }
+      },
+      {
+        $addFields: {
+          'variants.stock': { $ifNull: [{ $arrayElemAt: ['$variants.storehouseStock.stock', 0] }, 0] }
+        }
+      },
+      {
+        $unset: 'variants.storehouseStock' // Eliminamos el campo storehouseStock
+      },
+      {
+        $group: {
+          _id: '$_id',
+          product: { $first: '$$ROOT' }, // Consolidamos productos
+          variants: { $push: '$variants' } // Volvemos a agrupar las variantes
+        }
+      },
+      { 
+        $replaceRoot: { 
+          newRoot: { $mergeObjects: ['$product', { variants: '$variants' }] } 
+        } 
+      },
+      { 
+        $limit: 10 
+      }
+  ]);
+
+  return result;    
 }
+
+
 
 
    async findRandomProductsByCategory(categoryId : any, skiproduct:any , storehouse: any ): Promise<ProductEntity[] | ErrorHandler | null> {
@@ -215,6 +318,21 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
               },
               
          },
+         {
+          $lookup: {
+              from: "variant-products", // Colección de variantes
+              let: { productId: '$_id' },
+              pipeline: [
+                  {
+                      $match: {
+                          $expr: { $eq: ['$product_id', '$$productId'] }, // Vincular por product_id
+                          status: true // Solo variantes con status true
+                      }
+                  }
+              ],
+              as: "variants"
+          }
+        },
          {
             $addFields: {
               // stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
@@ -276,6 +394,21 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
         $addFields: {
           stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] },
         },
+      },
+      {
+        $lookup: {
+            from: "variant-products", // Colección de variantes
+            let: { productId: '$_id' },
+            pipeline: [
+                {
+                    $match: {
+                        $expr: { $eq: ['$product_id', '$$productId'] }, // Vincular por product_id
+                        status: true // Solo variantes con status true
+                    }
+                }
+            ],
+            as: "variants"
+        }
       },
       {
         $facet: {
@@ -350,6 +483,21 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
           $addFields: {
             // stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
             stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
+          }
+        },
+        {
+          $lookup: {
+              from: "variant-products", // Colección de variantes
+              let: { productId: '$_id' },
+              pipeline: [
+                  {
+                      $match: {
+                          $expr: { $eq: ['$product_id', '$$productId'] }, // Vincular por product_id
+                          status: true // Solo variantes con status true
+                      }
+                  }
+              ],
+              as: "variants"
           }
         },
         {

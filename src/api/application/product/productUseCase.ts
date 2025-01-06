@@ -1,6 +1,6 @@
 import { ObjectId } from "mongoose";
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
-import { PopulateProductCategory, PopulateProductSubCategory } from "../../../shared/domain/PopulateInterfaces";
+import { PopulateGuide, PopulateProductCategory, PopulateProductSubCategory } from "../../../shared/domain/PopulateInterfaces";
 import { ProductEntity } from "../../domain/product/ProductEntity";
 import { ProductRepository } from "../../domain/product/ProductRepository";
 
@@ -15,7 +15,7 @@ export class ProductUseCase {
   public async getProduct(
     _id: string
   ): Promise<ProductEntity | ErrorHandler| null > {
-    const response =  await this.productRepository.findDetailProductById(_id, PopulateProductCategory, PopulateProductSubCategory)
+    const response =  await this.productRepository.findDetailProductById(_id, PopulateProductCategory, PopulateProductSubCategory, PopulateGuide)
     return response
   }
   public async deleteImageProduct(
