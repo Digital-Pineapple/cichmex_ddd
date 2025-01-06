@@ -12,6 +12,7 @@ import { RegionUseCase } from "../../../application/regions/regionUseCase";
 import { RegionsService } from "../../../../shared/infrastructure/Regions/RegionsService";
 import StockStoreHouseModel from '../../models/stockStoreHouse/StockStoreHouseModel';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
+import { DocumentationValidations } from '../../../../shared/infrastructure/validation/Documentation/DocumentationValidation';
 
 const productOrderRouter = Router();
 const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
@@ -21,6 +22,7 @@ const productOrderUseCase = new ProductOrderUseCase(productOrderRepository);
 const regionUseCase = new RegionUseCase(regionRepository)
 const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository)
 const userValidations = new UserValidations();
+const documentationValidations = new DocumentationValidations()
 const s3Service = new S3Service();
 const regionsService = new RegionsService()
 const productOrderController = new ProductOrderController(productOrderUseCase,regionUseCase, s3Service, regionsService, stockStoreHouseUseCase);
@@ -29,6 +31,7 @@ productOrderRouter
 
   .get("/",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.getAllProductOrders)
   .get("/AssignedPO",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER"]), productOrderController.getAssignedPO)
+  .get("/AssignedPO/user",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER"]), productOrderController.getAssignedPOUser)
   .get("/deliveries",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CARRIER-DRIVER"]), productOrderController.getDeliveries)
   .get("/paid",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.paidProductOrders)
   .get("/paidAndFill/find",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.paidAndFillProductOrders)
@@ -50,7 +53,7 @@ productOrderRouter
   .post('/start-verifyQr',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER"]), productOrderController.verifyQr)
   .post('/verifyQrToPoint',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER"]), productOrderController.verifyQrToPoint)
   .post('/verifyStartRoute',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.verifyAndStartRoute)
-  .post('/assignRoute',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.AssignRoute)
+  .post('/assignRoute', documentationValidations.PDFFileValidation ,userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.AssignRoute)
   .post('/fill-order/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN"]), productOrderController.fillProductOrder)
   .post("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN"]), productOrderController.updateProductOrder)
   .delete("/:id",userValidations.authTypeUserValidation(["CUSTOMER"]),productOrderController.deleteProductOrder)

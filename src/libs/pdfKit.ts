@@ -110,10 +110,10 @@ function createTable(doc: PDFDocument, products: any[], orderData: any) {
     });
 
     const tableBottomPosition = doc.y; // Obtiene la posición Y después de la tabla
-    doc.text(`Descuento: $${orderData.discount ? orderData.discount.toFixed(2) : '0.00'}`, { align: 'center' });
-    doc.text(`SubTotal: $${orderData.subTotal.toFixed(2)}`, { align: 'center' });
-    doc.text(`Costo de envio: $${orderData.shipping_cost ? orderData.shipping_cost : 'N/A' }`, { align: 'center' });
-    doc.text(`Total: $${orderData.total.toFixed(2)}`, { align: 'center' });
+    doc.text(`Descuento: $${orderData.discount ? orderData?.discount?.toFixed(2) : '0.00'}`, { align: 'center' });
+    doc.text(`SubTotal: $${orderData?.subTotal.toFixed(2)}`, { align: 'center' });
+    doc.text(`Costo de envio: $${orderData?.shipping_cost ? orderData?.shipping_cost : 'N/A' }`, { align: 'center' });
+    doc.text(`Total: $${orderData?.total?.toFixed(2)}`, { align: 'center' });
 
     // Mover la posición Y hacia abajo si es necesario para el espaciado
     doc.y = tableBottomPosition + 40; // Ajusta el espaciado según sea necesario

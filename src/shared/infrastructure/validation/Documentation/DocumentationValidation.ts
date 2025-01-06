@@ -16,4 +16,9 @@ export class DocumentationValidations {
         this.upload.single('url'),
     ]
 
+    readonly PDFFileValidation = [
+        validateAuthentication,
+        this.upload.single('guide_pdf'),
+    ]
+
 }
