@@ -98,22 +98,23 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
    }
 
    async findSearchProducts(search: string, page: number): Promise<any> {
+    // console.log('search', search);    
     const PAGESIZE = 30;
     const storehouseId = new ObjectId(this.onlineStoreHouse);
 
     // Limpia espacios innecesarios en el término de búsqueda
     const cleanSearch = search.trim().toLocaleLowerCase();
 
-    // Usa $text si el término es suficientemente largo, de lo contrario $regex
-    const isTextSearch = cleanSearch.split(" ").length > 1 || cleanSearch.length > 3;
-
     // Expresión regular para búsqueda parcial
     const regexSearch = new RegExp(cleanSearch, "i");
-
-    // Filtro condicional basado en $text o $regex
-    const searchFilter = isTextSearch
-        ? { $text: { $search: cleanSearch } } // Búsqueda por texto
-        : { name: { $regex: regexSearch } }; // Búsqueda parcial
+    // await this.MODEL.createIndexes({ name: "xd" });
+    // Filtro que combina `$text` y `$regex` para máxima flexibilidad
+    const searchFilter = {
+        $or: [
+            // { $xdt: { $search: cleanSearch } }, // Búsqueda por índice de texto
+            { name: { $regex: regexSearch } },  // Búsqueda parcial
+        ],
+    };
 
     const result = await this.MODEL.aggregate([
         {
@@ -144,6 +145,21 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
             },
         },
         {
+          $lookup: {
+              from: "variant-products", // Colección de variantes
+              let: { productId: '$_id' },
+              pipeline: [
+                  {
+                      $match: {
+                          $expr: { $eq: ['$product_id', '$$productId'] }, // Vincular por product_id
+                          status: true // Solo variantes con status true
+                      }
+                  }
+              ],
+              as: "variants"
+          }
+        },
+        {
             $facet: {
                 products: [
                     { $skip: (page - 1) * PAGESIZE },
@@ -161,28 +177,116 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
 }
 
 
+
   
   
   
   
   
 
-  async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
-    const result = await this.MODEL.aggregate([
-        {
-            $match: {
-                status: true,
-                videos: { 
-                    $exists: true, 
-                    $ne: [], 
-                    $elemMatch: { type: 'vertical' } 
-                }
-            }
-        },
-        { $limit: 10 }
-    ]);
-    return result;
+async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {    
+  const storehouseId = new ObjectId(this.onlineStoreHouse);
+  const result = await this.MODEL.aggregate([
+      {
+          $match: {
+              status: true,
+              videos: {
+                  $exists: true,
+                  $ne: [],
+                  $elemMatch: { type: 'vertical' }
+              }
+          }
+      },
+      {
+          $lookup: {
+              from: 'categories', // Colección de categorías
+              localField: 'category', // Campo en la colección de productos
+              foreignField: '_id', // Campo de referencia en categorías
+              as: 'category'
+          }
+      },
+      {
+        $unwind: {
+            path: '$category',
+            preserveNullAndEmptyArrays: true // Permite que productos sin categoría no generen errores
+        }
+    },
+      {
+          $lookup: {
+              from: 'subcategories', // Colección de subcategorías
+              localField: 'subCategory', // Campo en la colección de productos
+              foreignField: '_id', // Campo de referencia en subcategorías
+              as: 'subCategory'
+          }
+      },
+      {
+        $unwind: {
+            path: '$subCategory',
+            preserveNullAndEmptyArrays: true // Permite que productos sin subcategoría no generen errores
+        }
+    },
+      {
+          $lookup: {
+              from: 'variant-products', // Colección de variantes
+              localField: '_id', // Campo en la colección de productos
+              foreignField: 'product_id', // Campo de referencia en variantes
+              as: 'variants'
+          }
+      },
+      {
+        $unwind: {
+          path: '$variants',
+          preserveNullAndEmptyArrays: true // Opcional: incluir productos sin variantes
+        }
+      },
+      {
+        $lookup: {
+          from: 'storehousestocks',
+          let: { variantId: '$variants._id' }, // Pasamos el ID de la variante
+          pipeline: [
+            {
+              $match: {
+                  $expr: {
+                      $and: [
+                          { $eq: ['$variant_id', '$$variantId'] },
+                          { $eq: ["$StoreHouse_id", storehouseId] },
+                      ],
+                  },
+              },
+          },
+          ],
+          as: 'variants.storehouseStock'
+        }
+      },
+      {
+        $addFields: {
+          'variants.stock': { $ifNull: [{ $arrayElemAt: ['$variants.storehouseStock.stock', 0] }, 0] }
+        }
+      },
+      {
+        $unset: 'variants.storehouseStock' // Eliminamos el campo storehouseStock
+      },
+      {
+        $group: {
+          _id: '$_id',
+          product: { $first: '$$ROOT' }, // Consolidamos productos
+          variants: { $push: '$variants' } // Volvemos a agrupar las variantes
+        }
+      },
+      { 
+        $replaceRoot: { 
+          newRoot: { $mergeObjects: ['$product', { variants: '$variants' }] } 
+        } 
+      },
+      { 
+        $limit: 10 
+      }
+  ]);
+
+  return result;    
 }
+
+
 
 
    async findRandomProductsByCategory(categoryId : any, skiproduct:any , storehouse: any ): Promise<ProductEntity[] | ErrorHandler | null> {
@@ -212,6 +316,21 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
               
          },
          {
+          $lookup: {
+              from: "variant-products", // Colección de variantes
+              let: { productId: '$_id' },
+              pipeline: [
+                  {
+                      $match: {
+                          $expr: { $eq: ['$product_id', '$$productId'] }, // Vincular por product_id
+                          status: true // Solo variantes con status true
+                      }
+                  }
+              ],
+              as: "variants"
+          }
+        },
+         {
             $addFields: {
               // stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
               stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
@@ -222,81 +341,117 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
    }
 
    async findProductsByCategory(categoryId : MongooseObjectId, storehouse: string, qparams: any ): Promise<ProductEntity[] | ErrorHandler | null> {    
-     const page = Number(qparams.page) || 1;
-     let matchStage: any = {};         
-     if(qparams.subcategory){
-        matchStage.subCategory = new ObjectId(qparams.subcategory)
-     }
-     if(qparams.minPrice || qparams.maxPrice) {
-      matchStage.price = {};  
-      if (qparams.minPrice) {
-        matchStage.price.$gte = Number(qparams.minPrice); // Si existe minPrice, lo añadimos
-      }    
-      if (qparams.maxPrice) {
-        matchStage.price.$lte = Number(qparams.maxPrice); // Si existe maxPrice, lo añadimos
-      }
-     }    
-    
+    const page = Number(qparams.page) || 1;
+    let matchStage: any = {
+      status: true,
+      category: categoryId,
+    };
+  
+    // Agregar subcategoría si está en los query params
+    if (qparams.subcategory) {
+      matchStage.subCategory = new ObjectId(qparams.subcategory);
+    }
+  
+    // Condicional para rango de precios
+    const priceFilter: any = {};
+    if (qparams.minPrice) {
+      priceFilter.$gte = Number(qparams.minPrice);
+    }
+    if (qparams.maxPrice) {
+      priceFilter.$lte = Number(qparams.maxPrice);
+    }
+  
     const storehouseId = new ObjectId(storehouse);
     const PAGESIZE = 30;
+  
     const result = await this.MODEL.aggregate([
-        {$match: {
-            status: true,
-            category: categoryId,
-            ...matchStage
-        }},       
-        {
-          $lookup: {
-              from: "storehousestocks",
-              let: { productId: '$_id' },
-              pipeline: [{
-                  $match: {
-                    $expr: {
-                      $and: [
-                        { $eq: ['$product_id', '$$productId'] },
-                        { $eq: ['$StoreHouse_id', storehouseId] } // Filtrar por el ID de almacén específico
-                      ]
+      {
+        $match: matchStage, // Primer match basado en categoría, estado, etc.
+      },
+      {
+        $lookup: {
+          from: "storehousestocks",
+          let: { productId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$product_id', '$$productId'] },
+                    { $eq: ['$StoreHouse_id', storehouseId] },
+                  ],
+                },
+              },
+            },
+          ],
+          as: "stock",
+        },
+      },
+      {
+        $addFields: {
+          stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] },
+        },
+      },
+      {
+        $lookup: {
+            from: "variant-products", // Colección de variantes
+            let: { productId: '$_id' },
+            pipeline: [
+                {
+                    $match: {
+                        $expr: { $eq: ['$product_id', '$$productId'] }, // Vincular por product_id
+                        status: true // Solo variantes con status true
                     }
-            }}],
-              as: "stock"
-            },           
-        },
-        {
-          $addFields: {
-            // stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
-            stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
-          }
-        },
-        {
-          $facet: {
-            products: [ { $skip: (page - 1) * PAGESIZE }, // Obtener productos para la página actual
-              { $limit: PAGESIZE },],
-            total: [{$count: "total"}],
-          }
+                }
+            ],
+            as: "variants"
         }
-       
-    ]) 
+      },
+      {
+        $facet: {
+          // Productos filtrados y paginados
+          products: [
+            { $match: { ...(Object.keys(priceFilter).length ? { price: priceFilter } : {}) } },
+            { $skip: (page - 1) * PAGESIZE },
+            { $limit: PAGESIZE },
+          ],
+          // Total de productos en el rango de precios
+          total: [
+            { $match: { ...(Object.keys(priceFilter).length ? { price: priceFilter } : {}) } },
+            { $count: "total" },
+          ],
+          // Precio mínimo y máximo de todos los productos de la categoría
+          priceRange: [
+            { $group: { _id: null, minPrice: { $min: "$price" }, maxPrice: { $max: "$price" } } },
+          ],
+        },
+      },
+    ]);
+    
+    const priceRange = result[0]?.priceRange[0] || {};
     
     return {
-      products: result[0].products,
-      total: result[0]?.total[0]?.total || 0
-    };;
-
-   }
-
+      products: result[0]?.products || [],
+      total: result[0]?.total[0]?.total || 0,
+      minPrice: priceRange.minPrice || null, // Global de la categoría
+      maxPrice: priceRange.maxPrice || null, // Global de la categoría
+      numPages: Math.ceil((result[0]?.total[0]?.total || 0) / PAGESIZE),
+      limit: PAGESIZE,
+      page,
+    };        
+  }
+  
    async findProductsBySubCategory(subcategoryId : MongooseObjectId, storehouse: string, qparams: any ): Promise<ProductEntity[] | ErrorHandler | null> {
     const page = Number(qparams.page) || 1;
     let matchStage: any = {};         
 
-    if(qparams.minPrice || qparams.maxPrice) {
-     matchStage.price = {};  
-     if (qparams.minPrice) {
-       matchStage.price.$gte = Number(qparams.minPrice); // Si existe minPrice, lo añadimos
-     }    
-     if (qparams.maxPrice) {
-       matchStage.price.$lte = Number(qparams.maxPrice); // Si existe maxPrice, lo añadimos
-     }
-    }    
+    const priceFilter: any = {};
+    if (qparams.minPrice) {
+      priceFilter.$gte = Number(qparams.minPrice);
+    }
+    if (qparams.maxPrice) {
+      priceFilter.$lte = Number(qparams.maxPrice);
+    }
     const storehouseId = new ObjectId(storehouse);
     const PAGESIZE = 30;
     const result = await this.MODEL.aggregate([
@@ -328,19 +483,52 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
           }
         },
         {
-          $facet: {
-            products: [ { $skip: (page - 1) * PAGESIZE }, // Obtener productos para la página actual
-              { $limit: PAGESIZE },],
-            total: [{$count: "total"}],
+          $lookup: {
+              from: "variant-products", // Colección de variantes
+              let: { productId: '$_id' },
+              pipeline: [
+                  {
+                      $match: {
+                          $expr: { $eq: ['$product_id', '$$productId'] }, // Vincular por product_id
+                          status: true // Solo variantes con status true
+                      }
+                  }
+              ],
+              as: "variants"
           }
-        }
+        },
+        {
+          $facet: {
+            // Productos filtrados y paginados
+            products: [
+              { $match: { ...(Object.keys(priceFilter).length ? { price: priceFilter } : {}) } },
+              { $skip: (page - 1) * PAGESIZE },
+              { $limit: PAGESIZE },
+            ],
+            // Total de productos en el rango de precios
+            total: [
+              { $match: { ...(Object.keys(priceFilter).length ? { price: priceFilter } : {}) } },
+              { $count: "total" },
+            ],
+            // Precio mínimo y máximo de todos los productos de la categoría
+            priceRange: [
+              { $group: { _id: null, minPrice: { $min: "$price" }, maxPrice: { $max: "$price" } } },
+            ],
+          },
+        },
        
     ]) 
     
+    const priceRange = result[0]?.priceRange[0] || {};    
     return {
-      products: result[0].products,
-      total: result[0]?.total[0]?.total || 0
-    };
+      products: result[0]?.products || [],
+      total: result[0]?.total[0]?.total || 0,
+      minPrice: priceRange.minPrice || null, // Global de la categoría
+      maxPrice: priceRange.maxPrice || null, // Global de la categoría
+      numPages: Math.ceil((result[0]?.total[0]?.total || 0) / PAGESIZE),
+      limit: PAGESIZE,
+      page,
+    };       
 
    }
 

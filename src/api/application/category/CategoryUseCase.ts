@@ -1,3 +1,4 @@
+import { response } from 'express';
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { CategoriesRepository } from '../../domain/category/CategoriesRepository';
 import { Category } from '../../domain/category/CategoryEntity'
@@ -43,7 +44,10 @@ export class CategoryUseCase {
         return await this.categoriesRepository.findCategoriesAndProducts(categoryNames, storehouse);
     }
     public async getProductsByCategory(category_id: any, storehouse:any): Promise<Category | ErrorHandler | null> {
-        return await this.categoriesRepository.findProductsByCategory(category_id, storehouse);
+       const response =  await this.categoriesRepository.findProductsByCategory(category_id, storehouse);
+    // console.log(response, 'response');
+    
+       return response
     }
     
 
