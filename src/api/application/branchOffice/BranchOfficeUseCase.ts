@@ -10,6 +10,10 @@ export class BranchOfficeUseCase {
     private readonly branchOfficeRepository: BranchOfficeRepository
   ) { }
 
+  public async getCichmexBranches(): Promise<BranchOfficeEntity[] | null> {
+    return await this.branchOfficeRepository.getCichmexBranches();    
+  }
+
   public async getAllBranchOffices(): Promise<
     BranchOfficeEntity[] | ErrorHandler | null
   > {

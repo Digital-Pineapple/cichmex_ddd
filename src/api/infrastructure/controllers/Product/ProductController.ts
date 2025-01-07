@@ -108,10 +108,10 @@ export class ProductController extends ResponseData {
 
 
   public async getProduct(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;
+    const { id } = req.params;        
     try {
       const responseStock = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse)
-      const responseProduct: any | null = await this.productUseCase.getProduct(id);
+      const responseProduct: any | null = await this.productUseCase.getProduct(id);                
 
       const parsed = responseProduct.toJSON();
       let response = null;
@@ -120,50 +120,10 @@ export class ProductController extends ResponseData {
           ...parsed,
           stock: responseStock.stock
         }
-      }
-      else {
+      }else {
         response = responseProduct
       }
-      if (!(response instanceof ErrorHandler) && response !== null) {
-
-        if (response.images) {
-          const updatedImages = await Promise.all(
-            response.images.map(async (image: any) => {
-              if (typeof image.url === 'string' && image.url.startsWith("https://")) {
-                return { url: image.url, _id: image._id };
-              }
-              const url = await this.s3Service.getUrlObject(image.url + ".jpg");
-              return { url: url, _id: image._id };
-            })
-          );
-          response.images = updatedImages;
-        }
-
-        const videos = response.videos;
-
-        const updatedVideos = await Promise.all(
-          videos.map(async (video: any) => {
-
-            if (typeof video.url === 'string' && video.url.startsWith("https://")) {
-              return video; // Retorna el video original si la URL ya es válida
-            }
-
-            // Obtener nueva URL del objeto de S3
-            const url = await this.s3Service.getUrlObject(video + ".mp4");
-            return { ...video, url }; // Devuelve el objeto video con la nueva URL
-          })
-        );
-        response.videos = updatedVideos
-        const thumbnail = response.thumbnail
-
-        if (typeof thumbnail === 'string' && thumbnail.startsWith("https://")) {
-          response.thumbnail = thumbnail;
-        } else if (!!thumbnail) {
-          response.thumbnail = await this.s3Service.getUrlObject(
-            (thumbnail) + ".jpg"
-          );
-        }
-      }
+      
       const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(id);
       // Espera a que todas las promesas se resuelvan
       const newVariants = await Promise.all(
@@ -554,21 +514,14 @@ export class ProductController extends ResponseData {
     const queryparams = req.query;
     try {
       if (!category) return next(new ErrorHandler("El nombre de la categoria es requerida", 404));
-
       const categoria: any | null = await this.categoryUseCase.getDetailCategoryByName(category);
-      if (categoria == null) return next(new ErrorHandler("La categoria no existe", 404));
-
-      const products: any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);
-
+      if (categoria == null) return next(new ErrorHandler("La categoria no existe", 404));      
+      const products: any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);               
       const response = {
         category: categoria,
-        products: products.products,
-        total: products.total
+        ...products
       };
-
       this.invoke(response, 201, res, '', next);
-
-
     } catch (error) {
       // console.log();      
       next(new ErrorHandler("Hubo un error al buscar", 500));
@@ -579,22 +532,16 @@ export class ProductController extends ResponseData {
   public async getProductsBySubCategory(req: Request, res: Response, next: NextFunction) {
     const { subcategory } = req.body
     const queryparams = req.query;
-
     try {
       if (!subcategory) return next(new ErrorHandler("El nombre de la subcategoria es requerida", 404));
-
       const subcategoria: any | null = await this.subCategoryUseCase.getDetailSubCategoryByName(subcategory);
-      if (subcategoria == null) return next(new ErrorHandler("La subcategoria no existe", 404));
-
-      const products: any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);
-
+      if (subcategoria == null) return next(new ErrorHandler("La subcategoria no existe", 404));      
+      const products: any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);                         
       const response = {
         subcategory: subcategoria,
-        products: products.products,
-        total: products.total
-      };
-
-      this.invoke(response, 201, res, '', next);
+        ...products        
+      };            
+      this.invoke(response, 201, res, '', next);      
     } catch (error) {
       next(new ErrorHandler("Hubo un error al buscar", 500));
       console.log("subcategory product error", error);
@@ -664,51 +611,10 @@ export class ProductController extends ResponseData {
     const { id } = req.params //product id
     try {
       const productDetail: any | null = await this.productUseCase.getProduct(id);
-      // const category = productDetail?.category._id;
-
-      // if (productDetail == null) return next(new ErrorHandler("Este producto no existe", 404));
-
-      // let response: any | null = await this.productUseCase.getRandomProductsByCategory(category, productDetail._id, this.onlineStoreHouse);
-
-      // if (!(response instanceof ErrorHandler)) {
-      //   const updatedResponse = await Promise.all(
-      //     response.map(async (item: any) => {
-      //       // Procesar thumbnail
-      //       const thumbnail = item?.thumbnail;
-      //       if (thumbnail && !thumbnail.startsWith("https://")) {
-      //         item.thumbnail = await this.s3Service.getUrlObject(thumbnail + ".jpg");
-      //       }
-
-      //       // Procesar imágenes
-      //       if (item?.images && item.images.length > 0) {
-      //         const parsedImages = await Promise.all(
-      //           item.images.map(async (image: any) => {
-      //             if (typeof image === "string" && !image.startsWith("https://")) {
-      //               image = await this.s3Service.getUrlObject(image + ".jpg");
-      //             }
-      //             // Verificar si la imagen tiene una URL completa o solo el path relativo
-      //             if (image.url && !image?.url?.startsWith("https://")) {
-      //               image.url = await this.s3Service.getUrlObject(image.url + ".jpg");
-      //             }
-      //             return image; // Retornar el objeto completo de la imagen
-      //           })
-      //         );
-      //         item.images = parsedImages;
-      //       }
-
-      //       return item;
-      //     })
-      //   );
-
-      //   response = updatedResponse; // Asignar el array actualizado a response
-      // }
-
-      // this.invoke(response, 200, res, "", next);
-
-      const category = productDetail?.category._id;
-      if (productDetail == null) return next(new ErrorHandler("Este producto no existe", 404));
-      let response: any | null = await this.productUseCase.getRandomProductsByCategory(category, productDetail._id, this.onlineStoreHouse);
-      this.invoke(response, 200, res, "", next);
+      const category = productDetail?.category._id;      
+      if (productDetail == null) return next(new ErrorHandler("Este producto no existe", 404));      
+      let response: any | null = await this.productUseCase.getRandomProductsByCategory(category, productDetail._id, this.onlineStoreHouse);      
+      this.invoke(response, 200, res, "", next);      
     } catch (error) {
       console.log(error, 'ok');
       next(new ErrorHandler("Hubo un error al obtener la información", 500));

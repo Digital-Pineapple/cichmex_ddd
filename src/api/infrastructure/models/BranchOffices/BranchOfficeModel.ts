@@ -107,8 +107,12 @@ const BranchOfficeSchema = new mongoose.Schema<BranchOfficeEntity>(
       type:Boolean,
       required:false,
       default:true,
-    }
-
+    }, 
+    tag: {
+      type: String,
+      required: false,       
+    }   
+  
   },
   {
     versionKey: false,

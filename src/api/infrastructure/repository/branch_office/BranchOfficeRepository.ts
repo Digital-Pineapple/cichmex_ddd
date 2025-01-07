@@ -36,6 +36,8 @@ export class BranchOfficeRepository extends MongoRepository implements BranchOff
     async createOneBranchOffice(body: Object): Promise<BranchOfficeEntity | null> {
         return await this.createOne(body);
     }
-   
+    async getCichmexBranches(): Promise<BranchOfficeEntity[] | null> {
+        return await this.findAll({ tag : "cichmex"});
+    }   
 
 }

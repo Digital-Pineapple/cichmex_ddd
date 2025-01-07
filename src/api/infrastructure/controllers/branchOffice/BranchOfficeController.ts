@@ -55,6 +55,15 @@ export class BranchOfficeController extends ResponseData {
         }
     }
 
+    public async getCichmexBranches(req: Request, res: Response, next: NextFunction) {
+        try {
+            const response = await this.branchOfficeUseCase;
+            this.invoke(response, 200, res, "", next);
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+
     public async getBranchOfficesInfo(req: Request, res: Response, next: NextFunction) {
         try {
             // Obtener la información de las sucursales
