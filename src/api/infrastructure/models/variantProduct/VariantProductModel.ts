@@ -12,6 +12,10 @@ const VariantImageSchema = new Schema<ProductImageEntity>(
       url: {
         type: String,
         required: false
+      },
+      color:{
+        type:String,
+        required:false
       }
     },
     {
