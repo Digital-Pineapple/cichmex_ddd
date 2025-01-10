@@ -853,7 +853,7 @@ export class ProductController extends ResponseData {
           imageUrlsByColor[color] = await Promise.all(
             files.map(async (file: Express.Multer.File, fileIndex: number) => {
               const uniqueFileName = `${Date.now()}-${color}-${fileIndex}`;
-              const pathObject = `${this.path}/${uniqueFileName}`;
+              const pathObject = `${this.path}/${uniqueFileName}.webp`;
               const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, file, "image/webp");
               return { url: url.split("?")[0], color: color };
             })
@@ -894,8 +894,22 @@ export class ProductController extends ResponseData {
         })
       );
   
-      const response = await this.productUseCase.getProduct(id);
-      this.invoke(response, 200, res, "Variantes agregadas exitosamente", next);
+      const response: any = await this.productUseCase.getProduct(id)
+      const variantsAll: any = await this.variantProductUseCase.findAllVarinatsByProduct(id);
+
+      // Espera a que todas las promesas se resuelvan
+      const newVariants = await Promise.all(
+        variantsAll.map(async (variant: any) => {
+          const stockVariant = await this.stockStoreHouseUseCase.getVariantStock(
+            variant._id,
+            this.onlineStoreHouse
+          );
+          return { ...variant._doc, stock: stockVariant.stock };
+        })
+      );
+      const AllResponse = { ...response._doc, variants: newVariants }
+
+      this.invoke(AllResponse, 200, res, "Variantes agregadas  exitosamente", next);
     } catch (error) {
       console.error("Error al agregar variantes:", error);
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));

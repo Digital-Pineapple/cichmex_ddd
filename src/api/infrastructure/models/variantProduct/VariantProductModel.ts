@@ -20,7 +20,7 @@ const VariantImageSchema = new Schema<ProductImageEntity>(
     },
     {
         versionKey: false,
-        timestamps: true
+        timestamps: false
     }
   
   )
