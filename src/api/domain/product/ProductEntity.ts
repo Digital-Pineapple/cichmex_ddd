@@ -88,6 +88,7 @@ export interface ProductOrderEntity {
   download_ticket?: string;
   createdAt: NativeDate;
   updatedAt: NativeDate;
+  typeDelivery?: string;
 }
 
 export interface ILocationOrder {
