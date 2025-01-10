@@ -89,6 +89,7 @@ export interface ProductOrderEntity {
   createdAt: NativeDate;
   updatedAt: NativeDate;
   typeDelivery?: string;
+  origin?: string;
 }
 
 export interface ILocationOrder {

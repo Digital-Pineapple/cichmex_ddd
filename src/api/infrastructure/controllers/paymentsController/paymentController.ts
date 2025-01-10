@@ -325,6 +325,7 @@ export class PaymentController extends ResponseData {
     public async createPaymentProductMP(req: Request, res: Response, next: NextFunction) {
         const { products, branch_id, infoPayment, productsOrder, location, typeDelivery, subtotal, shipping_cost, discount } = req.body;
         const user = req.user
+        const origin = req.headers["x-origin"];          
         const access_token = config.MERCADOPAGO_TOKEN;
         const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
         const payment1 = new Payment(client);
@@ -431,6 +432,7 @@ export class PaymentController extends ResponseData {
                         payment_status: payment?.status,
                         download_ticket: payment?.transaction_details?.external_resource_url,
                         order_id: createPayment?.order_id,
+                        origin: origin,
                     };
 
                     if (typeDelivery === 'homedelivery') {
@@ -490,7 +492,7 @@ export class PaymentController extends ResponseData {
         const uuid4 = generateUUID();
         const order_id = RandomCodeId('CIC');
         const user = req.user;
-
+        const origin = req.headers["x-origin"];                
         try {
             // Verificación de existencia de productos
             await Promise.all(
@@ -537,6 +539,7 @@ export class PaymentController extends ResponseData {
                 paymentType: 'transfer',
                 payment_status: response1.payment_status,
                 order_id: order_id,
+                origin: origin,
             };
 
             // Configuración de la entrega según el tipo
