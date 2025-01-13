@@ -85,7 +85,16 @@ const payments = {
                 "$ref": "#/components/schemas/AddressEntity"
             },
             description: "direccion del usuario para envio a domicilio",
-        }
+        },
+        {
+            name: "X-Origin",
+            in: "headers",
+            required: true,
+            schema: {
+                "type": "string"
+            },
+            description: "direccion de origen [web, mobile]",
+        },
       ],
     },
   },
@@ -174,6 +183,15 @@ const payments = {
             },
             description: "tipo de envio: [homedelivery, pickup]",
           },
+          {
+            name: "X-Origin",
+            in: "headers",
+            required: true,
+            schema: {
+                "type": "string"
+            },
+            description: "direccion de origen [web, mobile]",
+        },
       ],
     },
   },

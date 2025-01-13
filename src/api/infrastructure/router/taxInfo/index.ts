@@ -16,7 +16,7 @@ const taxInfoController     = new TaxInfoController(taxInfoUseCase,s3Service);
 
 taxInfoRouter
 .get('/', userValidations.authTypeUserValidation([ 'SUPER-ADMIN']), taxInfoController.getAllTaxInfo)
-.get('/:id', userValidations.authTypeUserValidation(['CUSTOMER' ]), taxInfoController.getOneTaxInfo)
+.get('/user', userValidations.authTypeUserValidation(['CUSTOMER' ]), taxInfoController.getOneTaxInfo)
 .post('/addMyTaxInfo', userValidations.authTypeUserValidation([ 'CUSTOMER' ]), taxInfoController.createMyTaxInfo)
 .post('/', userValidations.authTypeUserValidation([  'SUPER-ADMIN', 'ADMIN', 'CUSTOMER' ]), taxInfoController.updateMyTaxInfo)
 .post('/:id', userValidations.authTypeUserValidation([  'SUPER-ADMIN', 'ADMIN' ]), taxInfoController.updateOneTaxInfo)

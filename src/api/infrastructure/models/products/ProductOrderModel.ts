@@ -99,6 +99,11 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       type: String,
       enum: ['homedelivery', 'pickup'],
       required: false
+    },
+    origin: {
+      type: String,
+      required: false,
+      enum: ['web', 'mobile']
     }
   },
   {
