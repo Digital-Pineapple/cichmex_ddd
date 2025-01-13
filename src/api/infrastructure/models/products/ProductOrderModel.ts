@@ -94,6 +94,16 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
     paymentType: {
       type: Object,
       required: false,
+    },
+    typeDelivery: {
+      type: String,
+      enum: ['homedelivery', 'pickup'],
+      required: false
+    },
+    origin: {
+      type: String,
+      required: false,
+      enum: ['web', 'mobile']
     }
   },
   {

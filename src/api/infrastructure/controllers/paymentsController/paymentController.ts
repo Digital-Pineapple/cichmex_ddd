@@ -323,8 +323,9 @@ export class PaymentController extends ResponseData {
         return properties.join(" ");
     }  
     public async createPaymentProductMP(req: Request, res: Response, next: NextFunction) {
-        const { products, branch_id, infoPayment, productsOrder, location, typeDelivery } = req.body;
+        const { products, branch_id, infoPayment, productsOrder, location, typeDelivery, subtotal, shipping_cost, discount } = req.body;
         const user = req.user
+        const origin = req.headers["x-origin"];          
         const access_token = config.MERCADOPAGO_TOKEN;
         const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
         const payment1 = new Payment(client);
@@ -422,23 +423,26 @@ export class PaymentController extends ResponseData {
                         payment: createPayment?._id,
                         uuid: createPayment?.uuid,
                         products: productsOrder,
-                        discount: infoPayment.discount,
-                        subTotal: infoPayment.subtotal,
+                        discount: discount,
+                        subTotal: subtotal,
                         total: infoPayment.formData.transaction_amount,
                         user_id: user._id,
-                        shipping_cost: infoPayment.shipping_cost,
+                        shipping_cost: shipping_cost,
                         paymentType: infoPayment.paymentType,
                         payment_status: payment?.status,
                         download_ticket: payment?.transaction_details?.external_resource_url,
                         order_id: createPayment?.order_id,
+                        origin: origin,
                     };
 
                     if (typeDelivery === 'homedelivery') {
                         values1['deliveryLocation'] = location;
+                        values1["typeDelivery"] = "homedelivery";
                     }
                     if (typeDelivery === 'pickup') {
                         values1['branch'] = branch_id;
                         values1['point_pickup_status'] = false;
+                        values1["typeDelivery"] = "pickup";
                     }
                     // if (payment?.status === 'approved') {
                     await Promise.all(
@@ -488,7 +492,7 @@ export class PaymentController extends ResponseData {
         const uuid4 = generateUUID();
         const order_id = RandomCodeId('CIC');
         const user = req.user;
-
+        const origin = req.headers["x-origin"];                
         try {
             // Verificación de existencia de productos
             await Promise.all(
@@ -535,14 +539,17 @@ export class PaymentController extends ResponseData {
                 paymentType: 'transfer',
                 payment_status: response1.payment_status,
                 order_id: order_id,
+                origin: origin,
             };
 
             // Configuración de la entrega según el tipo
             if (typeDelivery === 'homedelivery') {
                 values1.deliveryLocation = location;
+                values1["typeDelivery"] = "homedelivery";
             } else if (typeDelivery === 'pickup') {
                 values1.branch = branch_id;
                 values1.point_pickup_status = false;
+                values1["typeDelivery"] = "pickup";
             }
 
             try {

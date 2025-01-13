@@ -15,7 +15,11 @@ export interface DiscountCouponEntity {
     min_cart_amount?: number;
     max_cart_amount?: number;
     categories?: string[];
-    status?: boolean;
+    // creatorId?:ObjectId;
+    // isActive?: boolean;
+     status: boolean;
+    // maxUses: number;
+    // usedCount
 }
 
 export interface ConsumeCouponEntity{

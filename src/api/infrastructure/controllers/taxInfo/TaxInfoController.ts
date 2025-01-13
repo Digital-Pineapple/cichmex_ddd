@@ -43,13 +43,12 @@ export class TaxInfoController extends ResponseData {
     }
     public async createMyTaxInfo(req: Request, res: Response, next: NextFunction) {
         const { _id } = req.user;
-        const { values } = req.body
+        const { values } = req.body                
         try {
             const response = await this.taxInfoUseCase.createTaxInfo(_id, {...values, user:_id})
             this.invoke(response, 200, res, 'Se actualizó correctamente', next)
         } catch (error) {
-            console.log(error);
-            
+            console.log(error);            
             next(new ErrorHandler('Hubo un error al crear ', 500));
         }
     }

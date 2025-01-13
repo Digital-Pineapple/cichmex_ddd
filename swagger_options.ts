@@ -1,4 +1,4 @@
-import { branchoffice, category, subcategory, auth, user, cart, product, orders, address } from "./swaggerdocs";
+import { branchoffice, category, subcategory, auth, user, cart, product, orders, address, payments } from "./swaggerdocs";
 export const options = {
   definition: {
     openapi: "3.0.0",
@@ -218,7 +218,8 @@ export const options = {
       ...category,
       ...subcategory,
       ...branchoffice,      
-      ...address
+      ...address,
+      ...payments
     },
   },
   apis: ["./src/shared/infrastructure/routes/Router.ts"],

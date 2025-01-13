@@ -44,6 +44,7 @@ export interface ProductEntity {
 export interface ProductImageEntity {
   _id: ObjectId,
   url: string;
+  color?: string;
   status: boolean;
 }
 export interface ProductVideoEntity {
@@ -87,6 +88,8 @@ export interface ProductOrderEntity {
   download_ticket?: string;
   createdAt: NativeDate;
   updatedAt: NativeDate;
+  typeDelivery?: string;
+  origin?: string;
 }
 
 export interface ILocationOrder {
