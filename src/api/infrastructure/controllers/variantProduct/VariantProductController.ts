@@ -9,6 +9,9 @@ import { ProductEntity } from '../../../domain/product/ProductEntity';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 import { log } from 'console';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
+import { randomUUID } from 'crypto';
+import { generateUUID, RandomCodeId } from '../../../../shared/infrastructure/validation/Utils';
+import { StockSHinputUseCase } from '../../../application/storehouse/stockSHinputUseCase';
 
 
 
@@ -16,6 +19,7 @@ export class VariantProductController extends ResponseData {
   protected path = '/variant-product';
   constructor(private readonly variantProductUseCase: VariantProductUseCase,
     private readonly stockStoreHouseUseCase: StockStoreHouseUseCase,
+    private readonly stockSHinputUseCase : StockSHinputUseCase,
     private readonly s3Service: S3Service,
 
   ) {
@@ -25,6 +29,7 @@ export class VariantProductController extends ResponseData {
     this.updateVariant = this.updateVariant.bind(this);
     this.updateImages = this.updateImages.bind(this);
     this.deleteVariant = this.deleteVariant.bind(this);
+    this.createVariantSize = this.createVariantSize.bind(this)
     this.deleteImageVariant = this.deleteImageVariant.bind(this)
 
   }
@@ -38,6 +43,80 @@ export class VariantProductController extends ResponseData {
       next(new ErrorHandler('Hubo un error al consultar la información', 500));
     }
   }
+
+  public async createVariantSize(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const {body} = req.body; // Corregido acceso al cuerpo de la solicitud
+    const { _id } = req.user;
+    const stockParse = JSON.parse(body.stock)
+  
+    try {
+      // Validación de datos entrantes
+      if (!body.product_id || !body.color || !body.size || !stockParse) {
+        return next(new ErrorHandler('Faltan datos obligatorios', 400));
+      }
+  
+      // Buscar variantes existentes por producto
+      const variants = await this.variantProductUseCase.findAllVarinatsByProduct(body.product_id);
+  
+      // Filtrar por color
+      const mimeColor = variants?.filter((i: any) => i.attributes.color === body.color);
+  
+      if (!mimeColor || mimeColor.length === 0) {
+        return next(new ErrorHandler('No se encontraron variantes para el color proporcionado', 404));
+      }
+  
+      const images = mimeColor[0].images;
+      const productId = mimeColor[0].product_id;
+      const SH_id = '662fe69b9ba1d8b3cfcd3634';
+      const folio = RandomCodeId('IN');
+  
+      // Valores para crear la variante
+      const values = {
+        product_id: productId,
+        sku: generateUUID(),
+        attributes: { color: body.color, size: body.size },
+        design: body.design,
+        images: images,
+        price: body.price,
+        discountPrice: body.discountPrice,
+        porcentDiscount: body.porcentDiscount,
+        weight: body.weight,
+        tag: body.tag,
+      };
+  
+      // Crear variante de producto
+      const variant : any = await this.variantProductUseCase.CreateVariant(values);
+  
+      // Crear stock para la variante
+      await this.stockStoreHouseUseCase.createStock({
+        StoreHouse_id: SH_id,
+        product_id: productId,
+        variant_id: variant._id,
+        stock: body.stock, // Corregido el error tipográfico
+      });
+  
+      // Registrar entrada en el almacén
+      await this.stockSHinputUseCase.createInput({
+        folio: folio,
+        SHStock_id: SH_id,
+        quantity: body.stock,
+        newQuantity: body.stock,
+        responsible: _id,
+        product_detail: productId,
+      });
+  
+      // Enviar respuesta al cliente
+      this.invoke(variant, 200, res, 'Se creó con éxito', next);
+    } catch (error) {
+      console.error('Error en createVariantSize:', error);
+      next(new ErrorHandler('Hubo un error al procesar la solicitud', 500));
+    }
+  }
+  
 
   public async updateVariant(req: Request, res: Response, next: NextFunction): Promise<VariantProductEntity | ErrorHandler | void> {
     const { id } = req.params
