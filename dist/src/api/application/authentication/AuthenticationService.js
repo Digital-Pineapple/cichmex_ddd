@@ -89,7 +89,7 @@ class Authentication {
             return new Promise((resolve, reject) => {
                 const payload = { uuid };
                 jsonwebtoken_1.default.sign(payload, process.env.SECRET_JWT_KEY || '', {
-                    expiresIn: '24h',
+                    expiresIn: '3d',
                 }, (error, token) => {
                     if (error)
                         return reject('Error to generate JWT');
