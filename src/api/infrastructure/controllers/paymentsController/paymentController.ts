@@ -22,6 +22,7 @@ import mongoose from 'mongoose';
 import { errorMonitor } from 'nodemailer/lib/xoauth2';
 import { InfoPayment } from '../../../../shared/domain/PopulateInterfaces';
 import { log } from 'console';
+import { getProperties } from '../../../../helpers/products';
 
 
 export class PaymentController extends ResponseData {
@@ -178,18 +179,15 @@ export class PaymentController extends ResponseData {
     }
 
     public async createLMP(req: Request, res: Response, next: NextFunction) {
-        const { values, user_id } = req.body;
-
+        const { products, user_id } = req.body;
         try {
-            const { response, success, message } = await this.mpService.createLinkMP(values, user_id);
-
-            if (success === true) {
+            const { response, success, message } = await this.mpService.createLinkMP(products);
+            if(success){
                 this.invoke(response?.init_point, 201, res, '', next);
             } else {
                 next(new ErrorHandler(`Error: ${message}`, 500)); // Enviar error al siguiente middleware
             }
         } catch (error) {
-
             next(new ErrorHandler('Error', 500)); // Enviar error al siguiente middleware
         }
     }
@@ -315,13 +313,13 @@ export class PaymentController extends ResponseData {
         }
 
     }
-    public getProperties = (props: any) => {    
-        const array = Object.entries(props) || [];
-        const properties = array
-           .filter(([key, value]) => value !== null && value !== "N/A" && key !== "_id" && key !== "createdAt" && key !== "updatedAt")
-           .map(([_, value]) => value);
-        return properties.join(" ");
-    }  
+    // public getProperties = (props: any) => {    
+    //     const array = Object.entries(props) || [];
+    //     const properties = array
+    //        .filter(([key, value]) => value !== null &&  value !== "false" && value !== false  && value !== "N/A" && key !== "_id" && key !== "createdAt" && key !== "updatedAt")
+    //        .map(([_, value]) => value);
+    //     return properties.join(" ");
+    // }  
     public async createPaymentProductMP(req: Request, res: Response, next: NextFunction) {
         const { products, branch_id, infoPayment, productsOrder, location, typeDelivery, subtotal, shipping_cost, discount } = req.body;
         const user = req.user
@@ -343,7 +341,7 @@ export class PaymentController extends ResponseData {
             const productPrice = product?.porcentDiscount ? product?.discountPrice : product?.price; 
             const newItem = {
               id:  product._id,
-              title: product.name + (isVariant ? this.getProperties(variant?.attributes) : ""),
+              title: product.name + (isVariant ? getProperties(variant?.attributes) : ""),
               unit_price: isVariant ? variantPrice : productPrice,
               picture_url:  isVariant ? variant.images[0].url : product.images[0].url,
               quantity: quantity
@@ -358,7 +356,7 @@ export class PaymentController extends ResponseData {
                     let name = product.item.name;                     
                     if(isVariant){
                        available = await this.stockStoreHouseUseCase.getVariantStock(product.variant._id)                           
-                       name = name + this.getProperties(product.variant.attributes)
+                       name = name + getProperties(product.variant.attributes)
                     }else{
                         available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);                          
                     }
@@ -502,7 +500,7 @@ export class PaymentController extends ResponseData {
                     let name = product.item.name; 
                     if(isVariant){
                        available = await this.stockStoreHouseUseCase.getVariantStock(product.variant._id)                           
-                       name = name + this.getProperties(product?.variant?.attributes)
+                       name = name + getProperties(product?.variant?.attributes)
                     }else{
                         available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);                          
                     }

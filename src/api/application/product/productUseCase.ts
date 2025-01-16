@@ -75,5 +75,8 @@ export class ProductUseCase {
   public async getProductsBySubCategory(subcategoryId: ObjectId, storehouse: string, queryparams: Object): Promise<ProductEntity[] | ErrorHandler | null> {
     return this.productRepository.findProductsBySubCategory(subcategoryId, storehouse, queryparams)
   }
+  public async getNewlyAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
+    return this.productRepository.findNewlyAddedProducts()
+  }
 
 }

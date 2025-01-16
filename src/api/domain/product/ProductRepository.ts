@@ -15,5 +15,6 @@ export interface ProductRepository extends MongoRepository {
     findSearchProducts(search: string, page: number): Promise<ProductEntity[] | ErrorHandler | null>
     findProductsByCategory(categoryId: ObjectId, storehouse: string, queryparams: Object): Promise<ProductEntity[] | ErrorHandler | null>
     findProductsBySubCategory(categoryId: ObjectId, storehouse: string, queryparams: Object): Promise<ProductEntity[] | ErrorHandler | null>
+    findNewlyAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null>
 
 }
