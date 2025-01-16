@@ -64,7 +64,7 @@ paymentRouter
     .get("/expired/sales", userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), paymentController.autoCancelPO)
     .post('/addTicket', paymentValidation.ImageValidation, userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.addTicket)
     .post('/rejectTicket', paymentValidation.ImageValidation, userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), paymentController.rejectProofOfPayment)
-    .post('/', paymentValidation.paymentValidation, paymentController.createLMP)
+    .post('/createPreferenceMP', paymentValidation.paymentValidation, paymentController.createLMP)
     .post('/Membership-Pay', paymentController.createPaymentMP)
     .post('/Products-Pay', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.createPaymentProductMP)
     .post('/transfer-payment', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.transferPayment)

@@ -1,6 +1,7 @@
 import { config } from '../../../../config';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import moment, { ISO_8601 } from 'moment'
+import { getProperties } from '../../../helpers/products';
 
 export class MPService {
     private access_token: string;
@@ -15,22 +16,31 @@ export class MPService {
         this.payment = new Payment(client);
     }
 
-    async createLinkMP(item: any, user_id: string) {
+    async createLinkMP(items: any) {
         const path = process.env.PATH_MP;
         const path_notification = process.env.URL_NOTIFICATION;
+        const itemsMP = items.map((item: any) => {
+            const variant = item?.variant ?? null;
+            const product = item.item;
+            const quantity = item.quantity;
+            const isVariant = Boolean(variant);
+            const variantPrice = variant?.porcentDiscount ? variant?.discountPrice : variant?.price;
+            const productPrice = product?.porcentDiscount ? product?.discountPrice : product?.price; 
+            const newItem = {
+              id:  product._id,
+              title: product.name + (isVariant ? getProperties(variant?.attributes) : ""),
+              unit_price: isVariant ? variantPrice : productPrice,
+              picture_url:  isVariant ? variant.images[0].url : product.images[0].url,
+              quantity: quantity
+            };
+            return  newItem           
+        });          
 
         try {
             const response = await this.preference.create({
                 body: {
-                    items: [
-                        {
-                            id: item._id,
-                            title: item?.name,
-                            unit_price: item?.price_discount,
-                            quantity: 1,
-                        },
-                    ],
-                    payer: { name: user_id },
+                    items: itemsMP,
+                    // payer: { name: user_id },
                     back_urls: {
                         success: `${path}/PagoExitoso`,
                         failure: `${path}/inicio`,

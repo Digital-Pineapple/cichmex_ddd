@@ -124,7 +124,7 @@ export class Authentication {
         return new Promise((resolve, reject) => {
             const payload: string | object | Buffer = {uuid};
             Jwt.sign(payload, process.env.SECRET_JWT_KEY || '', {
-                expiresIn: '24h',
+                expiresIn: '3d',
             }, (error, token) => {
                 if (error)  return reject('Error to generate JWT');
                 resolve({ token, user });
