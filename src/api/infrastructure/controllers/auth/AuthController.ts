@@ -20,6 +20,7 @@ import { sendCodeMail } from '../../../../shared/infrastructure/nodemailer/email
 import { google } from 'googleapis';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import { TypeUserEntity } from '../../../domain/typeUser/TypeUserEntity';
+import { verifyCaptcha } from '../../../../shared/infrastructure/validation/ValidateAuthentication';
 
 
 export class AuthController extends ResponseData {
@@ -58,8 +59,16 @@ export class AuthController extends ResponseData {
     }
 
     public async login(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {            
-        const { email, password } = req.body;
+        const { email, password, captchaToken } = req.body;
         try {
+            
+            const isValidCaptcha = await verifyCaptcha(captchaToken);
+      
+
+            if (!isValidCaptcha) {
+                next(new ErrorHandler('Captcha inválido', 500));
+              }
+              
             const response: any = await this.authUseCase.signIn(email, password);
 
             if (!(response instanceof ErrorHandler) && response.user.profile_image !== undefined) {
@@ -287,15 +296,21 @@ export class AuthController extends ResponseData {
 
 
     public async revalidateToken(req: Request, res: Response, next: NextFunction) {
+        
         // #swagger.tags = ['Auth']
         const user = req.user;
         try {
             const userInfo = await this.authUseCase.findUser({ email: user.email, status: true });
-            const url = await this.s3Service.getUrlObject(userInfo.profile_image + ".jpg")
-            userInfo.profile_image = url
+            if (userInfo.profile_image) {
+                
+                const url = await this.s3Service.getUrlObject(userInfo.profile_image + ".jpg")
+                userInfo.profile_image = url
+            }
             const response = await this.authUseCase.generateToken(userInfo, userInfo.uuid);
+            
             this.invoke(response, 200, res, '', next);
         } catch (error) {
+            
             next(new ErrorHandler('Hubo un error al generar el token', 500));
         }
     }

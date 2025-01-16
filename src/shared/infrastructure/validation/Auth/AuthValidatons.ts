@@ -41,4 +41,5 @@ export class AuthValidations {
         validateAuthentication,
         this.upload.fields(this.arrayOfFiles),
     ]
+  
 }

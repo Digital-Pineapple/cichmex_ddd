@@ -14,6 +14,7 @@ const ErrorHandler_1 = require("../../../../shared/domain/ErrorHandler");
 const ResponseData_1 = require("../../../../shared/infrastructure/validation/ResponseData");
 const Utils_1 = require("../../../../shared/infrastructure/validation/Utils");
 const emailer_1 = require("../../../../shared/infrastructure/nodemailer/emailer");
+const ValidateAuthentication_1 = require("../../../../shared/infrastructure/validation/ValidateAuthentication");
 class AuthController extends ResponseData_1.ResponseData {
     constructor(authUseCase, typeUserUseCase, shoppingCartUseCase, s3Service, twilioService, mpService) {
         super();
@@ -48,8 +49,12 @@ class AuthController extends ResponseData_1.ResponseData {
     }
     login(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { email, password } = req.body;
+            const { email, password, captchaToken } = req.body;
             try {
+                const isValidCaptcha = yield (0, ValidateAuthentication_1.verifyCaptcha)(captchaToken);
+                if (!isValidCaptcha) {
+                    next(new ErrorHandler_1.ErrorHandler('Captcha inválido', 500));
+                }
                 const response = yield this.authUseCase.signIn(email, password);
                 if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image !== undefined) {
                     response.user.profile_image ?
@@ -283,8 +288,10 @@ class AuthController extends ResponseData_1.ResponseData {
             const user = req.user;
             try {
                 const userInfo = yield this.authUseCase.findUser({ email: user.email, status: true });
-                const url = yield this.s3Service.getUrlObject(userInfo.profile_image + ".jpg");
-                userInfo.profile_image = url;
+                if (userInfo.profile_image) {
+                    const url = yield this.s3Service.getUrlObject(userInfo.profile_image + ".jpg");
+                    userInfo.profile_image = url;
+                }
                 const response = yield this.authUseCase.generateToken(userInfo, userInfo.uuid);
                 this.invoke(response, 200, res, '', next);
             }

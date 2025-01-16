@@ -62,49 +62,33 @@ export class ProductController extends ResponseData {
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
-    try {
-      const response = await this.productUseCase.getProducts();
-      // if (!(response instanceof ErrorHandler)) {
-      //   const updatedResponse = await Promise.all(
-      //     response.map(async (item: any) => {
-      //       const images = item.images;
-      //       const updatedImages = await Promise.all(
-      //         images.map(async (image: any) => {
-      //           const url = await this.s3Service.getUrlObject(
-      //             image + ".jpg"
-      //           );
-      //           return url;
-      //         })
-      //       );
-      //       const video = item.video
-      //       const video_url = await this.s3Service.getUrlObject(
-      //         video + ".mp4"
-      //       )
-      //       const thumbnail = item.thumbnail
-      //       if (typeof thumbnail === 'string' && thumbnail.startsWith("https://")) {
-      //         item.thumbnail = thumbnail;
-      //       }
-      //       if (thumbnail) {
-      //         item.thumbnail = await this.s3Service.getUrlObject(
-      //           (thumbnail) + ".jpg"
-      //         );
-      //       }
+  try {
+    // Obtener todos los productos
+    const response = await this.productUseCase.getProducts();
+    if (!(response instanceof ErrorHandler)) {
+      // Actualizar las variantes de cada producto en paralelo
+      await Promise.all(
+        response.map(async (item: any) => {
+          // Buscar variantes asociadas al producto
+          const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(item._id);
 
-      // const updatedVideos = await Promise.all(
-      //   videos.map(async (video: any) => {
-
-      //     if (typeof video.url === 'string' && video.url.startsWith("https://")) {
-      //       return video; // Retorna el video original si la URL ya es válida
-      //     }
-
-      //   this.invoke(updatedResponse, 200, res, "", next);
-      // }
-      this.invoke(response, 200, res, "", next);
-    } catch (error) {
-      console.log(error);
-      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+          // Verificar si hay variantes válidas
+          if (Array.isArray(variants) && variants.length > 0) {
+            await this.productUseCase.updateProduct(item._id, { has_variants: true });
+          }
+        })
+      );
     }
+
+    // Enviar la respuesta
+    this.invoke(response, 200, res, "", next);
+  } catch (error) {
+    console.error(error);
+    // Manejo de errores
+    next(new ErrorHandler("Hubo un error al consultar la información", 500));
   }
+}
+
 
 
   public async getProduct(req: Request, res: Response, next: NextFunction) {
@@ -805,6 +789,13 @@ export class ProductController extends ResponseData {
     const { variants } = req.body;
     const user = req.user;
     const SH_id = "662fe69b9ba1d8b3cfcd3634";
+    const folio = RandomCodeId('PR')
+    const UserInfo = {
+      _id: user._id,
+      fullname: user.fullname,
+      email: user.email,
+      type_user: user.type_user,
+  };
   
     if (!variants || !Array.isArray(variants)) {
       return next(new ErrorHandler("Variantes no proporcionadas o inválidas", 400));
@@ -864,7 +855,7 @@ export class ProductController extends ResponseData {
   
       // Procesar las variantes y asignar las imágenes
       await Promise.all(
-        parsedVariants.map(async (variant: VariantProductEntity, variantIndex: number) => {
+        parsedVariants.map(async (variant: any, variantIndex: number) => {
           try {
             const sku = generateUUID();
             const addVariant: any = await this.variantProductUseCase.CreateVariant({
@@ -873,14 +864,21 @@ export class ProductController extends ResponseData {
               product_id: id,
             });
   
-            // Manejo de stock
-            const stock = typeof variant.weight === "string" ? JSON.parse(variant.weight) : variant.weight;
-            await this.stockStoreHouseUseCase.createStock({
+            const stock = variant.stock
+            const SHStock = await this.stockStoreHouseUseCase.createStock({
               StoreHouse_id: SH_id,
               product_id: id,
               variant_id: addVariant._id,
               stock,
             });
+            await this.stockSHinputUseCase.createInput({
+              folio: folio,
+              SHStock_id: SHStock?._id,
+              quantity: stock,
+              newQuantity: stock,
+              responsible: UserInfo,
+              product_detail: id
+            })
   
             // Asignar imágenes a la variante por color
             const color : any = variant.attributes?.color; 
@@ -977,10 +975,8 @@ export class ProductController extends ResponseData {
   public async UpdateVariants(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const { variants } = req.body;
-
-
     const user = req.user;
-    const SH_id = '662fe69b9ba1d8b3cfcd3634';
+    const SH_id = "662fe69b9ba1d8b3cfcd3634";
 
     if (!id || !Array.isArray(variants)) {
       return next(new ErrorHandler("Datos inválidos para actualizar variantes", 400));

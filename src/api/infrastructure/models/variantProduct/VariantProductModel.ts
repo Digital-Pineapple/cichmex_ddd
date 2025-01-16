@@ -31,14 +31,16 @@ const AttributesSchema = new mongoose.Schema<AttributesVariantEntity>(
         color: {
             type: String,
             required: false,
+            default: null
         },
         size: {
             type: String,
-            default: false
+            default: null
 
-        }, material: {
+        },
+         material: {
             type: String,
-            default: false
+            default: null
 
         },
 
@@ -88,7 +90,8 @@ const variantProductSchema = new mongoose.Schema<VariantProductEntity>(
         currency: { type: String, required: false, default: 'MX' },
         weight: { type: Number, required: false },
         rating: { type: Number, required: false },
-        tag: {type:String, required: true}
+        tag: {type:String, required: true},
+        is_main:{type:Boolean, required:false, default: false}
 
     },
     {

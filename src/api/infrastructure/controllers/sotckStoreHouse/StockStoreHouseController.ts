@@ -63,7 +63,8 @@ export class StockStoreHouseController extends ResponseData {
             
             this.invoke(response, 200, res, '', next);
         } catch (error) {
-
+            console.log(error);
+            
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
@@ -154,7 +155,7 @@ export class StockStoreHouseController extends ResponseData {
             
                 const itemQuantity = Number(item.quantity);
 
-                const  stockMethod : any = async()  => isVariant ? await this.stockStoreHouseUseCase.getVariantStock(item._id,SH_id) : await this.stockStoreHouseUseCase.getProductStock(item._id, SH_id);
+                const  stockMethod : any = async()  => isVariant ?  await this.stockStoreHouseUseCase.getVariantStock(item._id,SH_id) : await this.stockStoreHouseUseCase.getProductStock(item._id, SH_id);
                 
                 if ( isNaN(itemQuantity) || itemQuantity < 0) {
                     throw new Error(`Datos incompletos `);
@@ -168,10 +169,7 @@ export class StockStoreHouseController extends ResponseData {
                     throw new Error(`El stock disponible no es válido para el producto ${item.name}`);
                 }
     
-                const newQuantity =  availableStock + itemQuantity ;
-                console.log(newQuantity);
-                
-    
+                const newQuantity =  availableStock + itemQuantity ;                
                 const response = available ? available : isVariant ?
                 await this.stockStoreHouseUseCase.createStock({
                    product_id: item.product_id,
@@ -193,6 +191,7 @@ export class StockStoreHouseController extends ResponseData {
                     folio: code_folio,
                     product_detail: item,
                 });
+                await this.stockStoreHouseUseCase.updateStock(available._id,{stock: newQuantity})
             };
     
             const operations = products.map(async (item: any) => {

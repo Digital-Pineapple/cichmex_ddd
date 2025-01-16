@@ -36,6 +36,8 @@ variantProductRouter
 .post('/',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.createVariant)
 .post ('/update/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.updateVariant)
 .post ('/addVariant/newSize',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.createVariantSize)
+.post ('/update-is-main/ok/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.updateIsMain)
+.post ('/update/oneVariant/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.updateIsMainOneVariant)
 .post ('/updateImages',productValidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.updateImages)
 .post('/delete-image/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.deleteImageVariant)
 .delete('/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.deleteVariant)

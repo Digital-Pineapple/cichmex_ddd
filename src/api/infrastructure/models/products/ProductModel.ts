@@ -157,6 +157,11 @@ const ProductSchema = new Schema<ProductEntity>(
       type:String,
       required:false,
     },
+    has_variants:{
+      type: Boolean,
+      required:false,
+      default:false
+    }
   },
   {
     versionKey: false,

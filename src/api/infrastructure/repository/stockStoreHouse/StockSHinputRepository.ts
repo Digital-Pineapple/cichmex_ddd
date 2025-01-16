@@ -34,37 +34,46 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
       { $unwind: "$SHStock" },
       {
         $lookup: {
-          from: "products",  // Quitar el signo de dólar
+          from: "products", // Asegúrate de que el nombre de la colección sea correcto
           localField: "SHStock.product_id",
           foreignField: "_id",
           as: "product"
         }
       },
+      { $unwind: "$product" },
       {
         $lookup: {
-          from: "variant-products",  // Quitar el signo de dólar
+          from: "variant-products", // Cambia a plural si el nombre de la colección lo requiere
           localField: "SHStock.variant_id",
           foreignField: "_id",
           as: "variant"
         }
       },
-      { $unwind: "$product" },
-
+      { $unwind: { path: "$variant", preserveNullAndEmptyArrays: true } }, // Evita errores si no hay variante
       {
         $project: {
-          _id: 0,  // Opcional: Excluye el _id del resultado
-          product_name: "$product.name", // Cambiar 'producto' a 'product'
-          tag:"$product.tag",
-          folio:"$folio",
+          _id: 0, // Excluye el _id si no lo necesitas
+          product_name: {
+            $concat: [
+              "$product.name",
+              " - ",
+              { $ifNull: ["$variant.attributes.size", ""] },
+              " - ",
+              { $ifNull: ["$variant.attributes.color", ""] }
+            ]
+          },
+          tag: "$product.tag",
+          folio: "$folio",
           quantity: "$quantity",
           newQuantity: "$newQuantity",
           nowStock: "$SHStock.stock",
           responsible: "$responsible.fullname",
+          variant_tag: "$variant.tag",
           date: {
             $dateToString: {
               format: "%Y-%m-%d %H:%M:%S",
               date: "$createdAt",
-              timezone: "America/Mexico_City"  // Convierte a la zona horaria de Ciudad de México
+              timezone: "America/Mexico_City"
             }
           }
         }

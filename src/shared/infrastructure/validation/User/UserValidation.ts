@@ -15,6 +15,8 @@ export class UserValidations {
     readonly authTypeUserValidation = (type_user: string | string[]) => [
         checkTypeUserAuth(Array.isArray(type_user) ? type_user : [type_user])
     ];
+
+    
     
 
 

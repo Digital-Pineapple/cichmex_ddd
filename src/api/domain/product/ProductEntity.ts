@@ -39,6 +39,7 @@ export interface ProductEntity {
   seoKeywords?: string[],
   condition ?: string,
   size_guide ?: SizeGuideEntity,
+  has_variants ?: boolean,
 }
 
 export interface ProductImageEntity {
