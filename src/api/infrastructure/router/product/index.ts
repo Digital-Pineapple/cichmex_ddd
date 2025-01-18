@@ -76,6 +76,6 @@ productRouter
   .post("/updateMainFeatures/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateMainFeatures)
   .post("/updateVariants/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.UpdateVariants)
   .post("/updateOrder/images/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updatePositionImages)
-  .get("/newlyAddedProducts", productController.getNewlyAddedProducts)
+  .get("/recentProducts/ok", productController.getRecentProducts)
 
 export default productRouter;

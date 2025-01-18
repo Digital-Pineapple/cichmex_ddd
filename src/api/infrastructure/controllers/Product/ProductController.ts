@@ -58,7 +58,7 @@ export class ProductController extends ResponseData {
     this.UpdateVariants = this.UpdateVariants.bind(this)
     this.updatePositionImages = this.updatePositionImages.bind(this);
     this.AddVariantsClothesShoes = this.AddVariantsClothesShoes.bind(this);
-    this.getNewlyAddedProducts = this.getNewlyAddedProducts.bind(this);
+    this.getRecentProducts = this.getRecentProducts.bind(this);
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
@@ -1137,12 +1137,13 @@ export class ProductController extends ResponseData {
     }
   }
 
-  public async getNewlyAddedProducts(req: Request, res: Response, next: NextFunction) {
+  public async getRecentProducts(req: Request, res: Response, next: NextFunction) {
     try {
-      const response = await this.productUseCase.getNewlyAddedProducts();    
+      const response = await this.productUseCase.getRecentAddedProducts();       
       this.invoke(response, 200, res, "", next);
+      // console.log("newly added");            
     } catch (error) {
-      console.log(error);
+      console.log(error);         
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
     }
   } 
