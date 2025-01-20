@@ -43,7 +43,7 @@ shoppingCartRouter
     .delete('/:id', userValidations.authTypeUserValidation(['CUSTOMER', 'ADMIN']), shoppingCartController.deleteShoppingCart)
     .delete('/product/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.deleteProductCart)
     .delete('/products/ok', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.emptyCart)
-    .post('/products/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.addToCart)
+    .post('/product/:id', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.addToCart)
     .put('/product/update-quantity', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.updateProductQuantity)
     .put('/product/replace-quantity', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.replaceProductQuantity)
     .put ('/merge/ok', userValidations.authTypeUserValidation(['CUSTOMER']), shoppingCartController.mergeCart) 

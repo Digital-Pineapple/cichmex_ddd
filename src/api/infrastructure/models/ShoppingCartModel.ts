@@ -10,6 +10,10 @@ const ShoppingCartSchema = new Schema<ShoppingCartEntity>({
     },
     products: [
         {
+          _id: {
+            type: "string", // Define explícitamente el ID del producto en el subdocumento
+            required: true // Asegúrate de que este campo sea obligatorio si deseas controlarlo manualmente
+          },
           item: {
             type: Schema.Types.ObjectId,
             required: true,

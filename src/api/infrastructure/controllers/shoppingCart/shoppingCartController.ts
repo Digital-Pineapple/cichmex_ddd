@@ -15,10 +15,12 @@ import { ShoppingCartEntity } from '../../../domain/shoppingCart/shoppingCartEnt
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { ShippingCostUseCase } from '../../../application/shippingCost/ShippingCostUseCase';
 import { VariantProductUseCase } from '../../../application/variantProduct/VariantProductUseCase';
+import { v4 as uuidv4 } from 'uuid';
 
 export class ShoppingCartController extends ResponseData {
     protected path = '/shoppingCart'
     private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634"
+    
 
     constructor(
         private shoppingCartUseCase: ShoppingCartUseCase,
@@ -80,8 +82,8 @@ export class ShoppingCartController extends ResponseData {
             const updatedResponse = {
                 ...responseData,
                 total_cart: totalCart,
-                shipping_cost: price,
-                totalWithShipping: totalCart + price
+                // shipping_cost: price,
+                // totalWithShipping: totalCart + price
             }                                                                    
             this.invoke(updatedResponse, 200, res, '', next);          
         } catch (error) {           
@@ -139,6 +141,7 @@ export class ShoppingCartController extends ResponseData {
         const user = req.user;
         const { quantity, variant_id = null } = req.body;        
         interface Product {
+            _id: string;
             item: ObjectId;
             variant?: ObjectId | null;
             quantity: number;
@@ -151,6 +154,7 @@ export class ShoppingCartController extends ResponseData {
             if (typeof quantity !== 'number') return next(new ErrorHandler('La cantidad debe ser un número', 400));                 
             let userCart;
             const newProduct : Product = {
+                _id: uuidv4(),
                 item: new ObjectId(id),
                 variant: null,
                 quantity: quantity
@@ -290,6 +294,7 @@ export class ShoppingCartController extends ResponseData {
                 const products: any = [];
                 parseProducts.forEach((product: any) => {
                     const producto : any = {
+                        _id: product._id,
                         item: new ObjectId(product.item),
                         variant: product?.variant ? new ObjectId(product?.variant) : null,
                         quantity: product.quantity
@@ -304,6 +309,7 @@ export class ShoppingCartController extends ResponseData {
                 parseProducts.map(async (product: any) => {
                     let stock;
                     const producto: any = {
+                        _id: product._id,
                         item: new ObjectId(product?.item),
                         variant: product?.variant ? new ObjectId(product?.variant) : null,
                         quantity: product.quantity,
