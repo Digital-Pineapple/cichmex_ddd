@@ -537,16 +537,55 @@ async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
     return result;
 }
 
-async findNewlyAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {  
-    const storehouseId = new ObjectId(this.onlineStoreHouse);  
+async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
+    const storehouseId = new ObjectId(this.onlineStoreHouse);
     const result = await this.MODEL.aggregate([
-        { $sort: { createdAt: -1 } }, // Ordenar por fecha de creación en orden descendente
-        { $limit: 15 }, 
+        // 1. Filtrar productos con status `true`
         {
             $match: {
-                status: true
+                status: true,
             },
         },
+        // 2. Ordenar por fecha de creación en orden descendente
+        {
+            $sort: {
+                createdAt: -1,
+            },
+        },
+        // 3. Limitar a los primeros 15 resultados
+        {
+            $limit: 12,
+        },
+        // 4. Buscar categorías y subcategorías asociadas
+        {
+            $lookup: {
+                from: 'categories',
+                localField: 'category',
+                foreignField: '_id',
+                as: 'category',
+            },
+        },
+        {
+            $unwind: {
+                path: '$category',
+                preserveNullAndEmptyArrays: true,
+            },
+        },
+        {
+            $lookup: {
+                from: 'subcategories',
+                localField: 'subCategory',
+                foreignField: '_id',
+                as: 'subCategory',
+            },
+        },
+        {
+            $unwind: {
+                path: '$subCategory',
+                preserveNullAndEmptyArrays: true,
+            },
+        },
+        // 5. Buscar variantes de cada producto
         {
             $lookup: {
                 from: 'variant-products',
@@ -555,7 +594,7 @@ async findNewlyAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
                 as: 'variants',
             },
         },
-        // 3. Determinar si tiene variantes activas
+        // 6. Determinar si tiene variantes activas
         {
             $addFields: {
                 hasVariants: {
@@ -563,7 +602,7 @@ async findNewlyAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
                 },
             },
         },
-        // 4. Buscar el stock de las variantes
+        // 7. Buscar el stock de las variantes
         {
             $lookup: {
                 from: 'storehousestocks',
@@ -623,7 +662,7 @@ async findNewlyAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
                 },
             },
         },
-        // 5. Si no tiene variantes, buscar el stock por `product_id`
+        // 8. Si no tiene variantes, buscar el stock por `product_id`
         {
             $lookup: {
                 from: 'storehousestocks',
@@ -654,7 +693,7 @@ async findNewlyAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
                 },
             },
         },
-        // 6. Consolidar variantes en un solo producto
+        // 9. Consolidar variantes en un solo producto
         {
             $project: {
                 variants: 1,
@@ -668,18 +707,18 @@ async findNewlyAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
                 images: 1,
                 discountPrice: 1,
                 porcentDiscount: 1,
-                status:1,
-                weight:1,
-                description:1,
-                slug:1,
-                shortDescription:1,
+                status: 1,
+                weight: 1,
+                description: 1,
+                slug: 1,
+                shortDescription: 1,
             },
         },
-       
     ]);
-    return result
 
+    return result;
 }
+
 
 
    async findRandomProductsByCategory(categoryId : any, skiproduct:any , storehouse: any ): Promise<ProductEntity[] | ErrorHandler | null> {

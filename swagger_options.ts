@@ -206,7 +206,200 @@ export const options = {
               example: true,
             },
           },
+        },        
+        "CartResponse": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "object",
+              "properties": {
+                "_id": { "type": "string", "example": "332a3ed1ce58cef8ae932456" },
+                "user_id": { "type": "string", "example": "332a3ed1ce58cef8ae932456" },
+                "products": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "item": {
+                        "type": "object",
+                        "properties": {
+                          "_id": { "type": "string", "example": "678a7ab92cd46fba828f330d" },
+                          "name": { "type": "string", "example": "product example" },
+                          "brand": { "type": "string", "example": "brand" },
+                          "category": { "type": "string", "example": "66a12abbf2162cfd3c599969" },
+                          "subCategory": { "type": "string", "example": "66a134d8f2162cfd3c599bfc" },
+                          "currency": { "type": "string", "example": "MX" },
+                          "status": { "type": "boolean", "example": true },
+                          "seoKeywords": { "type": "array", "items": { "type": "string" } },
+                          "gender": { "type": "string", "example": "Niñas" },
+                          "model": { "type": "string", "example": "generic" },
+                          "has_variants": { "type": "boolean", "example": true },
+                          "images": { "type": "array", "items": { "type": "object" } },
+                          "videos": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "url": { "type": "string", "example": "https://example.com/video.mp4" },
+                                "type": { "type": "string", "example": "horizontal" },
+                                "createdAt": { "type": "string", "format": "date-time" },
+                                "updatedAt": { "type": "string", "format": "date-time" },
+                                "_id": { "type": "string" }
+                              }
+                            }
+                          },
+                          "createdAt": { "type": "string", "format": "date-time" },
+                          "updatedAt": { "type": "string", "format": "date-time" },
+                          "size_guide": { "type": "string", "example": "6789551f6ca756671f567c5c" },
+                          "description": { "type": "string", "example": "213213" },
+                          "shortDescription": { "type": "string", "example": "short description" }
+                        }
+                      },
+                      "variant": {
+                        "type": "object",
+                        "nullable": true,
+                        "properties": {
+                          "_id": { "type": "string", "example": "678a7ad92cd46fba828f3318" },
+                          "product_id": { "type": "string", "example": "678a7ab92cd46fba828f330d" },
+                          "sku": { "type": "string", "example": "ee7a39b0-7fc6-4ece-bbeb-957b77b2224a" },
+                          "attributes": {
+                            "type": "object",
+                            "properties": {
+                              "color": { "type": "string", "example": "Púrpura" },
+                              "size": { "type": "string", "example": "Grande" },
+                              "material": { "type": "string", "nullable": true },
+                              "_id": { "type": "string" }
+                            }
+                          },
+                          "design": { "type": "string", "example": "" },
+                          "status": { "type": "boolean", "example": true },
+                          "price": { "type": "number", "example": 700 },
+                          "discountPrice": { "type": "number", "example": 700 },
+                          "porcentDiscount": { "type": "number", "example": 0 },
+                          "currency": { "type": "string", "example": "MX" },
+                          "weight": { "type": "number", "example": 70000 },
+                          "tag": { "type": "string", "example": "21321" },
+                          "is_main": { "type": "boolean", "example": true },
+                          "images": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "_id": { "type": "string" },
+                                "url": { "type": "string", "example": "https://example.com/image.jpeg" }
+                              }
+                            }
+                          },
+                          "createdAt": { "type": "string", "format": "date-time" },
+                          "updatedAt": { "type": "string", "format": "date-time" }
+                        }
+                      },
+                      "quantity": { "type": "number", "example": 1 },
+                      "_id": { "type": "string" },
+                      "stock": { "type": "number", "example": 10 }
+                    }
+                  }
+                },
+                // "memberships": { "type": "array", "items": { "type": "object" } },
+                "status": { "type": "boolean", "example": true },
+                "createdAt": { "type": "string", "format": "date-time" },
+                "updatedAt": { "type": "string", "format": "date-time" },
+                "total_cart": { "type": "number", "example": 70724 }
+              }
+            }
+          }
         },
+        Products: {
+          "type": "object",
+          "properties": {
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "_id": { "type": "string", "example": "678a7ab92cd46fba828f330d" },
+                      "name": { "type": "string", "example": "product example" },
+                      "brand": { "type": "string", "example": "brand" },
+                      "category": { "type": "string", "example": "66a12abbf2162cfd3c599969" },
+                      "subCategory": { "type": "string", "example": "66a134d8f2162cfd3c599bfc" },
+                      "currency": { "type": "string", "example": "MX" },
+                      "status": { "type": "boolean", "example": true },
+                      "seoKeywords": { "type": "array", "items": { "type": "string" } },
+                      "gender": { "type": "string", "example": "Niñas" },
+                      "model": { "type": "string", "example": "generic" },
+                      "has_variants": { "type": "boolean", "example": true },
+                      "images": { "type": "array", "items": { "type": "object" } },
+                      "videos": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "url": { "type": "string", "example": "https://example.com/video.mp4" },
+                            "type": { "type": "string", "example": "horizontal" },
+                            "createdAt": { "type": "string", "format": "date-time" },
+                            "updatedAt": { "type": "string", "format": "date-time" },
+                            "_id": { "type": "string" }
+                          }
+                        }
+                      },
+                      "createdAt": { "type": "string", "format": "date-time" },
+                      "updatedAt": { "type": "string", "format": "date-time" },
+                      "size_guide": { "type": "string", "example": "6789551f6ca756671f567c5c" },
+                      "description": { "type": "string", "example": "213213" },
+                      "shortDescription": { "type": "string", "example": "short description" }
+                    }
+                  },
+                  "variant": {
+                    "type": "object",
+                    "nullable": true,
+                    "properties": {
+                      "_id": { "type": "string", "example": "678a7ad92cd46fba828f3318" },
+                      "product_id": { "type": "string", "example": "678a7ab92cd46fba828f330d" },
+                      "sku": { "type": "string", "example": "ee7a39b0-7fc6-4ece-bbeb-957b77b2224a" },
+                      "attributes": {
+                        "type": "object",
+                        "properties": {
+                          "color": { "type": "string", "example": "Púrpura" },
+                          "size": { "type": "string", "example": "Grande" },
+                          "material": { "type": "string", "nullable": true },
+                          "_id": { "type": "string" }
+                        }
+                      },
+                      "design": { "type": "string", "example": "" },
+                      "status": { "type": "boolean", "example": true },
+                      "price": { "type": "number", "example": 700 },
+                      "discountPrice": { "type": "number", "example": 700 },
+                      "porcentDiscount": { "type": "number", "example": 0 },
+                      "currency": { "type": "string", "example": "MX" },
+                      "weight": { "type": "number", "example": 70000 },
+                      "tag": { "type": "string", "example": "21321" },
+                      "is_main": { "type": "boolean", "example": true },
+                      "images": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "_id": { "type": "string" },
+                            "url": { "type": "string", "example": "https://example.com/image.jpeg" }
+                          }
+                        }
+                      },
+                      "createdAt": { "type": "string", "format": "date-time" },
+                      "updatedAt": { "type": "string", "format": "date-time" }
+                    }
+                  },
+                  "quantity": { "type": "number", "example": 1 },
+                  "_id": { "type": "string" },
+                  "stock": { "type": "number", "example": 10 }
+                }
+              }
+            },
+
+          }
+        }        
       },
     },
     paths: {

@@ -75,8 +75,8 @@ export class ProductUseCase {
   public async getProductsBySubCategory(subcategoryId: ObjectId, storehouse: string, queryparams: Object): Promise<ProductEntity[] | ErrorHandler | null> {
     return this.productRepository.findProductsBySubCategory(subcategoryId, storehouse, queryparams)
   }
-  public async getNewlyAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
-    return this.productRepository.findNewlyAddedProducts()
+  public async getRecentAddedProducts():  Promise<ProductEntity[] | ErrorHandler | null> {
+     return this.productRepository.findRecentAddedProducts();
   }
   public async findProductsPaginate(skip: number, limit:number): Promise<ProductEntity[] | ErrorHandler | null> {
     return this.productRepository.GetProductPaginate(skip, limit)
