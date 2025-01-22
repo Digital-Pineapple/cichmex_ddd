@@ -78,5 +78,13 @@ export class ProductUseCase {
   public async getNewlyAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
     return this.productRepository.findNewlyAddedProducts()
   }
+  public async findProductsPaginate(skip: number, limit:number): Promise<ProductEntity[] | ErrorHandler | null> {
+    return this.productRepository.GetProductPaginate(skip, limit)
+  }
+
+  public async countProducts (): Promise <any>{
+    return this.productRepository.countProducts()
+  }
+  
 
 }

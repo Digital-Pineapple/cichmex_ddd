@@ -12,8 +12,6 @@ import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { VariantProductUseCase } from '../../../application/variantProduct/VariantProductUseCase';
 import { StockSHinputUseCase } from '../../../application/storehouse/stockSHinputUseCase';
-import { VariantProductEntity } from '../../../domain/variantProduct/variantProductEntity';
-import { ProductImageEntity } from '../../../domain/product/ProductEntity';
 
 export class ProductController extends ResponseData {
   protected path = "/product";
@@ -30,6 +28,7 @@ export class ProductController extends ResponseData {
   ) {
     super();
     this.getAllProducts = this.getAllProducts.bind(this);
+    this.getAllProductsPaginate = this.getAllProductsPaginate.bind(this);
     this.getProduct = this.getProduct.bind(this);
     this.createProduct = this.createProduct.bind(this);
     this.updateProduct = this.updateProduct.bind(this);
@@ -62,40 +61,84 @@ export class ProductController extends ResponseData {
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
-  try {
-    // Obtener todos los productos
-    const response = await this.productUseCase.getProducts();
-    if (!(response instanceof ErrorHandler)) {
-      // Actualizar las variantes de cada producto en paralelo
-      await Promise.all(
-        response.map(async (item: any) => {
-          // Buscar variantes asociadas al producto
-          const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(item._id);
-
-          // Verificar si hay variantes válidas
-          if (Array.isArray(variants) && variants.length > 0) {
-            await this.productUseCase.updateProduct(item._id, { has_variants: true });
-          }
-        })
-      );
+    try {
+      // Obtener todos los productos
+      const response = await this.productUseCase.getProducts();
+      if (!(response instanceof ErrorHandler)) {
+        // Actualizar las variantes de cada producto en paralelo
+        await Promise.all(
+          response.map(async (item: any) => {
+            // Buscar variantes asociadas al producto
+            const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(item._id);
+  
+            // Verificar si hay variantes válidas
+            if (Array.isArray(variants) && variants.length > 0) {
+              await this.productUseCase.updateProduct(item._id, { has_variants: true });
+            }
+          })
+        );
+      }
+  
+      // Enviar la respuesta
+      this.invoke(response, 200, res, "", next);
+    } catch (error) {
+      console.error(error);
+      // Manejo de errores
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
-
-    // Enviar la respuesta
-    this.invoke(response, 200, res, "", next);
-  } catch (error) {
-    console.error(error);
-    // Manejo de errores
-    next(new ErrorHandler("Hubo un error al consultar la información", 500));
   }
-}
+
+  public async getAllProductsPaginate(req: Request, res: Response, next: NextFunction) {
+    const page = parseInt(req.query.page as string, 10) || 1; // Página actual
+    const limit = parseInt(req.query.limit as string, 10) || 20; // Tamaño de página
+    const skip = (page - 1) * limit;
+
+    // Obtener los productos con paginación y ordenados por `createdAt`
+    try {
+      const [products, totalProducts] = await Promise.all([
+        this.productUseCase.findProductsPaginate(skip, limit),
+        this.productUseCase.countProducts(), // Método que devuelve el total de productos
+      ]);
+
+      // Obtener todos los productos
+      if (!(products instanceof ErrorHandler) && products !== null) {
+        // Actualizar las variantes de cada producto en paralelo
+        await Promise.all(
+          products.map(async (item: any) => {
+            // Buscar variantes asociadas al producto
+            const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(item._id);
+
+            // Verificar si hay variantes válidas
+            if (Array.isArray(variants) && variants.length > 0) {
+              await this.productUseCase.updateProduct(item._id, { has_variants: true });
+            }
+          })
+        );
+      }
+
+      // Enviar la respuesta
+      const response = {
+        totalProducts,
+        totalPages: Math.ceil(totalProducts / limit),
+        currentPage: page,
+        pageSize: limit,
+        products,
+      };
+      this.invoke(response, 200, res, "", next);
+    } catch (error) {
+      console.error(error);
+      // Manejo de errores
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
 
 
 
   public async getProduct(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;        
+    const { id } = req.params;
     try {
       const responseStock = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse)
-      const responseProduct: any | null = await this.productUseCase.getProduct(id);                
+      const responseProduct: any | null = await this.productUseCase.getProduct(id);
 
       const parsed = responseProduct.toJSON();
       let response = null;
@@ -104,10 +147,10 @@ export class ProductController extends ResponseData {
           ...parsed,
           stock: responseStock.stock
         }
-      }else {
+      } else {
         response = responseProduct
       }
-      
+
       const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(id);
       // Espera a que todas las promesas se resuelvan
       const newVariants = await Promise.all(
@@ -499,8 +542,8 @@ export class ProductController extends ResponseData {
     try {
       if (!category) return next(new ErrorHandler("El nombre de la categoria es requerida", 404));
       const categoria: any | null = await this.categoryUseCase.getDetailCategoryByName(category);
-      if (categoria == null) return next(new ErrorHandler("La categoria no existe", 404));      
-      const products: any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);               
+      if (categoria == null) return next(new ErrorHandler("La categoria no existe", 404));
+      const products: any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);
       const response = {
         category: categoria,
         ...products
@@ -519,13 +562,13 @@ export class ProductController extends ResponseData {
     try {
       if (!subcategory) return next(new ErrorHandler("El nombre de la subcategoria es requerida", 404));
       const subcategoria: any | null = await this.subCategoryUseCase.getDetailSubCategoryByName(subcategory);
-      if (subcategoria == null) return next(new ErrorHandler("La subcategoria no existe", 404));      
-      const products: any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);                         
+      if (subcategoria == null) return next(new ErrorHandler("La subcategoria no existe", 404));
+      const products: any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);
       const response = {
         subcategory: subcategoria,
-        ...products        
-      };            
-      this.invoke(response, 201, res, '', next);      
+        ...products
+      };
+      this.invoke(response, 201, res, '', next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al buscar", 500));
       console.log("subcategory product error", error);
@@ -595,10 +638,10 @@ export class ProductController extends ResponseData {
     const { id } = req.params //product id
     try {
       const productDetail: any | null = await this.productUseCase.getProduct(id);
-      const category = productDetail?.category._id;      
-      if (productDetail == null) return next(new ErrorHandler("Este producto no existe", 404));      
-      let response: any | null = await this.productUseCase.getRandomProductsByCategory(category, productDetail._id, this.onlineStoreHouse);      
-      this.invoke(response, 200, res, "", next);      
+      const category = productDetail?.category._id;
+      if (productDetail == null) return next(new ErrorHandler("Este producto no existe", 404));
+      let response: any | null = await this.productUseCase.getRandomProductsByCategory(category, productDetail._id, this.onlineStoreHouse);
+      this.invoke(response, 200, res, "", next);
     } catch (error) {
       console.log(error, 'ok');
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
@@ -795,12 +838,12 @@ export class ProductController extends ResponseData {
       fullname: user.fullname,
       email: user.email,
       type_user: user.type_user,
-  };
-  
+    };
+
     if (!variants || !Array.isArray(variants)) {
       return next(new ErrorHandler("Variantes no proporcionadas o inválidas", 400));
     }
-  
+
     try {
       // Validar y transformar las variantes
       const parsedVariants = variants.map((variant: any) => ({
@@ -810,35 +853,35 @@ export class ProductController extends ResponseData {
           return acc;
         }, {} as Record<string, any>),
       }));
-  
+
       // Construir filesByVariant agrupado por color
       const filesByVariant: { [key: string]: Express.Multer.File[] } = {};
       if (req.files) {
         const files = req.files as Express.Multer.File[];
-  
+
         let currentColor: string | null = null;
         let imageIndex = 0;
-  
+
         files.forEach((file) => {
           const match = file.fieldname.match(/^(\d+)\[(.*?)\]$/);
           if (match) {
             const [_, index, color] = match;
-  
+
             if (color !== currentColor) {
               currentColor = color;
               imageIndex = 0;
             }
-  
+
             filesByVariant[color] = filesByVariant[color] || [];
             filesByVariant[color][imageIndex] = file;
             imageIndex++;
           }
         });
       }
-  
+
       // Subir imágenes a S3 y construir imageUrlsByColor
       const imageUrlsByColor: { [color: string]: { url: string; color: string }[] } = {};
-  
+
       await Promise.all(
         Object.entries(filesByVariant).map(async ([color, files]) => {
           imageUrlsByColor[color] = await Promise.all(
@@ -852,7 +895,7 @@ export class ProductController extends ResponseData {
         })
       );
 
-  
+
       // Procesar las variantes y asignar las imágenes
       await Promise.all(
         parsedVariants.map(async (variant: any, variantIndex: number) => {
@@ -863,7 +906,7 @@ export class ProductController extends ResponseData {
               sku,
               product_id: id,
             });
-  
+
             const stock = variant.stock
             const SHStock = await this.stockStoreHouseUseCase.createStock({
               StoreHouse_id: SH_id,
@@ -879,9 +922,9 @@ export class ProductController extends ResponseData {
               responsible: UserInfo,
               product_detail: id
             })
-  
+
             // Asignar imágenes a la variante por color
-            const color : any = variant.attributes?.color; 
+            const color: any = variant.attributes?.color;
             if (color && imageUrlsByColor[color]) {
               const images = imageUrlsByColor[color];
               await this.variantProductUseCase.UpdateVariant(addVariant._id, { images: images });
@@ -891,7 +934,7 @@ export class ProductController extends ResponseData {
           }
         })
       );
-  
+
       const response: any = await this.productUseCase.getProduct(id)
       const variantsAll: any = await this.variantProductUseCase.findAllVarinatsByProduct(id);
 
@@ -913,7 +956,7 @@ export class ProductController extends ResponseData {
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
   }
-  
+
 
 
   public async addDescriptionAndVideo(req: Request, res: Response, next: NextFunction) {
@@ -1139,13 +1182,13 @@ export class ProductController extends ResponseData {
 
   public async getNewlyAddedProducts(req: Request, res: Response, next: NextFunction) {
     try {
-      const response = await this.productUseCase.getNewlyAddedProducts();    
+      const response = await this.productUseCase.getNewlyAddedProducts();
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       console.log(error);
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
     }
-  } 
+  }
 
 
 

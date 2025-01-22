@@ -4,6 +4,7 @@ import { MongoRepository } from '../MongoRepository';
 import { ProductEntity } from '../../../domain/product/ProductEntity';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ObjectId } from 'mongodb';
+import { PopulateProductCategory, PopulateProductSubCategory } from '../../../../shared/domain/PopulateInterfaces';
 
 export class ProductRepository extends MongoRepository implements ProductConfig  {
     private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634";
@@ -143,7 +144,47 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
             },
         },
         {
+            $lookup: {
+                from: "categories",
+                let: { category: "$category" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$_id", "$$category"] },
+                                   
+                                ],
+                            },
+                        },
+                    },
+                ],
+                as: "category",
+            },
+        },
+        {
+            $lookup: {
+                from: "subcategories",
+                let: { subCategory: "$subCategory" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$_id", "$$subCategory"] },
+                                   
+                                ],
+                            },
+                        },
+                    },
+                ],
+                as: "subCategory",
+            },
+        },
+        {
             $addFields: {
+                category: { $arrayElemAt: ["$category", 0] },
+                subCategory: { $arrayElemAt: ["$subCategory", 0] },
                 stock: { $ifNull: [{ $arrayElemAt: ["$storehouseStock.stock", 0] }, 0] },
             },
         },
@@ -162,6 +203,7 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
               as: "variants"
           }
         },
+        
         {
             $facet: {
                 products: [
@@ -792,7 +834,7 @@ async findNewlyAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
     };        
   }
   
-   async findProductsBySubCategory(subcategoryId : MongooseObjectId, storehouse: string, qparams: any ): Promise<ProductEntity[] | ErrorHandler | null> {
+   async findProductsBySubCategory(subcategoryId : MongooseObjectId, storehouse: string, qparams: any ): Promise<ProductEntity[]  | null> {
     const page = Number(qparams.page) || 1;
     let matchStage: any = {};         
 
@@ -882,5 +924,13 @@ async findNewlyAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
     };       
 
    }
+
+   async GetProductPaginate (skip: number, limit:number){
+    return await this.ProductModel.find({status:true}).populate(PopulateProductCategory).populate(PopulateProductSubCategory).skip(skip).limit(limit).sort({createdAt:-1}).exec()
+   }
+
+  async countProducts() {
+    return this.ProductModel.find({status:true}).countDocuments().exec();
+  }
 
 }
