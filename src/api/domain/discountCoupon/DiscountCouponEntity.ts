@@ -9,16 +9,15 @@ export interface DiscountCouponEntity {
     fixed_amount?: number;
     free_shipping?: boolean;
     unlimited?: boolean;
-    applications?: number,
     first_buy?: boolean;
     expiration_date?: string;
     min_cart_amount?: number;
     max_cart_amount?: number;
     categories?: string[];
-    // creatorId?:ObjectId;
-    // isActive?: boolean;
-     status: boolean;
-    // maxUses: number;
+    creator_id?:ObjectId;
+    for_creators?: boolean;
+    status: boolean;
+    maxUses: number;
     // usedCount
 }
 
@@ -28,4 +27,8 @@ export interface ConsumeCouponEntity{
     user : string,
     discount_coupon: string,
     status?: boolean;
+    subtotal_amount_sale?: number;
+    discount_applied?: number;
+    total_amount_sale?: number;
+    valid_sale ?: boolean;
 }

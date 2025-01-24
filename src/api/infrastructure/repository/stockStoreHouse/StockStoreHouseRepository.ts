@@ -29,12 +29,12 @@ export class StockStoreHouseRepository extends MongoRepository implements  Stock
     }
   
     async findStockByStoreHouse(branchId: string, populateConfig1?:any): Promise<any> {
-     return await this.StockBranchModel.find({StoreHouse_id:branchId}).populate(PopulateProduct).populate(PopulateVariant)
+     return await this.StockBranchModel.find({StoreHouse_id:branchId, status:true}).populate(PopulateProduct).populate(PopulateVariant)
       
     }
 
     async findStockByStoreHouseNoDetail(branchId: string): Promise<any[]> {
-      return await this.StockBranchModel.find({StoreHouse_id:branchId})
+      return await this.StockBranchModel.find({StoreHouse_id:branchId, status:true})
   
     }
     async findAllInputs(): Promise<any[]> {

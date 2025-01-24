@@ -17,6 +17,7 @@ export interface VariantProductEntity {
   rating?: number;
   tag: String;
   is_main?: boolean;
+  purchase_price?: number; 
 }
 
 export interface AttributesVariantEntity {

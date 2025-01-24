@@ -30,7 +30,7 @@ export interface ProductEntity {
   weight?: string;
   videos?: ProductVideoEntity[];
   rating?: number;
-  product_key?: string;
+  product_key: string;
   model?: string;
   gender?: string;
   createdAt: NativeDate;
@@ -40,6 +40,7 @@ export interface ProductEntity {
   condition ?: string,
   size_guide ?: SizeGuideEntity,
   has_variants ?: boolean,
+  purchase_price ?: number,
 }
 
 export interface ProductImageEntity {

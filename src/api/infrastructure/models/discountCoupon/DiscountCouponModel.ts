@@ -30,10 +30,10 @@ const DiscountCouponSchema = new Schema<DiscountCouponEntity>({
         type: Boolean,
         required: false
     },
-    applications:{
-        type: Number,
-        required:false,
-    },
+    // applications:{
+    //     type: Number,
+    //     required:false,
+    // },
     first_buy: {
         type: Boolean,
         required: false
@@ -54,6 +54,10 @@ const DiscountCouponSchema = new Schema<DiscountCouponEntity>({
         type: Array,
         required: false
     }, 
+    creator_id:{
+        type: Schema.Types.ObjectId,
+        required: false,
+    },
      status: {
         type: Boolean,
         required: false,
