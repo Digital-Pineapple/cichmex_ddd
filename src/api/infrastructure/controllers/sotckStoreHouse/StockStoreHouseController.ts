@@ -151,6 +151,26 @@ export class StockStoreHouseController extends ResponseData {
         const code_folio = RandomCodeId('FO');
     
         try {
+            const validateProduct = (product: any): boolean => {
+                return (
+                  product &&
+                  product._id &&
+                  product.quantity &&
+                  typeof product.quantity === "number" &&
+                  product.quantity > 0
+                );
+              };
+          
+              // Validar que todos los productos tengan los campos requeridos
+              const invalidProducts = products.filter((product: any) => !validateProduct(product));
+              if (invalidProducts.length > 0) {
+                return next(
+                  new ErrorHandler(
+                    `Algunos productos tienen datos faltantes o inválidos: ${JSON.stringify(invalidProducts.map(i=>i.name))}`,
+                    400
+                  )
+                );
+              }
             const processProduct = async (item: { _id: string; product_id?: string; quantity: number; name: string }, isVariant = false) => {
                 const itemQuantity = Number(item.quantity);
                 if (isNaN(itemQuantity) || itemQuantity <= 0) {
