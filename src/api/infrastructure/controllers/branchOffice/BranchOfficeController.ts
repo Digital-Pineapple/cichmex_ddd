@@ -205,16 +205,16 @@ export class BranchOfficeController extends ResponseData {
     // }
 
     public async createBranchOffice(req: Request, res: Response, next: NextFunction) {
-        const { user_id, name, description, phone_number, location, schedules, type } = req.body;
-    
+        const { name, description, phone_number, location, schedules, type, tag } = req.body; 
+        const user = req.user                   
         try {
             // Parse JSON strings
+            const user_id = user.id
             const location1 = JSON.parse(location);
             const parseSchedules = JSON.parse(schedules);
-    
             let images: string[] = [];
             let imageUrls: string[] = [];
-    
+
             if (req.files) {
                 // Cast req.files to a more specific type if you know what kind of files are being handled
                 const files = req.files as Express.Multer.File[];
@@ -248,7 +248,8 @@ export class BranchOfficeController extends ResponseData {
                     schedules: parseSchedules, 
                     type,                             
                     images, 
-                    status: true 
+                    status: true,
+                    tag: tag ?? null                                  
                 }, 
                 location1
             );
@@ -261,14 +262,7 @@ export class BranchOfficeController extends ResponseData {
             response.images = imageUrls;
     
             // Send success response
-            this.invoke(
-                response,
-                201,
-                res,
-                "Registro exitoso",
-                next
-            );
-    
+            this.invoke( response, 201, res, "Registro exitoso", next);
         } catch (error) {
             console.error(error);
             next(new ErrorHandler('Hubo un error al crear', 500));
@@ -304,11 +298,12 @@ export class BranchOfficeController extends ResponseData {
     }
 
     public async updateBranchOffice(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.params;
-            const { user_id, description, phone_number, location, name, schedules, type } = req.body;
-            const parsedSchedules = JSON.parse(schedules);
-           
+        const { id } = req.params;
+        const { description, phone_number, location, name, schedules, type } = req.body;
+        const parsedSchedules = JSON.parse(schedules);
+        const user = req.user;
+        try {           
+            const user_id = user.id
             // Verificar si existen archivos adjuntos
             if (req.files && Array.isArray(req.files)) {
                 const paths: string[] = [];
