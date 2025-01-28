@@ -25,7 +25,7 @@ export class BranchOfficeController extends ResponseData {
         this.updateBranchOffice = this.updateBranchOffice.bind(this);
         this.deleteBranchOffice = this.deleteBranchOffice.bind(this);
         this.verifyBranchOffice = this.verifyBranchOffice.bind(this);
-
+        this.desactivateBranchOffice = this.desactivateBranchOffice.bind(this);
     }
 
     public async getAllBranchOffices(req: Request, res: Response, next: NextFunction) {
@@ -67,14 +67,9 @@ export class BranchOfficeController extends ResponseData {
     public async getBranchOfficesInfo(req: Request, res: Response, next: NextFunction) {
         try {
             // Obtener la información de las sucursales
-            const response = await this.branchOfficeUseCase.getInfoBranchOffices();
-          
-            
-            this.invoke(response, 200, res, "", next);
-            
-
+            const response = await this.branchOfficeUseCase.getInfoBranchOffices();                      
+            this.invoke(response, 200, res, "", next);            
         } catch (error) {
-
 
         }
     }
@@ -275,23 +270,8 @@ export class BranchOfficeController extends ResponseData {
         const { services } = req.body;
         try {
             const response = await this.branchOfficeUseCase
-
-
-
-            this.invoke(
-                response,
-                201,
-                res,
-                "Se registró con éxito",
-                next
-            );
-
-
-
-
-        } catch (error) {
-     
-         
+            this.invoke( response, 201, res, "Se registró con éxito", next);
+        } catch (error) {              
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
 
@@ -391,30 +371,21 @@ export class BranchOfficeController extends ResponseData {
     public async verifyBranchOffice(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { user_id } = req.body
-
-
-
-        try {
-            // const documents = await this.documentationUseCase.getDocumentationByUserAndVerify(user_id)
-
-            // const nameFiles = ['csf'];
-            // if (!(documents instanceof ErrorHandler) && documents !== null) {
-            //     const resultado = documents.map((documento: any) =>
-            //         nameFiles.some(nombre => documento.name === nombre)
-            //     );
-
-            //     if (resultado.length === 1) {
-                    const response = await this.branchOfficeUseCase.validateBranchOffice(id, { activated: true })
-                    this.invoke(response, 201, res, 'Activación exitosa', next);
-                // } else {
-                //     next(new ErrorHandler('Documentos incompletos o no verificados', 500));
-                // }
-            //}
-
-        } catch (error) {
-           
-
+        try {          
+           const response = await this.branchOfficeUseCase.validateBranchOffice(id, { activated: true })
+           this.invoke(response, 201, res, 'Activación exitosa', next);          
+        } catch (error) {        
             next(new ErrorHandler('Error', 500));
+        }
+    }
+
+    public async desactivateBranchOffice(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        try {
+            const response = await this.branchOfficeUseCase.validateBranchOffice(id, { activated: false });
+            this.invoke(response, 200, res, 'Desactivación exitosa', next);
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al desactivar la sucursal', 500));
         }
     }
 
