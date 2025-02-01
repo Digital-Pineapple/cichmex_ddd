@@ -66,6 +66,12 @@ export const ServicesMembershipPopulateConfing: IStockPopulateConfig= {
     model: ServiceModel
 }
 
+export const PopulateProducts: IStockPopulateConfig= {
+    path: `products`,
+    select: ['name'],
+    model: ProductModel
+}
+
 export const stockBranchPopulateConfig : IStockPopulateConfig ={
     path: 'product_id',
     select: ["name", "price","description" ],

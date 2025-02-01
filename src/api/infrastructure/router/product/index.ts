@@ -65,6 +65,8 @@ productRouter
   .post("/addVariants/clothes-shoes/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.AddVariantsClothesShoes)
   .post("/selectSizeGuide/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.SelectSizeGuide)
   .post('/search-category', productController.getProductsByCategory)
+  .get('/productsByCategory/search', productController.getAllProductsByCategory)
+  .get('/productsBySubCategory/search', productController.getAllProductsBySubCategory)
   .post("/updateInfo/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProduct)
   .put("/updateVideo/:id", productvalidations.videoValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProductVideo)
   .put("/updateThumbnail/:id", productvalidations.thumbnailValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateThumbnail)

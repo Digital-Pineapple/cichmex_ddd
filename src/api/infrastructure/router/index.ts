@@ -59,7 +59,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/shopping-cart', shoppingCartRouter)
     apiRouter.use('/stock-StoreHouse', stockStoreHouseRouter)
     apiRouter.use('/storehouse', storeHouseRouter)
-    apiRouter.use('/coupons', discountCouponRouter)
+    apiRouter.use('/discounts', discountCouponRouter)
     apiRouter.use('/socket', socketsRouter)
     apiRouter.use('/size-guide', sizeGuideRouter)
     apiRouter.use('/variant-product', variantProductRouter)

@@ -21,7 +21,20 @@ export class DiscountCouponController extends ResponseData {
         this.createDiscountCoupon = this.createDiscountCoupon.bind(this);
         this.updateDiscountCoupon = this.updateDiscountCoupon.bind(this);
         this.deleteDiscountCoupon = this.deleteDiscountCoupon.bind(this);
+        this.getOneDiscountDetail = this.getOneDiscountDetail.bind(this);
+        this.changeActiveDiscount = this.changeActiveDiscount.bind(this);
 
+    }
+
+    public async getOneDiscountDetail(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.params
+        
+        try {
+            const response = await this.discountCouponUseCase.getOneDiscountDetails(id)
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
     }
     public async getAllDiscountCoupons(req: Request, res: Response, next: NextFunction) {
         try {
@@ -106,30 +119,72 @@ export class DiscountCouponController extends ResponseData {
     
 
     public async createDiscountCoupon(req: Request, res: Response, next: NextFunction) {
-        const { values } = req.body
-        const uuid = generateUUID()
-        // console.log(values, "values");
-        
+        const { values } = req.body;
+        const uuid = generateUUID();
+    
         try {
-            const response = await this.discountCouponUseCase.createDiscountCoupon({ ...values, uuid: uuid })
+            const parsedValues = {
+                ...values,
+                uuid,
+                fixed_amount: Number(values.fixed_amount),
+                min_cart_amount: Number(values.min_cart_amount),
+                max_cart_amount: Number(values.max_cart_amount),
+                maxUses: Number(values.maxUses),
+            };
+    
+            const response = await this.discountCouponUseCase.createDiscountCoupon(parsedValues);
             this.invoke(response, 200, res, 'Creado con éxito', next);
-
         } catch (error) {
-            console.log(error);
-            
+            console.error(error);
             next(new ErrorHandler('Error al crear', 500));
         }
     }
+    
     public async updateDiscountCoupon(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { values } = req.body
+        const { values } = req.body;
+
         try {
-            const response = await this.discountCouponUseCase.updateDiscountCoupon(id, values)
+            // Construcción de datos con validación
+            let data: Record<string, any> = {
+                name: values.name,
+                description: values.description,
+                percent: isNaN(Number(values?.percent)) ? undefined : Number(values?.percent),
+                fixed_amount: isNaN(Number(values?.fixed_amount)) ? undefined : Number(values?.fixed_amount),
+                unlimited: values.unlimited,
+                start_date: values.start_date,
+                expiration_date: values.expiration_date,
+                for_all_products: values.for_all_products,
+                products: values.products,
+                min_cart_amount: isNaN(Number(values?.min_cart_amount)) ? undefined : Number(values?.min_cart_amount),
+                max_cart_amount: isNaN(Number(values?.max_cart_amount)) ? undefined : Number(values?.max_cart_amount),
+                maxUses: isNaN(Number(values?.maxUses)) ? undefined : Number(values?.maxUses),
+                is_active: values.is_active,
+            };
+    
+            // Eliminar propiedades con valores `undefined`
+            data = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+            const response = await this.discountCouponUseCase.updateDiscountCoupon(id, data);
             this.invoke(response, 200, res, 'Editado con éxito', next);
         } catch (error) {
+            console.log(error);
             next(new ErrorHandler('Error al editar', 500));
         }
     }
+
+    public async changeActiveDiscount(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        const { is_active } = req.body;
+        try {
+            const response = await this.discountCouponUseCase.updateDiscountCoupon(id, {is_active: is_active});
+            this.invoke(response, 200, res, 'Editado con éxito', next);
+        } catch (error) {
+            console.log(error);
+            next(new ErrorHandler('Error al editar', 500));
+        }
+    }
+    
+    
     public async consumeOneCoupon(req: Request, res: Response, next: NextFunction) {
         const { id } = req.user;
         const { coupon } = req.body;
