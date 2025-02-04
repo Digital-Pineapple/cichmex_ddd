@@ -95,8 +95,8 @@ export class BranchOfficeController extends ResponseData {
             const user_id = user.id
             const location1 = JSON.parse(location);
             const parseSchedules = JSON.parse(schedules);
-            let images: string[] = [];
-            let imageUrls: string[] = [];
+            let images: {}[] = [];
+            let imageUrls: {}[] = [];
 
             if (req.files) {
                 // Cast req.files to a more specific type if you know what kind of files are being handled
@@ -104,7 +104,7 @@ export class BranchOfficeController extends ResponseData {
     
                 // Upload files to S3 and collect URLs
                 await Promise.all(files.map(async (file, index) => {
-                    const pathObject = `${this.path}/${user_id}/${index}`;
+                    const pathObject = `${this.path}/${user_id}/${Date.now()}`;
                     const { url, success, key } = await this.s3Service.uploadToS3AndGetUrl(
                         `${pathObject}`,
                         file,
@@ -114,9 +114,8 @@ export class BranchOfficeController extends ResponseData {
                     if (!success) {
                         throw new ErrorHandler('Hubo un error al subir la imagen', 400);
                     }
-    
-                    images.push(pathObject);
-                    imageUrls.push(url);
+                    images.push({ url: pathObject});
+                    imageUrls.push({ url: pathObject});                    
                 }));
             }
     
@@ -155,16 +154,22 @@ export class BranchOfficeController extends ResponseData {
     public async deleteImage(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { image_id } = req.body;
-        console.log(id, "id de sucursal");
-        console.log(image_id, "id de la imagen");                
+        // console.log(id, "id de sucursal");       
+        // console.log("body", req.body);                                     
         try{
-            const branchOffice = await this.branchOfficeUseCase.getDetailBranchOffice(id);
-            const filteredImages = branchOffice?.images?.filter((image:any) => image._id !== image_id );
-            const branchUpdated = await this.branchOfficeUseCase.updateBranchOffice(id, {
-                images : filteredImages
+            const branchOffice: any | null = await this.branchOfficeUseCase.getDetailBranchOffice(id);
+            const filteredImages = branchOffice?.images?.filter((image:any) => image._id.toString() !== image_id); 
+            console.log("filtradas", filteredImages);
+
+
+                               
+            const branchUpdated = await this.branchOfficeUseCase.updateBranchOffice(branchOffice?._id, {
+                images : filteredImages,
+                location: branchOffice.location
             }) 
             this.invoke( branchUpdated , 201, res, "Imagen eliminada", next);            
         }catch(error){
+            console.log(error);            
             next(new ErrorHandler((error as Error).message || 'Hubo un error al eliminar la imagen', 500));
         }
     } 
@@ -187,16 +192,18 @@ export class BranchOfficeController extends ResponseData {
         const { description, phone_number, location, name, schedules, type } = req.body;
         const parsedSchedules = JSON.parse(schedules);
         const user = req.user;
-        try {           
+        try {                       
             const user_id = user.id
             // Verificar si existen archivos adjuntos
             if (req.files && Array.isArray(req.files)) {
                 const paths: {}[] = [];
                 const urls: {}[] = [];
+                const currentBranch: any = await this.branchOfficeUseCase.getDetailBranchOffice(id);
+                currentBranch.images.map((image : any) => paths.push({url: image.url}))
 
                 // Subir archivos a S3 y obtener las URLs
                 await Promise.all(req.files.map(async (file: any, index: number) => {
-                    const pathObject: string = `${this.path}/${user_id}/${index}`;
+                    const pathObject: string = `${this.path}/${user_id}/${Date.now()}`;
                     const { url, success, key } = await this.s3Service.uploadToS3AndGetUrl(
                         pathObject,
                         file,
@@ -209,8 +216,7 @@ export class BranchOfficeController extends ResponseData {
 
                     paths.push({ url: pathObject});
                     urls.push({ url: pathObject});
-                }));
-
+                }));                                               
                 // Actualizar la sucursal de la oficina con las URLs de las imágenes
                 const response : any = await this.branchOfficeUseCase.updateBranchOffice(id, {
                     name: name,
@@ -218,7 +224,7 @@ export class BranchOfficeController extends ResponseData {
                     description: description,
                     phone_number: phone_number,
                     schedules: parsedSchedules,                  
-                    location: location, 
+                    location: JSON.parse(location), 
                     images: paths, // Se usan las rutas de los archivos en S3
                 });
 
@@ -237,14 +243,14 @@ export class BranchOfficeController extends ResponseData {
                     description: description,  
                     phone_number: phone_number,                  
                     schedules: parsedSchedules,
-                    location: location,
+                    location: JSON.parse(location),
                 });
 
                 // Enviar la respuesta al cliente
                 this.invoke(response, 201, res, "Se actualizó con éxito", next);
             }
         } catch (error) {
-            console.log("error is: " +error);            
+            console.log("error updated is: " +error);            
             // Manejar cualquier error que ocurra durante el proceso
             this.invoke(error, 500, res, "Error interno del servidor", next);
         }
