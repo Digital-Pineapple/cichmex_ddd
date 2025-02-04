@@ -92,6 +92,7 @@ export interface ProductOrderEntity {
   updatedAt: NativeDate;
   typeDelivery?: string;
   origin?: string;
+  requiredTax?: boolean;
 }
 
 export interface ILocationOrder {

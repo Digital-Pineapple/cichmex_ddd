@@ -9,7 +9,8 @@ export interface ITaxInfoEntity  {
     phone            ?:   number;
     default_invoice_use ?:   string;
     address          :   ITaxAddress;
-    status           :   boolean;        
+    status           :   boolean; 
+    facturapi_id     : string;       
     createdAt       ?:   NativeDate;
     updatedAt       ?:   NativeDate;
 }

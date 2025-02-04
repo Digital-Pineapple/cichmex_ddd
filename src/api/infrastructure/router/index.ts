@@ -64,7 +64,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/size-guide', sizeGuideRouter)
     apiRouter.use('/variant-product', variantProductRouter)
     apiRouter.use('/colorProduct', colorProductRouter)
-    apiRouter.use('/tax-info', taxInfoRouter)
+    apiRouter.use('/tax-info', taxInfoRouter)    
 
     return apiRouter;
 }

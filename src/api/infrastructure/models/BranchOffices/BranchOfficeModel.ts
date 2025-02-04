@@ -1,5 +1,7 @@
 import mongoose, { model, Mongoose, Schema } from "mongoose";
 import { BranchOfficeEntity, ILocation, ISchedules } from '../../../domain/branch_office/BranchOfficeEntity';
+import mongoose from "mongoose";
+import { ProductImageEntity } from "../../../domain/product/ProductEntity";
 
 enum TypeBranch {
   CARWASH = "carwash",
@@ -52,7 +54,23 @@ const locationSchema = new mongoose.Schema<ILocation>(
     timestamps: true
   }
 );
+const BranchOfficeImageSchema = new Schema<ProductImageEntity>(
+  {
+    _id: {
+      type: Schema.Types.ObjectId,
+      default: () => new mongoose.Types.ObjectId
+    },
+    url: {
+      type: String,
+      required: false
+    },   
+  },
+  {
+    versionKey: false,
+    timestamps: true,
+  }
 
+)
 const BranchOfficeSchema = new mongoose.Schema<BranchOfficeEntity>(
   {
     
@@ -77,10 +95,7 @@ const BranchOfficeSchema = new mongoose.Schema<BranchOfficeEntity>(
       type: String,
       required: false,
     },
-    images: {
-      type: Array,
-      required: false,
-    },
+    images: [BranchOfficeImageSchema],
     type: {
       type: String,
       enum: [TypeBranch.CARWASH, TypeBranch.DELIVERYPOINT],  

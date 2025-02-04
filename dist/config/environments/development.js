@@ -25,5 +25,6 @@ const DEVELOPMENT = {
     AWS_ACCESS_KEY_TEST: process.env.AWS_ACCESS_KEY_TEST,
     AWS_ACCESS_SECRET_TEST: process.env.AWS_ACCESS_SECRET_TEST,
     AWS_REGION_TEST: process.env.AWS_REGION_TEST,
+    FACTURAPI_KEY: process.env.FACTURAPI_KEY
 };
 exports.default = DEVELOPMENT;

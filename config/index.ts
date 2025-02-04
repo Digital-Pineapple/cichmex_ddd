@@ -41,7 +41,8 @@ export type Configuration = {
     MERCADOPAGO_TOKEN   :   string;
     AWS_ACCESS_KEY_TEST ?:   string;
     AWS_ACCESS_SECRET_TEST ?:   string;
-    AWS_REGION_TEST     ?:   string;    
+    AWS_REGION_TEST     ?:   string;   
+    FACTURAPI_KEY : string; 
 };
 
 
