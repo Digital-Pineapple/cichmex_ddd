@@ -5,12 +5,13 @@ import { Container } from './src/shared/infrastructure/Container';
 import { Server } from './src/shared/infrastructure/server/Server';
 // import { whatsappService } from './src/shared/infrastructure/whatsapp/WhatsappService..external';
 // const time = '0 0 * * *' // cada dia
-// cron.schedule(time, async () => {
-//     if(config.NODE_ENV.toLocaleLowerCase() === "production"){
-//         await backUpDBToS3();
-//     }
-//     return;
-// });
+const time = '0 0 */3 * *' // Ejecuta cada 3 días a las 00:00
+cron.schedule(time, async () => {
+    if(config.NODE_ENV.toLocaleLowerCase() === "production"){
+        await backUpDBToS3();
+    }
+    return;
+});
 
 const container = new Container();
 const server = container.invoke().resolve<Server>('server');

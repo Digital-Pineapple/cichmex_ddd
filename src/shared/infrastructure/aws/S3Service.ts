@@ -9,7 +9,7 @@ export class S3Service {
     private secretAccessKey = config.AWS_SECRET_KEY;
     private bucket          = config.AWS_BUCKET_NAME;
     private environment     = config.S3_ENVIRONMENT;
-    private bucketBackup    = config.AWS_BUCKET_NAME;
+    private bucketBackup    = config.AWS_BUCKET_BACKUP_NAME;
 
     private s3 : S3; 
 
