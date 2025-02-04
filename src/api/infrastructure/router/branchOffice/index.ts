@@ -42,6 +42,6 @@ branchOfficeRouter
 .post('/desactivate/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),branchOfficeController.desactivateBranchOffice)
 .patch('/:id', branchValidations.ImageValidation,userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']), branchOfficeController.updateBranchOffice)
 .delete('/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']), branchOfficeController.deleteBranchOffice)
-.delete('/image/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']), branchOfficeController.deleteImage)
+.put('/image/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']), branchOfficeController.deleteImage)
 
 export default branchOfficeRouter;
