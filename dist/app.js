@@ -8,9 +8,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const node_cron_1 = __importDefault(require("node-cron"));
+const backUpDB_1 = require("./src/helpers/backUpDB");
 const Container_1 = require("./src/shared/infrastructure/Container");
 // import { whatsappService } from './src/shared/infrastructure/whatsapp/WhatsappService..external';
+const time = '0 0 * * *'; // cada dia
+node_cron_1.default.schedule(time, () => __awaiter(void 0, void 0, void 0, function* () {
+    if (config.NODE_ENV.toLocaleLowerCase() === "production") {
+        yield (0, backUpDB_1.backUpDBToS3)();
+    }
+    return;
+}));
 const container = new Container_1.Container();
 const server = container.invoke().resolve('server');
 const config = container.invoke().resolve('config');

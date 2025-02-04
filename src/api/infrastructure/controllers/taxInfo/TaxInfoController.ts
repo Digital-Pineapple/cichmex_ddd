@@ -5,6 +5,7 @@ import { ResponseData } from "../../../../shared/infrastructure/validation/Respo
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { TaxInfoUseCase } from '../../../application/taxInfo/TaxInfoUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
+import { FacturapiService } from '../../../../shared/infrastructure/facturapi/FacturapiService';
 
 export class TaxInfoController extends ResponseData {
     protected path = '/type-car'
@@ -12,6 +13,7 @@ export class TaxInfoController extends ResponseData {
     constructor(
          private taxInfoUseCase: TaxInfoUseCase, 
          private readonly s3Service: S3Service,
+         private readonly facturapiService : FacturapiService
         ) {
         super();
         this.getAllTaxInfo     = this.getAllTaxInfo.bind(this);
@@ -20,6 +22,7 @@ export class TaxInfoController extends ResponseData {
         this.updateMyTaxInfo   = this.updateMyTaxInfo.bind(this);
         this.updateOneTaxInfo  = this.updateOneTaxInfo.bind(this);
         this.deleteTaxInfo     = this.deleteTaxInfo.bind(this);
+        this.createInvoice     = this.createInvoice.bind(this);
     }
 
     public async getAllTaxInfo(req: Request, res: Response, next: NextFunction) {
@@ -43,13 +46,18 @@ export class TaxInfoController extends ResponseData {
     }
     public async createMyTaxInfo(req: Request, res: Response, next: NextFunction) {
         const { _id } = req.user;
-        const { values } = req.body                
+        const { values } = req.body                           
         try {
-            const response = await this.taxInfoUseCase.createTaxInfo(_id, {...values, user:_id})
-            this.invoke(response, 200, res, 'Se actualizó correctamente', next)
+            const taxInfoUser: any | null = await this.taxInfoUseCase.getMyTaxInfo(_id);              
+            if(taxInfoUser){
+                return next(new ErrorHandler('Informacion ya registrada', 500));
+            }          
+            const facturapiCustomer = await this.facturapiService.createCustomer(values);           
+            const response = await this.taxInfoUseCase.createTaxInfo(_id, {...values, user:_id, facturapi_id: facturapiCustomer.id});
+            this.invoke(response, 200, res, 'Se gurado la direccion fiscal', next)                                        
         } catch (error) {
             console.log(error);            
-            next(new ErrorHandler('Hubo un error al crear ', 500));
+            next(new ErrorHandler(error.message || 'Hubo un error al crear', 500));
         }
     }
 
@@ -68,10 +76,14 @@ export class TaxInfoController extends ResponseData {
         const { values } = req.body
         try {
             const myInfo : any = await this.taxInfoUseCase.getMyTaxInfo(id)
-            const response = await this.taxInfoUseCase.updateTaxInfo(myInfo._id, {...values})
-            this.invoke(response, 200, res, 'Se actualizó correctamente', next)
+            const updatedTax  = await this.facturapiService.editCustomer(myInfo.facturapi_id, values);
+            if(updatedTax){
+                const response = await this.taxInfoUseCase.updateTaxInfo(myInfo._id, {...values})
+                this.invoke(response, 200, res, 'Se actualizó correctamente', next)
+            }             
         } catch (error) {
-            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+            console.log(error, "actualizar");            
+            next(new ErrorHandler(error.message || 'Hubo un error al consultar la información', 500));
         }
     }
 
@@ -85,5 +97,15 @@ export class TaxInfoController extends ResponseData {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
+
+    public async createInvoice(req: Request, res: Response, next: NextFunction){
+        const { payload } = req.body
+        try{
+            const invoice  = this.facturapiService.createInvoice(payload);
+            this.invoke(invoice, 200, res, 'Factura creada', next);
+        }catch(error){
+            next(new ErrorHandler('Error al crear la factura', 500));
+        }
+    }    
 
 }

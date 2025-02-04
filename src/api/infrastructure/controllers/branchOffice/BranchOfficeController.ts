@@ -7,6 +7,7 @@ import { BranchOfficeResponse, ILocation } from '../../../domain/branch_office/B
 import { DocumentationUseCase } from '../../../application/documentation/DocumentationUseCase';
 import mongoose from 'mongoose';
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
+import { retrieveAWSImages } from '../../../../helpers/retrieveImages';
 
 export class BranchOfficeController extends ResponseData {
     protected path = '/branch_office';
@@ -26,31 +27,19 @@ export class BranchOfficeController extends ResponseData {
         this.deleteBranchOffice = this.deleteBranchOffice.bind(this);
         this.verifyBranchOffice = this.verifyBranchOffice.bind(this);
         this.desactivateBranchOffice = this.desactivateBranchOffice.bind(this);
+        this.deleteImage = this.deleteImage.bind(this);
     }
 
     public async getAllBranchOffices(req: Request, res: Response, next: NextFunction) {
-        const response: any | null = await this.branchOfficeUseCase.getAllBranchOffices()
         try {
-            const updatedResponse = await Promise.all(
-                
-                response.map(async (item: any) => {
-                    const images = item.images;
-                    const updatedImages = await Promise.all(
-                        images.map(async (image: any) => {
-                            const url = await this.s3Service.getUrlObject(
-                                image + ".jpg"
-                            );
-                            return url;
-                        })
-                    );
-                    item.images = updatedImages;
-                    return item;
-                })
-            );
-
-            this.invoke(updatedResponse, 200, res, "", next);
-        }
-        catch (error) {
+            const response: any | null = await this.branchOfficeUseCase.getAllBranchOffices()
+            response.map(( item: any ) => {
+                const images = item.images
+                item.images = retrieveAWSImages(images);                
+            });           
+            this.invoke(response, 200, res, "", next);
+        }catch (error) {
+            console.log("error get branches", error);            
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
@@ -79,125 +68,24 @@ export class BranchOfficeController extends ResponseData {
 
         try {
             const response: any| null = await this.branchOfficeUseCase.getDetailBranchOffice(id);
-            const updatedResponse = await Promise.all(
-                response.images.map(async (image: any) => {
-                    const url = await this.s3Service.getUrlObject(
-                        image + ".jpg"
-                    );
-                    return url
-                })
-            );
-            response.images = updatedResponse;
-
+            response.images = retrieveAWSImages(response.images);           
             this.invoke(response, 200, res, '', next);
         } catch (error) {
+            console.log(error);            
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
 
     public async getBranchesByUser(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-
         try {
             const response: any | null = await this.branchOfficeUseCase.getBranchesUser(id)
-            const updatedResponse = await Promise.all(
-                response.map(async (item: any) => {
-                    const images = item.images;
-                    const updatedImages = await Promise.all(
-                        images.map(async (image: any) => {
-                            const url = await this.s3Service.getUrlObject(
-                                image + ".jpg"
-                            );
-                            return url;
-                        })
-                    );
-                    item.images = updatedImages;
-                    return item;
-                })
-            );
-            this.invoke(updatedResponse, 200, res, '', next);
+            response.images = retrieveAWSImages(response.images);
+            this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
-    }
-
-    // public async createBranchOffice(req: Request, res: Response, next: NextFunction) {
-    //     const { user_id, name, description, phone_number, location, schedules, type } = req.body;
-    //      const location1 = JSON.parse(location)
-    //      const parseSchedules = JSON.parse(schedules)
-    //      console.log(req.body);
-         
-    //     try {
-    //         if (req.files) {
-    //             const paths: string[] = [];
-    //             const urls: string[] = [];
-
-    //             await Promise.all(req.files.map(async (item: any, index: number) => {
-    //                 const pathObject: string = `${this.path}/${user_id}/${index}`;
-    //                 const { url, success, key } = await this.s3Service.uploadToS3AndGetUrl(
-    //                     pathObject + ".jpg",
-    //                     item,
-    //                     "image/jpeg"
-    //                 );
-    //                 paths.push(pathObject);
-    //                 urls.push(url)
-    //                 if (!success) return new ErrorHandler("Hubo un error al subir la imagen", 400)
-                        
-    //                 const response = await this.branchOfficeUseCase.createBranchOffice(
-    //                     {  
-    //                         user_id, 
-    //                         name, 
-    //                         description, 
-    //                         phone_number: phone_number,
-    //                         location, 
-    //                         schedules: parseSchedules, 
-    //                         type,                             
-    //                         images: paths, 
-    //                         status:true 
-    //                     }, location1)
-    //                 if (!(response instanceof ErrorHandler)) {
-    //                     response.images = urls;
-    //                 }
-
-    //                 this.invoke(
-    //                     response,
-    //                     201,
-    //                     res,
-    //                     "Registro exitoso",
-    //                     next)
-    //             }))
-    //         }
-
-    //         const response = await this.branchOfficeUseCase.createBranchOffice(
-    //             { 
-    //                 user_id, 
-    //                 name, 
-    //                 description, 
-    //                 phone_number: phone_number,
-    //                 location, 
-    //                 schedules: parseSchedules, 
-    //                 type 
-    //             }, location1)
-
-    //         this.invoke(
-    //             response,
-    //             201,
-    //             res,
-    //             "Se registró con éxito",
-    //             next
-    //         );
-
-
-
-
-    //     } catch (error) {
-    //         console.log(error);
-            
-           
-    //         next(new ErrorHandler('Hubo un error al crear', 500));
-    //     }
-
-    // }
+    }   
 
     public async createBranchOffice(req: Request, res: Response, next: NextFunction) {
         const { name, description, phone_number, location, schedules, type, tag } = req.body; 
@@ -218,7 +106,7 @@ export class BranchOfficeController extends ResponseData {
                 await Promise.all(files.map(async (file, index) => {
                     const pathObject = `${this.path}/${user_id}/${index}`;
                     const { url, success, key } = await this.s3Service.uploadToS3AndGetUrl(
-                        `${pathObject}.jpg`,
+                        `${pathObject}`,
                         file,
                         'image/jpeg'
                     );
@@ -260,9 +148,26 @@ export class BranchOfficeController extends ResponseData {
             this.invoke( response, 201, res, "Registro exitoso", next);
         } catch (error) {
             console.error(error);
-            next(new ErrorHandler('Hubo un error al crear', 500));
+            next(new ErrorHandler((error as Error).message || 'Hubo un error al crear', 500));
         }
     }
+
+    public async deleteImage(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        const { image_id } = req.body;
+        console.log(id, "id de sucursal");
+        console.log(image_id, "id de la imagen");                
+        try{
+            const branchOffice = await this.branchOfficeUseCase.getDetailBranchOffice(id);
+            const filteredImages = branchOffice?.images?.filter((image:any) => image._id !== image_id );
+            const branchUpdated = await this.branchOfficeUseCase.updateBranchOffice(id, {
+                images : filteredImages
+            }) 
+            this.invoke( branchUpdated , 201, res, "Imagen eliminada", next);            
+        }catch(error){
+            next(new ErrorHandler((error as Error).message || 'Hubo un error al eliminar la imagen', 500));
+        }
+    } 
     
 
     public async addServices(req: Request, res: Response, next: NextFunction) {
@@ -286,14 +191,14 @@ export class BranchOfficeController extends ResponseData {
             const user_id = user.id
             // Verificar si existen archivos adjuntos
             if (req.files && Array.isArray(req.files)) {
-                const paths: string[] = [];
-                const urls: string[] = [];
+                const paths: {}[] = [];
+                const urls: {}[] = [];
 
                 // Subir archivos a S3 y obtener las URLs
                 await Promise.all(req.files.map(async (file: any, index: number) => {
                     const pathObject: string = `${this.path}/${user_id}/${index}`;
                     const { url, success, key } = await this.s3Service.uploadToS3AndGetUrl(
-                        pathObject + ".jpg",
+                        pathObject,
                         file,
                         "image/jpeg"
                     );
@@ -302,8 +207,8 @@ export class BranchOfficeController extends ResponseData {
                         throw new ErrorHandler("Hubo un error al subir la imagen", 400);
                     }
 
-                    paths.push(pathObject);
-                    urls.push(url);
+                    paths.push({ url: pathObject});
+                    urls.push({ url: pathObject});
                 }));
 
                 // Actualizar la sucursal de la oficina con las URLs de las imágenes
@@ -339,6 +244,7 @@ export class BranchOfficeController extends ResponseData {
                 this.invoke(response, 201, res, "Se actualizó con éxito", next);
             }
         } catch (error) {
+            console.log("error is: " +error);            
             // Manejar cualquier error que ocurra durante el proceso
             this.invoke(error, 500, res, "Error interno del servidor", next);
         }

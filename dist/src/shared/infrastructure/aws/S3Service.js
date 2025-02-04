@@ -23,6 +23,7 @@ class S3Service {
         this.secretAccessKey = config_1.config.AWS_SECRET_KEY;
         this.bucket = config_1.config.AWS_BUCKET_NAME;
         this.environment = config_1.config.S3_ENVIRONMENT;
+        this.bucketBackup = config_1.config.AWS_BUCKET_NAME;
         this.s3 = new s3_1.default({
             region: this.region,
             accessKeyId: this.accessKeyId,
@@ -81,6 +82,23 @@ class S3Service {
             }
             catch (error) {
                 console.log(error);
+            }
+        });
+    }
+    uploadBackUpToS3(file, key) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const params = {
+                    Bucket: this.bucketBackup,
+                    Key: key,
+                    Body: file,
+                    StorageClass: "STANDARD_IA"
+                };
+                return yield this.s3.upload(params).promise();
+            }
+            catch (error) {
+                console.error(error);
+                throw new Error("No se pudo subir el respaldo a S3");
             }
         });
     }

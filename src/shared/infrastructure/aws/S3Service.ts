@@ -9,6 +9,7 @@ export class S3Service {
     private secretAccessKey = config.AWS_SECRET_KEY;
     private bucket          = config.AWS_BUCKET_NAME;
     private environment     = config.S3_ENVIRONMENT;
+    private bucketBackup    = config.AWS_BUCKET_NAME;
 
     private s3 : S3; 
 
@@ -74,6 +75,21 @@ export class S3Service {
             return await this.s3.deleteObject(params).promise();
         }catch(error){
             console.log(error);
+        }
+    }
+
+    async uploadBackUpToS3(file: any, key: any ){
+        try{                        
+            const params = {
+                Bucket      : this.bucketBackup,
+                Key         : key,                
+                Body        : file,
+                StorageClass: "STANDARD_IA"
+            }
+            return await this.s3.upload(params).promise();
+        }catch(error){
+          console.error(error);            
+          throw new Error("No se pudo subir el respaldo a S3");
         }
     }
 

@@ -52,9 +52,9 @@ class AuthController extends ResponseData_1.ResponseData {
             const { email, password, captchaToken } = req.body;
             try {
                 const isValidCaptcha = yield (0, ValidateAuthentication_1.verifyCaptcha)(captchaToken);
-                if (!isValidCaptcha) {
-                    next(new ErrorHandler_1.ErrorHandler('Captcha inválido', 500));
-                }
+                // if (!isValidCaptcha) {
+                //     next(new ErrorHandler('Captcha inválido', 500));
+                //   }
                 const response = yield this.authUseCase.signIn(email, password);
                 if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image !== undefined) {
                     response.user.profile_image ?

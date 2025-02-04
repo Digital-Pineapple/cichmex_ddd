@@ -19,9 +19,6 @@ import { MomentService } from '../../../../shared/infrastructure/moment/MomentSe
 import { PaymentEntity, PaymentVoucher } from '../../../domain/payments/PaymentEntity';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import mongoose from 'mongoose';
-import { errorMonitor } from 'nodemailer/lib/xoauth2';
-import { InfoPayment } from '../../../../shared/domain/PopulateInterfaces';
-import { log } from 'console';
 import { getProperties } from '../../../../helpers/products';
 
 
@@ -313,13 +310,7 @@ export class PaymentController extends ResponseData {
         }
 
     }
-    // public getProperties = (props: any) => {    
-    //     const array = Object.entries(props) || [];
-    //     const properties = array
-    //        .filter(([key, value]) => value !== null &&  value !== "false" && value !== false  && value !== "N/A" && key !== "_id" && key !== "createdAt" && key !== "updatedAt")
-    //        .map(([_, value]) => value);
-    //     return properties.join(" ");
-    // }  
+
     public async createPaymentProductMP(req: Request, res: Response, next: NextFunction) {
         const { products, branch_id, infoPayment, productsOrder, location, typeDelivery, subtotal, shipping_cost, discount } = req.body;
         const user = req.user
@@ -401,10 +392,13 @@ export class PaymentController extends ResponseData {
             const payment = await payment1.create({
                 requestOptions: { idempotencyKey: uuid4 },
                 body: body1,
-            });
+            });            
             console.log(payment);
             
             const { additional_info, id, status, transaction_details, payment_method } = payment
+            if(status === "rejected"){
+                return next(new ErrorHandler('El pago fue rechazado ;c', 400));
+            }
             
             if (payment) {
                 const createPayment: any = await this.paymentUseCase.createNewPayment({

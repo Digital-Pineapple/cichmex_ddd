@@ -104,6 +104,11 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       type: String,
       required: false,
       enum: ['web', 'mobile']
+    },
+    requiredTax: {
+      type: String,
+      required: false,
+      default: false
     }
   },
   {

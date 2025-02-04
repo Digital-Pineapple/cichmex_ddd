@@ -87,6 +87,10 @@ const TaxInfoSchema = new Schema<ITaxInfoEntity>(
       type: Boolean,
       default: true, // Por defecto, está activo
     },
+    facturapi_id: {
+      type: String,
+      required: true,
+    },
   },
   {
     versionKey: false, // Omite el campo `__v`

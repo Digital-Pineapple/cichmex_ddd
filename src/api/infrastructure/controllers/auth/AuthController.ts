@@ -65,9 +65,9 @@ export class AuthController extends ResponseData {
             const isValidCaptcha = await verifyCaptcha(captchaToken);
       
 
-            if (!isValidCaptcha) {
-                next(new ErrorHandler('Captcha inválido', 500));
-              }
+            // if (!isValidCaptcha) {
+            //     next(new ErrorHandler('Captcha inválido', 500));
+            //   }
               
             const response: any = await this.authUseCase.signIn(email, password);
 

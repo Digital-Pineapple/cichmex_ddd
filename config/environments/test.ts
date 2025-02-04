@@ -29,6 +29,7 @@ const TEST : Configuration = {
     MY_NUMBER           :   process.env.MY_NUMBER!,
     DIR_NODEMAILER      :   process.env.DIR_NODEMAILER!,
     MERCADOPAGO_TOKEN   :   process.env.MERCADOPAGO_TOKEN!,   
+    FACTURAPI_KEY       :   process.env.FACTURAPI_KEY!
 
 }
 
