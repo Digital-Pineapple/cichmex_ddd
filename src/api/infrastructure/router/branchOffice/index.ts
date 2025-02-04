@@ -39,7 +39,7 @@ branchOfficeRouter
 .get('/user/:id', branchOfficeController.getBranchesByUser)
 .post('/',branchValidations.ImageValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']),  branchOfficeController.createBranchOffice)
 .post('/verify/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),branchOfficeController.verifyBranchOffice)
-.post('/desactivate/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),branchOfficeController.desactivateBranchOffice)
+.post('/desactivate/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']),branchOfficeController.desactivateBranchOffice)
 .patch('/:id', branchValidations.ImageValidation,userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']), branchOfficeController.updateBranchOffice)
 .delete('/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']), branchOfficeController.deleteBranchOffice)
 .put('/image/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']), branchOfficeController.deleteImage)
