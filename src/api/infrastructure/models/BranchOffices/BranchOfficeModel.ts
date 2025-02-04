@@ -1,6 +1,5 @@
 import mongoose, { model, Mongoose, Schema } from "mongoose";
 import { BranchOfficeEntity, ILocation, ISchedules } from '../../../domain/branch_office/BranchOfficeEntity';
-import mongoose from "mongoose";
 import { ProductImageEntity } from "../../../domain/product/ProductEntity";
 
 enum TypeBranch {

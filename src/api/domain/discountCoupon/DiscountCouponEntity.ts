@@ -4,21 +4,23 @@ import { UserEntity } from "../user/UserEntity";
 export interface DiscountCouponEntity {
     _id: ObjectId;
     uuid: string;
-    code: string;
-    porcent?: number;
+    name: string;
+    description?: string;
+    code?: string;
+    percent?: number;
     fixed_amount?: number;
-    free_shipping?: boolean;
+    type_discount : string;
     unlimited?: boolean;
-    first_buy?: boolean;
-    expiration_date?: string;
+    start_date ?: Date;
+    expiration_date?: Date;
     min_cart_amount?: number;
     max_cart_amount?: number;
-    categories?: string[];
+    for_all_products : boolean; 
+    products?: ObjectId[]
     creator_id?:ObjectId;
-    for_creators?: boolean;
+    maxUses?: number;
+    is_active?: boolean;
     status: boolean;
-    maxUses: number;
-    // usedCount
 }
 
 export interface ConsumeCouponEntity{

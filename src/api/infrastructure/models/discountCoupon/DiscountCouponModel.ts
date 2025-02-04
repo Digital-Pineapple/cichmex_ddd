@@ -10,11 +10,19 @@ const DiscountCouponSchema = new Schema<DiscountCouponEntity>({
         type: String,
         unique: true,
     },
-    code: {
+    name:{
         type: String,
         required: true
     },
-    porcent: {
+    description:{
+        type:String,
+        required: false,
+    },
+    code: {
+        type: String,
+        required: false
+    },
+    percent: {
         type: Number,
         required: false
     },
@@ -22,24 +30,22 @@ const DiscountCouponSchema = new Schema<DiscountCouponEntity>({
         type: Number,
         required: false,
     },
-    free_shipping: {
-        type: Boolean,
-        required: false
+    type_discount:{
+        type: String,
+        required: true,
+        enum: ['free_shipping', 'first_buy', 'for_creators','is_amount','is_percent'],
+
     },
     unlimited: {
         type: Boolean,
         required: false
     },
-    // applications:{
-    //     type: Number,
-    //     required:false,
-    // },
-    first_buy: {
-        type: Boolean,
-        required: false
+    start_date:{
+        type: Date,
+        required: true,
     },
     expiration_date: {
-        type: String,
+        type: Date,
         required: false
     },
     min_cart_amount: {
@@ -50,10 +56,16 @@ const DiscountCouponSchema = new Schema<DiscountCouponEntity>({
         type: Number,
         required: false
     }, 
-    categories: {
-        type: Array,
-        required: false
-    }, 
+    for_all_products:{
+        type:Boolean,
+        required: true,
+    },
+    products:{
+        type: [Schema.Types.ObjectId],
+        ref:'Products',
+        required: false,
+    },
+   
     creator_id:{
         type: Schema.Types.ObjectId,
         required: false,
@@ -62,6 +74,15 @@ const DiscountCouponSchema = new Schema<DiscountCouponEntity>({
         type: Boolean,
         required: false,
         default:true,
+    },
+    is_active:{
+        type: Boolean,
+        required: false,
+        default: true, 
+    },
+    maxUses:{
+        type:Number,
+        required:false
     },
 
 }, {

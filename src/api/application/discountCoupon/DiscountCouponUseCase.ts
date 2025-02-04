@@ -3,13 +3,18 @@ import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { DiscountCouponEntity } from '../../domain/discountCoupon/DiscountCouponEntity';
 import { DiscountCouponRepository } from '../../domain/discountCoupon/DiscountCouponRepository'
 import { MomentService } from '../../../shared/infrastructure/moment/MomentService';
+import { PopulateProductCS, PopulateProducts } from '../../../shared/domain/PopulateInterfaces';
 
 export class DiscountCouponUseCase {
 
     constructor(private readonly discountCouponRepository: DiscountCouponRepository, private readonly momentService: MomentService) { }
 
     public async findAllDiscountCoupons(): Promise<DiscountCouponEntity[] | ErrorHandler | null> {
-        return await this.discountCouponRepository.findAll()
+        return await this.discountCouponRepository.findAll(PopulateProducts)
+    }
+
+    public async getOneDiscountDetails(_id: string): Promise<DiscountCouponEntity[] | ErrorHandler | null> {
+        return await this.discountCouponRepository.findById(_id, PopulateProducts)
     }
     public async findOneDiscountCoupon(code: string): Promise<DiscountCouponEntity | ErrorHandler | null> {
         const coupon = await this.discountCouponRepository.findOneItem({ code: code });
