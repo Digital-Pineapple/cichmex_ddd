@@ -61,7 +61,7 @@ const apiRouter = () => {
     apiRouter.use('/shopping-cart', shoppingCart_ts_1.default);
     apiRouter.use('/stock-StoreHouse', stockStoreHouse_1.default);
     apiRouter.use('/storehouse', storeHouse_1.default);
-    apiRouter.use('/coupons', discountCoupon_1.default);
+    apiRouter.use('/discounts', discountCoupon_1.default);
     apiRouter.use('/socket', sockets_1.default);
     apiRouter.use('/size-guide', sizeGuide_1.default);
     apiRouter.use('/variant-product', variantProduct_1.default);

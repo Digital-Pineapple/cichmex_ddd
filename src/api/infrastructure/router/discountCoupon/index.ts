@@ -26,13 +26,15 @@ const userValidations = new UserValidations();
 discountCouponRouter
 
     // .get('/all', userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.getAllDiscountCoupons)
-    .get('/all', discountCouponController.getAllDiscountCoupons)
-    .get('/', discountCouponController.getAllDiscountCoupons)
+    .get('/all', userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.getAllDiscountCoupons)
+    .get('/',userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.getAllDiscountCoupons)
+    .get('/get_one/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.getOneDiscountDetail)
     .post('/find',userValidations.authTypeUserValidation(['CUSTOMER']), discountCouponController.findCoupon )
     // .post('/',  userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.createDiscountCoupon)
-    .post('/', discountCouponController.createDiscountCoupon)
+    .post('/',userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.createDiscountCoupon)
     .post('/consume',  userValidations.authTypeUserValidation(['CUSTOMER']), discountCouponController.consumeOneCoupon)
-    .put('/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.updateDiscountCoupon)
+    .put('/update/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.updateDiscountCoupon)
+    .put('/changeActive/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.changeActiveDiscount)
     .delete('/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.deleteDiscountCoupon)
 
 export default discountCouponRouter;

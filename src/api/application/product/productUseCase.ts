@@ -57,7 +57,10 @@ export class ProductUseCase {
      return this.productRepository.findAllItems({category}, PopulateProductCategory, PopulateProductSubCategory)
   }
   public async categoryProducts(category: any): Promise<ProductEntity[] | null> {
-    return this.productRepository.search(category)
+    return  await this.productRepository.findAllItems({category: category, status: true})
+  }
+  public async subCategoryProducts(subCategory: any): Promise<ProductEntity[] | null> {
+    return  await this.productRepository.findAllItems({subCategory: subCategory, status: true})
   }
   public async getVideoProducts(): Promise<ProductEntity[] | ErrorHandler |  null> {
     return this.productRepository.findVideoProducts()

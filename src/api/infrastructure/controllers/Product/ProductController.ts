@@ -61,6 +61,8 @@ export class ProductController extends ResponseData {
     this.updatePositionImages = this.updatePositionImages.bind(this);
     this.AddVariantsClothesShoes = this.AddVariantsClothesShoes.bind(this);
     this.getRecentProducts = this.getRecentProducts.bind(this);
+    this.getAllProductsByCategory = this.getAllProductsByCategory.bind(this)
+    this.getAllProductsBySubCategory = this.getAllProductsBySubCategory.bind(this)
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
@@ -571,6 +573,33 @@ export class ProductController extends ResponseData {
       console.log("category product error", error);
     }
   }
+  public async getAllProductsByCategory(req: Request, res: Response, next: NextFunction) {
+    const { category_id } = req.query;
+
+    try {
+     
+      const response: any | null = await this.productUseCase.categoryProducts(category_id)
+      
+      this.invoke(response, 201, res, '', next);
+    } catch (error) {
+      // console.log();      
+      next(new ErrorHandler("Hubo un error al buscar", 500));
+      console.log("category product error", error);
+    }
+  }
+  public async getAllProductsBySubCategory(req: Request, res: Response, next: NextFunction) {
+    const { subCategory_id } = req.query;
+
+    try {
+      const response: any | null = await this.productUseCase.subCategoryProducts(subCategory_id)
+      this.invoke(response, 201, res, '', next);
+    } catch (error) {
+      // console.log();      
+      next(new ErrorHandler("Hubo un error al buscar", 500));
+      console.log("category product error", error);
+    }
+  }
+
 
   public async getProductsBySubCategory(req: Request, res: Response, next: NextFunction) {
     const { subcategory } = req.body
