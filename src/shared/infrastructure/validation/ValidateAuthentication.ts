@@ -22,8 +22,9 @@ export const validateAuthentication = async (req: Request, res: Response, next: 
 
         const userData = await UserModel.findOne({ uuid, status: true });
         if (!userData) return next(new ErrorHandler('El usuario no es válido', 400));
-
-        req.user = userData;
+        const id = userData._id.toHexString();
+        const dataUser = userData.toObject();
+        req.user = { ...dataUser, id };
         next();
     } catch (error) {
 

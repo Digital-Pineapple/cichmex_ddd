@@ -39,6 +39,7 @@ const UserValidation_1 = require("../../../../shared/infrastructure/validation/U
 const ShoppingCartUseCase_1 = require("../../../application/shoppingCart.ts/ShoppingCartUseCase");
 const ShoppingCartRepository_1 = require("../../repository/shoppingCart/ShoppingCartRepository");
 const ShoppingCartModel_1 = __importDefault(require("../../models/ShoppingCartModel"));
+const ActivityLogger_1 = require("../../../../shared/infrastructure/middleware/ActivityLogger");
 const authRouter = (0, express_1.Router)();
 const authRepository = new AuthRepository_1.AuthRepository(UserModel_1.default);
 const authUseCase = new AuthUseCase_1.AuthUseCase(authRepository);
@@ -66,6 +67,7 @@ authRouter
     .post('/send-email-restore', authController.restorePasswordByEmail)
     .post('/verifyCodeRP', authController.verifyCodeByEmail)
     .post('/change-password/:id', ValidateAuthentication_1.default, authController.changePassword)
+    .put('/change/password/admin', ValidateAuthentication_1.default, ActivityLogger_1.ActivityLogger, authController.changePasswordAdmin)
     .post('/restore-password', ValidateAuthentication_1.validateTokenRestorePassword, authController.restorePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', ValidateAuthentication_1.default, authController.verifyCode)

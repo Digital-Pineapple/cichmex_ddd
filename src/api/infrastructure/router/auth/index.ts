@@ -50,6 +50,7 @@ authRouter
     .post('/send-email-restore', authController.restorePasswordByEmail)
     .post('/verifyCodeRP', authController.verifyCodeByEmail)
     .post('/change-password/:id', validateAuthentication, authController.changePassword)
+    .put('/change/password/admin', validateAuthentication, ActivityLogger, authController.changePasswordAdmin)
     .post('/restore-password', validateTokenRestorePassword, authController.restorePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', validateAuthentication, authController.verifyCode)

@@ -35,6 +35,7 @@ class AuthController extends ResponseData_1.ResponseData {
         this.loginWithGooglePartner = this.loginWithGooglePartner.bind(this);
         this.registerByGoogle = this.registerByGoogle.bind(this);
         this.changePassword = this.changePassword.bind(this);
+        this.restorePasswordByEmailAdmin = this.restorePasswordByEmailAdmin.bind(this);
         this.uploadProfilePhoto = this.uploadProfilePhoto.bind(this);
         this.revalidateToken = this.revalidateToken.bind(this);
         this.verifyCode = this.verifyCode.bind(this);
@@ -46,6 +47,7 @@ class AuthController extends ResponseData_1.ResponseData {
         this.signupFacebook = this.signupFacebook.bind(this);
         this.redirectTikTok = this.redirectTikTok.bind(this);
         this.loginTikTok = this.loginTikTok.bind(this);
+        this.changePasswordAdmin = this.changePasswordAdmin.bind(this);
     }
     login(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -65,6 +67,7 @@ class AuthController extends ResponseData_1.ResponseData {
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {
+                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al iniciar sesión', 500));
             }
         });
@@ -244,6 +247,46 @@ class AuthController extends ResponseData_1.ResponseData {
             }
         });
     }
+    restorePasswordByEmailAdmin(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { email } = req.user;
+            try {
+                const response = yield this.authUseCase.findUser({ email: email });
+                if (!response)
+                    return next(new ErrorHandler_1.ErrorHandler('No existe el usuario', 404));
+                const newCode = parseInt((0, Utils_1.generateRandomCode)());
+                // const NoAttempts = 2
+                if (!response.verify_code) {
+                    // const { attemps }: any = (response.verify_code);
+                    // if (attemps >= 1) {
+                    // const newAttemps = attemps - 1
+                    // try {
+                    yield this.authUseCase.updateCodeUser(response._id, newCode);
+                    const { success, message } = yield (0, emailer_1.sendCodeMail)(response.email, response.fullname, newCode);
+                    this.invoke(success, 200, res, `${message}`, next);
+                    // } catch (error) {
+                    //     next(new ErrorHandler('Error', 500));
+                    // }
+                    // }
+                    // if (attemps === 0) {
+                    //     next(new ErrorHandler('Has alcanzado el limite de intentos', 500));
+                    // }
+                }
+                else {
+                    // try {
+                    yield this.authUseCase.updateCodeUser(response._id, newCode);
+                    const { success, message } = yield (0, emailer_1.sendCodeMail)(response.email, response.fullname, newCode);
+                    this.invoke(success, 201, res, `${message}`, next);
+                    // } catch (error) {
+                    //     next(new ErrorHandler('Error', 500));
+                    // }
+                }
+            }
+            catch (error) {
+                next(new ErrorHandler_1.ErrorHandler(`No existe el usuario: ${email}`, 500));
+            }
+        });
+    }
     verifyCodeByEmail(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { code, email } = req.body;
@@ -265,6 +308,20 @@ class AuthController extends ResponseData_1.ResponseData {
                 this.invoke(response, 200, res, 'La contraseña se cambio con exito', next);
             }
             catch (error) {
+                next(new ErrorHandler_1.ErrorHandler('Hubo un error al cambiar la contraseña', 500));
+            }
+        });
+    }
+    changePasswordAdmin(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.user;
+            const { password, new_password } = req.query;
+            try {
+                const response = yield this.authUseCase.changePassword(password, new_password, id ? id : '');
+                this.invoke(response, 200, res, 'La contraseña se cambio con exito', next);
+            }
+            catch (error) {
+                console.log(error);
                 next(new ErrorHandler_1.ErrorHandler('Hubo un error al cambiar la contraseña', 500));
             }
         });

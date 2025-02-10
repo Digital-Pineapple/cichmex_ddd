@@ -45,6 +45,7 @@ export class AuthController extends ResponseData {
         this.loginWithGooglePartner = this.loginWithGooglePartner.bind(this);
         this.registerByGoogle = this.registerByGoogle.bind(this);
         this.changePassword = this.changePassword.bind(this);
+        this.restorePasswordByEmailAdmin = this.restorePasswordByEmailAdmin.bind(this);
         this.uploadProfilePhoto = this.uploadProfilePhoto.bind(this);
         this.revalidateToken = this.revalidateToken.bind(this);
         this.verifyCode = this.verifyCode.bind(this);
@@ -56,6 +57,7 @@ export class AuthController extends ResponseData {
         this.signupFacebook = this.signupFacebook.bind(this);
         this.redirectTikTok = this.redirectTikTok.bind(this);
         this.loginTikTok = this.loginTikTok.bind(this);
+        this.changePasswordAdmin = this.changePasswordAdmin.bind(this);
     }
 
     public async login(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {            
@@ -81,6 +83,8 @@ export class AuthController extends ResponseData {
 
             this.invoke(response, 200, res, '', next);
         } catch (error) {
+            console.log(error);
+            
             next(new ErrorHandler('Hubo un error al iniciar sesión', 500));
         }
     }
@@ -260,6 +264,46 @@ export class AuthController extends ResponseData {
         }
     }
 
+    public async restorePasswordByEmailAdmin(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
+        const { email } = req.user;
+        try {
+            const response: any = await this.authUseCase.findUser({ email: email })
+            if(!response) return next(new ErrorHandler('No existe el usuario', 404));
+
+            const newCode = parseInt(generateRandomCode())
+            // const NoAttempts = 2
+            if (!response.verify_code) {
+                // const { attemps }: any = (response.verify_code);
+                // if (attemps >= 1) {
+                    // const newAttemps = attemps - 1
+                    // try {
+                        await this.authUseCase.updateCodeUser(response._id, newCode)
+                        const { success, message } = await sendCodeMail(response.email, response.fullname, newCode)
+                        this.invoke(success, 200, res, `${message}`, next)
+                    // } catch (error) {
+                    //     next(new ErrorHandler('Error', 500));
+                    // }
+                // }
+                // if (attemps === 0) {
+                //     next(new ErrorHandler('Has alcanzado el limite de intentos', 500));
+                // }
+            } else {
+                // try {
+                    await this.authUseCase.updateCodeUser(response._id, newCode)
+                    const { success, message } = await sendCodeMail(response.email, response.fullname, newCode)
+                    this.invoke(success, 201, res, `${message}`, next)
+                // } catch (error) {
+                //     next(new ErrorHandler('Error', 500));
+
+                // }
+            }
+
+        } catch (error) {
+            next(new ErrorHandler(`No existe el usuario: ${email}`, 500));
+        }
+    }
+
+
     public async verifyCodeByEmail(req: Request, res: Response, next: NextFunction) {
         const { code, email } = req.body;
 
@@ -282,6 +326,20 @@ export class AuthController extends ResponseData {
             const response = await this.authUseCase.changePassword(password, new_password, id);
             this.invoke(response, 200, res, 'La contraseña se cambio con exito', next);
         } catch (error) {
+            next(new ErrorHandler('Hubo un error al cambiar la contraseña', 500));
+        }
+    }
+
+    public async changePasswordAdmin(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
+        const { id } = req.user;
+        const { password, new_password } = req.query;
+        
+        try {
+            const response = await this.authUseCase.changePassword(password, new_password, id ? id: '' );
+            this.invoke(response, 200, res, 'La contraseña se cambio con exito', next);
+        } catch (error) {
+            console.log(error);
+            
             next(new ErrorHandler('Hubo un error al cambiar la contraseña', 500));
         }
     }

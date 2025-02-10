@@ -7,9 +7,6 @@ export const ActivityLogger = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(req,'data');
-  
-
   try {
     const logData: any = {
       userId: req.user ? req.user.id : null,
