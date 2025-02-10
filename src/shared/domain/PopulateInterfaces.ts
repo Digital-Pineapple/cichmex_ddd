@@ -12,6 +12,8 @@ import StockStoreHouseModel from '../../api/infrastructure/models/stockStoreHous
 import RegionModel from '../../api/infrastructure/models/Regions/RegionModel';
 import SizeGuideModel from '../../api/infrastructure/models/sizeGuide/SizeGuideModel';
 import { VariantProductModel } from '../../api/infrastructure/models/variantProduct/VariantProductModel';
+import BannerModel from '../../api/infrastructure/models/banners/BannerModel';
+import DiscountCouponModel from '../../api/infrastructure/models/discountCoupon/DiscountCouponModel';
 export interface IAuthPopulateConfig {
     path    : string;
     select  : string;
@@ -195,6 +197,11 @@ export const PopulateBranch : IStockPopulateConfig={
     path: 'branch',
     select: ["name","location"],
     model: BranchOfficeModel
+}
+
+export const PopulateBanner : IGuideConfig={
+    path: 'discount',
+    model: DiscountCouponModel
 }
 
 export const PopulateGuide : IGuideConfig = {

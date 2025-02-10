@@ -70,6 +70,8 @@ export class AuthController extends ResponseData {
             //   }
               
             const response: any = await this.authUseCase.signIn(email, password);
+            console.log(response,'login');
+            
 
             if (!(response instanceof ErrorHandler) && response.user.profile_image !== undefined) {
                 response.user.profile_image ?
@@ -107,16 +109,23 @@ export class AuthController extends ResponseData {
 
 
     public async loginAdmin(req: Request, res: Response, next: NextFunction): Promise<IAuth | ErrorHandler | void> {
-        const { email, password } = req.body;
-
+        const { email, password, captchaToken } = req.body;
         try {
-            const response = await this.authUseCase.signInAdmin(email, password)
+            
+            const isValidCaptcha = await verifyCaptcha(captchaToken);
+      
 
-            // if (!(response instanceof ErrorHandler) && response.user.profile_image === undefined) {
-            //     response.user.profile_image ?
-            //         response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image) :
-            //         'No hay imagen de perfil'
-            // }
+            // if (!isValidCaptcha) {
+            //     next(new ErrorHandler('Captcha inválido', 500));
+            //   }
+              
+            const response: any = await this.authUseCase.signIn(email, password);
+            
+            if (!(response instanceof ErrorHandler) && response.user.profile_image !== undefined) {
+                response.user.profile_image ?
+                    response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image + ".jpg") :
+                    'No hay imagen de perfil'
+            }
 
             this.invoke(response, 200, res, '', next);
         } catch (error) {

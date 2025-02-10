@@ -56,6 +56,7 @@ class AuthController extends ResponseData_1.ResponseData {
                 //     next(new ErrorHandler('Captcha inválido', 500));
                 //   }
                 const response = yield this.authUseCase.signIn(email, password);
+                console.log(response, 'login');
                 if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image !== undefined) {
                     response.user.profile_image ?
                         response.user.profile_image = yield this.s3Service.getUrlObject(response.user.profile_image + ".jpg") :
@@ -87,14 +88,18 @@ class AuthController extends ResponseData_1.ResponseData {
     }
     loginAdmin(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { email, password } = req.body;
+            const { email, password, captchaToken } = req.body;
             try {
-                const response = yield this.authUseCase.signInAdmin(email, password);
-                // if (!(response instanceof ErrorHandler) && response.user.profile_image === undefined) {
-                //     response.user.profile_image ?
-                //         response.user.profile_image = await this.s3Service.getUrlObject(response.user.profile_image) :
-                //         'No hay imagen de perfil'
-                // }
+                const isValidCaptcha = yield (0, ValidateAuthentication_1.verifyCaptcha)(captchaToken);
+                // if (!isValidCaptcha) {
+                //     next(new ErrorHandler('Captcha inválido', 500));
+                //   }
+                const response = yield this.authUseCase.signIn(email, password);
+                if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image !== undefined) {
+                    response.user.profile_image ?
+                        response.user.profile_image = yield this.s3Service.getUrlObject(response.user.profile_image + ".jpg") :
+                        'No hay imagen de perfil';
+                }
                 this.invoke(response, 200, res, '', next);
             }
             catch (error) {

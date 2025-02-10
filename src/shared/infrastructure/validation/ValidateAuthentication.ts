@@ -78,7 +78,7 @@ export const checkTypeUserAuth = (type_user: string | string[]) => async (req: R
 
         const { uuid } = tokenResult;
         const userData = await UserModel.findOne({ uuid }).populate(TypeUserPopulateConfig);
-
+        
         if (!userData) {
             throw new ErrorHandler('Usuario no encontrado', 404);
         }

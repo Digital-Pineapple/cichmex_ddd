@@ -1,11 +1,7 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -60,7 +56,7 @@ authRouter
     .get('/user', ValidateAuthentication_1.default, authController.revalidateToken)
     .post('/login', authValidations.loginValidation, authController.login)
     .post('/partner', authValidations.loginValidation, authController.loginPartner)
-    // .post('/login/admin', authValidations.loginValidation, authController.loginAdmin)
+    .post('/admin/login', authValidations.loginValidation, authController.loginAdmin)
     .post('/register', authValidations.registerValidation, authController.register)
     .post('/register-Pay', authValidations.registerValidation, authController.registerAndPay)
     .post('/registerAdmin/seed', authValidations.registerValidation, authController.registerAdmin)
