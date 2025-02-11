@@ -55,6 +55,7 @@ productRouter
 
 .get("/", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProducts)
 .get("/paginate", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProductsPaginate)
+.get("/for_search",userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getProductsBySearch)
   .get("/:id", productController.getProduct)
   .get('/non-existent/get', productController.getNoStockProducts)
   .post("/video/addVideo/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.addOneVideoProduct)
@@ -85,5 +86,6 @@ productRouter
   .post("/updateVariants/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.UpdateVariants)
   .post("/updateOrder/images/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updatePositionImages)
   .get("/recentProducts/ok", productController.getRecentProducts)
+  
 
 export default productRouter;
