@@ -24,8 +24,9 @@ bannerRouter
 .get('/active', ActivityLogger, bannerController.getActiveBanners)
 .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), bannerController.getAllBanners)
 .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), bannerController.getOneBanner)
-.post('/create/addBanner',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), bannerValidations.ImagesValidation,  bannerController.createOneBanner)
-.put('/change_active/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']),  bannerController.onActiveBanner)
-.delete('/delete/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']),  bannerController.deleteBanner)
+.post('/create/addBanner',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']) , ActivityLogger, bannerValidations.ImagesValidation,  bannerController.createOneBanner)
+.put('/change_active/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), ActivityLogger,  bannerController.onActiveBanner)
+.put('/update/ok/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), ActivityLogger, bannerValidations.ImagesValidation, bannerController.updateOneBanner)
+.delete('/delete/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), ActivityLogger,  bannerController.deleteBanner)
 
 export default bannerRouter;

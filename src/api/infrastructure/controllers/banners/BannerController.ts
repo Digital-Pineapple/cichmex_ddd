@@ -16,7 +16,8 @@ export class BannerController extends ResponseData {
         this.createOneBanner = this.createOneBanner.bind(this);
         this.getOneBanner = this.getOneBanner.bind(this);
         this.onActiveBanner = this.onActiveBanner.bind(this);
-        this.deleteBanner = this.deleteBanner.bind(this) 
+        this.deleteBanner = this.deleteBanner.bind(this) ;
+        this.updateOneBanner = this.updateOneBanner.bind(this);
 
 
     }
@@ -117,6 +118,65 @@ export class BannerController extends ResponseData {
           next(new ErrorHandler('Hubo un error al editar', 500));
         }
       }
+
+      public async updateOneBanner(req: Request, res: Response, next: NextFunction) {
+        try {
+          // Desestructurar los valores de req
+          const { id } = req.params;
+          const { body, files } = req;
+
+          // Construir el objeto data
+          const data = {
+            is_active: body.is_active === 'true',
+            no_slide: JSON.parse(body.no_slide),
+            for_discount: body.for_discount === 'true',
+            title: body.title,
+            description: body.description,
+            type_event: body.type_event,
+            discount : body.for_discount === 'false' ? null : body.discount,
+          };
+          
+      
+          // Actualizar el banner
+          const bannerResponse: any = await this.bannerUseCase.updateBanner(id, {...data});
+      
+          if (bannerResponse instanceof ErrorHandler) {
+            return this.invoke(bannerResponse, 400, res, 'Error al actualizar banner', next);
+          }
+      
+          // Asegurar que files es tratado correctamente
+          const uploadedFiles = files as { [fieldname: string]: File[] };
+      
+          // Función auxiliar para procesar cada imagen
+          const processImage = async (fileField: string, updateField: string) => {
+            if (uploadedFiles[fileField] && Array.isArray(uploadedFiles[fileField]) && uploadedFiles[fileField].length > 0) {
+              const file  = uploadedFiles[fileField][0];
+              const path = `${this.path}/${file.fieldname}/${Date.now()}/${bannerResponse._id}.webp`;
+              const { url } = await this.s3Service.uploadToS3AndGetUrl(path, file, 'image/webp');
+              const imageUrl = url.split('?')[0];
+      
+              await this.bannerUseCase.updateBanner(bannerResponse._id, { [updateField]: imageUrl });
+              bannerResponse[updateField] = imageUrl;
+            }
+          };
+          
+      
+          // Filtrar solo los archivos que están presentes en req.files
+          if (uploadedFiles) {
+            const fileFieldsToProcess = ['image_slide', 'image_slide_movil'].filter(field => uploadedFiles[field]);
+            await Promise.all(fileFieldsToProcess.map(field => processImage(field, field)));
+          }
+      
+          // Enviar respuesta exitosa
+          this.invoke(bannerResponse, 200, res, 'Se editó el banner exitosamente', next);
+        } catch (error) {
+          console.error(error);
+          next(new ErrorHandler('Hubo un error al editar', 500));
+        }
+      }
+      
+      
+      
       
 
     public async deleteBanner(req: Request, res: Response, next: NextFunction) {

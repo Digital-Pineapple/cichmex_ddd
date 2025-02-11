@@ -22,7 +22,12 @@ export class BannerUseCase {
         }
         return await this.bannerRepository.createOne({...body})
     }
-    public async updateBanner(id: any, updated: object): Promise<BannerEntity  | null> {
+    public async updateBanner(id: any, updated: BannerEntity): Promise<BannerEntity | ErrorHandler | null> {
+        const noRepeat =  await this.bannerRepository.findOneItem({no_slide : updated.no_slide, status: true})
+        const objectID = new mongoose.Types.ObjectId(id);
+            if (noRepeat && !noRepeat._id.equals(objectID) && noRepeat.no_slide === updated.no_slide) {
+                return new ErrorHandler(`El slide No.: "${updated.no_slide}" ya se encuentra en uso`, 500);
+            }
         return await this.bannerRepository.updateOne(id,{...updated})
     }
     public async deleteBanner(id: string): Promise<BannerEntity  | null> {
