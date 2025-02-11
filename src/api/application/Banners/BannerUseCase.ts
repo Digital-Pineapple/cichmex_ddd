@@ -10,7 +10,7 @@ export class BannerUseCase {
     constructor(private readonly bannerRepository: BannerRepository) { }
 
     public async getBanners(): Promise<BannerEntity[]  | null> {
-        return await this.bannerRepository.findAll()
+        return await this.bannerRepository.findAllItems({status:true}, PopulateBanner)
     }
     public async getOneBanner(id: string): Promise<BannerEntity  | null> {
         return await this.bannerRepository.findByIdPupulate(id, PopulateBanner)
@@ -34,7 +34,7 @@ export class BannerUseCase {
         return await this.bannerRepository.updateOne(id,{status: false})
     }
     public async getActiveBanners(): Promise<BannerEntity[]  | null> {
-        return await this.bannerRepository.findAllItems({status: true, is_active: true})
+        return await this.bannerRepository.getActiveAndOrderBanners()
     }
 
 }

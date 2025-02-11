@@ -21,7 +21,7 @@ const bannerValidations = new BannerValidations();
 
 bannerRouter
 
-.get('/active', ActivityLogger, bannerController.getActiveBanners)
+.get('/active', bannerController.getActiveBanners)
 .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), bannerController.getAllBanners)
 .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), bannerController.getOneBanner)
 .post('/create/addBanner',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']) , ActivityLogger, bannerValidations.ImagesValidation,  bannerController.createOneBanner)
