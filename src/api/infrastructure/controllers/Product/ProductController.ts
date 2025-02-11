@@ -15,6 +15,7 @@ import { StockSHinputUseCase } from '../../../application/storehouse/stockSHinpu
 import { validate as isUUID } from 'uuid'
 import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHoutputUseCase';
 import { PopulateVariantProduct } from '../../../../shared/domain/PopulateInterfaces';
+import { VariantProductEntity } from '../../../domain/variantProduct/variantProductEntity';
 export class ProductController extends ResponseData {
   protected path = "/product";
   private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634"
@@ -63,6 +64,7 @@ export class ProductController extends ResponseData {
     this.getRecentProducts = this.getRecentProducts.bind(this);
     this.getAllProductsByCategory = this.getAllProductsByCategory.bind(this)
     this.getAllProductsBySubCategory = this.getAllProductsBySubCategory.bind(this)
+    this.getProductsBySearch = this.getProductsBySearch.bind(this)
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
@@ -88,6 +90,31 @@ export class ProductController extends ResponseData {
       next(new ErrorHandler( "Hubo un error al consultar la información", 500));
     }
   }
+
+  public async getProductsBySearch(req: Request, res: Response, next: NextFunction) {
+    try {
+      // Obtener todos los productos
+      const products = await this.productUseCase.getSimpleProducts();
+      if (!products?.length) {
+        return this.invoke([], 200, res, "No hay productos disponibles", next);
+      }
+      const variants :any = await this.variantProductUseCase.findAllVariants() // Método que acepta múltiples IDs
+  
+      // Mapear productos con sus variantes
+      const productsWithVariants = products.map((product: any) => ({
+        ...product.toObject(),
+        variants: variants?.filter((v: any) => v.product_id.toString() === product._id.toString()),
+      }));
+  
+      // Enviar respuesta con los productos y sus variantes
+      this.invoke(productsWithVariants, 200, res, "", next);
+    } catch (error) {
+      console.error(error);
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+  
+  
   
 
   public async getAllProductsPaginate(req: Request, res: Response, next: NextFunction) {

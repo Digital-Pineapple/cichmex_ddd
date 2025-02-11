@@ -21,7 +21,7 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     }
     
     async AllProducts(): Promise<ProductEntity[] | null> {
-        return await this.findAll();
+        return await this.ProductModel.find({status:true})
     }
 
     async createProduct(body: Object): Promise<ProductEntity | null> {

@@ -11,6 +11,10 @@ export class ProductUseCase {
   public async getProducts(): Promise<ProductEntity[]> {
     return await this.productRepository.findAll(PopulateProductCategory, PopulateProductSubCategory);
   }
+  public async getSimpleProducts(): Promise<ProductEntity[] | null> {
+    return await this.productRepository.AllProducts()
+  }
+
 
   public async getProduct(
     _id: string

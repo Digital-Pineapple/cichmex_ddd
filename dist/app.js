@@ -15,9 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const node_cron_1 = __importDefault(require("node-cron"));
 const backUpDB_1 = require("./src/helpers/backUpDB");
 const Container_1 = require("./src/shared/infrastructure/Container");
-// import { whatsappService } from './src/shared/infrastructure/whatsapp/WhatsappService..external';
-// const time = '0 0 * * *' // cada dia
-const time = '0 0 */3 * *'; // Ejecuta cada 3 días a las 00:00
+const time = '0 0 * * *'; // cada dia
 node_cron_1.default.schedule(time, () => __awaiter(void 0, void 0, void 0, function* () {
     if (config.NODE_ENV.toLocaleLowerCase() === "production") {
         yield (0, backUpDB_1.backUpDBToS3)();

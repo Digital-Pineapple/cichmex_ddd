@@ -3,9 +3,8 @@ import { Configuration } from './config';
 import { backUpDBToS3 } from './src/helpers/backUpDB';
 import { Container } from './src/shared/infrastructure/Container';
 import { Server } from './src/shared/infrastructure/server/Server';
-// import { whatsappService } from './src/shared/infrastructure/whatsapp/WhatsappService..external';
-// const time = '0 0 * * *' // cada dia
-const time = '0 0 */3 * *' // Ejecuta cada 3 días a las 00:00
+
+const time = '0 0 * * *' // cada dia
 cron.schedule(time, async () => {
     if(config.NODE_ENV.toLocaleLowerCase() === "production"){
         await backUpDBToS3();
