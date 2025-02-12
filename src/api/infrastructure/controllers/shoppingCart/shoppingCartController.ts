@@ -150,7 +150,7 @@ export class ShoppingCartController extends ResponseData {
             // Validar entradas
             if(!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));
             if(!id) return next(new ErrorHandler('El id del producto es requerido', 404));
-            if (!ObjectId.isValid(id)) return next(new ErrorHandler('ID de producto inválido', 400));
+            // if (!ObjectId.isValid(id)) return next(new ErrorHandler('ID de producto inválido', 400));
             if (typeof quantity !== 'number') return next(new ErrorHandler('La cantidad debe ser un número', 400));                 
             let userCart;
             const newProduct : Product = {
@@ -216,13 +216,13 @@ export class ShoppingCartController extends ResponseData {
         try{
             if(!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));
             if(!id) return next(new ErrorHandler('El id del producto es requerido', 404));
-            if (!ObjectId.isValid(id)) return next(new ErrorHandler('ID de producto inválido', 400));
+            // if (!ObjectId.isValid(id)) return next(new ErrorHandler('ID de producto inválido', 400));
             if (typeof quantity !== 'number') return next(new ErrorHandler('La cantidad debe ser un número', 400)); 
                // Obtener el carrito de compras del usuario
             const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);    
             if (responseShoppingCartUser && responseShoppingCartUser.products) {
                 // Encontrar el índice del producto en el carrito
-                const index = responseShoppingCartUser.products.findIndex(product => product._id.equals(id));    
+                const index = responseShoppingCartUser.products.findIndex(product => product._id === id);    
                 // Validar si el producto fue encontrado
                 if (index !== -1) {
                 responseShoppingCartUser.products[index].quantity = quantity;
@@ -253,12 +253,12 @@ export class ShoppingCartController extends ResponseData {
           // validar inputs  
           if(!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));
           if(!id) return next(new ErrorHandler('El id del producto es requerido', 404));
-          if (!ObjectId.isValid(id)) return next(new ErrorHandler('ID de producto inválido', 400));
+        //   if (!ObjectId.isValid(id)) return next(new ErrorHandler('ID de producto inválido', 400));
           if (typeof quantity !== 'number') return next(new ErrorHandler('La cantidad debe ser un número', 400)); 
           // Obtener el carrito de compras del usuario
           const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);    
           if (responseShoppingCartUser && responseShoppingCartUser.products) {
-             const index = responseShoppingCartUser.products.findIndex(product => product._id.equals(id));    
+             const index = responseShoppingCartUser.products.findIndex(product => product._id === id);    
              // console.log("index was setted");            
              if (index !== -1) {
                 // Si el producto ya está en el carrito, actualizar la cantidad
