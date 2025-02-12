@@ -58,7 +58,6 @@ class AuthController extends ResponseData_1.ResponseData {
                 //     next(new ErrorHandler('Captcha inválido', 500));
                 //   }
                 const response = yield this.authUseCase.signIn(email, password);
-                console.log(response, 'login');
                 if (!(response instanceof ErrorHandler_1.ErrorHandler) && response.user.profile_image !== undefined) {
                     response.user.profile_image ?
                         response.user.profile_image = yield this.s3Service.getUrlObject(response.user.profile_image + ".jpg") :

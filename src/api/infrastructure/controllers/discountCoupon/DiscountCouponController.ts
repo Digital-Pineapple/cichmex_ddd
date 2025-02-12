@@ -5,6 +5,8 @@ import { DiscountCouponUseCase } from '../../../application/discountCoupon/Disco
 import { generateUUID } from '../../../../shared/infrastructure/validation/Utils';
 import { ConsumeCouponUseCase } from '../../../application/discountCoupon/ConsumeCouponUseCase';
 import { validate } from 'uuid';
+import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
+import { StockReturnRepository } from '../../repository/stockBranch/StockReturnRepository';
 
 
 export class DiscountCouponController extends ResponseData {
@@ -12,7 +14,8 @@ export class DiscountCouponController extends ResponseData {
 
     constructor(
         private readonly discountCouponUseCase: DiscountCouponUseCase,
-        private readonly consumeCouponUseCase: ConsumeCouponUseCase
+        private readonly consumeCouponUseCase: ConsumeCouponUseCase,
+        private readonly shoppingCartUseCase: ShoppingCartUseCase,
     ) {
         super();
         this.getAllDiscountCoupons = this.getAllDiscountCoupons.bind(this);
@@ -23,12 +26,13 @@ export class DiscountCouponController extends ResponseData {
         this.deleteDiscountCoupon = this.deleteDiscountCoupon.bind(this);
         this.getOneDiscountDetail = this.getOneDiscountDetail.bind(this);
         this.changeActiveDiscount = this.changeActiveDiscount.bind(this);
+        this.processedCoupon = this.processedCoupon.bind(this)
 
     }
 
     public async getOneDiscountDetail(req: Request, res: Response, next: NextFunction) {
-        const {id} = req.params
-        
+        const { id } = req.params
+
         try {
             const response = await this.discountCouponUseCase.getOneDiscountDetails(id)
             this.invoke(response, 200, res, '', next);
@@ -45,83 +49,109 @@ export class DiscountCouponController extends ResponseData {
         }
     }
 
+    public async processedCoupon(coupon: any, shoppingCart: any) {
+        const products = shoppingCart.products;
+        let total = 0;
+        let discount_apply = 0;
+        let shipping_cost = true
+    
+        // Calcular el total del carrito
+        const precios = products.map((entry: any) =>
+            entry.variant ? entry.variant.price * entry.quantity : entry.item.price * entry.quantity
+        );
+        const sum = precios.reduce((suma: number, currentValue: number) => suma + currentValue, 0);
+    
+        // Verificar monto mínimo requerido para aplicar el cupón
+        if (sum < coupon.min_cart_amount) {
+            throw new ErrorHandler(`El monto mínimo de compra es de ${coupon.min_cart_amount}`, 400);
+        }
+    
+        total = sum; // Inicializamos el total con el precio sin descuento
+    
+        // Aplicar descuento por porcentaje si existe
+        if (coupon.percent > 0) {
+            const discountAmount = (coupon.percent / 100) * sum; // Descuento calculado
+            const maxDiscountAmount = (coupon.percent / 100) * coupon.max_cart_amount
+    
+            console.log(maxDiscountAmount, "Monto máximo de descuento");
+            console.log(discountAmount, "Monto de descuento");
+            console.log(coupon);
+    
+            if (discountAmount > maxDiscountAmount) {
+                total = sum - maxDiscountAmount;
+                discount_apply = maxDiscountAmount
+            } else {
+                total = sum - discountAmount;
+                discount_apply = discountAmount
+            }
+        }
+    
+        // Aplicar descuento fijo si existe
+        if (coupon.fixed_amount > 0) {
+            total -= coupon.fixed_amount;
+            discount_apply += coupon.fixed_amount;
+        }
+
+        if (coupon.type_discount ==='free_shipping') {
+            shipping_cost = false
+        }
+    
+        // Asegurar que el total no sea negativo
+        total = Math.max(total, 0);
+    
+        return { total_price: total, discount_apply: discount_apply, shipping_cost };
+    }
+    
+
     public async findCoupon(req: Request, res: Response, next: NextFunction) {
         const { id } = req.user;
-        const { code, cart_amount } = req.body;
-        // console.log("code:", code, "cart_amount:", cart_amount);
-        
-    
+        const { code } = req.body;
+        let response = {}
         try {
-            let response: any | null = await this.discountCouponUseCase.findOneDiscountCoupon(code);
-    
-            if (response instanceof ErrorHandler) {
-                return this.invoke(response, 400, res, 'Error al encontrar el cupón', next);
-            }
-    
-            const noRepeat = await this.consumeCouponUseCase.findOneConsumeCoupon( id, response?.uuid );
-    
-            if (noRepeat) {
-                // return this.invoke(new ErrorHandler('Código canjeado anteriormente', 400), 400, res, 'Código canjeado anteriormente', next);
-                return this.invoke(response, 400, res, 'Código canjeado anteriormente', next);
+            let coupon : any = await this.discountCouponUseCase.findOneDiscountCoupon(code);
+            if (coupon instanceof ErrorHandler) {
+                response = coupon
             }
 
-            if(response.fixed_amount) {                
-                if(cart_amount >= response.min_cart_amount) {
-                    response = {
-                        uuid: response?.uuid,
-                        isCouponFixedAmount: true,
-                        isCouponPorcent: false,
-                        free_shipping: false,                       
-                        code: response.code,
-                        cart_amount: cart_amount,
-                        totalWithDiscount: cart_amount - response.fixed_amount,
-                        discount_porcent: (response.fixed_amount*100)/cart_amount,
-                        discount_amount: response.fixed_amount,
-                    };                     
-                }else{
-                    return next(new ErrorHandler(`se requiere un monto de carrito arriba de ${response.min_cart_amount}`, 403));     
-                }
-            }else if(response.porcent) {
-                if(cart_amount >= response.min_cart_amount && cart_amount <= response.max_cart_amount) {
-                    response = {
-                        uuid: response?.uuid,
-                        isCouponFixedAmount: false,
-                        isCouponPorcent: true,
-                        free_shipping: false,                   
-                        code: response.code,
-                        cart_amount: cart_amount,
-                        totalWithDiscount: cart_amount - cart_amount*(response.porcent/100),
-                        discount_porcent: response.porcent,  
-                        discount_amount: cart_amount*(response.porcent/100),   
-                    };
-                }else{
-                    return next(new ErrorHandler(`se requiere un monto de carrito arriba de ${response.min_cart_amount} y menor de ${response.max_cart_amount}`, 403));                      
-                }
-            }else if(response.free_shipping) {
-                response = {
-                    uuid: response?.uuid,
-                    isCouponFixedAmount: false,
-                    isCouponPorcent: false,
-                    free_shipping: true,                   
-                    code: response.code,
-                    cart_amount: cart_amount,
-                    totalWithDiscount: cart_amount,
-                    discount_porcent: 0,  
-                    discount_amount: 0,   
-                };
+            const shoppingCart = await this.shoppingCartUseCase.getShoppingCartByUser(id)
+            if (shoppingCart instanceof ErrorHandler) {
+                return this.invoke(shoppingCart, 400, res, 'Error al encontrar carrito de compras', next);
             }
+
+            const noRepeat = await this.consumeCouponUseCase.findOneConsumeCoupon(id, coupon?._id);
+            if (noRepeat) {
+                next(new ErrorHandler('El cupon ya ha sido canjeado',500))
+            }
+
+            if (coupon.unlimited) {
+              response =  await this.processedCoupon(coupon, shoppingCart)
+
+            }
+            if (coupon.maxUses > 0) {
+                const uses : any = await this.consumeCouponUseCase.findConsumesCoupon(coupon._id)
+                if (uses?.length >= coupon.maxUses) {
+                    next(new ErrorHandler('El cupon ya ha se ha agotado canjeado',500))
+                }
+                else{
+                    response =  await this.processedCoupon(coupon, shoppingCart)
+                }
+            }
+           
+
+
+
             this.invoke(response, 200, res, '', next);
-            
+
         } catch (error) {
             next(new ErrorHandler('Error al buscar el código', 500));
         }
     }
-    
+
 
     public async createDiscountCoupon(req: Request, res: Response, next: NextFunction) {
         const { values } = req.body;
         const uuid = generateUUID();
-    
+
         try {
             const parsedValues = {
                 ...values,
@@ -131,7 +161,7 @@ export class DiscountCouponController extends ResponseData {
                 max_cart_amount: Number(values.max_cart_amount),
                 maxUses: Number(values.maxUses),
             };
-    
+
             const response = await this.discountCouponUseCase.createDiscountCoupon(parsedValues);
             this.invoke(response, 200, res, 'Creado con éxito', next);
         } catch (error) {
@@ -139,7 +169,7 @@ export class DiscountCouponController extends ResponseData {
             next(new ErrorHandler('Error al crear', 500));
         }
     }
-    
+
     public async updateDiscountCoupon(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { values } = req.body;
@@ -149,8 +179,8 @@ export class DiscountCouponController extends ResponseData {
             let data: Record<string, any> = {
                 name: values.name,
                 description: values.description,
-                percent: isNaN(Number(values?.percent)) ? undefined : Number(values?.percent),
-                fixed_amount: isNaN(Number(values?.fixed_amount)) ? undefined : Number(values?.fixed_amount),
+                percent: values.fixed_amount? 0 : isNaN(Number(values?.percent)) ? undefined  : Number(values?.percent),
+                fixed_amount: values.percent ? 0 : isNaN(Number(values?.fixed_amount)) ? undefined : Number(values?.fixed_amount),
                 unlimited: values.unlimited,
                 start_date: values.start_date,
                 expiration_date: values.expiration_date,
@@ -161,10 +191,10 @@ export class DiscountCouponController extends ResponseData {
                 maxUses: isNaN(Number(values?.maxUses)) ? undefined : Number(values?.maxUses),
                 is_active: values.is_active,
             };
-    
+
             // Eliminar propiedades con valores `undefined`
             data = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
-            const response = await this.discountCouponUseCase.updateDiscountCoupon(id, data);
+            const response = await this.discountCouponUseCase.updateDiscountCoupon(id, {...data});
             this.invoke(response, 200, res, 'Editado con éxito', next);
         } catch (error) {
             console.log(error);
@@ -176,29 +206,29 @@ export class DiscountCouponController extends ResponseData {
         const { id } = req.params;
         const { is_active } = req.body;
         try {
-            const response = await this.discountCouponUseCase.updateDiscountCoupon(id, {is_active: is_active});
+            const response = await this.discountCouponUseCase.updateDiscountCoupon(id, { is_active: is_active });
             this.invoke(response, 200, res, 'Editado con éxito', next);
         } catch (error) {
             console.log(error);
             next(new ErrorHandler('Error al editar', 500));
         }
     }
-    
-    
+
+
     public async consumeOneCoupon(req: Request, res: Response, next: NextFunction) {
         const { id } = req.user;
         const { coupon } = req.body;
         const uuid = generateUUID();
-    
+
         try {
             const couponExist = await this.discountCouponUseCase.findOneDiscountCouponByUuid(coupon);
-    
+
             if (couponExist instanceof ErrorHandler) {
                 return this.invoke(couponExist, 400, res, 'Error al encontrar el cupón', next);
             }
-    
+
             const response = await this.consumeCouponUseCase.createConsumeCoupon({ user: id, discount_coupon: coupon, uuid: uuid });
-    
+
             if (response instanceof ErrorHandler) {
                 return this.invoke(response, 400, res, 'Error al canjear el cupón', next);
             }
@@ -207,7 +237,7 @@ export class DiscountCouponController extends ResponseData {
             next(new ErrorHandler('Error al aplicar cupón', 500));
         }
     }
-    
+
     public async deleteDiscountCoupon(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         try {

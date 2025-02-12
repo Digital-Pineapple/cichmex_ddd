@@ -17,7 +17,7 @@ export class DiscountCouponUseCase {
         return await this.discountCouponRepository.findById(_id, PopulateProducts)
     }
     public async findOneDiscountCoupon(code: string): Promise<DiscountCouponEntity | ErrorHandler | null> {
-        const coupon = await this.discountCouponRepository.findOneItem({ code: code });
+        const coupon = await this.discountCouponRepository.findOneItem({ code: code , status:true});
 
         if (!coupon) {
             return new ErrorHandler('Cupón no encontrado', 404);
@@ -27,6 +27,10 @@ export class DiscountCouponUseCase {
 
         if (expiration) {
             return new ErrorHandler('Cupón expirado', 500);
+        }
+
+        if (coupon.is_active === false) {
+            return new ErrorHandler('Cupón inactivo', 500);
         }
 
         // Acceder a los datos del objeto real

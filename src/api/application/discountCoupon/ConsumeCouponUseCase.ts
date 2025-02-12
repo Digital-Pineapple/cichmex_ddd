@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { ConsumeCouponEntity } from '../../domain/discountCoupon/DiscountCouponEntity';
 import { ConsumeCouponRepository } from '../../domain/discountCoupon/DiscountCouponRepository'
@@ -10,8 +11,12 @@ export class ConsumeCouponUseCase {
         return await this.consumeCouponRepository.findAll()
     }
 
-    public async findOneConsumeCoupon(user:any,discount_coupon:any ): Promise<ConsumeCouponEntity[] | ErrorHandler | null> {
-        return await this.consumeCouponRepository.findOneItem({user:user, discount_coupon:discount_coupon})
+    public async findOneConsumeCoupon(user:any,_id:any ): Promise<ConsumeCouponEntity[] | ErrorHandler | null> {
+        return await this.consumeCouponRepository.findOneItem({user:user, discount_coupon:_id})
+    }
+
+    public async findConsumesCoupon (coupon_id: mongoose.Types.ObjectId) :Promise<ConsumeCouponEntity[] | null> {
+        return await this.consumeCouponRepository.findAllItems({discount_coupon: coupon_id, status: true })
     }
 
     public async createConsumeCoupon( body: any): Promise<ConsumeCouponEntity | ErrorHandler | null> {
