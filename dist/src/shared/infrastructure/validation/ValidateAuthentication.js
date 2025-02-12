@@ -30,7 +30,9 @@ const validateAuthentication = (req, res, next) => __awaiter(void 0, void 0, voi
         const userData = yield UserModel_1.default.findOne({ uuid, status: true });
         if (!userData)
             return next(new ErrorHandler_1.ErrorHandler('El usuario no es válido', 400));
-        req.user = userData;
+        const id = userData._id.toHexString();
+        const dataUser = userData.toObject();
+        req.user = Object.assign(Object.assign({}, dataUser), { id });
         next();
     }
     catch (error) {

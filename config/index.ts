@@ -43,6 +43,7 @@ export type Configuration = {
     AWS_ACCESS_SECRET_TEST ?:   string;
     AWS_REGION_TEST     ?:   string;   
     FACTURAPI_KEY : string; 
+    AWS_BUCKET_BACKUP_NAME: string;
 };
 
 

@@ -31,7 +31,8 @@ const DEVELOPMENT : Configuration  = {
     AWS_ACCESS_KEY_TEST :   process.env.AWS_ACCESS_KEY_TEST!,
     AWS_ACCESS_SECRET_TEST :   process.env.AWS_ACCESS_SECRET_TEST!,
     AWS_REGION_TEST     :   process.env.AWS_REGION_TEST!,
-    FACTURAPI_KEY       :   process.env.FACTURAPI_KEY!
+    FACTURAPI_KEY       :   process.env.FACTURAPI_KEY!,
+    AWS_BUCKET_BACKUP_NAME : process.env.AWS_BUCKET_BACKUP_NAME!
 }
 
 

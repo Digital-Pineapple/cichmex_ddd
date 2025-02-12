@@ -3,8 +3,8 @@ import qr from 'qr-image';
 import { MomentService } from '../shared/infrastructure/moment/MomentService';
 
 export function buildPDF(orderData: any, dataCallback: any, endCallback: any) {
+    
     const momentService = new MomentService();
-
     const status = (value: string) => {
         if (value === 'approved') {
             return 'aprobado';
@@ -94,11 +94,12 @@ function createTable(doc: PDFDocument, products: any[], orderData: any) {
         title: "Productos",
         subtitle: "Productos del pedido",
         headers: ["Código", "Nombre", "Cantidad", "Precio"],
+
         rows: products.map(product => [
             product.item.tag,
             product.item.name,
             product.quantity.toString(),
-            `$${product.item.price.toFixed(2)}`
+            `$${product.item.price?.toFixed(2)}`
         ])
     };
     

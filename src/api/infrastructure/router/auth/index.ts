@@ -17,6 +17,7 @@ import { UserValidations } from '../../../../shared/infrastructure/validation/Us
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import { ShoppingCartRepository } from '../../repository/shoppingCart/ShoppingCartRepository';
 import ShoppingCartModel from '../../models/ShoppingCartModel';
+import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
 
 const authRouter = Router();
 
@@ -36,10 +37,10 @@ const authController = new AuthController(authUseCase, typeUserUseCase,shoppingC
 
 authRouter
 
-    .get('/user', validateAuthentication, authController.revalidateToken)
+    .get('/user',  validateAuthentication, authController.revalidateToken)
     .post('/login', authValidations.loginValidation, authController.login)
     .post('/partner', authValidations.loginValidation, authController.loginPartner)
-    // .post('/login/admin', authValidations.loginValidation, authController.loginAdmin)
+    .post('/admin/login',authValidations.loginValidation, authController.loginAdmin)
     .post('/register', authValidations.registerValidation, authController.register)
     .post('/register-Pay', authValidations.registerValidation, authController.registerAndPay)
     .post('/registerAdmin/seed', authValidations.registerValidation, authController.registerAdmin)
@@ -49,6 +50,7 @@ authRouter
     .post('/send-email-restore', authController.restorePasswordByEmail)
     .post('/verifyCodeRP', authController.verifyCodeByEmail)
     .post('/change-password/:id', validateAuthentication, authController.changePassword)
+    .put('/change/password/admin', validateAuthentication, ActivityLogger, authController.changePasswordAdmin)
     .post('/restore-password', validateTokenRestorePassword, authController.restorePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', validateAuthentication, authController.verifyCode)

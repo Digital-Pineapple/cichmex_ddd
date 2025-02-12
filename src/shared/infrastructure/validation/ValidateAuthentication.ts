@@ -22,8 +22,9 @@ export const validateAuthentication = async (req: Request, res: Response, next: 
 
         const userData = await UserModel.findOne({ uuid, status: true });
         if (!userData) return next(new ErrorHandler('El usuario no es válido', 400));
-
-        req.user = userData;
+        const id = userData._id.toHexString();
+        const dataUser = userData.toObject();
+        req.user = { ...dataUser, id };
         next();
     } catch (error) {
 
@@ -78,7 +79,7 @@ export const checkTypeUserAuth = (type_user: string | string[]) => async (req: R
 
         const { uuid } = tokenResult;
         const userData = await UserModel.findOne({ uuid }).populate(TypeUserPopulateConfig);
-
+        
         if (!userData) {
             throw new ErrorHandler('Usuario no encontrado', 404);
         }

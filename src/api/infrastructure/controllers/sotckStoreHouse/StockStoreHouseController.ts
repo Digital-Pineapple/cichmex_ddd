@@ -133,7 +133,7 @@ export class StockStoreHouseController extends ResponseData {
         const { products } = req.body;
         const user = req.user;
         
-        if (!products || !Array.isArray(products)) {
+        if (!Array.isArray(products) || products.length === 0) {
             return next(new ErrorHandler('Faltan datos necesarios o los productos no son válidos', 400));
         }
     
@@ -151,60 +151,84 @@ export class StockStoreHouseController extends ResponseData {
         const code_folio = RandomCodeId('FO');
     
         try {
-            const processProduct = async (item: any, isVariant: boolean = false) => {
-            
+            const validateProduct = (product: any): boolean => {
+                return (
+                  product &&
+                  product._id &&
+                  product.quantity &&
+                  typeof product.quantity === "number" &&
+                  product.quantity > 0
+                );
+              };
+          
+              // Validar que todos los productos tengan los campos requeridos
+              const invalidProducts = products.filter((product: any) => !validateProduct(product));
+              if (invalidProducts.length > 0) {
+                return next(
+                  new ErrorHandler(
+                    `Algunos productos tienen datos faltantes o inválidos: ${JSON.stringify(invalidProducts.map(i=>i.name))}`,
+                    400
+                  )
+                );
+              }
+            const processProduct = async (item: { _id: string; product_id?: string; quantity: number; name: string }, isVariant = false) => {
                 const itemQuantity = Number(item.quantity);
-
-                const  stockMethod : any = async()  => isVariant ?  await this.stockStoreHouseUseCase.getVariantStock(item._id,SH_id) : await this.stockStoreHouseUseCase.getProductStock(item._id, SH_id);
-                
-                if ( isNaN(itemQuantity) || itemQuantity < 0) {
-                    throw new Error(`Datos incompletos `);
+                if (isNaN(itemQuantity) || itemQuantity <= 0) {
+                    throw new Error(`Cantidad inválida para el producto ${item.name}`);
                 }
     
-                const available = await stockMethod();
-                
+                const available = isVariant
+                    ? await this.stockStoreHouseUseCase.getVariantStock(item._id, SH_id)
+                    : await this.stockStoreHouseUseCase.getProductStock(item._id, SH_id);
+    
                 const availableStock = Number(available?.stock) || 0;
-    
                 if (isNaN(availableStock)) {
-                    throw new Error(`El stock disponible no es válido para el producto ${item.name}`);
+                    throw new Error(`El stock disponible no es válido para el producto ${item.name} (ID: ${item._id})`);
                 }
     
-                const newQuantity =  availableStock + itemQuantity ;                
-                const response = available ? available : isVariant ?
-                await this.stockStoreHouseUseCase.createStock({
-                   product_id: item.product_id,
-                   variant_id : item._id,
-                   StoreHouse_id: SH_id,
-                   stock: newQuantity,
-               }): await this.stockStoreHouseUseCase.createStock({
-                   product_id: item._id,
-                   StoreHouse_id: SH_id,
-                   stock: newQuantity,
-               })
-   
+                const newQuantity = availableStock + itemQuantity;
     
-                 await this.stockSHinputUseCase.createInput({
+                const response = available || (isVariant
+                    ? await this.stockStoreHouseUseCase.createStock({
+                        product_id: item.product_id!,
+                        variant_id: item._id,
+                        StoreHouse_id: SH_id,
+                        stock: newQuantity,
+                    })
+                    : await this.stockStoreHouseUseCase.createStock({
+                        product_id: item._id,
+                        StoreHouse_id: SH_id,
+                        stock: newQuantity,
+                    }));
+    
+                await this.stockSHinputUseCase.createInput({
                     SHStock_id: response._id,
                     quantity: itemQuantity,
-                    newQuantity: newQuantity,
+                    newQuantity,
                     responsible: UserInfo,
                     folio: code_folio,
                     product_detail: item,
                 });
-                await this.stockStoreHouseUseCase.updateStock(available._id,{stock: newQuantity})
+    
+                await this.stockStoreHouseUseCase.updateStock(response._id, { stock: newQuantity });
             };
     
-            const operations = products.map(async (item: any) => {
-                if (item._id && item.product_id) {
-                    await processProduct(item, true);
-                } else if (item._id) {
-                    await processProduct(item);
-                } else {
-                    throw new Error('Producto sin identificador válido');
+            const operations = products.map(async (item) => {
+                try {
+                    if (item._id && item.product_id) {
+                        await processProduct(item, true);
+                    } else if (item._id) {
+                        await processProduct(item);
+                    } else {
+                        throw new Error(`Producto sin identificador válido: ${JSON.stringify(item)}`);
+                    }
+                } catch (error) {
+                    console.error(`Error procesando producto ${item._id}:`, error);
                 }
             });
     
-            await Promise.all(operations);
+            await Promise.allSettled(operations);
+    
             this.invoke(code_folio, 200, res, 'Alta de stock exitosa', next);
         } catch (error) {
             console.error('Error procesando stock:', error);
@@ -217,74 +241,107 @@ export class StockStoreHouseController extends ResponseData {
 
     public async createMultipleOutputs(req: Request, res: Response, next: NextFunction) {
         const { products } = req.body;
-        
         const user = req.user;
-
-        if (!products || !Array.isArray(products)) {
-            return next(new ErrorHandler('Faltan datos necesarios o los productos no son válidos', 400));
+      
+        // Validación inicial de `products` y `user`
+        if (!products || !Array.isArray(products) || products.length === 0) {
+          return next(new ErrorHandler("No se proporcionaron productos válidos", 400));
         }
-    
-        if (!user || !user._id || !user.fullname) {
-            return next(new ErrorHandler('Información del usuario no disponible', 400));
-        }
-     
+      
+        // Información del usuario
         const UserInfo = {
-            _id: user._id,
-            fullname: user.fullname,
-            email: user.email,
-            type_user: user.type_user
+          _id: user._id,
+          fullname: user.fullname,
+          email: user.email,
+          type_user: user.type_user,
         };
-        
-
-        const SH_id = '662fe69b9ba1d8b3cfcd3634';
-        const code_folio = RandomCodeId('FO');
-
+      
+        const SH_id = "662fe69b9ba1d8b3cfcd3634";
+        const code_folio = RandomCodeId("FO");
+      
         try {
-            const processProduct = async (item: any, isVariant: boolean = false) => {
-            
-                const itemQuantity = Number(item.quantity);
-
-                const  stockMethod : any = async()  =>  await this.stockStoreHouseUseCase.getDetailStock(item.stock_id)
-
-                
-                if ( isNaN(itemQuantity) || itemQuantity < 0) {
-                    throw new Error(`Datos incompletos `);
-                }
-    
-                const available = await stockMethod();
-                const availableStock = Number(available?.stock) || 0;
-    
-                if (isNaN(availableStock)) {
-                    throw new Error(`El stock disponible no es válido para el producto ${item.name}`);
-                }
-    
-                const newQuantity =  availableStock - itemQuantity ;
-                 await this.stockSHoutputUseCase.createOutput({
-                    SHStock_id: available._id,
-                    quantity: itemQuantity,
-                    newQuantity: newQuantity,
-                    responsible: UserInfo,
-                    folio: code_folio,
-                    product_detail: item,
-                });
-            await this.stockStoreHouseUseCase.updateStock(item.stock_id,{stock: newQuantity})
-            };
-    
-            const operations = products.map(async (item: any) => {
-                if (item._id && item.stock_id) {
-                    await processProduct(item, true);
-                 } else {
-                    throw new Error('Producto sin identificador válido');
-                }
+          // Helper para validar productos
+          const validateProduct = (product: any): boolean => {
+            return (
+              product &&
+              product._id &&
+              product.quantity &&
+              typeof product.quantity === "number" &&
+              product.quantity > 0
+            );
+          };
+      
+          // Validar que todos los productos tengan los campos requeridos
+          const invalidProducts = products.filter((product: any) => !validateProduct(product));
+          if (invalidProducts.length > 0) {
+            return next(
+              new ErrorHandler(
+                `Algunos productos tienen datos faltantes o inválidos: ${JSON.stringify(invalidProducts.map(i=>i.name))}`,
+                400
+              )
+            );
+          }
+      
+          // Procesar productos válidos
+          const processProduct = async (item: any, isVariant: boolean = false) => {
+            const itemQuantity = Number(item.quantity);
+      
+            // Validar cantidad
+            if (isNaN(itemQuantity) || itemQuantity <= 0) {
+              throw new Error(`La cantidad del producto ${item.name || "desconocido"} no es válida`);
+            }
+      
+            // Obtener detalles de stock
+            const stockDetails = await this.stockStoreHouseUseCase.getDetailStock(item.stock_id);
+      
+            if (!stockDetails) {
+              throw new Error(`No se encontró stock para el producto ${item.name || item._id}`);
+            }
+      
+            const availableStock = Number(stockDetails?.stock) || 0;
+      
+            if (isNaN(availableStock) || availableStock < itemQuantity) {
+              throw new Error(
+                `Stock insuficiente para el producto ${item.name || "desconocido"}: Disponible (${availableStock}), Requerido (${itemQuantity})`
+              );
+            }
+      
+            // Calcular el nuevo stock
+            const newQuantity = availableStock - itemQuantity;
+      
+            // Crear salida de stock
+            await this.stockSHoutputUseCase.createOutput({
+              SHStock_id: stockDetails._id,
+              quantity: itemQuantity,
+              newQuantity: newQuantity,
+              responsible: UserInfo,
+              folio: code_folio,
+              product_detail: item,
             });
-    
-            await Promise.all(operations);
-            this.invoke(code_folio, 200, res, 'Baja de stock exitosa', next);
+      
+            // Actualizar stock en el almacén
+            await this.stockStoreHouseUseCase.updateStock(item.stock_id, { stock: newQuantity });
+          };
+      
+          // Procesar todos los productos
+          const operations = products.map(async (item: any) => {
+            if (validateProduct(item)) {
+              await processProduct(item, true);
+            } else {
+              throw new Error("Producto con identificador o datos faltantes");
+            }
+          });
+      
+          await Promise.all(operations);
+      
+          // Respuesta exitosa
+          this.invoke(code_folio, 200, res, "Baja de stock exitosa", next);
         } catch (error) {
-            console.error('Error procesando stock:', error);
-            next(new ErrorHandler('Hubo un error procesando los productos', 500));
+          console.error("Error procesando stock:", error);
+          next(new ErrorHandler("Hubo un error procesando los productos", 500));
         }
-    }
+      }
+      
 
 
     public async updateStock(req: Request, res: Response, next: NextFunction) {

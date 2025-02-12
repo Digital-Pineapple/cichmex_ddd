@@ -250,7 +250,7 @@ export class AuthUseCase extends Authentication {
         return user                    
     }
 
-    async changePassword(password: string, newPassword: string, id: string): Promise<ErrorHandler | IAuth | null> {
+    async changePassword(password: any, newPassword: any, id: string): Promise<ErrorHandler | IAuth | null> {
         let customer = await this.authRepository.findById(id);
         const currentPassword = this.decryptPassword(password, customer.password);
         if (!currentPassword) return new ErrorHandler('Error la contraseña actual no es valida', 400);

@@ -12,9 +12,10 @@ import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { VariantProductUseCase } from '../../../application/variantProduct/VariantProductUseCase';
 import { StockSHinputUseCase } from '../../../application/storehouse/stockSHinputUseCase';
+import { validate as isUUID } from 'uuid'
+import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHoutputUseCase';
+import { PopulateVariantProduct } from '../../../../shared/domain/PopulateInterfaces';
 import { VariantProductEntity } from '../../../domain/variantProduct/variantProductEntity';
-import { ProductImageEntity } from '../../../domain/product/ProductEntity';
-
 export class ProductController extends ResponseData {
   protected path = "/product";
   private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634"
@@ -24,12 +25,14 @@ export class ProductController extends ResponseData {
     private categoryUseCase: CategoryUseCase,
     private stockStoreHouseUseCase: StockStoreHouseUseCase,
     private stockSHinputUseCase: StockSHinputUseCase,
+    private stockSHoutputUseCase : StockSHoutputUseCase,
     private readonly s3Service: S3Service,
     private subCategoryUseCase: SubCategoryUseCase,
     private variantProductUseCase: VariantProductUseCase,
   ) {
     super();
     this.getAllProducts = this.getAllProducts.bind(this);
+    this.getAllProductsPaginate = this.getAllProductsPaginate.bind(this);
     this.getProduct = this.getProduct.bind(this);
     this.createProduct = this.createProduct.bind(this);
     this.updateProduct = this.updateProduct.bind(this);
@@ -59,43 +62,110 @@ export class ProductController extends ResponseData {
     this.updatePositionImages = this.updatePositionImages.bind(this);
     this.AddVariantsClothesShoes = this.AddVariantsClothesShoes.bind(this);
     this.getRecentProducts = this.getRecentProducts.bind(this);
+    this.getAllProductsByCategory = this.getAllProductsByCategory.bind(this)
+    this.getAllProductsBySubCategory = this.getAllProductsBySubCategory.bind(this)
+    this.getProductsBySearch = this.getProductsBySearch.bind(this)
   }
 
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
-  try {
-    // Obtener todos los productos
-    const response = await this.productUseCase.getProducts();
-    if (!(response instanceof ErrorHandler)) {
-      // Actualizar las variantes de cada producto en paralelo
-      await Promise.all(
-        response.map(async (item: any) => {
-          // Buscar variantes asociadas al producto
-          const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(item._id);
-
-          // Verificar si hay variantes válidas
-          if (Array.isArray(variants) && variants.length > 0) {
-            await this.productUseCase.updateProduct(item._id, { has_variants: true });
-          }
-        })
-      );
+    try {
+      // Obtener todos los productos
+      const response = await this.productUseCase.getProducts();
+        await Promise.all(
+          response.map(async (item: any) => {
+            // Buscar variantes asociadas al producto
+            const variants = await this.variantProductUseCase.findAllVarinatsByProduct(item._id);
+            // Verificar si hay variantes válidas y actualizar el producto
+            const hasVariants = Array.isArray(variants) && variants.length > 0;
+            await this.productUseCase.updateProduct(item._id, { has_variants: hasVariants });
+          })
+        );
+     
+  
+      // Enviar la respuesta
+      this.invoke(response, 200, res, "", next);
+    } catch (error) {
+      console.error(error);
+      // Manejo de errores
+      next(new ErrorHandler( "Hubo un error al consultar la información", 500));
     }
-
-    // Enviar la respuesta
-    this.invoke(response, 200, res, "", next);
-  } catch (error) {
-    console.error(error);
-    // Manejo de errores
-    next(new ErrorHandler("Hubo un error al consultar la información", 500));
   }
-}
+
+  public async getProductsBySearch(req: Request, res: Response, next: NextFunction) {
+    try {
+      // Obtener todos los productos
+      const products = await this.productUseCase.getSimpleProducts();
+      if (!products?.length) {
+        return this.invoke([], 200, res, "No hay productos disponibles", next);
+      }
+      const variants :any = await this.variantProductUseCase.findAllVariants() // Método que acepta múltiples IDs
+  
+      // Mapear productos con sus variantes
+      const productsWithVariants = products.map((product: any) => ({
+        ...product.toObject(),
+        variants: variants?.filter((v: any) => v.product_id.toString() === product._id.toString()),
+      }));
+  
+      // Enviar respuesta con los productos y sus variantes
+      this.invoke(productsWithVariants, 200, res, "", next);
+    } catch (error) {
+      console.error(error);
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+  
+  
+  
+
+  public async getAllProductsPaginate(req: Request, res: Response, next: NextFunction) {
+    const page = parseInt(req.query.page as string, 10) || 1; // Página actual
+    const limit = parseInt(req.query.limit as string, 10) || 20; // Tamaño de página
+    const skip = (page - 1) * limit;
+
+    // Obtener los productos con paginación y ordenados por `createdAt`
+    try {
+      const [products, totalProducts] = await Promise.all([
+        this.productUseCase.findProductsPaginate(skip, limit),
+        this.productUseCase.countProducts(), // Método que devuelve el total de productos
+      ]);
+
+      // Obtener todos los productos
+      if (!(products instanceof ErrorHandler) && products !== null) {
+        // Actualizar las variantes de cada producto en paralelo
+        await Promise.all(
+          products.map(async (item: any) => {
+            // Buscar variantes asociadas al producto
+            const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(item._id)
+            
+            const hasVariants = Array.isArray(variants) && variants.length > 0;
+            await this.productUseCase.updateProduct(item._id, { has_variants: hasVariants });
+          })
+        );
+      }
+
+      // Enviar la respuesta
+      const response = {
+        totalProducts,
+        totalPages: Math.ceil(totalProducts / limit),
+        currentPage: page,
+        pageSize: limit,
+        products,
+      };
+      this.invoke(response, 200, res, "", next);
+    } catch (error) {
+      console.error(error);
+      // Manejo de errores
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
 
 
 
   public async getProduct(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;        
+    const { id } = req.params;
     try {
       const responseStock = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse)
-      const responseProduct: any | null = await this.productUseCase.getProduct(id);                
+      const responseProduct: any | null = await this.productUseCase.getProduct(id);
 
       const parsed = responseProduct.toJSON();
       let response = null;
@@ -104,10 +174,10 @@ export class ProductController extends ResponseData {
           ...parsed,
           stock: responseStock.stock
         }
-      }else {
+      } else {
         response = responseProduct
       }
-      
+
       const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(id);
       // Espera a que todas las promesas se resuelvan
       const newVariants = await Promise.all(
@@ -116,6 +186,7 @@ export class ProductController extends ResponseData {
             variant._id,
             this.onlineStoreHouse
           );
+          
           return { ...variant._doc, stock: stockVariant.stock };
         })
       );
@@ -124,6 +195,8 @@ export class ProductController extends ResponseData {
 
         try {
           const stockProduct = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse);
+          console.log(stockProduct);
+          
 
           // Verifica si stockProduct es válido
           if (stockProduct && typeof stockProduct.stock === 'number') {
@@ -468,10 +541,13 @@ export class ProductController extends ResponseData {
       if (available?.stock > 0) {
         return next(new ErrorHandler("No se puede eliminar hay existencias de este producto", 500));
       } else {
+        await this.stockStoreHouseUseCase.deleteStock(available?._id)
         const response = await this.productUseCase.deleteProduct(id);
         this.invoke(response, 201, res, "Eliminado con exito", next);
       }
     } catch (error) {
+      console.log(error);
+      
       next(new ErrorHandler("Hubo un error eliminar", 500));
     }
   }
@@ -481,7 +557,19 @@ export class ProductController extends ResponseData {
       if (!search) return next(new ErrorHandler("ingresa una busqueda", 404));
       const page = Number(req.query.page) || 1;
       const response: any | null = await this.productUseCase.searchProducts(search, page);
-      // Preparar la respuesta final
+      
+      if (!(response instanceof ErrorHandler) && response !== null) {
+        // Actualizar las variantes de cada producto en paralelo
+        await Promise.all(
+          response.products.map(async (item: any) => {
+            // Buscar variantes asociadas al producto
+            const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(item._id)
+            
+            const hasVariants = Array.isArray(variants) && variants.length > 0;
+            await this.productUseCase.updateProduct(item._id, { has_variants: hasVariants });
+          })
+        );
+      }
       this.invoke({
         products: response.products,
         total: response.total
@@ -499,8 +587,8 @@ export class ProductController extends ResponseData {
     try {
       if (!category) return next(new ErrorHandler("El nombre de la categoria es requerida", 404));
       const categoria: any | null = await this.categoryUseCase.getDetailCategoryByName(category);
-      if (categoria == null) return next(new ErrorHandler("La categoria no existe", 404));      
-      const products: any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);               
+      if (categoria == null) return next(new ErrorHandler("La categoria no existe", 404));
+      const products: any | null = await this.productUseCase.getProductsByCategory(categoria._id, this.onlineStoreHouse, queryparams);
       const response = {
         category: categoria,
         ...products
@@ -512,6 +600,33 @@ export class ProductController extends ResponseData {
       console.log("category product error", error);
     }
   }
+  public async getAllProductsByCategory(req: Request, res: Response, next: NextFunction) {
+    const { category_id } = req.query;
+
+    try {
+     
+      const response: any | null = await this.productUseCase.categoryProducts(category_id)
+      
+      this.invoke(response, 201, res, '', next);
+    } catch (error) {
+      // console.log();      
+      next(new ErrorHandler("Hubo un error al buscar", 500));
+      console.log("category product error", error);
+    }
+  }
+  public async getAllProductsBySubCategory(req: Request, res: Response, next: NextFunction) {
+    const { subCategory_id } = req.query;
+
+    try {
+      const response: any | null = await this.productUseCase.subCategoryProducts(subCategory_id)
+      this.invoke(response, 201, res, '', next);
+    } catch (error) {
+      // console.log();      
+      next(new ErrorHandler("Hubo un error al buscar", 500));
+      console.log("category product error", error);
+    }
+  }
+
 
   public async getProductsBySubCategory(req: Request, res: Response, next: NextFunction) {
     const { subcategory } = req.body
@@ -519,13 +634,13 @@ export class ProductController extends ResponseData {
     try {
       if (!subcategory) return next(new ErrorHandler("El nombre de la subcategoria es requerida", 404));
       const subcategoria: any | null = await this.subCategoryUseCase.getDetailSubCategoryByName(subcategory);
-      if (subcategoria == null) return next(new ErrorHandler("La subcategoria no existe", 404));      
-      const products: any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);                         
+      if (subcategoria == null) return next(new ErrorHandler("La subcategoria no existe", 404));
+      const products: any | null = await this.productUseCase.getProductsBySubCategory(subcategoria._id, this.onlineStoreHouse, queryparams);
       const response = {
         subcategory: subcategoria,
-        ...products        
-      };            
-      this.invoke(response, 201, res, '', next);      
+        ...products
+      };
+      this.invoke(response, 201, res, '', next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al buscar", 500));
       console.log("subcategory product error", error);
@@ -598,10 +713,10 @@ export class ProductController extends ResponseData {
     const { id } = req.params //product id
     try {
       const productDetail: any | null = await this.productUseCase.getProduct(id);
-      const category = productDetail?.category._id;      
-      if (productDetail == null) return next(new ErrorHandler("Este producto no existe", 404));      
-      let response: any | null = await this.productUseCase.getRandomProductsByCategory(category, productDetail._id, this.onlineStoreHouse);      
-      this.invoke(response, 200, res, "", next);      
+      const category = productDetail?.category._id;
+      if (productDetail == null) return next(new ErrorHandler("Este producto no existe", 404));
+      let response: any | null = await this.productUseCase.getRandomProductsByCategory(category, productDetail._id, this.onlineStoreHouse);
+      this.invoke(response, 200, res, "", next);
     } catch (error) {
       console.log(error, 'ok');
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
@@ -710,6 +825,25 @@ export class ProductController extends ResponseData {
     const { variants } = req.body;
     const user = req.user
     const SH_id = '662fe69b9ba1d8b3cfcd3634'
+    const UserInfo = {
+      _id: user._id,
+      fullname: user.fullname,
+      email: user.email,
+      type_user: user.type_user,
+    };
+    const deleteStockProduct = await this.stockStoreHouseUseCase.getProductStock(id, SH_id)
+    if (deleteStockProduct && !(!!deleteStockProduct?.variant_id)) {
+      await this.stockSHoutputUseCase.createOutput({
+        folio: RandomCodeId('AV'),
+        SHStock_id: deleteStockProduct._id,
+        quantity: deleteStockProduct.stock,
+        newQuantity: 0,
+        responsible: UserInfo,
+        product_detail: id,
+        reason: 'Create variants'
+      })
+      await this.stockStoreHouseUseCase.deleteStock(deleteStockProduct._id)
+    }
 
     try {
       // Validar y transformar las variantes
@@ -798,12 +932,29 @@ export class ProductController extends ResponseData {
       fullname: user.fullname,
       email: user.email,
       type_user: user.type_user,
-  };
-  
+    };
+    const objectProduct = new mongoose.Types.ObjectId(id)
+
     if (!variants || !Array.isArray(variants)) {
       return next(new ErrorHandler("Variantes no proporcionadas o inválidas", 400));
     }
-  
+    
+    const deleteStockProduct = await this.stockStoreHouseUseCase.getProductStock(objectProduct, SH_id)
+    
+    
+    if (deleteStockProduct && !(!!deleteStockProduct.variant_id)) {
+      await this.stockSHoutputUseCase.createOutput({
+        folio: RandomCodeId('AV'),
+        SHStock_id: deleteStockProduct._id,
+        quantity: deleteStockProduct.stock,
+        newQuantity: 0,
+        responsible: UserInfo,
+        product_detail: id,
+        reason: 'Create variants'
+      })
+      await this.stockStoreHouseUseCase.deleteStock(deleteStockProduct._id)
+    }
+
     try {
       // Validar y transformar las variantes
       const parsedVariants = variants.map((variant: any) => ({
@@ -813,49 +964,50 @@ export class ProductController extends ResponseData {
           return acc;
         }, {} as Record<string, any>),
       }));
-  
+
       // Construir filesByVariant agrupado por color
       const filesByVariant: { [key: string]: Express.Multer.File[] } = {};
+      
       if (req.files) {
         const files = req.files as Express.Multer.File[];
-  
+
         let currentColor: string | null = null;
         let imageIndex = 0;
-  
+
         files.forEach((file) => {
           const match = file.fieldname.match(/^(\d+)\[(.*?)\]$/);
           if (match) {
             const [_, index, color] = match;
-  
+
             if (color !== currentColor) {
               currentColor = color;
               imageIndex = 0;
             }
-  
+
             filesByVariant[color] = filesByVariant[color] || [];
             filesByVariant[color][imageIndex] = file;
             imageIndex++;
           }
         });
       }
-  
+
       // Subir imágenes a S3 y construir imageUrlsByColor
       const imageUrlsByColor: { [color: string]: { url: string; color: string }[] } = {};
-  
+
       await Promise.all(
         Object.entries(filesByVariant).map(async ([color, files]) => {
           imageUrlsByColor[color] = await Promise.all(
             files.map(async (file: Express.Multer.File, fileIndex: number) => {
               const uniqueFileName = `${Date.now()}-${color}-${fileIndex}`;
               const pathObject = `${this.path}/${uniqueFileName}.webp`;
-              const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, file, "image/webp");
+              const { url } = await this.s3Service.uploadToS3AndGetUrl(pathObject, file, "image/*");
               return { url: url.split("?")[0], color: color };
             })
           );
         })
       );
 
-  
+
       // Procesar las variantes y asignar las imágenes
       await Promise.all(
         parsedVariants.map(async (variant: any, variantIndex: number) => {
@@ -866,7 +1018,7 @@ export class ProductController extends ResponseData {
               sku,
               product_id: id,
             });
-  
+
             const stock = variant.stock
             const SHStock = await this.stockStoreHouseUseCase.createStock({
               StoreHouse_id: SH_id,
@@ -882,9 +1034,10 @@ export class ProductController extends ResponseData {
               responsible: UserInfo,
               product_detail: id
             })
-  
+
             // Asignar imágenes a la variante por color
-            const color : any = variant.attributes?.color; 
+            const color: any = variant.attributes?.color;
+            
             if (color && imageUrlsByColor[color]) {
               const images = imageUrlsByColor[color];
               await this.variantProductUseCase.UpdateVariant(addVariant._id, { images: images });
@@ -894,7 +1047,7 @@ export class ProductController extends ResponseData {
           }
         })
       );
-  
+
       const response: any = await this.productUseCase.getProduct(id)
       const variantsAll: any = await this.variantProductUseCase.findAllVarinatsByProduct(id);
 
@@ -916,7 +1069,7 @@ export class ProductController extends ResponseData {
       next(new ErrorHandler("Hubo un error al actualizar la información", 500));
     }
   }
-  
+
 
 
   public async addDescriptionAndVideo(req: Request, res: Response, next: NextFunction) {
@@ -924,7 +1077,7 @@ export class ProductController extends ResponseData {
     const data = { ...req.body };
     let update: any = {};
     let videos: { url: string; type: string }[] = [];
-
+  
     try {
       // Validar y procesar archivos de video si existen
       if (req.files && Array.isArray(req.files) && req.files.length > 0) {
@@ -980,10 +1133,33 @@ export class ProductController extends ResponseData {
     const { variants } = req.body;
     const user = req.user;
     const SH_id = "662fe69b9ba1d8b3cfcd3634";
+    const objectProduct = new mongoose.Types.ObjectId(id)
+    const UserInfo = {
+      _id: user._id,
+      fullname: user.fullname,
+      email: user.email,
+      type_user: user.type_user,
+    };
 
     if (!id || !Array.isArray(variants)) {
       return next(new ErrorHandler("Datos inválidos para actualizar variantes", 400));
     }
+    const deleteStockProduct = await this.stockStoreHouseUseCase.getProductStock(objectProduct, SH_id)
+    
+    
+    if (deleteStockProduct && !(!!deleteStockProduct.variant_id)) {
+      await this.stockSHoutputUseCase.createOutput({
+        folio: RandomCodeId('AV'),
+        SHStock_id: deleteStockProduct._id,
+        quantity: deleteStockProduct.stock,
+        newQuantity: 0,
+        responsible: UserInfo,
+        product_detail: id,
+        reason: 'Create variants'
+      })
+      await this.stockStoreHouseUseCase.deleteStock(deleteStockProduct._id)
+    }
+
 
     try {
       const parsedVariants = variants.map((variant: any) => {
@@ -1045,7 +1221,7 @@ export class ProductController extends ResponseData {
             }
             await this.variantProductUseCase.UpdateVariant(variant._id, { ...variant });
           } else {
-            if (!variant._id || variant._id === 'undefined') {
+            if (!variant._id || variant._id === 'undefined'|| isUUID(variant._id)) {
               delete variant._id;
             }
 
@@ -1128,6 +1304,7 @@ export class ProductController extends ResponseData {
             variant._id,
             this.onlineStoreHouse
           );
+          
           return { ...variant._doc, stock: stockVariant.stock };
         })
       );
@@ -1149,7 +1326,7 @@ export class ProductController extends ResponseData {
       console.log(error);         
       next(new ErrorHandler("Hubo un error al obtener la información", 500));
     }
-  } 
+  }
 
 
 

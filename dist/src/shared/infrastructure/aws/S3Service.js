@@ -23,7 +23,7 @@ class S3Service {
         this.secretAccessKey = config_1.config.AWS_SECRET_KEY;
         this.bucket = config_1.config.AWS_BUCKET_NAME;
         this.environment = config_1.config.S3_ENVIRONMENT;
-        this.bucketBackup = config_1.config.AWS_BUCKET_NAME;
+        this.bucketBackup = config_1.config.AWS_BUCKET_BACKUP_NAME;
         this.s3 = new s3_1.default({
             region: this.region,
             accessKeyId: this.accessKeyId,
@@ -37,7 +37,7 @@ class S3Service {
                 const params = {
                     Bucket: this.bucket,
                     Key: this.environment + key,
-                    ContentType: contentType, //
+                    ContentType: contentType,
                     Body: fileContent,
                 };
                 yield this.s3.upload(params).promise();

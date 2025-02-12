@@ -22,6 +22,9 @@ import { StockInputRepository } from '../../repository/stockBranch/StockInputRep
 import { StockSHinputRepository } from '../../repository/stockStoreHouse/StockSHinputRepository';
 import StockSHinputModel from '../../models/stockStoreHouse/StockSHinputModel';
 import { StockSHinputUseCase } from '../../../application/storehouse/stockSHinputUseCase';
+import { StockSHOutputRepository } from '../../repository/stockStoreHouse/StockSHOutputRepository';
+import StockSHoutputModel from '../../models/stockStoreHouse/StockSHoutputModel';
+import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHoutputUseCase';
 
 const productRouter = Router();
 
@@ -32,23 +35,27 @@ const variantProductRepository = new VariantProductRepository(VariantProductMode
 
 const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
 const stockInputSHRepository = new StockSHinputRepository(StockSHinputModel)
+const stockOutputSHRepository = new StockSHOutputRepository(StockSHoutputModel)
 
 const productUseCase = new ProductUseCase(productRepository);
 const categoryUseCase = new CategoryUseCase(categoryRepository)
 const subCategoryUseCase = new SubCategoryUseCase(subcategoryRepository);
 const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository);
 const stockSHinputUseCase = new StockSHinputUseCase(stockInputSHRepository)
+const stockSHOutputUseCase = new StockSHoutputUseCase(stockOutputSHRepository)
 const variantProductUseCase = new VariantProductUseCase(variantProductRepository)
 
 const s3Service = new S3Service();
 const productvalidations = new ProductValidations()
 
-const productController = new ProductController(productUseCase, categoryUseCase, stockStoreHouseUseCase,stockSHinputUseCase, s3Service, subCategoryUseCase, variantProductUseCase);
+const productController = new ProductController(productUseCase, categoryUseCase, stockStoreHouseUseCase,stockSHinputUseCase,stockSHOutputUseCase, s3Service, subCategoryUseCase, variantProductUseCase);
 const userValidations = new UserValidations();
 
 productRouter
 
-  .get("/", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProducts)
+.get("/", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProducts)
+.get("/paginate", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProductsPaginate)
+.get("/for_search",userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getProductsBySearch)
   .get("/:id", productController.getProduct)
   .get('/non-existent/get', productController.getNoStockProducts)
   .post("/video/addVideo/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.addOneVideoProduct)
@@ -59,6 +66,8 @@ productRouter
   .post("/addVariants/clothes-shoes/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.AddVariantsClothesShoes)
   .post("/selectSizeGuide/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.SelectSizeGuide)
   .post('/search-category', productController.getProductsByCategory)
+  .get('/productsByCategory/search', productController.getAllProductsByCategory)
+  .get('/productsBySubCategory/search', productController.getAllProductsBySubCategory)
   .post("/updateInfo/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProduct)
   .put("/updateVideo/:id", productvalidations.videoValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProductVideo)
   .put("/updateThumbnail/:id", productvalidations.thumbnailValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateThumbnail)
@@ -77,5 +86,6 @@ productRouter
   .post("/updateVariants/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.UpdateVariants)
   .post("/updateOrder/images/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updatePositionImages)
   .get("/recentProducts/ok", productController.getRecentProducts)
+  
 
 export default productRouter;

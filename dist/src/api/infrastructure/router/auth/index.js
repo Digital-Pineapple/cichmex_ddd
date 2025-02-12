@@ -1,11 +1,7 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -43,6 +39,7 @@ const UserValidation_1 = require("../../../../shared/infrastructure/validation/U
 const ShoppingCartUseCase_1 = require("../../../application/shoppingCart.ts/ShoppingCartUseCase");
 const ShoppingCartRepository_1 = require("../../repository/shoppingCart/ShoppingCartRepository");
 const ShoppingCartModel_1 = __importDefault(require("../../models/ShoppingCartModel"));
+const ActivityLogger_1 = require("../../../../shared/infrastructure/middleware/ActivityLogger");
 const authRouter = (0, express_1.Router)();
 const authRepository = new AuthRepository_1.AuthRepository(UserModel_1.default);
 const authUseCase = new AuthUseCase_1.AuthUseCase(authRepository);
@@ -60,7 +57,7 @@ authRouter
     .get('/user', ValidateAuthentication_1.default, authController.revalidateToken)
     .post('/login', authValidations.loginValidation, authController.login)
     .post('/partner', authValidations.loginValidation, authController.loginPartner)
-    // .post('/login/admin', authValidations.loginValidation, authController.loginAdmin)
+    .post('/admin/login', authValidations.loginValidation, authController.loginAdmin)
     .post('/register', authValidations.registerValidation, authController.register)
     .post('/register-Pay', authValidations.registerValidation, authController.registerAndPay)
     .post('/registerAdmin/seed', authValidations.registerValidation, authController.registerAdmin)
@@ -70,6 +67,7 @@ authRouter
     .post('/send-email-restore', authController.restorePasswordByEmail)
     .post('/verifyCodeRP', authController.verifyCodeByEmail)
     .post('/change-password/:id', ValidateAuthentication_1.default, authController.changePassword)
+    .put('/change/password/admin', ValidateAuthentication_1.default, ActivityLogger_1.ActivityLogger, authController.changePasswordAdmin)
     .post('/restore-password', ValidateAuthentication_1.validateTokenRestorePassword, authController.restorePassword)
     .post('/upload/profile-photo/:id', authValidations.profilePhotoValidation, authController.uploadProfilePhoto)
     .post('/verify-code', ValidateAuthentication_1.default, authController.verifyCode)

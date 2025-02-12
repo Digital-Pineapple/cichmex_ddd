@@ -91,7 +91,11 @@ const variantProductSchema = new mongoose.Schema<VariantProductEntity>(
         weight: { type: Number, required: false },
         rating: { type: Number, required: false },
         tag: {type:String, required: true},
-        is_main:{type:Boolean, required:false, default: false}
+        is_main:{type:Boolean, required:false, default: false},
+        purchase_price: {
+            type: Number,
+            required: false,
+          }
 
     },
     {

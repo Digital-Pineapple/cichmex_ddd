@@ -11,6 +11,10 @@ export class ProductUseCase {
   public async getProducts(): Promise<ProductEntity[]> {
     return await this.productRepository.findAll(PopulateProductCategory, PopulateProductSubCategory);
   }
+  public async getSimpleProducts(): Promise<ProductEntity[] | null> {
+    return await this.productRepository.AllProducts()
+  }
+
 
   public async getProduct(
     _id: string
@@ -57,7 +61,10 @@ export class ProductUseCase {
      return this.productRepository.findAllItems({category}, PopulateProductCategory, PopulateProductSubCategory)
   }
   public async categoryProducts(category: any): Promise<ProductEntity[] | null> {
-    return this.productRepository.search(category)
+    return  await this.productRepository.findAllItems({category: category, status: true})
+  }
+  public async subCategoryProducts(subCategory: any): Promise<ProductEntity[] | null> {
+    return  await this.productRepository.findAllItems({subCategory: subCategory, status: true})
   }
   public async getVideoProducts(page: number): Promise<ProductEntity[] | ErrorHandler |  null> {
     return this.productRepository.findVideoProducts(page)
@@ -78,8 +85,13 @@ export class ProductUseCase {
   public async getRecentAddedProducts():  Promise<ProductEntity[] | ErrorHandler | null> {
      return this.productRepository.findRecentAddedProducts();
   }
-  // public async getNewlyAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
-  //   return this.productRepository.findNewlyAddedProducts()    
-  // }
+  public async findProductsPaginate(skip: number, limit:number): Promise<ProductEntity[] | ErrorHandler | null> {
+    return this.productRepository.GetProductPaginate(skip, limit)
+  }
+
+  public async countProducts (): Promise <any>{
+    return this.productRepository.countProducts()
+  }
+  
 
 }

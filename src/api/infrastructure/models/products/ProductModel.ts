@@ -161,6 +161,10 @@ const ProductSchema = new Schema<ProductEntity>(
       type: Boolean,
       required:false,
       default:false
+    },
+    purchase_price: {
+      type: Number,
+      required: false,
     }
   },
   {

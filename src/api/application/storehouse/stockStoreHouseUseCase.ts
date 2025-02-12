@@ -20,7 +20,7 @@ export class StockStoreHouseUseCase {
         return await this.stockStoreHouseRepository.findStockByStoreHouseNoDetail(id);
     }
     
-    public async getProductStock(product_id: string,StoreHouse_id?:any, populateConfig?:any,   ) : Promise <StockStoreHouseEntity > { 
+    public async getProductStock(product_id: any,StoreHouse_id?:any, populateConfig?:any,   ) : Promise <StockStoreHouseEntity > { 
           return await this.stockStoreHouseRepository.findOneItem({product_id: product_id, StoreHouse_id:StoreHouse_id, status:true}) 
     }
     public async getVariantStock(variant_id: string,StoreHouse_id?:any , populateConfig?:any,   ) : Promise <StockStoreHouseEntity > { 
@@ -42,7 +42,7 @@ export class StockStoreHouseUseCase {
         return await this.stockStoreHouseRepository.updateOne(_id,updated);
     }
     public async deleteStock(_id: string): Promise<StockStoreHouseEntity | null> {
-        return this.stockStoreHouseRepository.updateOne(_id, {status: false})
+        return this.stockStoreHouseRepository.updateOne(_id, {status: false, stock:0 })
     }
     public async getAllProductsEntries(): Promise<StockStoreHouseEntity[]| null> {
         return this.stockStoreHouseRepository.findAllInputs()

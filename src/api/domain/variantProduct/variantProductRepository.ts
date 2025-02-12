@@ -5,5 +5,5 @@ import { VariantProductEntity } from "./variantProductEntity"
 
 export interface variantProductRepository extends MongoRepository {   
 
-    findVariantsByProduct(product_id: any): Promise<VariantProductEntity[] | null>
+    findVariantsByProduct(body: any): Promise<VariantProductEntity[] | null>
 }

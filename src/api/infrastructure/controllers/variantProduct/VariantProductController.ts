@@ -58,7 +58,7 @@ export class VariantProductController extends ResponseData {
 
     try {
       // Validación de datos entrantes
-      if (!body.product_id || !body.color || !body.size || !stockParse) {
+      if (!body.product_id || !body.color || !body.size || !stockParse || !body.purchase_price) {
         return next(new ErrorHandler('Faltan datos obligatorios', 400));
       }
 
@@ -89,6 +89,7 @@ export class VariantProductController extends ResponseData {
         porcentDiscount: body.porcentDiscount,
         weight: body.weight,
         tag: body.tag,
+        purchase_price: body.purchase_price,
       };
 
       // Crear variante de producto
@@ -318,15 +319,18 @@ export class VariantProductController extends ResponseData {
   public async deleteVariant(req: Request, res: Response, next: NextFunction): Promise<VariantProductEntity | ErrorHandler | void> {
     const { id } = req.params
     const SH_id = '662fe69b9ba1d8b3cfcd3634';
+    
     try {
       const stock = await this.stockStoreHouseUseCase.getVariantStock(id, SH_id)
-
-      if (stock) {
+      if (stock && stock.stock > 0) {
         return next(new ErrorHandler('Elimina stock de variante', 400));
       }
+      await this.stockStoreHouseUseCase.deleteStock(stock?._id)
       const response = await this.variantProductUseCase.UpdateVariant(id, { status: false })
       this.invoke(response, 200, res, 'Se eliminó con éxito', next);
     } catch (error) {
+      console.log(error,'ibni');
+      
       next(new ErrorHandler('Hubo un error al eliminar la variante', 500));
     }
   }
