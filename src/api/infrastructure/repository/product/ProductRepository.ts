@@ -221,153 +221,190 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     };
 }
 
-// async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {    
-//   const storehouseId = new ObjectId(this.onlineStoreHouse);
-//   const result = await this.MODEL.aggregate([
-//       {
-//           $match: {
-//               status: true,
-//               videos: {
-//                   $exists: true,
-//                   $ne: [],
-//                   $elemMatch: { type: 'vertical' }
-//               }
-//           }
-//       },
-//       {
-//           $lookup: {
-//               from: 'categories',
-//               localField: 'category',
-//               foreignField: '_id',
-//               as: 'category'
-//           }
-//       },
-//       {
-//           $unwind: {
-//               path: '$category',
-//               preserveNullAndEmptyArrays: true
-//           }
-//       },
-//       {
-//           $lookup: {
-//               from: 'subcategories',
-//               localField: 'subCategory',
-//               foreignField: '_id',
-//               as: 'subCategory'
-//           }
-//       },
-//       {
-//           $unwind: {
-//               path: '$subCategory',
-//               preserveNullAndEmptyArrays: true
-//           }
-//       },
-//       {
-//           $lookup: {
-//               from: 'variant-products',
-//               localField: '_id',
-//               foreignField: 'product_id',
-//               as: 'variants',              
-//           }
-//       },
-//       {
-//         $unwind: {
-//             path: '$variants',
-//             preserveNullAndEmptyArrays: true
-//         }
-//       },
-//       // {
-//       //     $addFields: {
-//       //         variants: { $ifNull: ["$variants", []] } // Asegura que siempre sea un arreglo vacío si no hay variantes
-//       //     }
-//       // },
-//       {
-//           $lookup: {
-//               from: 'storehousestocks',
-//               let: { variantId: '$variants._id' },
-//               pipeline: [
-//                   {
-//                       $match: {
-//                           $expr: {
-//                               $and: [
-//                                   { $eq: ['$variant_id', '$$variantId'] },
-//                                   { $eq: ["$StoreHouse_id", storehouseId] }
-//                               ]
-//                           }
-//                       }
-//                   }
-//               ],
-//               as: 'storehouseStock'
-//           }
-//       },
-//       {
-//           $addFields: {            
-//               'variants.stock': { $ifNull: [{ $arrayElemAt: ['$storehouseStock.stock', 0] }, 0] }
-//           }
-//       },
-//       {
-//           $unset: 'storehouseStock'
-//       },
-//       {
-//           $lookup: {
-//               from: 'storehousestocks',
-//               let: { productId: '$_id' },
-//               pipeline: [
-//                   {
-//                       $match: {
-//                           $expr: {
-//                               $and: [
-//                                   { $eq: ['$product_id', '$$productId'] },
-//                                   { $eq: ["$StoreHouse_id", storehouseId] }
-//                               ]
-//                           }
-//                       }
-//                   }
-//               ],
-//               as: 'productStock'
-//           }
-//       },
-//       {
-//           $addFields: {
-//               stock: { $ifNull: [{ $arrayElemAt: ['$productStock.stock', 0] }, 0] }
-//           }
-//       },
-//       {
-//           $unset: 'productStock'
-//       },
-//       {
-//           $group: {
-//               _id: '$_id',
-//               product: { $first: '$$ROOT' },
-//               variants: { $push: '$variants' }
-//           }
-//       },
-//       { 
-//           $replaceRoot: { 
-//               newRoot: { 
-//                   $mergeObjects: ['$product', { 
-//                       variants: {
-//                           $cond: {
-//                               if: { $gt: [{ $size: '$variants' }, 0] }, // Si hay variantes
-//                               then: '$variants', // Incluye las variantes con el stock
-//                               else: [] // Si no hay variantes, no se incluye stock
-//                           }
-//                       }
-//                   }] 
-//               } 
-//           } 
-//       },
-//       { 
-//           $limit: 10 
-//       }
-//   ]);
+// async findVideoProducts(page: number): Promise<ProductEntity[] | ErrorHandler | null> {
+//     const storehouseId = new ObjectId(this.onlineStoreHouse);
+//     const PAGESIZE = 10;
+//     const result = await this.MODEL.aggregate([
+//         // 1. Filtrar productos con status `true` y video de tipo vertical
+//         {
+//             $match: {
+//                 status: true,
+//                 videos: { $elemMatch: { type: 'vertical' } },
+//             },
+//         },
+//         {
+//             $sort: {
+//                 createdAt: -1,
+//             },
+//         },
+//         { $skip: (page - 1) * PAGESIZE },
+//         { $limit: PAGESIZE },
+//         {
+//             $lookup: {
+//                 from: 'categories',
+//                 localField: 'category',
+//                 foreignField: '_id',
+//                 as: 'category'
+//             }
+//         },
+//         {
+//             $unwind: {
+//                 path: '$category',
+//                 preserveNullAndEmptyArrays: true
+//             }
+//         },
+//         {
+//             $lookup: {
+//                 from: 'subcategories',
+//                 localField: 'subCategory',
+//                 foreignField: '_id',
+//                 as: 'subCategory'
+//             }
+//         },
+//         {
+//             $unwind: {
+//                 path: '$subCategory',
+//                 preserveNullAndEmptyArrays: true
+//             }
+//         },
+//         // 2. Buscar variantes de cada producto
+//         {
+//             $lookup: {
+//                 from: 'variant-products',
+//                 localField: '_id',
+//                 foreignField: 'product_id',
+//                 as: 'variants',
+//             },
+//         },
+//         // 3. Determinar si tiene variantes activas
+//         {
+//             $addFields: {
+//                 hasVariants: {
+//                     $gt: [{ $size: { $filter: { input: '$variants', as: 'v', cond: { $eq: ['$$v.status', true] } } } }, 0],
+//                 },
+//             },
+//         },
+//         // 4. Buscar el stock de las variantes
+//         {
+//             $lookup: {
+//                 from: 'storehousestocks',
+//                 let: { variantIds: '$variants._id' },
+//                 pipeline: [
+//                     {
+//                         $match: {
+//                             $expr: {
+//                                 $and: [
+//                                     { $in: ['$variant_id', '$$variantIds'] },
+//                                     { $eq: ['$StoreHouse_id', storehouseId] },
+//                                 ],
+//                             },
+//                         },
+//                     },
+//                 ],
+//                 as: 'variantStocks',
+//             },
+//         },
+//         {
+//             $addFields: {
+//                 'variants': {
+//                     $map: {
+//                         input: '$variants',
+//                         as: 'variant',
+//                         in: {
+//                             $mergeObjects: [
+//                                 '$$variant',
+//                                 {
+//                                     stock: {
+//                                         $ifNull: [
+//                                             {
+//                                                 $arrayElemAt: [
+//                                                     {
+//                                                         $map: {
+//                                                             input: {
+//                                                                 $filter: {
+//                                                                     input: '$variantStocks',
+//                                                                     as: 'stock',
+//                                                                     cond: { $eq: ['$$stock.variant_id', '$$variant._id'] },
+//                                                                 },
+//                                                             },
+//                                                             as: 'filteredStock',
+//                                                             in: '$$filteredStock.stock', // Solo extraer la propiedad stock
+//                                                         },
+//                                                     },
+//                                                     0,
+//                                                 ],
+//                                             },
+//                                             0, // Valor predeterminado si no hay stock
+//                                         ],
+//                                     },
+//                                 },
+//                             ],
+//                         },
+//                     },
+//                 },
+//             },
+//         },
+//         // 5. Si no tiene variantes, buscar el stock por `product_id`
+//         {
+//             $lookup: {
+//                 from: 'storehousestocks',
+//                 let: { productId: '$_id' },
+//                 pipeline: [
+//                     {
+//                         $match: {
+//                             $expr: {
+//                                 $and: [
+//                                     { $eq: ['$product_id', '$$productId'] },
+//                                     { $eq: ['$StoreHouse_id', storehouseId] },
+//                                 ],
+//                             },
+//                         },
+//                     },
+//                 ],
+//                 as: 'productStock',
+//             },
+//         },
+//         {
+//             $addFields: {
+//                 stock: {
+//                     $cond: {
+//                         if: { $eq: ['$hasVariants', true] },
+//                         then: null,
+//                         else: { $ifNull: [{ $arrayElemAt: ['$productStock.stock', 0] }, 0] },
+//                     },
+//                 },
+//             },
+//         },
+//         // 6. Consolidar variantes en un solo producto
+//         {
+//             $project: {
+//                 variants: 1,
+//                 stock: 1,
+//                 hasVariants: 1,
+//                 name: 1,
+//                 videos: 1,
+//                 category: 1,
+//                 subCategory: 1,
+//                 price: 1,
+//                 images: 1,
+//                 discountPrice: 1,
+//                 porcentDiscount: 1,
+//                 status:1,
+//                 weight:1,
+//                 description:1,
+//                 slug:1,
+//                 shortDescription:1,
+//             },
+//         },        
+//     ]);
 
-//   return result;    
+//     return result;
 // }
-async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
+async findVideoProducts(page: number): Promise<ProductEntity[]  | ErrorHandler | null> {
     const storehouseId = new ObjectId(this.onlineStoreHouse);
+    const PAGESIZE = 10;
+
     const result = await this.MODEL.aggregate([
-        // 1. Filtrar productos con status `true` y video de tipo vertical
         {
             $match: {
                 status: true,
@@ -375,167 +412,168 @@ async findVideoProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
             },
         },
         {
-            $lookup: {
-                from: 'categories',
-                localField: 'category',
-                foreignField: '_id',
-                as: 'category'
-            }
-        },
-        {
-            $unwind: {
-                path: '$category',
-                preserveNullAndEmptyArrays: true
-            }
-        },
-        {
-            $lookup: {
-                from: 'subcategories',
-                localField: 'subCategory',
-                foreignField: '_id',
-                as: 'subCategory'
-            }
-        },
-        {
-            $unwind: {
-                path: '$subCategory',
-                preserveNullAndEmptyArrays: true
-            }
-        },
-        // 2. Buscar variantes de cada producto
-        {
-            $lookup: {
-                from: 'variant-products',
-                localField: '_id',
-                foreignField: 'product_id',
-                as: 'variants',
-            },
-        },
-        // 3. Determinar si tiene variantes activas
-        {
-            $addFields: {
-                hasVariants: {
-                    $gt: [{ $size: { $filter: { input: '$variants', as: 'v', cond: { $eq: ['$$v.status', true] } } } }, 0],
-                },
-            },
-        },
-        // 4. Buscar el stock de las variantes
-        {
-            $lookup: {
-                from: 'storehousestocks',
-                let: { variantIds: '$variants._id' },
-                pipeline: [
+            $facet: {
+                metadata: [{ $count: 'total' }], // Cuenta el total de registros
+                data: [
+                    { $sort: { createdAt: -1 } },
+                    { $skip: (page - 1) * PAGESIZE },
+                    { $limit: PAGESIZE },
                     {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $in: ['$variant_id', '$$variantIds'] },
-                                    { $eq: ['$StoreHouse_id', storehouseId] },
+                        $lookup: {
+                            from: 'categories',
+                            localField: 'category',
+                            foreignField: '_id',
+                            as: 'category'
+                        }
+                    },
+                    { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+                    {
+                        $lookup: {
+                            from: 'subcategories',
+                            localField: 'subCategory',
+                            foreignField: '_id',
+                            as: 'subCategory'
+                        }
+                    },
+                    { $unwind: { path: '$subCategory', preserveNullAndEmptyArrays: true } },
+                    {
+                        $lookup: {
+                            from: 'variant-products',
+                            localField: '_id',
+                            foreignField: 'product_id',
+                            as: 'variants',
+                        },
+                    },
+                    {
+                        $addFields: {
+                            hasVariants: {
+                                $gt: [
+                                    { $size: { $filter: { input: '$variants', as: 'v', cond: { $eq: ['$$v.status', true] } } } },
+                                    0
                                 ],
                             },
                         },
                     },
-                ],
-                as: 'variantStocks',
-            },
-        },
-        {
-            $addFields: {
-                'variants': {
-                    $map: {
-                        input: '$variants',
-                        as: 'variant',
-                        in: {
-                            $mergeObjects: [
-                                '$$variant',
+                    {
+                        $lookup: {
+                            from: 'storehousestocks',
+                            let: { variantIds: '$variants._id' },
+                            pipeline: [
                                 {
-                                    stock: {
-                                        $ifNull: [
-                                            {
-                                                $arrayElemAt: [
-                                                    {
-                                                        $map: {
-                                                            input: {
-                                                                $filter: {
-                                                                    input: '$variantStocks',
-                                                                    as: 'stock',
-                                                                    cond: { $eq: ['$$stock.variant_id', '$$variant._id'] },
-                                                                },
-                                                            },
-                                                            as: 'filteredStock',
-                                                            in: '$$filteredStock.stock', // Solo extraer la propiedad stock
-                                                        },
-                                                    },
-                                                    0,
-                                                ],
-                                            },
-                                            0, // Valor predeterminado si no hay stock
-                                        ],
+                                    $match: {
+                                        $expr: {
+                                            $and: [
+                                                { $in: ['$variant_id', '$$variantIds'] },
+                                                { $eq: ['$StoreHouse_id', storehouseId] },
+                                            ],
+                                        },
                                     },
                                 },
                             ],
+                            as: 'variantStocks',
                         },
                     },
-                },
-            },
-        },
-        // 5. Si no tiene variantes, buscar el stock por `product_id`
-        {
-            $lookup: {
-                from: 'storehousestocks',
-                let: { productId: '$_id' },
-                pipeline: [
                     {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $eq: ['$product_id', '$$productId'] },
-                                    { $eq: ['$StoreHouse_id', storehouseId] },
-                                ],
+                        $addFields: {
+                            variants: {
+                                $map: {
+                                    input: '$variants',
+                                    as: 'variant',
+                                    in: {
+                                        $mergeObjects: [
+                                            '$$variant',
+                                            {
+                                                stock: {
+                                                    $ifNull: [
+                                                        {
+                                                            $arrayElemAt: [
+                                                                {
+                                                                    $map: {
+                                                                        input: {
+                                                                            $filter: {
+                                                                                input: '$variantStocks',
+                                                                                as: 'stock',
+                                                                                cond: { $eq: ['$$stock.variant_id', '$$variant._id'] },
+                                                                            },
+                                                                        },
+                                                                        as: 'filteredStock',
+                                                                        in: '$$filteredStock.stock',
+                                                                    },
+                                                                },
+                                                                0,
+                                                            ],
+                                                        },
+                                                        0,
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
                             },
                         },
                     },
-                ],
-                as: 'productStock',
-            },
-        },
-        {
-            $addFields: {
-                stock: {
-                    $cond: {
-                        if: { $eq: ['$hasVariants', true] },
-                        then: null,
-                        else: { $ifNull: [{ $arrayElemAt: ['$productStock.stock', 0] }, 0] },
+                    {
+                        $lookup: {
+                            from: 'storehousestocks',
+                            let: { productId: '$_id' },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [
+                                                { $eq: ['$product_id', '$$productId'] },
+                                                { $eq: ['$StoreHouse_id', storehouseId] },
+                                            ],
+                                        },
+                                    },
+                                },
+                            ],
+                            as: 'productStock',
+                        },
                     },
-                },
-            },
-        },
-        // 6. Consolidar variantes en un solo producto
-        {
-            $project: {
-                variants: 1,
-                stock: 1,
-                hasVariants: 1,
-                name: 1,
-                videos: 1,
-                category: 1,
-                subCategory: 1,
-                price: 1,
-                images: 1,
-                discountPrice: 1,
-                porcentDiscount: 1,
-                status:1,
-                weight:1,
-                description:1,
-                slug:1,
-                shortDescription:1,
-            },
-        },
-        { $limit: 10 }, // Limitar a los primeros 10 resultados
+                    {
+                        $addFields: {
+                            stock: {
+                                $cond: {
+                                    if: { $eq: ['$hasVariants', true] },
+                                    then: null,
+                                    else: { $ifNull: [{ $arrayElemAt: ['$productStock.stock', 0] }, 0] },
+                                },
+                            },
+                        },
+                    },
+                    {
+                        $project: {
+                            variants: 1,
+                            stock: 1,
+                            hasVariants: 1,
+                            name: 1,
+                            videos: 1,
+                            category: 1,
+                            subCategory: 1,
+                            price: 1,
+                            images: 1,
+                            discountPrice: 1,
+                            porcentDiscount: 1,
+                            status: 1,
+                            weight: 1,
+                            description: 1,
+                            slug: 1,
+                            shortDescription: 1,
+                        },
+                    }
+                ]
+            }
+        }
     ]);
 
-    return result;
+    const total = result[0].metadata[0]?.total || 0;
+    const products = result[0].data;
+
+    return { total, products };
 }
+
 
 async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
     const storehouseId = new ObjectId(this.onlineStoreHouse);

@@ -10,10 +10,17 @@ export class FacturapiService {
     this.facturapi = new Facturapi(this.facturapi_key);
   }
 
-  async createInvoice(payload = {}) {
+  async createInvoice(customer: string | Object, items: Array<Object>, payment_form: string, use: string) {
     try{
-        const invoice = this.facturapi.invoices.create(payload);
-        return invoice;
+      const payload = {
+        customer: customer,
+        items: items,
+        payment_form: payment_form,
+        use: use,
+        payment_method: "PUE"
+      }
+      const invoice = this.facturapi.invoices.create(payload);
+      return invoice;
     }catch(error){
         throw new ErrorHandler("Facturapi: Error al crear factura", 400);
     }

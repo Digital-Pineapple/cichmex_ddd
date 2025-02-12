@@ -66,8 +66,8 @@ export class ProductUseCase {
   public async subCategoryProducts(subCategory: any): Promise<ProductEntity[] | null> {
     return  await this.productRepository.findAllItems({subCategory: subCategory, status: true})
   }
-  public async getVideoProducts(): Promise<ProductEntity[] | ErrorHandler |  null> {
-    return this.productRepository.findVideoProducts()
+  public async getVideoProducts(page: number): Promise<ProductEntity[] | ErrorHandler |  null> {
+    return this.productRepository.findVideoProducts(page)
   }
   public async getRandomProductsByCategory(id: any, skiproduct: any, storehouse: any ): Promise<ProductEntity[] | ErrorHandler |  null> {
     return this.productRepository.findRandomProductsByCategory(id, skiproduct, storehouse)

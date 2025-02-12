@@ -662,8 +662,11 @@ export class ProductController extends ResponseData {
 
 
   public async getVideos(req: Request, res: Response, next: NextFunction) {
-    try {
-      const response: any | null = await this.productUseCase.getVideoProducts();
+    const queryparams = req.query
+    try {      
+      const page = queryparams?.page                
+      const parsedPage = (page && Number(page)) || 1
+      const response: any | null = await this.productUseCase.getVideoProducts(parsedPage);
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       console.log(error);
