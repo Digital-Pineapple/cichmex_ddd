@@ -312,7 +312,7 @@ export class PaymentController extends ResponseData {
     }
 
     public async createPaymentProductMP(req: Request, res: Response, next: NextFunction) {
-        const { products, branch_id, infoPayment, productsOrder, location, typeDelivery, subtotal, shipping_cost, discount } = req.body;
+        const { branch_id, infoPayment, productsOrder, location, typeDelivery, subtotal, shipping_cost, discount } = req.body;
         const user = req.user
         const origin = req.headers["x-origin"];          
         const access_token = config.MERCADOPAGO_TOKEN;
@@ -322,7 +322,7 @@ export class PaymentController extends ResponseData {
         const order_id = RandomCodeId('CIC')
         const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
         const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
-       
+        // console.log("the access token is:" + access_token);               
         const productToSend = productsOrder.map((item: any) => {
             const variant = item?.variant ?? null;
             const product = item.item;
@@ -334,7 +334,7 @@ export class PaymentController extends ResponseData {
               id:  product._id,
               title: product.name + (isVariant ? getProperties(variant?.attributes) : ""),
               unit_price: isVariant ? variantPrice : productPrice,
-              picture_url:  isVariant ? variant.images[0].url : product.images[0].url,
+              picture_url:  isVariant ? variant.images[0]?.url : product.images[0]?.url,
               quantity: quantity
             };
             return  newItem           
@@ -360,7 +360,8 @@ export class PaymentController extends ResponseData {
             const metadata1 = formData?.metadata;
             const point = metadata1?.payment_point || null;
             const path_notification = `${process.env.URL_NOTIFICATION}api/payments/Mem-Payment-success`;
-
+            console.log("mercado pago form data: " + JSON.stringify(infoPayment, null, 2));
+            
             const body1: any = {
                 transaction_amount: formData.transaction_amount,
                 payment_method_id: formData.payment_method_id,
@@ -388,12 +389,12 @@ export class PaymentController extends ResponseData {
                 body1['metadata'] = { payment_point: point };
                 body1['date_of_expiration'] = expDate
             }
-
-            const payment = await payment1.create({
-                requestOptions: { idempotencyKey: uuid4 },
-                body: body1,
-            });            
-            console.log(payment);
+                        
+             const payment = await payment1.create({
+                    requestOptions: { idempotencyKey: uuid4 },
+                    body: body1,
+             });                      
+            // console.log("the payment says: " + JSON.stringify(payment));
             
             const { additional_info, id, status, transaction_details, payment_method } = payment
             if(status === "rejected"){
@@ -473,7 +474,7 @@ export class PaymentController extends ResponseData {
                 next(new ErrorHandler('Error en la respuesta de pago', 500));
             }
         } catch (error) {
-            console.log(error);
+            console.log("el error xd es: " + error);
 
             next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }

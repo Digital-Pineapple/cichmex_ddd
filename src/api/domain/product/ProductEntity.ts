@@ -92,6 +92,7 @@ export interface ProductOrderEntity {
   typeDelivery?: string;
   origin?: string;
   requiredTax?: boolean;
+  facturapi_tax_id?: string;
 }
 
 export interface ILocationOrder {
