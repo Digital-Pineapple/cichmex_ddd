@@ -26,6 +26,7 @@ export class DiscountCouponUseCase {
         const expiration = this.momentService.verifyExpirationDate(coupon.expiration_date);
 
         if (expiration) {
+            await this.discountCouponRepository.updateOne(coupon._id, {is_active: false})
             return new ErrorHandler('Cupón expirado', 500);
         }
 

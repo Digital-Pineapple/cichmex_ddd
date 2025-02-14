@@ -7,6 +7,7 @@ import { ConsumeCouponUseCase } from '../../../application/discountCoupon/Consum
 import { validate } from 'uuid';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import { StockReturnRepository } from '../../repository/stockBranch/StockReturnRepository';
+import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
 
 
 export class DiscountCouponController extends ResponseData {
@@ -16,6 +17,7 @@ export class DiscountCouponController extends ResponseData {
         private readonly discountCouponUseCase: DiscountCouponUseCase,
         private readonly consumeCouponUseCase: ConsumeCouponUseCase,
         private readonly shoppingCartUseCase: ShoppingCartUseCase,
+        private readonly productOrderUseCase : ProductOrderUseCase,
     ) {
         super();
         this.getAllDiscountCoupons = this.getAllDiscountCoupons.bind(this);
@@ -53,64 +55,121 @@ export class DiscountCouponController extends ResponseData {
         const products = shoppingCart.products;
         let total = 0;
         let discount_apply = 0;
-        let shipping_cost = true
-    
-        // Calcular el total del carrito
-        const precios = products.map((entry: any) =>
-            entry.variant ? entry.variant.price * entry.quantity : entry.item.price * entry.quantity
+        let shipping_cost = true;
+        let productsDiscount = [...products];
+     
+        const precios = productsDiscount.map((entry: any) =>
+            
+            entry.variant?.price
+                ? entry.variant?.price * entry.quantity
+                : entry.item.price * entry.quantity
         );
-        const sum = precios.reduce((suma: number, currentValue: number) => suma + currentValue, 0);
+        const originalSum = precios.reduce((suma: number, currentValue: number) => suma + currentValue, 0);
+      
+        
     
-        // Verificar monto mínimo requerido para aplicar el cupón
-        if (sum < coupon.min_cart_amount) {
-            throw new ErrorHandler(`El monto mínimo de compra es de ${coupon.min_cart_amount}`, 400);
+        // Validar monto mínimo del carrito (usa el total original)
+        if (originalSum < coupon.min_cart_amount) {
+            return new ErrorHandler(`El monto mínimo de compra es de ${coupon.min_cart_amount}`, 400);
         }
     
-        total = sum; // Inicializamos el total con el precio sin descuento
+        total = originalSum;
     
-        // Aplicar descuento por porcentaje si existe
+        // 1. Aplicar descuentos por porcentaje
         if (coupon.percent > 0) {
-            const discountAmount = (coupon.percent / 100) * sum; // Descuento calculado
-            const maxDiscountAmount = (coupon.percent / 100) * coupon.max_cart_amount
+            if (coupon.for_all_products === false) { 
+                const discountProductIds = coupon.products.map((id: any) => id.toString());
+                const applicableProducts = products.filter((product: any) => 
+                    discountProductIds.includes(product.item._id.toString())
+                );
+                if (applicableProducts.length <= 0) {
+                    return new ErrorHandler(`No aplicable a estos productos`, 400);
+                }
     
-            console.log(maxDiscountAmount, "Monto máximo de descuento");
-            console.log(discountAmount, "Monto de descuento");
-            console.log(coupon);
+                
+                const subtotalDiscountable = applicableProducts.reduce(
+                    (sum: number, product: any) => sum + (product.variant?.price ?? product.item.price) * product.quantity,
+                    0
+                );
+              
     
-            if (discountAmount > maxDiscountAmount) {
-                total = sum - maxDiscountAmount;
-                discount_apply = maxDiscountAmount
-            } else {
-                total = sum - discountAmount;
-                discount_apply = discountAmount
+                const totalDiscountAmount = (coupon.percent / 100) * subtotalDiscountable;
+                const maxDiscountAmount = (coupon.percent / 100) * coupon.max_cart_amount;
+                const discountToApply = Math.min(totalDiscountAmount, maxDiscountAmount);
+            
+                discount_apply += discountToApply;
+                total -= discountToApply;
+                
+                
+    
+                // Actualizar precios en productsDiscount
+                productsDiscount = products.map((product: any) => {
+                    const itemId = product.item._id.toString();
+                    if (!discountProductIds.includes(itemId)) return product._doc;
+                    
+                    const originalPrice = product.variant?.price ?? product.item.price;
+                    const proportion = (originalPrice * product.quantity) / subtotalDiscountable;
+                    const productDiscount = discountToApply * proportion;
+                    const finalPrice = originalPrice - (productDiscount / product.quantity);
+                    
+                    return { 
+                        ...product._doc, 
+                        price: finalPrice,
+                        discountAmount: productDiscount
+                    };
+                });
+
+    
+            } else { // Descuento en todos los productos
+                const discountAmount = (coupon.percent / 100) * originalSum;
+                const maxDiscountAmount = (coupon.percent / 100) * coupon.max_cart_amount;
+                const discountToApply = Math.min(discountAmount, maxDiscountAmount);
+                
+                discount_apply += discountToApply;
+                total -= discountToApply;
             }
         }
     
-        // Aplicar descuento fijo si existe
+        // 2. Aplicar descuentos fijos
         if (coupon.fixed_amount > 0) {
-            total -= coupon.fixed_amount;
-            discount_apply += coupon.fixed_amount;
-        }
-
-        if (coupon.type_discount ==='free_shipping') {
-            shipping_cost = false
+            const fixedDiscount = Math.min(coupon.fixed_amount, total);
+            discount_apply += fixedDiscount;
+            total -= fixedDiscount;
         }
     
-        // Asegurar que el total no sea negativo
+        // 3. Aplicar envío gratis
+        if (coupon.type_discount === 'free_shipping') {
+            shipping_cost = false;
+        }
+    
+        // Asegurar total no negativo
         total = Math.max(total, 0);
     
-        return { total_price: total, discount_apply: discount_apply, shipping_cost };
+        return {
+            subtotal_price: originalSum,
+            percentage : coupon.percent > 0? coupon.percent : null,
+            amount: coupon.fixed_amount > 0 ? coupon.fixed_amount : null,
+            discount_apply: discount_apply,
+            total_price: total,
+            shipping_cost,
+            products: productsDiscount,
+        };
     }
-    
+
 
     public async findCoupon(req: Request, res: Response, next: NextFunction) {
         const { id } = req.user;
         const { code } = req.body;
         let response = {}
         try {
-            let coupon : any = await this.discountCouponUseCase.findOneDiscountCoupon(code);
+            let coupon: any = await this.discountCouponUseCase.findOneDiscountCoupon(code);
             if (coupon instanceof ErrorHandler) {
                 response = coupon
+            }
+            const FirstBuy : any = await this.productOrderUseCase.ProductOrdersByUser(id ? id : '')
+    
+            if (FirstBuy.length > 0 && coupon.type_discount === 'first_buy') {
+                next(new ErrorHandler('Aplicable solo a la primera compra', 500))
             }
 
             const shoppingCart = await this.shoppingCartUseCase.getShoppingCartByUser(id)
@@ -120,29 +179,28 @@ export class DiscountCouponController extends ResponseData {
 
             const noRepeat = await this.consumeCouponUseCase.findOneConsumeCoupon(id, coupon?._id);
             if (noRepeat) {
-                next(new ErrorHandler('El cupon ya ha sido canjeado',500))
+                next(new ErrorHandler('El cupon ya ha sido canjeado', 500))
             }
 
             if (coupon.unlimited) {
-              response =  await this.processedCoupon(coupon, shoppingCart)
+                response = await this.processedCoupon(coupon, shoppingCart)
 
             }
             if (coupon.maxUses > 0) {
-                const uses : any = await this.consumeCouponUseCase.findConsumesCoupon(coupon._id)
+                const uses: any = await this.consumeCouponUseCase.findConsumesCoupon(coupon._id)
                 if (uses?.length >= coupon.maxUses) {
-                    next(new ErrorHandler('El cupon ya ha se ha agotado canjeado',500))
+                    next(new ErrorHandler('El cupon ya ha se ha agotado canjeado', 500))
                 }
-                else{
-                    response =  await this.processedCoupon(coupon, shoppingCart)
+                else {
+                    response = await this.processedCoupon(coupon, shoppingCart)
                 }
             }
-           
-
-
 
             this.invoke(response, 200, res, '', next);
 
         } catch (error) {
+            console.log(error);
+            
             next(new ErrorHandler('Error al buscar el código', 500));
         }
     }
@@ -179,7 +237,7 @@ export class DiscountCouponController extends ResponseData {
             let data: Record<string, any> = {
                 name: values.name,
                 description: values.description,
-                percent: values.fixed_amount? 0 : isNaN(Number(values?.percent)) ? undefined  : Number(values?.percent),
+                percent: values.fixed_amount ? 0 : isNaN(Number(values?.percent)) ? undefined : Number(values?.percent),
                 fixed_amount: values.percent ? 0 : isNaN(Number(values?.fixed_amount)) ? undefined : Number(values?.fixed_amount),
                 unlimited: values.unlimited,
                 start_date: values.start_date,
@@ -194,7 +252,7 @@ export class DiscountCouponController extends ResponseData {
 
             // Eliminar propiedades con valores `undefined`
             data = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
-            const response = await this.discountCouponUseCase.updateDiscountCoupon(id, {...data});
+            const response = await this.discountCouponUseCase.updateDiscountCoupon(id, { ...data });
             this.invoke(response, 200, res, 'Editado con éxito', next);
         } catch (error) {
             console.log(error);
