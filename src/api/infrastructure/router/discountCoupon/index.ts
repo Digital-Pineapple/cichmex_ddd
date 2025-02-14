@@ -14,6 +14,7 @@ import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/Shoppi
 import { ProductOrderRepository } from '../../repository/product/ProductOrderRepository';
 import ProductOrderModel from '../../models/products/ProductOrderModel';
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
+import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
 
 
 const discountCouponRouter = Router();
@@ -41,11 +42,11 @@ discountCouponRouter
     .get('/get_one/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.getOneDiscountDetail)
     .post('/find',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN', 'CUSTOMER']), discountCouponController.findCoupon )
     // .post('/',  userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.createDiscountCoupon)
-    .post('/',userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.createDiscountCoupon)
+    .post('/',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, discountCouponController.createDiscountCoupon)
     .post('/consume',  userValidations.authTypeUserValidation(['CUSTOMER']), discountCouponController.consumeOneCoupon)
-    .put('/update/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.updateDiscountCoupon)
-    .put('/changeActive/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.changeActiveDiscount)
-    .delete('/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.deleteDiscountCoupon)
+    .put('/update/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger,  discountCouponController.updateDiscountCoupon)
+    .put('/changeActive/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, discountCouponController.changeActiveDiscount)
+    .delete('/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, discountCouponController.deleteDiscountCoupon)
 
 export default discountCouponRouter;
 

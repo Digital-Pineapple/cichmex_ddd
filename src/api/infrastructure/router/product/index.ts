@@ -25,6 +25,7 @@ import { StockSHinputUseCase } from '../../../application/storehouse/stockSHinpu
 import { StockSHOutputRepository } from '../../repository/stockStoreHouse/StockSHOutputRepository';
 import StockSHoutputModel from '../../models/stockStoreHouse/StockSHoutputModel';
 import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHoutputUseCase';
+import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
 
 const productRouter = Router();
 
@@ -58,33 +59,33 @@ productRouter
 .get("/for_search",userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getProductsBySearch)
   .get("/:id", productController.getProduct)
   .get('/non-existent/get', productController.getNoStockProducts)
-  .post("/video/addVideo/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.addOneVideoProduct)
-  .post("/addProduct", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.createProduct)
-  .post("/createProductWithVariants/ok", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.AddProdcutWithVariants)
+  .post("/video/addVideo/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.addOneVideoProduct)
+  .post("/addProduct", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.createProduct)
+  .post("/createProductWithVariants/ok", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.AddProdcutWithVariants)
   .post("/conditionProduct/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.conditionProduct)
-  .post("/addVariants/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.AddVariants)
-  .post("/addVariants/clothes-shoes/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.AddVariantsClothesShoes)
-  .post("/selectSizeGuide/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.SelectSizeGuide)
+  .post("/addVariants/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.AddVariants)
+  .post("/addVariants/clothes-shoes/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.AddVariantsClothesShoes)
+  .post("/selectSizeGuide/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.SelectSizeGuide)
   .post('/search-category', productController.getProductsByCategory)
   .get('/productsByCategory/search', productController.getAllProductsByCategory)
   .get('/productsBySubCategory/search', productController.getAllProductsBySubCategory)
-  .post("/updateInfo/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProduct)
-  .put("/updateVideo/:id", productvalidations.videoValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateProductVideo)
-  .put("/updateThumbnail/:id", productvalidations.thumbnailValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateThumbnail)
-  .post("/addImageDetail/:id", productvalidations.imagesValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.addOneImageProduct)
-  .post("/deleteImageDetail/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.deleteOneImageDetail)
-  .post("/deleteVideoDetail/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.deleteVideoDetail )
+  .post("/updateInfo/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.updateProduct)
+  .put("/updateVideo/:id", productvalidations.videoValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.updateProductVideo)
+  .put("/updateThumbnail/:id", productvalidations.thumbnailValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.updateThumbnail)
+  .post("/addImageDetail/:id", productvalidations.imagesValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.addOneImageProduct)
+  .post("/deleteImageDetail/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.deleteOneImageDetail)
+  .post("/deleteVideoDetail/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.deleteVideoDetail )
   .post('/search/ok', productController.searchProduct)
   .get("/productsByCategories/ok", productController.getProductsByCategories)
   .post("/productsBySubCategory/ok", productController.getProductsBySubCategory)
   .get("/videos/ok", productController.getVideos)
   .get("/recommendProducts/ok/:id", productController.getSimilarProducts)
-  .delete("/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.deleteProduct)  
+  .delete("/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.deleteProduct)  
   .get("/products/urls", productController.updateURLS)  
-  .post("/addDescriptionAndVideos/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.addDescriptionAndVideo)
-  .post("/updateMainFeatures/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updateMainFeatures)
-  .post("/updateVariants/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.UpdateVariants)
-  .post("/updateOrder/images/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.updatePositionImages)
+  .post("/addDescriptionAndVideos/:id", productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.addDescriptionAndVideo)
+  .post("/updateMainFeatures/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.updateMainFeatures)
+  .post("/updateVariants/:id",productvalidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.UpdateVariants)
+  .post("/updateOrder/images/:id", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, productController.updatePositionImages)
   .get("/recentProducts/ok", productController.getRecentProducts)
   
 

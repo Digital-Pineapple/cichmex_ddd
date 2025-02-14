@@ -16,6 +16,7 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { StockSHinputRepository } from '../../repository/stockStoreHouse/StockSHinputRepository';
 import StockSHinputModel from '../../models/stockStoreHouse/StockSHinputModel';
 import { StockSHinputUseCase } from '../../../application/storehouse/stockSHinputUseCase';
+import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
 
 const variantProductRouter = Router();
 
@@ -33,14 +34,14 @@ const variantProductController     = new VariantProductController(variantProduct
 const userValidations = new UserValidations();
 
 variantProductRouter
-.post('/',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.createVariant)
-.post ('/update/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.updateVariant)
-.post ('/addVariant/newSize',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.createVariantSize)
-.post ('/update-is-main/ok/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.updateIsMain)
-.post ('/update/oneVariant/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.updateIsMainOneVariant)
-.post ('/updateImages',productValidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.updateImages)
-.post('/delete-image/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.deleteImageVariant)
-.delete('/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), variantProductController.deleteVariant)
+.post('/',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, variantProductController.createVariant)
+.post ('/update/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, variantProductController.updateVariant)
+.post ('/addVariant/newSize',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, variantProductController.createVariantSize)
+.post ('/update-is-main/ok/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, variantProductController.updateIsMain)
+.post ('/update/oneVariant/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, variantProductController.updateIsMainOneVariant)
+.post ('/updateImages',productValidations.productValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, variantProductController.updateImages)
+.post('/delete-image/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, variantProductController.deleteImageVariant)
+.delete('/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, variantProductController.deleteVariant)
    
 
 export default variantProductRouter;

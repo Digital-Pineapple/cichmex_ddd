@@ -20,6 +20,7 @@ import { ProductRepository } from '../../repository/product/ProductRepository';
 import ProductModel from '../../models/products/ProductModel';
 import { ProductUseCase } from '../../../application/product/productUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
+import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
 
 const stockStoreHouseRouter = Router();
 
@@ -53,14 +54,14 @@ stockStoreHouseRouter
     .get('/product/output',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), stockStoreHouseController.seedProductStock)
     .get('/seed/StockProducts',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), stockStoreHouseController.seedProductStock )
     .get('/feed/daily', stockStoreHouseController.feedDailyProduct )
-    .post('/add/multiple-entries', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), stockStoreHouseController.createMultipleStock )
-    .post('/add/multiple-outputs', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), stockStoreHouseController.createMultipleOutputs )
-    .post('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), stockStoreHouseController.createStock)
-    .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), stockStoreHouseController.updateStock)
-    .patch('/add/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), stockStoreHouseController.addStock)
-    .patch('/remove/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), stockStoreHouseController.removeStock)
-    .patch('/return/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), stockStoreHouseController.returnStock)
-    .delete('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.createStock)
+    .post('/add/multiple-entries', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, stockStoreHouseController.createMultipleStock )
+    .post('/add/multiple-outputs', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, stockStoreHouseController.createMultipleOutputs )
+    .post('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, stockStoreHouseController.createStock)
+    .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, stockStoreHouseController.updateStock)
+    .patch('/add/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, stockStoreHouseController.addStock)
+    .patch('/remove/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, stockStoreHouseController.removeStock)
+    .patch('/return/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']),ActivityLogger, stockStoreHouseController.returnStock)
+    .delete('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, stockStoreHouseController.createStock)
     
 
 export default stockStoreHouseRouter;

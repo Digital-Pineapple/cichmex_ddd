@@ -15,6 +15,7 @@ import { BranchOfficeValidations } from '../../../../shared/infrastructure/valid
 import { ProductOrderRepository } from '../../repository/product/ProductOrderRepository';
 import ProductOrderModel from '../../models/products/ProductOrderModel';
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
+import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
 
 const branchOfficeRouter = Router();
 
@@ -37,11 +38,11 @@ branchOfficeRouter
 .get('/info',branchOfficeController.getBranchOfficesInfo)
 .get('/:id', branchOfficeController.getBranchOfficeDetail)
 .get('/user/:id', branchOfficeController.getBranchesByUser)
-.post('/',branchValidations.ImageValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']),  branchOfficeController.createBranchOffice)
-.post('/verify/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),branchOfficeController.verifyBranchOffice)
-.post('/desactivate/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']),branchOfficeController.desactivateBranchOffice)
-.patch('/:id', branchValidations.ImageValidation,userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']), branchOfficeController.updateBranchOffice)
-.delete('/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']), branchOfficeController.deleteBranchOffice)
-.put('/image/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']), branchOfficeController.deleteImage)
+.post('/',branchValidations.ImageValidation, userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']),ActivityLogger,  branchOfficeController.createBranchOffice)
+.post('/verify/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, branchOfficeController.verifyBranchOffice)
+.post('/desactivate/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']),ActivityLogger,branchOfficeController.desactivateBranchOffice)
+.patch('/:id', branchValidations.ImageValidation,userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']), ActivityLogger, branchOfficeController.updateBranchOffice)
+.delete('/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']),ActivityLogger, branchOfficeController.deleteBranchOffice)
+.put('/image/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']),ActivityLogger, branchOfficeController.deleteImage)
 
 export default branchOfficeRouter;
