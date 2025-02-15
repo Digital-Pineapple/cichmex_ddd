@@ -10,3 +10,8 @@ export const retrieveAWSImages = (images : any ) => {
     })
     return parsedImages
 }
+
+export const retrieveOneImage = (image:any) => {
+    const absolutePath = `https://cichmex.s3.us-east-2.amazonaws.com/${process.env.S3_ENVIRONMENT}`;
+    return absolutePath + image
+}
