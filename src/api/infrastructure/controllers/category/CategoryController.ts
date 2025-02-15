@@ -4,6 +4,7 @@ import { ResponseData } from '../../../../shared/infrastructure/validation/Respo
 import { CategoryUseCase } from '../../../application/category/CategoryUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { Category } from '../../../domain/category/CategoryEntity';
+import { retrieveAWSImages, retrieveOneImage } from '../../../../helpers/retrieveImages';
 
 export class CategoryController extends ResponseData {
     protected path = '/categories';
@@ -24,11 +25,11 @@ export class CategoryController extends ResponseData {
 
     public async getAllCategories(req: Request, res: Response, next: NextFunction) {
         try {
-            const response = await this.categoryUseCase.getCategories();
+            const response = await this.categoryUseCase.getCategories();            
             if (!(response instanceof ErrorHandler) && response !== null) {
                 await Promise.all(response.map(async (res) => {
                     if (!res.category_image?.startsWith('https://')) {
-                        const url = await this.s3Service.getUrlObject(res.category_image + ".jpg");
+                        const url = retrieveOneImage(res.category_image + ".jpg");
                         res.category_image = url
                     }
                 }))
@@ -43,10 +44,10 @@ export class CategoryController extends ResponseData {
         try {
             const response = await this.categoryUseCase.getCategoriesAndSubcategories();
             if (!(response instanceof ErrorHandler) && response !== null) {
-                await Promise.all(response.map(async (res) => {
-                    const url = await this.s3Service.getUrlObject(res.category_image + ".jpg");
-                    res.category_image = url
-                }))
+                // await Promise.all(response.map(async (res) => {
+                //     const url = await this.s3Service.getUrlObject(res.category_image + ".jpg");
+                //     res.category_image = url
+                // }))
                 this.invoke(response, 200, res, '', next);
             }
         } catch (error) {

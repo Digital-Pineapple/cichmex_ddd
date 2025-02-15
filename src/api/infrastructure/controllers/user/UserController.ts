@@ -164,14 +164,17 @@ export class UserController extends ResponseData {
             if(!phone){
                 console.log("no existe este telefono y se va a registrar");           
                 // await this.whatsappService.sendMessage(phoneString, `${system}. Código de verificación - ${code}`)
-                // await this.snsService.publishMessage(phoneString, `${system}. Código de verificación - ${code}`);     
-                await this.twilioService.sendSMS(phoneString, `${system}. Código de verificación - ${code}`)
+                // await this.snsService.publishMessage(phoneString, `${system}. Código de verificación - ${code}`); 
+                console.log(code);
+                
+                // await this.twilioService.sendSMS(phoneString, `${system}. Código de verificación - ${code}`)
                 const newPhone = await this.phoneUserUseCase.createUserPhone({ code, phone_number: phone_number, prefix }, phone_number);
                 return this.invoke(newPhone, 200, res, `Codigo enviado con éxito al ${phoneString}`, next);
             }    
             const userPhoneOwner : any | null = await this.userUseCase.findUserByPhone(phone._id);                    
             if(userPhoneOwner) return next(new ErrorHandler('El telefono ya esta registrado', 500))            
-            await this.twilioService.sendSMS(phoneString, `${system}. Código de verificación - ${code}`)
+            // await this.twilioService.sendSMS(phoneString, `${system}. Código de verificación - ${code}`)
+
             // await this.snsService.publishMessage(phoneString, `${system}. Código de verificación - ${code}`); 
             // await this.whatsappService.sendMessage(phoneString, `${system}. Código de verificación - ${code}`)
             const updated = await this.phoneUserUseCase.updateUserPhone(phone._id, { code: code })            

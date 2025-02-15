@@ -40,9 +40,7 @@ export class ShoppingCartUseCase {
         return await this.shoppingCartRepository.createOne({...body})
     }
     }
-    public async updateShoppingCart(_id: string,updated: object): Promise<ShoppingCartEntity  | null> {
-        
-        
+    public async updateShoppingCart(_id: string,updated: object): Promise<ShoppingCartEntity  | null> {                
         return await this.shoppingCartRepository.updateOne(_id,{...updated});
     }
     public async deleteShoppingCart(_id: string): Promise<ShoppingCartEntity | null> {
