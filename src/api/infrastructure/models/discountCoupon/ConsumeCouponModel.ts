@@ -16,7 +16,7 @@ const ConsumeCouponSchema = new Schema<ConsumeCouponEntity>({
         required: true
     },
     discount_coupon: {
-        type: String,
+        type: Schema.Types.ObjectId,
         ref:'discountcoupons',
         required: true
     },

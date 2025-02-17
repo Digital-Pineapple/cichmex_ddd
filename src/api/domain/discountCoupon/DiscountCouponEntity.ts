@@ -27,7 +27,7 @@ export interface ConsumeCouponEntity{
     _id: ObjectId;
     uuid: string;
     user : string,
-    discount_coupon: string,
+    discount_coupon: ObjectId,
     status?: boolean;
     subtotal_amount_sale?: number;
     discount_applied?: number;

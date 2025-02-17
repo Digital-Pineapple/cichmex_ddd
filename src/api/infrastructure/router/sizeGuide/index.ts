@@ -4,6 +4,7 @@ import SizeGuideModel from '../../models/sizeGuide/SizeGuideModel';
 import { SizeGuideRepository } from '../../repository/sizeGuide/SizeGuideRepository';
 import { SizeGuideUseCase } from '../../../application/sizeGuide/SizeGuideUseCase';
 import { SizeGuideController } from '../../controllers/sizeGuide/SizeGuideController';
+import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
 
 const sizeGuideRouter = Router();
 
@@ -16,9 +17,9 @@ sizeGuideRouter
     .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), sizeGuideController.getMySizeGuides)
     .get('/allGuides', userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), sizeGuideController.getMySizeGuides)
     .get('/:id', sizeGuideController.getOneGuide)
-    .post('/addOne', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), sizeGuideController.createOneGuide)
-    .put('/update/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), sizeGuideController.updateOneGuide)
-    .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']), sizeGuideController.deleteOneGuide)
+    .post('/addOne', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, sizeGuideController.createOneGuide)
+    .put('/update/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']),ActivityLogger, sizeGuideController.updateOneGuide)
+    .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']),ActivityLogger, sizeGuideController.deleteOneGuide)
 
 
 

@@ -6,6 +6,7 @@ import { SubCategoryController } from '../../controllers/subCategory/SubCategory
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { SubCategoryValidations } from '../../../../shared/infrastructure/validation/SubCategory/SubCategoryValidation';
 import { UserValidations } from '../../../../shared/infrastructure/validation/User/UserValidation';
+import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
 
 const subCategoryRouter = Router();
 
@@ -21,9 +22,9 @@ subCategoryRouter
     .get('/:id', subCategoryController.getSubCategory)
     .get('/detail/:id', subCategoryController.getDetailSubCategory)
     .get('/subCategory/:id', subCategoryController.findSubCategoriesByCategory)
-    .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),subCategoryValidations.subCategoryPhotoValidation, subCategoryController.createSubCategory)
-    .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), subCategoryValidations.subCategoryPhotoValidation, subCategoryController.updateSubCategory)
-    .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), subCategoryController.deleteSubCategory)
+    .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),subCategoryValidations.subCategoryPhotoValidation,ActivityLogger, subCategoryController.createSubCategory)
+    .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), subCategoryValidations.subCategoryPhotoValidation,ActivityLogger, subCategoryController.updateSubCategory)
+    .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, subCategoryController.deleteSubCategory)
     // .get('/search/search', subCategoryController.searchSubCategory)
 
 

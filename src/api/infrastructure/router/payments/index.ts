@@ -29,6 +29,7 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { ShoppingCartRepository } from '../../repository/shoppingCart/ShoppingCartRepository';
 import ShoppingCartModel from '../../models/ShoppingCartModel';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
+import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
 
 const paymentRouter = Router();
 
@@ -63,7 +64,7 @@ paymentRouter
     .get('/:id', paymentController.getPayment)
     .get("/expired/sales", userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), paymentController.autoCancelPO)
     .post('/addTicket', paymentValidation.ImageValidation, userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.addTicket)
-    .post('/rejectTicket', paymentValidation.ImageValidation, userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), paymentController.rejectProofOfPayment)
+    .post('/rejectTicket', paymentValidation.ImageValidation, userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),ActivityLogger, paymentController.rejectProofOfPayment)
     .post('/createPreferenceMP', paymentValidation.paymentValidation, paymentController.createLMP)
     .post('/Membership-Pay', paymentController.createPaymentMP)
     .post('/Products-Pay', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.createPaymentProductMP)
@@ -71,10 +72,10 @@ paymentRouter
     // .post('/Products-PayLocation', paymentController.createPaymentProductMPLocation)
     .post('/success', paymentController.createTicket)
     .post('/Mem-Payment-success', paymentController.PaymentSuccess)
-    .post("/validatePaymentProof", userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), paymentController.validateProofOfPayment)
+    .post("/validatePaymentProof", userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),ActivityLogger, paymentController.validateProofOfPayment)
     // .post('/ticket', paymentController)
-    .post('/deleteTicket', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.deleteVoucher)
-    .put('/updateTicket', paymentValidation.ImageValidation, userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.editVoucher)
+    .post('/deleteTicket', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]),ActivityLogger, paymentController.deleteVoucher)
+    .put('/updateTicket', paymentValidation.ImageValidation, userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]),ActivityLogger, paymentController.editVoucher)
     .delete('/:id', paymentController.deletePayment)
 
 

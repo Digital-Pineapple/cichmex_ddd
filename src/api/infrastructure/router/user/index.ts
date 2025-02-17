@@ -21,6 +21,7 @@ import { AddressRepository } from '../../repository/address/AddressRepository';
 import AddressModel from '../../models/AddressModel';
 import { AddressUseCase } from '../../../application/address/AddressUseCase';
 import { SNService } from '../../../../shared/infrastructure/aws/SNService';
+import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
 
 const userRouter = Router();
 
@@ -61,8 +62,8 @@ userRouter
     .post('/loginByPhone', userController.loginPhone)
     .post('/loginByPhonePartner', userController.loginPhonePartner)
     .post('/collection-point/update/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER","CUSTOMER"]),userController.updateCollectionPoint)
-    .post('/carrier-driver',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), userController.RegisterCarrierDriver)
-    .post('/carrier-driver/update/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), userController.UpdateCarrierDriver)
+    .post('/carrier-driver',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),ActivityLogger, userController.RegisterCarrierDriver)
+    .post('/carrier-driver/update/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),ActivityLogger, userController.UpdateCarrierDriver)
     .delete('/phone-delete/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), userController.deletePhone)
     .delete('/phone-delete-1/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), userController.physicalDeletePhone)
     .delete('/delete-user/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN"]), userController.deleteUser)

@@ -4,6 +4,7 @@ import { ShippingCostRepository } from "../../repository/shippingCostRepository/
 import { ShippingCostUseCase } from "../../../application/shippingCost/ShippingCostUseCase";
 import { ShippingCostController } from "../../controllers/shippingCost/shippingCostController";
 import { UserValidations } from "../../../../shared/infrastructure/validation/User/UserValidation";
+import { ActivityLogger } from "../../../../shared/infrastructure/middleware/ActivityLogger";
 
 
 const shippingCostRouter = Router();
@@ -19,9 +20,9 @@ shippingCostRouter
     .get('/',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), shippingCostController.getAllShippingCost)
     .get('/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),  shippingCostController.getOneShippingCost)
     .get('/find/price',userValidations.authTypeUserValidation(["CUSTOMER", "SUPER-ADMIN"]), shippingCostController.getShippingCostByWeight )
-    .post('/',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),  shippingCostController.creteShippingCost)
-    .put('/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),  shippingCostController.updateShippingCost)
-    .delete('/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),  shippingCostController.deleteShippingCost)
+    .post('/',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), ActivityLogger, shippingCostController.creteShippingCost)
+    .put('/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),ActivityLogger,  shippingCostController.updateShippingCost)
+    .delete('/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), ActivityLogger, shippingCostController.deleteShippingCost)
 
     
 

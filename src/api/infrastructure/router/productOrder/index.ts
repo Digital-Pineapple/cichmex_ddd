@@ -13,6 +13,7 @@ import { RegionsService } from "../../../../shared/infrastructure/Regions/Region
 import StockStoreHouseModel from '../../models/stockStoreHouse/StockStoreHouseModel';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 import { DocumentationValidations } from '../../../../shared/infrastructure/validation/Documentation/DocumentationValidation';
+import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
 
 const productOrderRouter = Router();
 const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
@@ -48,15 +49,15 @@ productOrderRouter
   .get('/optimation/RouteDelivery', userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER", "ADMIN"]), productOrderController.OptimizedPackagesToPoint)
   .get('/outOfRegions/get', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.OutOfRegionsPO)
   .post('/', productOrderController.createProductOrder)
-  .post('/end-shipping',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]), productOrderController.endShippingOrder)
-  .post('/endShippingToPoint',userValidations.authTypeUserValidation(["PARTNER", "ADMIN"]), productOrderController.endShippingOrdertoPoint)
-  .post('/start-verifyQr',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]), productOrderController.verifyQr)
-  .post('/verifyQrToPoint',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]), productOrderController.verifyQrToPoint)
-  .post('/verifyStartRoute',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.verifyAndStartRoute)
-  .post('/assignRoute', documentationValidations.PDFFileValidation ,userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.AssignRoute)
-  .post('/fill-order/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN"]), productOrderController.fillProductOrder)
-  .post("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.updateProductOrder)
-  .delete("/:id",userValidations.authTypeUserValidation(["CUSTOMER"]),productOrderController.deleteProductOrder)
+  .post('/end-shipping',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]),ActivityLogger, productOrderController.endShippingOrder)
+  .post('/endShippingToPoint',userValidations.authTypeUserValidation(["PARTNER", "ADMIN"]),ActivityLogger, productOrderController.endShippingOrdertoPoint)
+  .post('/start-verifyQr',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]),ActivityLogger, productOrderController.verifyQr)
+  .post('/verifyQrToPoint',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]),ActivityLogger, productOrderController.verifyQrToPoint)
+  .post('/verifyStartRoute',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),ActivityLogger, productOrderController.verifyAndStartRoute)
+  .post('/assignRoute', documentationValidations.PDFFileValidation ,userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),ActivityLogger, productOrderController.AssignRoute)
+  .post('/fill-order/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN"]),ActivityLogger,  productOrderController.fillProductOrder)
+  .post("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), ActivityLogger,productOrderController.updateProductOrder)
+  .delete("/:id",userValidations.authTypeUserValidation(["CUSTOMER"]),ActivityLogger, productOrderController.deleteProductOrder)
   .get("/ordersByBranch/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]), productOrderController.getProductOrderByBranch);
 
 export default productOrderRouter;

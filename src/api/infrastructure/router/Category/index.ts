@@ -9,6 +9,7 @@ import { UserValidations } from '../../../../shared/infrastructure/validation/Us
 import { SubCategoryRepository } from '../../repository/subCategory/SubCategoryRepository';
 import SubCategoryModel from '../../models/SubCategoryModel';
 import { SubCategoryUseCase } from '../../../application/subCategory/SubCategoryUseCase';
+import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
 
 
 const categoryRouter = Router();
@@ -28,9 +29,9 @@ categoryRouter
     .get('/', categoryController.getAllCategories)
     .get('/SC', categoryController.getAllCategoriesAndSC)
     .get('/:id', userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER","CUSTOMER", "ADMIN"]), categoryController.getCategory)
-    .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),categoryValidations.categoryPhotoValidation, categoryController.createCategory)
-    .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), categoryValidations.categoryPhotoValidation, categoryController.updateCategory)
-    .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN"]), categoryController.deleteCategory)
+    .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),categoryValidations.categoryPhotoValidation,ActivityLogger, categoryController.createCategory)
+    .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), categoryValidations.categoryPhotoValidation,ActivityLogger, categoryController.updateCategory)
+    .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN"]),ActivityLogger, categoryController.deleteCategory)
     .get('/search/search', userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER","CUSTOMER"]), categoryController.searchCategory)
     
 
