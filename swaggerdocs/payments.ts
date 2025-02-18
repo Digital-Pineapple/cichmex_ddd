@@ -220,6 +220,50 @@ const payments = {
         },
       ],
     },
-  },
+  },  
+  "/payments/addTicket": {
+    post: {
+      tags: ["Payments"],
+      description: "upload the ticket payment",
+      parameters: [
+        {
+          name: "id",
+          in: "body",
+          required: true,
+          schema: {
+            type: "string",
+          },
+          description: "id de la orden",
+        },
+        {
+          name: "reference",
+          in: "body",
+          required: true,
+          schema: {
+            type: "string",
+          },
+          description: "referencia del ticket de compra",
+        },
+        {
+          name: "amount",
+          in: "body",
+          required: true,
+          schema: {
+            type: "number",
+          },
+          description: "cantidad del ticket de compra",
+        },
+        {
+         name: "ticket_image",
+         in: "body",
+         required: true,
+         schema: {
+           type: "string",
+         },
+         description: "imagen del ticket de compra",
+        }
+      ],
+    },
+  }
 };
 export { payments };

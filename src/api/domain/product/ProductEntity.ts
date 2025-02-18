@@ -94,6 +94,7 @@ export interface ProductOrderEntity {
   origin?: string;
   requiredTax?: boolean;
   facturapi_tax_id?: string;
+  tax_expiration_date?: Date;
 }
 
 export interface ILocationOrder {

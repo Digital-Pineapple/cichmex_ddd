@@ -113,7 +113,11 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
     facturapi_tax_id: {
       type: String,
       required: false,      
-    },  
+    },
+    tax_expiration_date: {
+      type: Date,
+      required: false
+    }  
   },
   {
     versionKey: false,

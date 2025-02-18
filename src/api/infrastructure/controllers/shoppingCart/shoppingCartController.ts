@@ -1,17 +1,10 @@
 import { ProductUseCase } from './../../../application/product/productUseCase';
 import { StockStoreHouseUseCase } from './../../../application/storehouse/stockStoreHouseUseCase';
-import { body } from 'express-validator';
 import { ObjectId } from 'mongodb';
 import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
-import { PaymentUseCase } from '../../../application/payment/paymentUseCase';
-import { stringify } from 'uuid';
-import { MPService } from '../../../../shared/infrastructure/mercadopago/MPService';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
-import { ProductShopping } from '../../../domain/product/ProductEntity';
-import mongoose from 'mongoose';
-import { ShoppingCartEntity } from '../../../domain/shoppingCart/shoppingCartEntity';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { ShippingCostUseCase } from '../../../application/shippingCost/ShippingCostUseCase';
 import { VariantProductUseCase } from '../../../application/variantProduct/VariantProductUseCase';
@@ -126,7 +119,7 @@ export class ShoppingCartController extends ResponseData {
             if(!response) return next(new ErrorHandler('No existe un carrito de compras asociado a este usuario', 404));
             const products = response?.products;
             const productsFiltered = products?.filter((product: any) => product?._id.toString() !== id);
-            const response2 = await this.shoppingCartUseCase.updateShoppingCart(response._id.toString(), { products: productsFiltered })
+            const response2 = await this.shoppingCartUseCase.updateShoppingCart(response._id.toString(), { products: productsFiltered } )
 
             this.invoke(response2, 201, res, 'Eliminado con exito', next);
         } catch (error) {               
@@ -146,7 +139,8 @@ export class ShoppingCartController extends ResponseData {
             variant?: ObjectId | null;
             quantity: number;
         }                        
-        try {                                              
+        try {          
+            let itemResponse = {};                                    
             // Validar entradas
             if(!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));
             if(!id) return next(new ErrorHandler('El id del producto es requerido', 404));
@@ -188,22 +182,28 @@ export class ShoppingCartController extends ResponseData {
             if (index !== -1) {
                 const productInCart = userCart.products[index];
                 const stockProducto = stock?.stock;
-                const totalQuantity = productInCart?.quantity + quantity;
-                console.log("stock de producto", stockProducto);
-                
+                const totalQuantity = productInCart?.quantity + quantity;                                
                 if(totalQuantity > stockProducto){
                     productInCart.quantity = stockProducto
                 }else{
                     productInCart.quantity += quantity;
-                }                           
+                }                      
+                itemResponse = {
+                    _id: productInCart._id,
+                    item: productInCart.item._id,
+                    variant: productInCart?.variant?._id ?? null,       
+                    quantity: productInCart?.quantity             
+                }     
             } 
             // Si el producto no está en el carrito, agregarlo
             if(index === -1){
                 userCart.products.push(newProduct);
-            }                     
+                itemResponse = newProduct;
+            }     
+                            
             // console.log(userCart._id, "userCart");                                                                                    
             const response = await this.shoppingCartUseCase.updateShoppingCart(userCart._id, { products: userCart.products });                       
-            this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
+            this.invoke(itemResponse, 201, res, 'Carrito de compras actualizado', next);
         } catch (error) {          
             console.error('Error actualizando el carrito de compras:', error);
             next(new ErrorHandler('Hubo un error al actualizar el carrito', 500));
