@@ -1,74 +1,110 @@
 import mongoose, { model, Schema } from "mongoose";
-import { SHLocation, storeHouseEntity } from '../../../domain/storehouse/storeHouseEntity';
+import { ImageEntity, storeHouseEntity } from '../../../domain/storehouse/storeHouseEntity';
+import { ILocation } from "../../../domain/branch_office/BranchOfficeEntity";
 
 
 
-const SHlocationSchema = new mongoose.Schema<SHLocation>(
-    {
-        state_id: {
-            type: String,
-            required: false
-        },
-        state: {
-            type: String,
-            required: false,
-        },
-        municipality_id: {
-            type: String,
-            required: false
+const locationSchema = new mongoose.Schema<ILocation>(
 
-        },
-        municipality: {
-            type: String,
-            required: false,
-        },
-        direction: {
-            type: String,
-            required: true,
-        },
-
-
+  {
+    
+    state_id: {
+      type: String,
+      required: false
     },
-    {
-        versionKey: false,
-        timestamps: true
+    state: {
+      type: String,
+      required: false
+    },
+    municipality_id: {
+      type: String,
+      required: false
+    },
+    municipality: {
+      type: String,
+      required: false
+    },
+    neighborhood:{
+      type: String,
+      required: false
+    },
+    lat: {
+      type: Number,
+      required: false
+    },
+    lgt: {
+      type: Number,
+      required: false
+    },
+    direction: {
+      type: String,
+      required: true
+    },    
+    cp:{
+      type:String,
+      required:false
     }
-
+  },
+  {
+    versionKey: false,
+    timestamps: true
+  }
 );
+const ImageSchema = new Schema<ImageEntity>(
+  {
+    _id: {
+      type: Schema.Types.ObjectId,
+      default: () => new mongoose.Types.ObjectId
+    },
+    url: {
+      type: String,
+      required: false
+    },   
+  },
+  {
+    versionKey: false,
+    timestamps: true,
+  }
+
+)
 const StoreHouseSchema = new mongoose.Schema<storeHouseEntity>(
     {
-        user_id: {
-            type: mongoose.Types.ObjectId,
-            required: false,
-            ref: 'User'
-        },
-        name: {
-            type: String,
-            required: true,
-        },
-        phone_number: {
-            type: String,
-            required: false,
-        },
-        images: {
-            type: Array,
-            required: false,
-        },
-
-        location: {
-            type: SHlocationSchema,
-            required: false,
-        },
-        status:{
-            type:Boolean,
-            required:false,
-        }
-
+      
+      user_id: {
+        type: mongoose.Types.ObjectId,
+        required: true,
+        ref: 'User'
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+      description: {
+        type: String,
+        required: false,
+      },
+      phone_number : {
+        type: String,
+        required: false,
+      },
+      images: [ImageSchema],
+      location: {type:locationSchema},
+      status: {
+        type:Boolean,
+        required:false,
+        default:true,
+      }, 
+      tag: {
+        type: String,
+        required: false,       
+      }   
+    
     },
     {
-        versionKey: false,
-        timestamps: true
+      versionKey: false,
+      timestamps: true
     }
+  
 
 );
 

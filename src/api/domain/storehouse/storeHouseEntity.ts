@@ -1,26 +1,30 @@
 
+import { ObjectId } from "mongoose";
+import { ILocation } from "../branch_office/BranchOfficeEntity";
 import { UserEntity } from "../user/UserEntity";
 
 export interface storeHouseEntity  {
   _id: string;
   user_id?: UserEntity ;
   name?: string;
+  description?: string;
   phone_number?: number;
-  images ?: string[];
+  opening_time?: string;
+  closing_time?: string;
+  images ?: ImageEntity[];
   status?: boolean;
-  location ?: SHLocation;
+  tag?: string;
+  location ?: ILocation;
   createdAt        :   NativeDate;
   updatedAt        :   NativeDate;
 
 }
 
 
-export interface SHLocation {
-  state_id?:string;
-  state?: string;
-  municipality_id?:string;
-  municipality?: string;
-  direction ?: string;
+export interface ImageEntity {
+  _id: ObjectId,
+  url: string;
+  status: boolean;
 }
 
 

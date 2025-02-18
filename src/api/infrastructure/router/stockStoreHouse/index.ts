@@ -46,6 +46,7 @@ stockStoreHouseRouter
     .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), stockStoreHouseController.getAllStock)
     .get('/all-inputs',userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN"]), stockStoreHouseController.getAllInputs)
     .get('/all-outputs',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), stockStoreHouseController.getAllOutputs)
+    .get('/all-movements',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), stockStoreHouseController.getAllMovements)
     .get('/online/:id', stockStoreHouseController.getAllStock)
     .get('/available/ok', stockStoreHouseController.getAvailableStock)
     .get('/available/products', stockStoreHouseController.getAvailableProducts)

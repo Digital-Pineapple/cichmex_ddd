@@ -44,7 +44,7 @@ export class TypeUserController extends ResponseData {
         const { system, roles } = req.body;
         const uuid =  generateUUID()
         try {
-            const response = await this.typeUserUseCase.createNewTypeUser({system:system, roles:roles}, uuid)
+            const response = await this.typeUserUseCase.createNewTypeUser({system:system, role:roles}, uuid)
             this.invoke(response, 200, res, '', next)
         } catch (error) {
             next(new ErrorHandler('Hubo un error al dar de alta', 500));

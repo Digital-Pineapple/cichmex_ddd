@@ -31,7 +31,6 @@ const s3Service        = new S3Service()
 const branchOfficeController     = new BranchOfficeController(branchOfficeUseCase, documentationUseCase,productOrderUseCase, s3Service);
 const userValidations = new UserValidations();
 const branchValidations = new BranchOfficeValidations()
-
 branchOfficeRouter
 
 .get('/',branchOfficeController.getAllBranchOffices)
