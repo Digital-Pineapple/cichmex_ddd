@@ -2,6 +2,7 @@ import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { storeHouseRepository } from '../../domain/storehouse/storeHouseRepository';
 import { StockStoreHouseEntity } from '../../domain/storehouse/stockStoreHouseEntity';
 import { storeHouseEntity } from '../../domain/storehouse/storeHouseEntity';
+import CounterService from '../../utils/CounterService';
 
 
 export class StoreHouseUseCase {
@@ -14,12 +15,13 @@ export class StoreHouseUseCase {
     }
 
     public async getDetailStoreHouse(_id: string): Promise<storeHouseEntity | null> {
-        
         return await this.StoreHouseRepository.findById(_id);
     }
 
     public async createStoreHouse(body:object): Promise<storeHouseEntity | null> {
-        return this.StoreHouseRepository.createOne({...body})
+       const nextId = await CounterService.getNextSequence('StoreHouse')
+       const branchKey = `SH-${nextId}`
+        return this.StoreHouseRepository.createOne({...body, storehouse_key: branchKey})
     }
     public async updateStoreHouse(_id: string,updated: object): Promise<storeHouseEntity  | null> {
         return await this.StoreHouseRepository.updateOne(_id,{...updated});

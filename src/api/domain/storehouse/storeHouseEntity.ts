@@ -5,12 +5,11 @@ import { UserEntity } from "../user/UserEntity";
 
 export interface storeHouseEntity  {
   _id: string;
+  storehouse_key: string;
   user_id?: UserEntity ;
   name?: string;
   description?: string;
   phone_number?: number;
-  opening_time?: string;
-  closing_time?: string;
   images ?: ImageEntity[];
   status?: boolean;
   tag?: string;

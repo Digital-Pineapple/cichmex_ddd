@@ -75,6 +75,10 @@ const StoreHouseSchema = new mongoose.Schema<storeHouseEntity>(
         required: true,
         ref: 'User'
       },
+      storehouse_key:{
+        type: String,
+        required: true
+      },
       name: {
         type: String,
         required: true,
