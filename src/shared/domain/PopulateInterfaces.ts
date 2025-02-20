@@ -14,6 +14,8 @@ import SizeGuideModel from '../../api/infrastructure/models/sizeGuide/SizeGuideM
 import { VariantProductModel } from '../../api/infrastructure/models/variantProduct/VariantProductModel';
 import BannerModel from '../../api/infrastructure/models/banners/BannerModel';
 import DiscountCouponModel from '../../api/infrastructure/models/discountCoupon/DiscountCouponModel';
+import { ZoneModel } from '../../api/infrastructure/models/warehouse/ZoneModel';
+import { AisleModel } from '../../api/infrastructure/models/warehouse/AisleModel';
 export interface IAuthPopulateConfig {
     path    : string;
     select  : string;
@@ -209,5 +211,19 @@ export const PopulateGuide : IGuideConfig = {
     // select: ["*"],
     model: SizeGuideModel    
 }
+export const PopulateZone : IGuideConfig ={
+    path: 'zone',
+    model: ZoneModel
 
+}
+export const PopulateAisle : IGuideConfig ={
+    path: 'aisle',
+    model: AisleModel
+
+}
+export const PopulateProductSection : IGuideConfig ={
+    path: 'stock.product',
+    model: ProductModel
+
+}
 
