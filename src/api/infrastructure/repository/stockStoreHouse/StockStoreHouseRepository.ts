@@ -24,17 +24,17 @@ const PopulateVariant : IPopulateProducts={
 
 export class StockStoreHouseRepository extends MongoRepository implements  StockSHConfig {
   
-    constructor(protected StockBranchModel: Model<any>) {
-      super (StockBranchModel)
+    constructor(protected StockStoreHouseModel: Model<any>) {
+      super (StockStoreHouseModel)
     }
   
     async findStockByStoreHouse(branchId: string, populateConfig1?:any): Promise<any> {
-     return await this.StockBranchModel.find({StoreHouse_id:branchId, status:true}).populate(PopulateProduct).populate(PopulateVariant)
+     return await this.StockStoreHouseModel.find({StoreHouse_id:branchId, status:true}).populate(PopulateProduct).populate(PopulateVariant)
       
     }
 
     async findStockByStoreHouseNoDetail(branchId: string): Promise<any[]> {
-      return await this.StockBranchModel.find({StoreHouse_id:branchId, status:true})
+      return await this.StockStoreHouseModel.find({StoreHouse_id:branchId, status:true})
   
     }
     async findAllInputs(): Promise<any[]> {

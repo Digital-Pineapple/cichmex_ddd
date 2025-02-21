@@ -9,14 +9,19 @@ import { AisleModel } from '../../models/warehouse/AisleModel';
 import { SectionRepository } from '../../repository/warehouse/SectionRepository';
 import { SectionModel } from '../../models/warehouse/SectionModel';
 import { WarehouseController } from '../../controllers/warehouseController/WarehouseController';
+import { StockStoreHouseRepository } from '../../repository/stockStoreHouse/StockStoreHouseRepository';
+import StockStoreHouseModel from '../../models/stockStoreHouse/StockStoreHouseModel';
+import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 
 const warehouseRouter = Router();
 
 const zoneRepository     = new ZoneRepository(ZoneModel);
 const aisleRepository = new AisleRepository(AisleModel)
 const sectionRepository = new SectionRepository(SectionModel)
+const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel)
 const warehouseUseCase = new WarehouseUseCase(zoneRepository,aisleRepository,sectionRepository) 
-const warehouseController     = new WarehouseController(warehouseUseCase)
+const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository)
+const warehouseController     = new WarehouseController(warehouseUseCase, stockStoreHouseUseCase)
 const userValidations = new UserValidations();
 
 warehouseRouter
@@ -29,7 +34,7 @@ warehouseRouter
 .post('/add_aisle',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.createAisle)
 .post('/add_multiple_aisles',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.addMultipleAisles)
 .post('/add_multiple_sections',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.addMultipleSections)
-.post('/section/add_multiple_products/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.addMultipleProductsToSection)
+.post('/section/add_multiple_products',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.addMultipleProductsToSection)
 
 
 export default warehouseRouter;

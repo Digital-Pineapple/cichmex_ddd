@@ -12,13 +12,11 @@ export class SectionRepository extends MongoRepository implements SectionConfig 
     }
 
 
-public async findProductInSections(productId: string) : Promise<ISection[] | null>{
+public async findProductInSections(productId: string) : Promise<ISection[] | null>{  
+      
     if (!mongoose.Types.ObjectId.isValid(productId)) {
         throw new Error('ID de producto no válido');
     }
-    console.log(productId,'id del producto');
-    
-
     const objectId = new mongoose.Types.ObjectId(productId);
 
     const result = await this.SectionModel.aggregate([
@@ -62,6 +60,55 @@ public async findProductInSections(productId: string) : Promise<ISection[] | nul
 
     return result;
 }
+
+public async findVariantInSections(variantId: string) : Promise<ISection[] | null>{    
+    if (!mongoose.Types.ObjectId.isValid(variantId)) {
+        throw new Error('ID de producto no válido');
+    }
+    const objectId = new mongoose.Types.ObjectId(variantId);
+
+    const result = await this.SectionModel.aggregate([
+        { $match: { "stock.variant": objectId } }, // Filtrar secciones que contienen el producto
+        { 
+            $lookup: { 
+                from: "products", 
+                localField: "stock.product", 
+                foreignField: "_id", 
+                as: "productDetails" 
+            } 
+        },
+        { 
+            $lookup: { 
+                from: "aisles", 
+                localField: "aisle", 
+                foreignField: "_id", 
+                as: "aisleDetails" 
+            } 
+        },
+        { 
+            $lookup: { 
+                from: "zones", 
+                localField: "aisleDetails.zone", 
+                foreignField: "_id", 
+                as: "zoneDetails" 
+            } 
+        },
+        { 
+            $project: {
+                _id: 1,
+                name: 1,
+                "stock.quantity": 1,
+                "productDetails.name": 1,
+                "productDetails.sku": 1,
+                "aisleDetails.name": 1,
+                "zoneDetails.name": 1
+            } 
+        }
+    ]);
+
+    return result;
+}
+
 
 
 }

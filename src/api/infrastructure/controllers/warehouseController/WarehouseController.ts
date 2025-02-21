@@ -3,11 +3,14 @@ import { ResponseData } from "../../../../shared/infrastructure/validation/Respo
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { WarehouseUseCase } from '../../../application/warehouse/WarehouseUseCase';
 import { promises } from 'nodemailer/lib/xoauth2';
+import { log } from 'console';
+import { relativeTimeThreshold } from 'moment';
+import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 
 export class WarehouseController extends ResponseData {
     protected path = '/warehouse'
 
-    constructor(private warehouseUseCase: WarehouseUseCase) {
+    constructor(private warehouseUseCase: WarehouseUseCase, private stockStoreHouseUseCase: StockStoreHouseUseCase) {
         super();
         this.getAisle = this.getAisle.bind(this);
         this.getAllZones = this.getAllZones.bind(this);
@@ -76,10 +79,10 @@ export class WarehouseController extends ResponseData {
         }
     }
     public async addMultipleAisles(req: Request, res: Response, next: NextFunction) {
-        const { names, zone } = req.body;    
+        const { names, zone, storehouse } = req.body;    
         try {
             const responses = await Promise.all(
-                names.map((name: any) => this.warehouseUseCase.createAisle({ name, zone }))
+                names.map((name: any) => this.warehouseUseCase.createAisle({ name, zone, storehouse }))
             );
             this.invoke(responses, 200, res, 'Los pasillos se crearon con éxito', next);
         } catch (error) {
@@ -92,7 +95,7 @@ export class WarehouseController extends ResponseData {
         try {
             const aisle = await this.warehouseUseCase.getOneAisle(aisle_id)
             const responses = await Promise.all(
-                names.map((name: any) => this.warehouseUseCase.createSection({ name: `${aisle?.name}_${name}`, aisle: aisle_id }))
+                names.map((name: any) => this.warehouseUseCase.createSection({ name: `${aisle?.name}_${name}`, aisle: aisle_id, storehouse: aisle?.storehouse }))
             );
             this.invoke(responses, 200, res, 'Las secciones se crearon con éxito', next);
         } catch (error) {
@@ -100,60 +103,97 @@ export class WarehouseController extends ResponseData {
         }
     }
 
-    public async addMultipleProductsToSection(
-        req: Request,
-        res: Response,
-        next: NextFunction
-      ) {
-        const { id } = req.params;
-        const { products } = req.body;
-      
+    public async addMultipleProductsToSection(req: Request, res: Response, next: NextFunction) {
+        const { section, products } = req.body;
+    
         try {
-            if (!Array.isArray(products)) {
-                throw new ErrorHandler("Formato de productos inválido", 400);
-              }
-      
-         
-          const productChecks = products.map(async (product) => {
-            const sections = await this.warehouseUseCase.getProductInSection(product.product);
+            // 🔹 Ejecutar todas las validaciones en paralelo
+            const validationResults = await Promise.allSettled(
+                products.map(async (product: any, index: any) => {
+                    if (product.type === "unique_product") {
+                        const noRepeat: any = await this.warehouseUseCase.getProductInSection(product.product);
+                        console.log(noRepeat[0].productDetails[index].name,`${index}`);
+                        
+                        if (Array.isArray(noRepeat) && noRepeat.length > 0) {
+                            throw {
+                                product: product.product,
+                                message: `El producto ${noRepeat[0].productDetails[index].name} ya está en la sección ${noRepeat[0].name}`
+                            };
+                        }
+                    } else if (product.type === "variant_product") {
+                        const noRepeat: any = await this.warehouseUseCase.getVariantInSection(product.variant);
+                        if (Array.isArray(noRepeat) && noRepeat.length > 0) {
+                            throw {
+                                variant: product.variant,
+                                message: `El producto ${noRepeat[0].productDetails[index].name} ya está en la sección ${noRepeat[0].name}`
+                            };
+                        }
+                    }
+                })
+            );
+
+            console.log(validationResults,'validaciones');
             
-            if ( Array.isArray(sections) && sections?.length > 0) {
-              const sectionName = sections[0]?.name || 'Desconocida';
-              const productName = sections[0]?.productDetails?.[0]?.name || 'Sin nombre';
-              throw new ErrorHandler(
-                `El producto ${productName} ya está en la sección: ${sectionName}`,
-                400
-              );
+    
+            // 🔹 Filtrar errores y éxitos por separado
+            const errors = validationResults
+                .filter(result => result.status === 'rejected')
+                .map(result => (result as PromiseRejectedResult).reason);
+    
+            const validProducts = validationResults
+                .filter(result => result.status === 'fulfilled')
+                .map((result, index) => products[index]); // Obtener los productos válidos
+    
+            // 🔹 Si hay errores, devolverlos y NO agregar nada
+            if (errors.length > 0) {
+                return res.status(400).json({
+                    message: 'Algunos productos no pasaron la validación',
+                    errors
+                });
             }
-          });
-      
-          await Promise.all(productChecks);
-      
-          // 3. Validación de stock
-          const section = await this.warehouseUseCase.getOneSection(id);
-          if (!section?.stock) {
-            throw new ErrorHandler("Sección no encontrada", 404);
-          }
-      
-          // 4. Transacción (depende de tu ORM/DB)
-          const result = await this.warehouseUseCase.addProductsToSection(
-            id,
-            { ...section.stock, ...products }
-          );
-      
-          // 5. Respuesta
-          this.invoke(
-            result,
-            201, // Más apropiado para creación
-            res,
-            'Productos agregados exitosamente',
-            next
-          );
-      
+    
+            // 🔹 Obtener stock existente en la sección
+            const existStock = await this.warehouseUseCase.getOneSection(section);
+            const stockExist = existStock?.stock || [];
+    
+            // 🔹 Concatenar productos sin sobrescribir el stock existente, evitando duplicados
+            const updatedStock = Array.from(
+                new Map([...stockExist, ...validProducts].map(p => [p.product || p.variant, p])).values()
+            );
+    
+            // 🔹 Guardar los productos en la sección solo si TODAS las validaciones pasaron
+            const responses = await this.warehouseUseCase.addProductsToSection(section, updatedStock);
+    
+            this.invoke(responses, 200, res, 'Los productos se agregaron con éxito a la sección', next);
         } catch (error) {
-          next(error);
+            next(error);
         }
-      }
+    }
+    
+    
+
+    public async addProductToSection(req: Request, res: Response, next: NextFunction) {
+        const { section, product } = req.body;
+    
+        try {
+           
+    
+            // Obtener stock existente en la sección
+            const existStock = await this.warehouseUseCase.getOneSection(section);
+            const stockExist = existStock?.stock || [];
+    
+            // 🔹 Concatenar productos sin sobrescribir el stock existente
+            const updatedStock = [...stockExist, ...product];
+    
+            // 🔹 Guardar el nuevo stock en la sección
+            const responses = await this.warehouseUseCase.addProductsToSection(section, updatedStock);
+    
+            this.invoke(responses, 200, res, 'Los productos se agregaron con éxito a la sección', next);
+        } catch (error) {
+            next(error);
+        }
+    }
+    
     
     
    
