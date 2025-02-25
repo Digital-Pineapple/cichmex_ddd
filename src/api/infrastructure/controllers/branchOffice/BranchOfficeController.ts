@@ -28,6 +28,7 @@ export class BranchOfficeController extends ResponseData {
         this.verifyBranchOffice = this.verifyBranchOffice.bind(this);
         this.desactivateBranchOffice = this.desactivateBranchOffice.bind(this);
         this.deleteImage = this.deleteImage.bind(this);
+        this.getCloserBranches = this.getCloserBranches.bind(this);
     }
 
     public async getAllBranchOffices(req: Request, res: Response, next: NextFunction) {
@@ -94,6 +95,7 @@ export class BranchOfficeController extends ResponseData {
             // Parse JSON strings
             const user_id = user.id
             const location1 = JSON.parse(location);
+
             const parseSchedules = JSON.parse(schedules);
             let images: {}[] = [];
             let imageUrls: {}[] = [];
@@ -133,7 +135,9 @@ export class BranchOfficeController extends ResponseData {
                     status: true,
                     tag: tag ?? null                                  
                 }, 
-                location1
+                {...location1, geoLocation: {
+                    coordinates: [location1.lgt, location1.lat]                    
+                }}
             );
     
             if (response instanceof ErrorHandler) {
@@ -141,7 +145,7 @@ export class BranchOfficeController extends ResponseData {
             }
     
             // Update response with image URLs
-            response.images = imageUrls;
+            // response.images = imageUrls;
     
             // Send success response
             this.invoke( response, 201, res, "Registro exitoso", next);
@@ -194,6 +198,7 @@ export class BranchOfficeController extends ResponseData {
         const user = req.user;
         try {                       
             const user_id = user.id
+            const parsedLocation = JSON.parse(location)
             // Verificar si existen archivos adjuntos
             if (req.files && Array.isArray(req.files)) {
                 const paths: {}[] = [];
@@ -224,7 +229,9 @@ export class BranchOfficeController extends ResponseData {
                     description: description,
                     phone_number: phone_number,
                     schedules: parsedSchedules,                  
-                    location: JSON.parse(location), 
+                    location: {...parsedLocation, geoLocation: {
+                        coordinates: [parsedLocation.lgt, parsedLocation.lat]                    
+                    }}, 
                     images: paths, // Se usan las rutas de los archivos en S3
                 });
 
@@ -243,7 +250,9 @@ export class BranchOfficeController extends ResponseData {
                     description: description,  
                     phone_number: phone_number,                  
                     schedules: parsedSchedules,
-                    location: JSON.parse(location),
+                    location: {...parsedLocation, geoLocation: {
+                        coordinates: [parsedLocation.lgt, parsedLocation.lat]                    
+                    }},
                 });
 
                 // Enviar la respuesta al cliente
@@ -298,6 +307,17 @@ export class BranchOfficeController extends ResponseData {
             this.invoke(response, 200, res, 'Desactivación exitosa', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al desactivar la sucursal', 500));
+        }
+    }
+
+    public async getCloserBranches(req: Request, res: Response, next: NextFunction) {
+        const { coords } = req.body;
+        try{
+            const response = await this.branchOfficeUseCase.getCloserBranches(coords);
+            this.invoke(response, 200, res, 'ok', next);            
+        }catch(error){
+            console.log(error);            
+            next(new ErrorHandler('Erro al obtener las sucursales cercanas', 500));
         }
     }
 

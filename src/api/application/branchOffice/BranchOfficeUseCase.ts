@@ -97,4 +97,9 @@ export class BranchOfficeUseCase {
   ): Promise<BranchOfficeEntity | null> {
     return this.branchOfficeRepository.updateOne(_id, { ...object });
   }
+
+  public async getCloserBranches(coords : { lat: number, lng: number }): Promise<BranchOfficeEntity[] | null> {
+    const branches = await this.branchOfficeRepository.findCloserBranches(coords);
+    return branches;    
+  }
 }
