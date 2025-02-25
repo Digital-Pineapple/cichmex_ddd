@@ -44,5 +44,6 @@ branchOfficeRouter
 .patch('/:id', branchValidations.ImageValidation,userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']), ActivityLogger, branchOfficeController.updateBranchOffice)
 .delete('/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']),ActivityLogger, branchOfficeController.deleteBranchOffice)
 .put('/image/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','PARTNER', 'ADMIN']),ActivityLogger, branchOfficeController.deleteImage)
+.post('/nearLocation', branchOfficeController.getCloserBranches)
 
 export default branchOfficeRouter;

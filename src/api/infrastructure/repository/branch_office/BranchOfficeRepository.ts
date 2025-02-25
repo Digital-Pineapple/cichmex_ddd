@@ -39,5 +39,32 @@ export class BranchOfficeRepository extends MongoRepository implements BranchOff
     async getCichmexBranches(): Promise<BranchOfficeEntity[] | null> {
         return await this.findAll({ tag : "cichmex"});
     }   
+    async findCloserBranches(coords : { lat: number, lng: number }): Promise<BranchOfficeEntity[] | null> {
+        const branches =  await this.BranchOfficeModel.aggregate([
+        // Agregar un campo `location.coordinates` en tiempo de consulta
+            {
+              $geoNear: {
+                near: {
+                  type: 'Point',
+                  coordinates: [coords.lng, coords.lat], // [longitud, latitud]
+                },
+                distanceField: 'distance', // Campo que almacenará la distancia
+                spherical: true, // Para cálculos en una esfera (Tierra)                
+                key: "location.geoLocation", // 👈 Especifica la ruta del campo GeoJSON
+              },
+
+            },
+            {
+                $match: {
+                    status: true,
+                    activated: true,
+                }
+            },
+            // Opcional: Limitar resultados
+            { $limit: 15 },
+          ]);             
+        return branches;
+    }   
+           
 
 }
