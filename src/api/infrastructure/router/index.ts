@@ -32,11 +32,13 @@ import colorProductRouter from './colorProduct';
 import taxInfoRouter from './taxInfo';
 import bannerRouter from './banners';
 import activityLogRouter from './activityLog';
+import notificationsRouter from './notification';
 
 export const apiRouter = (): Router => {
 
-    const apiRouter = Router();
-
+    const apiRouter = Router();    
+    
+    apiRouter.use('/notification', notificationsRouter)
     apiRouter.use('/auth', authRouter);
     apiRouter.use('/dynamic-route', dynamicRouteRouter)
     apiRouter.use('/user', userRouter);
@@ -73,7 +75,7 @@ export const apiRouter = (): Router => {
     return apiRouter;
 }
 const apiRouterx = Router();
-
+// apiRouterx.use('/notification', notificationsRouter)
 apiRouterx.use('/auth', authRouter);
 apiRouterx.use('/services', serviceRouter);
 apiRouterx.use('/services-branch', servicesInBranchRouter)
@@ -104,6 +106,7 @@ apiRouterx.use('/colorProduct', colorProductRouter)
 apiRouterx.use('/tax-info', taxInfoRouter)
 apiRouterx.use('/banner', bannerRouter)    
 apiRouterx.use('/activityLog', activityLogRouter)
+
 
 
 
