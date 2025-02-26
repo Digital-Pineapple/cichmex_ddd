@@ -21,10 +21,12 @@ export interface SHProductInput {
     newQuantity: number
     status?:boolean;
     responsible?:  UserEntity,
-    user_received?: string,
+    user_received?: UserEntity,
     user_delivery?: string,
     product_detail:ProductEntity,
     createdAt: NativeDate;
+    in_storehouse: boolean;
+    notes: string;
   }
   export interface SHProductOutput {
     folio ?: string,

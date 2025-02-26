@@ -4,9 +4,9 @@ import { SHProductInput } from '../../../domain/storehouse/stockStoreHouseEntity
 
 
 const StockSHinputSchema = new Schema<SHProductInput>({
-  folio :{
-type:String,
-required:false
+  folio: {
+    type: String,
+    required: false
   },
   SHStock_id: {
     type: mongoose.Types.ObjectId, ref: 'StoreHouseStocks',
@@ -21,28 +21,35 @@ required:false
     type: Number,
     required: true,
   },
-  status:{
-    type:Boolean,
-    required:false,
-    default:true,
-   },
-   responsible:{
+  status: {
+    type: Boolean,
+    required: false,
+    default: true,
+  },
+  responsible: {
     type: Object,
-    required:true,
+    required: true,
 
-   },
-   user_received:{
-    type:String,
-    required:false,
-   },
-   user_delivery:{
-    type:String,
-    required:false
-   },
-   product_detail:{
-    type:Object,
-    required:true,
-   }
+  },
+  user_received: {
+    type: Object,
+    required: false,
+  },
+  user_delivery: {
+    type: String,
+    required: false
+  },
+  product_detail: {
+    type: Object,
+    required: true,
+  },
+  in_storehouse: { 
+    type: Boolean, 
+    default: false },
+  notes: {
+    type: String,
+    required: false,
+  }
 },
   {
     timestamps: true,

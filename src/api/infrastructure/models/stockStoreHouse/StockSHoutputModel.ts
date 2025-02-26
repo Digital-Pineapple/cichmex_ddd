@@ -49,7 +49,8 @@ const StockSHoutputChema = new Schema<SHProductOutput>({
   product_detail: {
     type: Object,
     required: true,
-  }
+  },
+  
 },
   {
     timestamps: true,

@@ -21,6 +21,37 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
     return await this.MODEL.findById(branchId)
   }
 
+  async getInputsByFolio(): Promise<SHProductInput[]> {
+    return await this.StockInputModel.aggregate([
+      {
+        $group: {
+          _id: "$folio",
+          in_storehouse: { $first: "$in_storehouse" },
+          createdAt: { $first: "$createdAt" }
+        }
+      },
+      {
+        $sort: { "createdAt": -1 }
+      }
+    ])
+  }
+  async getInputsByOneFolio(folio: string): Promise<SHProductInput[]> {
+    return await this.StockInputModel.aggregate([
+      { $match: { folio: folio } },
+      {
+        $group: {
+          _id: "$folio",
+          in_storehouse: { $addToSet: "$in_storehouse" }, // Agrupa valores únicos
+          responsible: { $addToSet: "$responsible" }, // Agrupa valores únicos
+          inputs: { $push: "$$ROOT" },
+        }
+      },
+      {
+        $sort: { "createdAt": -1 }
+      }
+    ])
+  }
+
   async getAllSHInputs(): Promise<SHProductInput[]> {
     return await this.MODEL.aggregate([
       {
@@ -69,7 +100,7 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
           nowStock: "$SHStock.stock",
           responsible: "$responsible.fullname",
           variant_tag: "$variant.tag",
-          createdAt : '$createdAt',
+          createdAt: '$createdAt',
           date: {
             $dateToString: {
               format: "%Y-%m-%d %H:%M:%S",
@@ -82,6 +113,71 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
       { $sort: { createdAt: -1 } }
     ])
   }
+
+  async getAllSHInputsPending(): Promise<SHProductInput[]> {
+    return await this.MODEL.aggregate([
+      { $match: { in_storehouse: false } },
+      {
+        $lookup: {
+          from: 'storehousestocks',
+          localField: 'SHStock_id',
+          foreignField: '_id',
+          as: 'SHStock'
+        }
+      },
+      { $unwind: "$SHStock" },
+      {
+        $lookup: {
+          from: "products", // Asegúrate de que el nombre de la colección sea correcto
+          localField: "SHStock.product_id",
+          foreignField: "_id",
+          as: "product"
+        }
+      },
+      { $unwind: "$product" },
+      {
+        $lookup: {
+          from: "variant-products", // Cambia a plural si el nombre de la colección lo requiere
+          localField: "SHStock.variant_id",
+          foreignField: "_id",
+          as: "variant"
+        }
+      },
+      { $unwind: { path: "$variant", preserveNullAndEmptyArrays: true } }, // Evita errores si no hay variante
+      {
+        $project: {
+          product_name: {
+            $concat: [
+              "$product.name",
+              " - ",
+              { $ifNull: ["$variant.attributes.size", ""] },
+              " - ",
+              { $ifNull: ["$variant.attributes.color", ""] }
+            ]
+          },
+          tag: "$product.tag",
+          folio: "$folio",
+          quantity: "$quantity",
+          newQuantity: "$newQuantity",
+          nowStock: "$SHStock.stock",
+          responsible: "$responsible.fullname",
+          variant_tag: "$variant.tag",
+          createdAt: '$createdAt',
+          in_storehouse: "$in_storehouse",
+          notes: "$notes",
+          date: {
+            $dateToString: {
+              format: "%Y-%m-%d %H:%M:%S",
+              date: "$createdAt",
+              timezone: "America/Mexico_City"
+            }
+          }
+        }
+      },
+      { $sort: { createdAt: -1 } }
+    ])
+  }
+
 
 
 

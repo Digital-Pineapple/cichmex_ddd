@@ -226,4 +226,8 @@ export const PopulateProductSection : IGuideConfig ={
     model: ProductModel
 
 }
+export const PopulateProductDetail : IGuideConfig ={
+    path: 'product_detail',
+    model: ProductModel
 
+}

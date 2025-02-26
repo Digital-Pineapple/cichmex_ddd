@@ -31,10 +31,14 @@ export class StockStoreHouseController extends ResponseData {
         this.getAllInputs = this.getAllInputs.bind(this)
         this.getAllOutputs = this.getAllOutputs.bind(this)
         this.getAllMovements = this.getAllMovements.bind(this)
+        this.getAllInputsPending = this.getAllInputsPending.bind(this)
+        this.getAllInputsPendingByFolio = this.getAllInputsPendingByFolio.bind(this);
         this.getAvailableProducts = this.getAvailableProducts.bind(this)
+        this.getInputsByFolio = this.getInputsByFolio.bind(this);
         this.createStock = this.createStock.bind(this);
         this.createMultipleStock = this.createMultipleStock.bind(this);
         this.createMultipleOutputs = this.createMultipleOutputs.bind(this);
+        this.authorizeInputs = this.authorizeInputs.bind(this);
         this.updateStock = this.updateStock.bind(this);
         this.addStock = this.addStock.bind(this);
         this.removeStock = this.removeStock.bind(this);
@@ -44,6 +48,7 @@ export class StockStoreHouseController extends ResponseData {
         this.getProductsOutputs = this.getProductsOutputs.bind(this);
         this.seedProductStock = this.seedProductStock.bind(this);
         this.feedDailyProduct = this.feedDailyProduct.bind(this);
+        this.readyToAccommodate = this.readyToAccommodate.bind(this)
 
     }
 
@@ -61,6 +66,51 @@ export class StockStoreHouseController extends ResponseData {
     public async getAllInputs(req: Request, res: Response, next: NextFunction) {
         try {
             const response = await this.stockSHinputUseCase.getInputs()
+
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error);
+
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+    public async getAllInputsPending(req: Request, res: Response, next: NextFunction) {
+        try {
+            const response = await this.stockSHinputUseCase.getAllInputsPending()
+
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error);
+
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+    public async getAllInputsPendingByFolio(req: Request, res: Response, next: NextFunction) {
+        try {
+            const response = await this.stockSHinputUseCase.getAllInputsByFolio()
+        
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error);
+
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+
+    public async readyToAccommodate(req: Request, res: Response, next: NextFunction) {
+        try {
+            const response = await this.stockSHinputUseCase.startReadyToAccommodate()
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error);
+
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+    public async getInputsByFolio(req: Request, res: Response, next: NextFunction) {
+        const { folio } = req.params
+        try {
+            const response = await this.stockSHinputUseCase.getInputsByFolio(folio)
 
             this.invoke(response, 200, res, '', next);
         } catch (error) {
@@ -221,12 +271,12 @@ export class StockStoreHouseController extends ResponseData {
                         product_id: item.product_id!,
                         variant_id: item._id,
                         StoreHouse_id: SH_id,
-                        stock: newQuantity,
+                        stock: 0,
                     })
                     : await this.stockStoreHouseUseCase.createStock({
                         product_id: item._id,
                         StoreHouse_id: SH_id,
-                        stock: newQuantity,
+                        stock: 0,
                     }));
 
                 await this.stockSHinputUseCase.createInput({
@@ -238,7 +288,7 @@ export class StockStoreHouseController extends ResponseData {
                     product_detail: item,
                 });
 
-                await this.stockStoreHouseUseCase.updateStock(response._id, { stock: newQuantity });
+                // await this.stockStoreHouseUseCase.updateStock(response._id, { stock: newQuantity });
             };
 
             const operations = products.map(async (item) => {
@@ -257,7 +307,7 @@ export class StockStoreHouseController extends ResponseData {
 
             await Promise.allSettled(operations);
 
-            this.invoke(code_folio, 200, res, 'Alta de stock exitosa', next);
+            this.invoke(code_folio, 200, res, 'Alta de exitosa', next);
         } catch (error) {
             console.error('Error procesando stock:', error);
             next(new ErrorHandler('Hubo un error procesando los productos', 500));
@@ -364,6 +414,90 @@ export class StockStoreHouseController extends ResponseData {
 
             // Respuesta exitosa
             this.invoke(code_folio, 200, res, "Baja de stock exitosa", next);
+        } catch (error) {
+            console.error("Error procesando stock:", error);
+            next(new ErrorHandler("Hubo un error procesando los productos", 500));
+        }
+    }
+
+    public async authorizeInputs(req: Request, res: Response, next: NextFunction) {
+        const { entries } = req.body;
+        const user = req.user;
+
+        // Validación inicial de `products` y `user`
+        if (!entries || !Array.isArray(entries) || entries.length === 0) {
+            return next(new ErrorHandler("No se proporcionaron productos válidos", 400));
+        }
+
+        // Información del usuario
+        const UserInfo = {
+            _id: user._id,
+            fullname: user.fullname,
+            email: user.email,
+            type_user: user.type_user,
+        };
+
+        const SH_id = "662fe69b9ba1d8b3cfcd3634";
+
+        try {
+            // Helper para validar productos
+            const validateProduct = (input: any): boolean => {
+                return (
+                    input &&
+                    input._id &&
+                    input.MyQuantity &&
+                    typeof input.MyQuantity === "number" &&
+                    input.MyQuantity > 0
+                );
+            };
+
+            // Validar que todos los productos tengan los campos requeridos
+            const invalidProducts = entries.filter((input: any) => !validateProduct(input));
+            if (invalidProducts.length > 0) {
+                return next(
+                    new ErrorHandler(
+                        `Algunos productos tienen datos faltantes o inválidos: ${JSON.stringify(invalidProducts.map(i => i.name))}`,
+                        400
+                    )
+                );
+            }
+
+            const processInput = async (item: { _id: string; folio?: string; MyQuantity: number; notes: string, product_detail:{_id: string, product_id: string, name: string } }, isVariant = false) => {
+                const itemQuantity = Number(item.MyQuantity);
+                if (isNaN(itemQuantity) || itemQuantity <= 0) {
+                    throw new Error(`Cantidad inválida para el producto ${item.product_detail.name}`);
+                }
+
+                const available = isVariant
+                    ? await this.stockStoreHouseUseCase.getVariantStock(item.product_detail._id, SH_id)
+                    : await this.stockStoreHouseUseCase.getProductStock(item.product_detail._id, SH_id);
+
+                const availableStock = Number(available?.stock) || 0;
+                if (isNaN(availableStock)) {
+                    throw new Error(`El stock disponible no es válido para el producto (ID: ${item.product_detail._id})`);
+                }
+
+                const newQuantity = availableStock + itemQuantity;
+                 await this.stockSHinputUseCase.updateInputStorehouse(item._id,{in_storehouse: true, notes: item.notes, user_received: UserInfo, newQuantity: newQuantity })
+                 await this.stockStoreHouseUseCase.updateStock(available._id, { stock: newQuantity });
+            };
+
+            const operations = entries.map(async (item) => {
+                try {
+                    if (item._id && item.product_detail?.product_id) {
+                        await processInput(item, true);
+                    } else if (item._id) {
+                        await processInput(item);
+                    } else {
+                        throw new Error(`Entrada sin identificador válido: ${JSON.stringify(item)}`);
+                    }
+                } catch (error) {
+                    console.error(`Error procesando entrada ${item._id}:`, error);
+                }
+            });
+
+            const response = await Promise.allSettled(operations);
+            this.invoke(response, 200, res, 'Alta en almacen exitosa', next);
         } catch (error) {
             console.error("Error procesando stock:", error);
             next(new ErrorHandler("Hubo un error procesando los productos", 500));

@@ -20,6 +20,11 @@ export interface StockSHInputRepository extends MongoRepository {
     findStockByStoreHouseNoDetail(id: any, populateOne?: any, populateTwo?: any): Promise<any>
 
     getAllSHInputs(): Promise<SHProductInput[]>
+    getAllSHInputsPending(): Promise<SHProductInput[]>
+
+    getInputsByFolio (): Promise<SHProductInput[]>
+
+    getInputsByOneFolio (folio: string): Promise<SHProductInput[]>
 }
 export interface StockSHOutputRepository extends MongoRepository {
     findStockByStoreHouse(id: any, populateOne?: any, populateTwo?: any): Promise<any>

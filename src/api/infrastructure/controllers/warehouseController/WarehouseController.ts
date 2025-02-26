@@ -112,7 +112,7 @@ export class WarehouseController extends ResponseData {
                 products.map(async (product: any, index: any) => {
                     if (product.type === "unique_product") {
                         const noRepeat: any = await this.warehouseUseCase.getProductInSection(product.product);
-                        console.log(noRepeat[0].productDetails[index].name,`${index}`);
+                        console.log(noRepeat);
                         
                         if (Array.isArray(noRepeat) && noRepeat.length > 0) {
                             throw {
@@ -122,6 +122,8 @@ export class WarehouseController extends ResponseData {
                         }
                     } else if (product.type === "variant_product") {
                         const noRepeat: any = await this.warehouseUseCase.getVariantInSection(product.variant);
+                        console.log(noRepeat);
+                        
                         if (Array.isArray(noRepeat) && noRepeat.length > 0) {
                             throw {
                                 variant: product.variant,
