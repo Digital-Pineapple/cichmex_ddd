@@ -17,10 +17,11 @@ const notificationController = new NotificationController(notificationUseCase);
 const userValidations = new UserValidations();
 
 notificationsRouter
+    .get('/testingSocket', notificationController.sendEvent)
     .get('/user', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN','SUPER-ADMIN','CUSTOMER']), notificationController.getByUser)
     .delete('/:id', notificationController.delete)
     .post('/', notificationController.create)    
     .put('/:id/markAsRead',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN','SUPER-ADMIN','CUSTOMER']), notificationController.markAsRead)   
     .put('/markAllAsReaded',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN','SUPER-ADMIN','CUSTOMER']), notificationController.markAllAsReaded)   
-
-export default notificationsRouter;
+    
+    export default notificationsRouter;

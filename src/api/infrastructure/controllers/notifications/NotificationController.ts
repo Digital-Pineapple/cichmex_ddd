@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 import { NotificationUseCase } from '../../../application/Notifications/NotificationUseCase';
+import { socketService } from '../../../../shared/infrastructure/socket/socketIOService';
 
 export class NotificationController extends ResponseData {
     protected path = '/notification';
@@ -15,6 +16,7 @@ export class NotificationController extends ResponseData {
         this.markAsRead = this.markAsRead.bind(this); 
         this.delete = this.delete.bind(this);
         this.markAllAsReaded = this.markAllAsReaded.bind(this);
+        this.sendEvent = this.sendEvent.bind(this);
     }
    public async getByUser(req: Request, res: Response, next: NextFunction){         
         const user = req.user;    
@@ -67,7 +69,30 @@ export class NotificationController extends ResponseData {
             // console.log("the error is", error);            
             next(new ErrorHandler(`${(error as any).message || "Error al editar"}`, 500));
         }
+    }
 
+    public async sendEvent(req: Request, res: Response, next: NextFunction){  
+        // console.log("hi from socket event");              
+        try{  
+            socketService.emitToAdminChannel("received_notification", {
+                "_id" : "67be24af34ee0cf2e3e8eca5",
+                "from" : "6750a44897442e7b71f06e55",
+                "channel" : "inApp",
+                "message" : "Este es un mensaje de socket io",
+                "type" : "promotion",
+                "user_id" : "6750a44897442e7b71f06e55",
+                "readed" : true,
+                "status" : true,
+                "createdAt" : "2025-02-25T20:14:39.053+0000",
+                "updatedAt" : "2025-02-25T22:04:36.415+0000",
+                "random": Date()
+            });
+        
+            this.invoke({ok:true}, 200, res,'', next);            
+        }catch(error){
+            // console.log("the error is", error);            
+            next(new ErrorHandler(`${(error as any).message || "Error al editar"}`, 500));
+        }
     }
 
     

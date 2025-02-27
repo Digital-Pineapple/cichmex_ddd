@@ -8,8 +8,8 @@ import swaggerJsDoc from "swagger-jsdoc";
 
 import cors from 'cors';
 import { options } from '../../../../swagger_options';
-import { SocketService } from '../socket/sockeService';
-import { initSocket } from '../socket/socketIOService';
+import { socketService } from '../socket/socketIOService';
+
 
 export class Server {
     private readonly express: express.Application;
@@ -52,7 +52,7 @@ export class Server {
 
     public startServer = async (): Promise<void> => { 
         return new Promise((resolve, reject) => {
-            initSocket(this.httpServer);
+            socketService.init(this.httpServer);
             // new SocketService(this.httpServer);
             // this.socketService
             // this.serverIO.on("connection", (socket) => {

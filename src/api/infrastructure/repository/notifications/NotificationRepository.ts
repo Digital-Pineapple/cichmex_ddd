@@ -27,12 +27,8 @@ export class NotificationRepository extends MongoRepository implements Notificat
     async findByUser(id: any): Promise<INotification[] | ErrorHandler | null> {                
         return await this.NotificationModel.find({user_id: id}).sort({ createdAt: -1 }); 
     }
-    async markAllAsReaded(user_id: any): Promise<any | ErrorHandler | null> {    
-        console.log(typeof user_id);
-                    
-        const result =  await this.NotificationModel.updateMany({user_id: user_id}, { $set: { readed: true }});
-        console.log("result says: ", result);
-        
+    async markAllAsReaded(user_id: any): Promise<any | ErrorHandler | null> {                        
+        const result =  await this.NotificationModel.updateMany({user_id: user_id}, { $set: { readed: true }});            
         return result;
     }
     
