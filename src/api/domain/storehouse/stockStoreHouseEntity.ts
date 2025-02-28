@@ -27,6 +27,8 @@ export interface SHProductInput {
     createdAt: NativeDate;
     in_storehouse: boolean;
     notes: string;
+    date_received: string;
+    quantity_received: number;
   }
   export interface SHProductOutput {
     folio ?: string,
