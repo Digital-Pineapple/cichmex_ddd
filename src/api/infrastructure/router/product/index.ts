@@ -54,7 +54,7 @@ const userValidations = new UserValidations();
 
 productRouter
 
-.get("/", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProducts)
+.get("/", productController.getAllProducts)
 .get("/paginate", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProductsPaginate)
 .get("/for_search",userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getProductsBySearch)
   .get("/:id", productController.getProduct)

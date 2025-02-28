@@ -32,6 +32,7 @@ import colorProductRouter from './colorProduct';
 import taxInfoRouter from './taxInfo';
 import bannerRouter from './banners';
 import activityLogRouter from './activityLog';
+import warehouseRouter from './warehouse';
 import notificationsRouter from './notification';
 
 export const apiRouter = (): Router => {
@@ -71,6 +72,7 @@ export const apiRouter = (): Router => {
     apiRouter.use('/tax-info', taxInfoRouter)    
     apiRouter.use('/banner', bannerRouter)    
     apiRouter.use('/activityLog', activityLogRouter)
+    apiRouter.use('/warehouse', warehouseRouter)
 
     return apiRouter;
 }
@@ -106,7 +108,6 @@ apiRouterx.use('/colorProduct', colorProductRouter)
 apiRouterx.use('/tax-info', taxInfoRouter)
 apiRouterx.use('/banner', bannerRouter)    
 apiRouterx.use('/activityLog', activityLogRouter)
-
 
 
 

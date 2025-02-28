@@ -69,6 +69,7 @@ export class StockSHOutputRepository extends MongoRepository implements  StockSH
             nowStock: "$SHStock.stock",
             responsible: "$responsible.fullname",
             variant_tag: "$variant.tag",
+            createdAt: "$createdAt",
             date: {
               $dateToString: {
                 format: "%Y-%m-%d %H:%M:%S",

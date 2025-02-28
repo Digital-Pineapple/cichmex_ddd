@@ -4,6 +4,7 @@ import { UserEntity } from "../user/UserEntity";
 export interface BranchOfficeEntity  {
 
   user_id: UserEntity ;
+  branch_key: string;
   name?: string;
   description?: string;
   activated?: boolean;

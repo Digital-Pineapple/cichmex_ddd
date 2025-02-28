@@ -122,7 +122,7 @@ export class BranchOfficeController extends ResponseData {
             }
     
             // Create branch office entry
-            const response = await this.branchOfficeUseCase.createBranchOffice(
+            const response : any = await this.branchOfficeUseCase.createBranchOffice(
                 {  
                     user_id, 
                     name, 
@@ -162,11 +162,7 @@ export class BranchOfficeController extends ResponseData {
         // console.log("body", req.body);                                     
         try{
             const branchOffice: any | null = await this.branchOfficeUseCase.getDetailBranchOffice(id);
-            const filteredImages = branchOffice?.images?.filter((image:any) => image._id.toString() !== image_id); 
-            console.log("filtradas", filteredImages);
-
-
-                               
+            const filteredImages = branchOffice?.images?.filter((image:any) => image._id.toString() !== image_id);                  
             const branchUpdated = await this.branchOfficeUseCase.updateBranchOffice(branchOffice?._id, {
                 images : filteredImages,
                 location: branchOffice.location

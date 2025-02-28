@@ -153,6 +153,8 @@ export class DiscountCouponController extends ResponseData {
             total_price: total,
             shipping_cost,
             products: productsDiscount,
+            type: coupon?.type_discount,
+            code: coupon?.code
         };
     }
 

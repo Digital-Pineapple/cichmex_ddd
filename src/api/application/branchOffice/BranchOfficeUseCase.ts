@@ -3,6 +3,7 @@ import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
 import { BranchPopulateConfig } from "../../../shared/domain/PopulateInterfaces";
 import { BranchOfficeEntity, BranchOfficeResponse, ILocation } from "../../domain/branch_office/BranchOfficeEntity";
 import { BranchOfficeRepository } from "../../domain/branch_office/BranchOfficeRepository";
+import CounterService from "../../utils/CounterService";
 
 
 export class BranchOfficeUseCase {
@@ -67,7 +68,9 @@ export class BranchOfficeUseCase {
     if (noRepeat) {
       return new ErrorHandler('Esta sucursal ya existe', 401)
     }
-    return await this.branchOfficeRepository.createOne({ ...newBranch });
+    const nextId = await CounterService.getNextSequence('BranchOffice')
+    const branchKey = `BK-${nextId}`
+    return await this.branchOfficeRepository.createOne({ ...newBranch, branch_key: branchKey });
   }
 
   public async updateBranchOffice(

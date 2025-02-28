@@ -35,10 +35,13 @@ export function buildPDF(orderData: any, dataCallback: any, endCallback: any) {
             ].join('\n');
         } else {
             return [
+                `Nombre de sucursal: ${data.branch.name}`,
                 `Código Postal: ${data.branch.location.cp}`,
                 `Estado: ${data.branch.location.state}`,
                 `Municipio: ${data.branch.location.municipality}`,
-                `Dirección: ${data.branch.location.direction}`
+                `Dirección: ${data.branch.location.direction}`,
+                `Numero de teléfono: ${data.branch.phone_number}`,
+
             ].join('\n');
         }
     };
@@ -65,8 +68,9 @@ doc.text(`Orden: ${orderData.order_id}`, column1X, currentY, { align: 'left' });
 doc.moveDown(0.2);
 currentY = doc.y;
 doc.fontSize(8);
-doc.text(`Cliente:  ${orderData.user_id.fullname}`, column1X, currentY);
-doc.text(`Status de pago:  ${status(orderData.payment_status)}`, column1X, doc.y);
+doc.text(`Cliente:  ${orderData.user_id?.fullname}`, column1X, currentY);
+doc.text(`Correo:  ${orderData.user_id?.email}`, column1X, doc.y);
+doc.text(`Status de pago:  ${status(orderData?.payment_status)}`, column1X, doc.y);
 doc.text(`Fecha de pedido: ${localDate}`, column1X, doc.y);
 doc.text(`Tipo de envío: ${typeDelivery(orderData)}`, column2X, currentY);
 doc.moveDown(0.2);
@@ -96,10 +100,10 @@ function createTable(doc: PDFDocument, products: any[], orderData: any) {
         headers: ["Código", "Nombre", "Cantidad", "Precio"],
 
         rows: products.map(product => [
-            product.item.tag,
-            product.item.name,
+           `${product.variant ? product.variant.tag : product.item.tag } `,
+            `${product.item.name}-${product.variant ? product.variant.attributes.color: ''}-${product.variant ? product.variant.attributes.size : ''}`,
             product.quantity.toString(),
-            `$${product.item.price?.toFixed(2)}`
+            `$${product.variant? product.variant.price.toFixed(2): product.item.price.toFixed(2)}`
         ])
     };
     

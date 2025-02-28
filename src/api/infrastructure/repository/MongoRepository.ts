@@ -116,7 +116,7 @@ export abstract class MongoRepository {
   public async findAllItems(query: Object, populateConfig1?: any | Object, populateConfig2?: any, populateConfig3?: any): Promise<any> {
 
     return await this.MODEL.find({ ...query }).populate(
-      populateConfig1).populate(populateConfig2).populate(populateConfig3);
+      populateConfig1).populate(populateConfig2).populate(populateConfig3).sort({'CreatedAt':-1})
   }
 
   public async search(search: any): Promise<any> {

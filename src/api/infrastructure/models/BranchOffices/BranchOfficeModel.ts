@@ -88,7 +88,6 @@ const BranchOfficeImageSchema = new Schema<ProductImageEntity>(
 )
 const BranchOfficeSchema = new mongoose.Schema<BranchOfficeEntity>(
   {
-    
     user_id: {
       type: mongoose.Types.ObjectId,
       required: true,
@@ -97,6 +96,11 @@ const BranchOfficeSchema = new mongoose.Schema<BranchOfficeEntity>(
     name: {
       type: String,
       required: true,
+    },
+    branch_key:{
+      type: String,
+      required: true,
+      unique: true,
     },
     description: {
       type: String,

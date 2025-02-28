@@ -85,50 +85,49 @@ export class UserController extends ResponseData {
 
     public async allUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const response = await this.userUseCase.allUsers();
-            if (response instanceof ErrorHandler) {
-                this.invoke(response, 500, res, 'Hubo un error al consultar la información', next);
-                return;
-            }
-
-            if (response) {
-                await Promise.all(
-                    response.map(async (customer: any) => {
-                        if (!customer.google) {
-                            const url = await this.s3Service.getUrlObject(customer.profile_image + ".jpg");
-                            customer.profile_image = url;
-                        }
-                    })
-                );
-            }
-
-            this.invoke(response, 200, res, '', next);
-        } catch (error) {
-            next(new ErrorHandler('Hubo un error al consultar la información', 500));
-        }
-    }
-    public async getUser(req: Request, res: Response, next: NextFunction): Promise<UserEntity | ErrorHandler | void> {
-        const { id } = req.params
-
-        try {
-            const response = await this.userUseCase.getOneUser(id)
-            if (!(response instanceof ErrorHandler) && response?.profile_image !== undefined) {
-                if (response.google === true) {
-                    response.profile_image = response.profile_image
-
-                } else {
-                    const url = await this.s3Service.getUrlObject(response.profile_image + ".jpg")
-                    response.profile_image = url
-                    'No hay imagen de perfil'
+          const response = await this.userUseCase.allUsers();
+          if (response instanceof ErrorHandler) {
+            this.invoke(response, 500, res, 'Hubo un error al consultar la información', next);
+            return;
+          }
+      
+          if (response) {
+            await Promise.all(
+              response.map(async (customer: any) => {
+                if (!customer.google && customer.profile_image && !customer.profile_image.startsWith('https')) {
+                  const url = await this.s3Service.getUrlObject(customer.profile_image + ".jpeg");
+                  customer.profile_image = url;
                 }
-
-            }
-
-            this.invoke(response, 200, res, '', next);
+              })
+            );
+          }
+      
+          this.invoke(response, 200, res, '', next);
         } catch (error) {
-            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+          next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
-    }
+      }
+      
+    public async getUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+        const { id } = req.params;
+      
+        try {
+          const response = await this.userUseCase.getOneUser(id);
+      
+          if (!(response instanceof ErrorHandler) && response?.profile_image) {
+            // Solo si el usuario no es de Google y la imagen no es una URL completa, se obtiene la URL desde S3.
+            if (!response.google && !response.profile_image.startsWith('https')) {
+              const url = await this.s3Service.getUrlObject(response.profile_image);
+              response.profile_image = url;
+            }
+          }
+      
+          this.invoke(response, 200, res, '', next);
+        } catch (error) {
+          next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+      }
+      
 
     public async getAllCarrierDrivers(req: Request, res: Response, next: NextFunction): Promise<void> {
 
@@ -408,40 +407,38 @@ export class UserController extends ResponseData {
     public async updateUser(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { fullname, type_user } = req.body;
-
+      
         try {
-            if (req.file !== undefined || req.file !== null) {
-                const pathObject = `${this.path}/${id}/${fullname}`;
-                const { url, success } = await this.s3Service.uploadToS3AndGetUrl(pathObject + ".jpg", req.file, "image/jpeg");
-                if (!success) return new ErrorHandler('Hubo un error al subir la imagen', 400)
-                const response: any = await this.userUseCase.updateUser(id, { fullname, profile_image: pathObject, type_user: type_user })
-                if (!(response instanceof ErrorHandler)) {
-                    response.profile_image = url;
-                }
-                this.invoke(
-                    response,
-                    201,
-                    res,
-                    "El usuario se actualizó con éxito",
-                    next
-                );
-            } else {
-                const response = await this.userUseCase.updateUser(id, {
-                    fullname: fullname, type_user: type_user
-                });
-                this.invoke(
-                    response,
-                    201,
-                    res,
-                    "El usuario se actualizó con éxito",
-                    next
-                );
+          // Preparar los datos a actualizar
+          let updateData: { fullname: string; type_user: string; profile_image?: string } = {
+            fullname,
+            type_user,
+          };
+      
+          // Si existe un archivo, se intenta subir y actualizar la imagen
+          if (req.file) {
+            // Opcional: Sanitizar el nombre para evitar problemas en la URL o en el sistema de archivos
+            const sanitizedFullname = fullname.replace(/\s+/g, '_');
+            const pathObject = `${this.path}/${id}/${sanitizedFullname}`;
+            const { url, success } = await this.s3Service.uploadToS3AndGetUrl(`${pathObject}.webp`, req.file, "image/*");
+      
+            if (!success) {
+              return next(new ErrorHandler('Hubo un error al subir la imagen', 400));
             }
+      
+            // Actualizamos directamente con la URL obtenida
+            updateData.profile_image = url.split('?')[0];
+          }
+      
+          // Se realiza la actualización del usuario con los datos preparados
+          const response = await this.userUseCase.updateUser(id, updateData);
+      
+          this.invoke(response, 201, res, "El usuario se actualizó con éxito", next);
         } catch (error) {
-
-            next(new ErrorHandler("Hubo un error al editar la información", 500));
+          next(new ErrorHandler("Hubo un error al editar la información", 500));
         }
-    }
+      }
+      
 
     public async updatePhone(req: Request, res: Response, next: NextFunction) {
         const { phone } = req.body;
