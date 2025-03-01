@@ -28,4 +28,9 @@ export class MomentService {
         const localDate = Moment.utc(utcDate).tz(this.timezone);
         return localDate.format('YYYY-MM-DD HH:mm:ss'); // Formatea según lo necesites
     }
+    convertUtcToLocalDD(utcDate: string): string {
+        // Convierte la fecha UTC a la hora local de la Ciudad de México
+        const localDate = Moment.utc(utcDate).tz(this.timezone);
+        return localDate.format('DD-MM-YYYY HH:mm:ss'); // Formatea según lo necesites
+    }
 }

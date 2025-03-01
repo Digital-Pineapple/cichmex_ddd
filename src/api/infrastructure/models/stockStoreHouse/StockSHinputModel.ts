@@ -49,6 +49,14 @@ const StockSHinputSchema = new Schema<SHProductInput>({
   notes: {
     type: String,
     required: false,
+  }, 
+  date_received:{
+    type: String,
+    required:false,
+  },
+  quantity_received:{
+    type: Number,
+    required: false,
   }
 },
   {

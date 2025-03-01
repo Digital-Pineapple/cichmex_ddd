@@ -58,6 +58,7 @@ stockStoreHouseRouter
     .get('/inputs_pending',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN", "WAREHOUSE-MANAGER", "WAREHOUSEMAN"]),   stockStoreHouseController.getAllInputsPending )
     .get('/inputs_pending_by_folio',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN", "WAREHOUSE-MANAGER", "WAREHOUSEMAN"]),   stockStoreHouseController.getAllInputsPendingByFolio )
     .get('/inputs_by_folio/:folio',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN", "WAREHOUSE-MANAGER", "WAREHOUSEMAN"]),   stockStoreHouseController.getInputsByFolio )
+    .get('/inputs_report/:folio',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN", "WAREHOUSE-MANAGER", "WAREHOUSEMAN"]),   stockStoreHouseController.PrintReportInputsByFolio )
     .get('/inputs/ready_to_accommodate', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN", "WAREHOUSE-MANAGER", "WAREHOUSEMAN"]), stockStoreHouseController.readyToAccommodate )
     .post('/add/multiple-entries', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN", ]),ActivityLogger, stockStoreHouseController.createMultipleStock )
     .post('/add/multiple-outputs', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, stockStoreHouseController.createMultipleOutputs )

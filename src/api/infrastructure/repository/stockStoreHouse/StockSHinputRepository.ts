@@ -43,6 +43,9 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
           _id: "$folio",
           in_storehouse: { $addToSet: "$in_storehouse" }, // Agrupa valores únicos
           responsible: { $addToSet: "$responsible" }, // Agrupa valores únicos
+          user_received: { $addToSet: "$user_received" }, // Agrupa valores únicos
+          createdAt: { $addToSet: "$createdAt" }, // Agrupa valores únicos
+          date_received: { $addToSet: "$date_received" }, // Agrupa valores únicos
           inputs: { $push: "$$ROOT" },
         }
       },
@@ -101,6 +104,7 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
           responsible: "$responsible.fullname",
           variant_tag: "$variant.tag",
           createdAt: '$createdAt',
+          quantity_received: '$quantity_received',
           date: {
             $dateToString: {
               format: "%Y-%m-%d %H:%M:%S",
