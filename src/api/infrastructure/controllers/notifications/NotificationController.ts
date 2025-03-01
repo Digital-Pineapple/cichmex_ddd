@@ -8,7 +8,7 @@ export class NotificationController extends ResponseData {
     protected path = '/notification';
 
     constructor( 
-        private readonly notificationUseCase: NotificationUseCase,        
+        private readonly notificationUseCase: NotificationUseCase,                
     ) {
         super();
         this.getByUser = this.getByUser.bind(this); 
@@ -74,19 +74,25 @@ export class NotificationController extends ResponseData {
     public async sendEvent(req: Request, res: Response, next: NextFunction){  
         // console.log("hi from socket event");              
         try{  
-            socketService.emitToAdminChannel("received_notification", {
-                "_id" : "67be24af34ee0cf2e3e8eca5",
-                "from" : "6750a44897442e7b71f06e55",
-                "channel" : "inApp",
-                "message" : "Este es un mensaje de socket io",
-                "type" : "promotion",
-                "user_id" : "6750a44897442e7b71f06e55",
-                "readed" : true,
-                "status" : true,
-                "createdAt" : "2025-02-25T20:14:39.053+0000",
-                "updatedAt" : "2025-02-25T22:04:36.415+0000",
-                "random": Date()
-            });
+            // socketService.emitToAdminUserChannel("6750a44897442e7b71f06e5f", "received_notification", {
+            //     "_id" : "67be24af34ee0cf2e3e8eca5",
+            //     "from" : "6750a44897442e7b71f06e55",
+            //     "channel" : "inApp",
+            //     "message" : "Este es un mensaje de socket io",
+            //     "type" : "promotion",
+            //     "user_id" : "6750a44897442e7b71f06e55",
+            //     "readed" : true,
+            //     "status" : true,
+            //     "createdAt" : "2025-02-25T20:14:39.053+0000",
+            //     "updatedAt" : "2025-02-25T22:04:36.415+0000",
+            //     "random": Date()
+            // })
+            // await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
+            //     "from" : "6750a44897442e7b71f06e55",                            
+            //     "message" : "Se ha creado un nuevo pedido",
+            //     "type" : "order", 
+            //     "resource_id": "6750a44897442e7b71f06e55",                                                                                                                                                                                          
+            // })            
         
             this.invoke({ok:true}, 200, res,'', next);            
         }catch(error){

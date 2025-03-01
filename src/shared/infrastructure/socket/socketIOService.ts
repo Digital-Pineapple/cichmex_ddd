@@ -7,6 +7,7 @@ import { config } from '../../../../config';
 class socketIOService {
   private io: Server | null = null;
   private adminNamespace: any = null; // Referencia al namespace '/admin'
+  private userSockets = new Map();
   init(server: HttpServer){
     this.io =  new Server(server, {
       cors: {
@@ -20,6 +21,11 @@ class socketIOService {
    });
      this.adminNamespace = this.io.of('/admin');
       this.adminNamespace.on('connection', (socket: any) => {
+        socket.on("register", (userId: any) => {
+          // this.userSockets.set(userId, socket.id);
+          socket.join(userId);
+          // console.log(`User ${userId} registered with socket ${socket.id}`);
+        });
       // console.log('Cliente conectado al admin');
       socket.on("message", (data: any)=>{      
           console.log("from my namespace i say " + data);   
@@ -46,14 +52,14 @@ class socketIOService {
       }
     }
   // ✅ Emitir eventos a un usuario específico en '/admin'
-  // emitToAdminUserChannel(userId: string, event: string, data: any) {
-  //   if (this.adminNamespace) {
-  //     this.adminNamespace.to(userId).emit(event, data);
-  //     console.log(`📢 Emitiendo evento '${event}' a usuario ${userId} en /admin`);
-  //   } else {
-  //     console.warn("⚠️ adminNamespace no está inicializado.");
-  //   }
-  // }
+  emitToAdminUserChannel(userId: string, event: string, data: any) {
+    if (this.adminNamespace) {
+      this.adminNamespace.to(userId).emit(event, data);
+      console.log(`📢 Emitiendo evento '${event}' a usuario ${userId} en /admin`);
+    } else {
+      console.warn("⚠️ adminNamespace no está inicializado.");
+    }
+  }
 }
 
 export const socketService = new socketIOService();
