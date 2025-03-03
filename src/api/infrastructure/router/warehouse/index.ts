@@ -35,6 +35,11 @@ warehouseRouter
 .post('/add_multiple_aisles',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.addMultipleAisles)
 .post('/add_multiple_sections',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.addMultipleSections)
 .post('/section/add_multiple_products',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.addMultipleProductsToSection)
+.post('/update_zone/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.updateZone)
+.post('/update_aisle/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.updateAisle)
+.delete('/delete_zone/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.deleteZone)
+.delete('/delete_aisle/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.deleteAisle)
+
 
 
 export default warehouseRouter;

@@ -13,19 +13,19 @@ export class WarehouseUseCase {
         private readonly sectionRepository: sectionRepository
     ) { }
 
-    public async getAllZones(): Promise<IZone[] | ErrorHandler| null> {
+    public async getAllZones(): Promise<IZone[] | ErrorHandler | null> {
         return await this.zoneRepository.findAll()
     }
-    public async getAllAisles(): Promise<IZone[] | ErrorHandler| null> {
+    public async getAllAisles(): Promise<IZone[] | ErrorHandler | null> {
         return await this.aisleRepository.findAll(PopulateZone)
     }
-    public async getAllSections(): Promise<ISection[] | ErrorHandler| null> {
+    public async getAllSections(): Promise<ISection[] | ErrorHandler | null> {
         return await this.sectionRepository.findAll()
     }
-    public async getOneAisle(id:string): Promise<IAisle | null> {
+    public async getOneAisle(id: string): Promise<IAisle | null> {
         return await this.aisleRepository.getAllDetailAisle(id)
     }
-    public async getOneSection(id:string): Promise<ISection | null> {
+    public async getOneSection(id: string): Promise<ISection | null> {
         return await this.sectionRepository.findById(id)
     }
     public async getProductInSection(product_id: string): Promise<ISection[] | null> {
@@ -34,28 +34,63 @@ export class WarehouseUseCase {
     public async getVariantInSection(variant_id: string): Promise<ISection[] | null> {
         return await this.sectionRepository.findVariantInSections(variant_id)
     }
-    public async crateZone(body: any): Promise<IZone | ErrorHandler| null> {
-        const noRepeat = await this.zoneRepository.findOneItem({name: body.name, status :true, storehouse: body.storehouse})
+    public async crateZone(body: any): Promise<IZone | ErrorHandler | null> {
+        const noRepeat = await this.zoneRepository.findOneItem({ name: body.name, status: true, storehouse: body.storehouse })
         if (noRepeat) {
-            return  new ErrorHandler(`Ya existe una zona con el nombre: ${noRepeat.name}`,400)
+            return new ErrorHandler(`Ya existe una zona con el nombre: ${noRepeat.name}`, 400)
         }
-        return await this.zoneRepository.createOne({...body})
+        return await this.zoneRepository.createOne({ ...body })
     }
     public async createAisle(body: any): Promise<IAisle | ErrorHandler | null> {
-        const noRepeat = await this.aisleRepository.findOneItem({name: body.name,zone: body.zone, status :true, storehouse: body.storehouse}, PopulateZone)
+        const noRepeat = await this.aisleRepository.findOneItem({ name: body.name, zone: body.zone, status: true, storehouse: body.storehouse }, PopulateZone)
         if (noRepeat) {
-            throw  new ErrorHandler(`Ya existe una pasillo con el nombre: ${noRepeat.name} en la zona : ${noRepeat.zone.name}`,400)
+            throw new ErrorHandler(`Ya existe una pasillo con el nombre: ${noRepeat.name} en la zona : ${noRepeat.zone.name}`, 400)
         }
-        return await this.aisleRepository.createOne({...body})
+        return await this.aisleRepository.createOne({ ...body })
     }
     public async createSection(body: any): Promise<ISection | ErrorHandler | null> {
-        const noRepeat = await this.sectionRepository.findOneItem({name: body.name,aisle: body.aisle, status :true, storehouse: body.storehouse}, PopulateAisle)
+        const noRepeat = await this.sectionRepository.findOneItem({ name: body.name, aisle: body.aisle, status: true, storehouse: body.storehouse }, PopulateAisle)
         if (noRepeat) {
-            throw  new ErrorHandler(`Ya existe una sección con el nombre: ${noRepeat.name} en el pasillo : ${noRepeat.aisle.name}`,400)
+            throw new ErrorHandler(`Ya existe una sección con el nombre: ${noRepeat.name} en el pasillo : ${noRepeat.aisle.name}`, 400)
         }
-        return await this.sectionRepository.createOne({...body})
+        return await this.sectionRepository.createOne({ ...body })
     }
     public async addProductsToSection(section_id: any, products: any): Promise<ISection | null> {
-        return await this.sectionRepository.updateOne(section_id,{stock: products})
+        return await this.sectionRepository.updateOne(section_id, { stock: products })
     }
+    public async updateZone(id: string, updated: any): Promise<IZone | ErrorHandler | null> {
+        const noRepeat = await this.zoneRepository.findOneItem({ name: updated.name, status: true });
+        if (noRepeat && noRepeat.id !== id) {
+            return new ErrorHandler(`Zona con nombre ${noRepeat.name} ya está en uso`, 400);
+        }
+
+        return await this.zoneRepository.updateOne(id, { ...updated });
+    }
+    public async updateOneAisle(id: string, updated: any): Promise<IZone | ErrorHandler | null> {
+        const noRepeat = await this.aisleRepository.findOneItem({ 
+            name: updated.name, 
+            status: true, 
+            zone: updated.zone 
+        });
+        if (noRepeat && noRepeat.id !== id) {
+            return new ErrorHandler(`Pasillo con nombre ${noRepeat.name} ya está en uso`, 400);
+        }
+
+        return await this.aisleRepository.updateOne(id, { ...updated });
+    }
+    public async deleteOneZone(id: string): Promise<IZone | ErrorHandler | null> {
+        const aisle = await this.aisleRepository.findOneItem({ zone: id, status: true })
+        if (aisle) {
+            return new ErrorHandler(`La zona tiene pasillos activos`, 400);
+        }
+        return await this.zoneRepository.updateOne(id, { status: false })
+    }
+    public async deleteOneAisle(id: string): Promise<IAisle | ErrorHandler | null> {
+        const aisle = await this.sectionRepository.findOneItem({ aisle: id, status: true })
+        if (aisle) {
+            return new ErrorHandler(`El pasillo tiene secciones activas`, 400);
+        }
+        return await this.aisleRepository.updateOne(id, { status: false })
+    }
+
 }

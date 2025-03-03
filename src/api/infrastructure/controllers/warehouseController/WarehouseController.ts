@@ -21,6 +21,10 @@ export class WarehouseController extends ResponseData {
         this.addMultipleAisles = this.addMultipleAisles.bind(this);
         this.addMultipleSections = this.addMultipleSections.bind(this);
         this.addMultipleProductsToSection = this.addMultipleProductsToSection.bind(this);
+        this.updateZone = this.updateZone.bind(this)
+        this.updateAisle = this.updateAisle.bind(this);
+        this.deleteZone = this.deleteZone.bind(this)
+        this.deleteAisle = this.deleteAisle.bind(this);
     }
 
     public async getAllZones(req: Request, res: Response, next: NextFunction) {
@@ -33,7 +37,7 @@ export class WarehouseController extends ResponseData {
     }
 
     public async getAisle(req: Request, res: Response, next: NextFunction) {
-        const {id} = req.params
+        const { id } = req.params
         try {
             const response = await this.warehouseUseCase.getOneAisle(id)
             this.invoke(response, 200, res, '', next);
@@ -68,25 +72,45 @@ export class WarehouseController extends ResponseData {
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
     }
+    public async updateZone(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params
+        const body = req.body
+        try {
+            const response = await this.warehouseUseCase.updateZone(id, body)
+            this.invoke(response, 200, res, 'La zona se editó con éxito', next);
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al crear', 500));
+        }
+    }
+    public async updateAisle(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params
+        const body = req.body
+        try {
+            const response = await this.warehouseUseCase.updateOneAisle(id, body)
+            this.invoke(response, 200, res, 'El pasillo se editó con éxito', next);
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al crear', 500));
+        }
+    }
 
     public async createAisle(req: Request, res: Response, next: NextFunction) {
         const body = req.body
         try {
             const response = await this.warehouseUseCase.createAisle(body)
-            this.invoke(response, 200, res, 'La zona se creó con éxito', next);
+            this.invoke(response, 200, res, 'El pasillo se creó con éxito', next);
         } catch (error) {
-            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+            next(error)
         }
     }
     public async addMultipleAisles(req: Request, res: Response, next: NextFunction) {
-        const { names, zone, storehouse } = req.body;    
+        const { names, zone, storehouse } = req.body;
         try {
             const responses = await Promise.all(
                 names.map((name: any) => this.warehouseUseCase.createAisle({ name, zone, storehouse }))
             );
             this.invoke(responses, 200, res, 'Los pasillos se crearon con éxito', next);
         } catch (error) {
-           next(error)
+            next(error)
         }
     }
 
@@ -99,13 +123,13 @@ export class WarehouseController extends ResponseData {
             );
             this.invoke(responses, 200, res, 'Las secciones se crearon con éxito', next);
         } catch (error) {
-           next(error)
+            next(error)
         }
     }
 
     public async addMultipleProductsToSection(req: Request, res: Response, next: NextFunction) {
         const { section, products } = req.body;
-    
+
         try {
             // 🔹 Ejecutar todas las validaciones en paralelo
             const validationResults = await Promise.allSettled(
@@ -113,7 +137,7 @@ export class WarehouseController extends ResponseData {
                     if (product.type === "unique_product") {
                         const noRepeat: any = await this.warehouseUseCase.getProductInSection(product.product);
                         console.log(noRepeat);
-                        
+
                         if (Array.isArray(noRepeat) && noRepeat.length > 0) {
                             throw {
                                 product: product.product,
@@ -123,7 +147,7 @@ export class WarehouseController extends ResponseData {
                     } else if (product.type === "variant_product") {
                         const noRepeat: any = await this.warehouseUseCase.getVariantInSection(product.variant);
                         console.log(noRepeat);
-                        
+
                         if (Array.isArray(noRepeat) && noRepeat.length > 0) {
                             throw {
                                 variant: product.variant,
@@ -133,19 +157,15 @@ export class WarehouseController extends ResponseData {
                     }
                 })
             );
-
-            console.log(validationResults,'validaciones');
-            
-    
             // 🔹 Filtrar errores y éxitos por separado
             const errors = validationResults
                 .filter(result => result.status === 'rejected')
                 .map(result => (result as PromiseRejectedResult).reason);
-    
+
             const validProducts = validationResults
                 .filter(result => result.status === 'fulfilled')
                 .map((result, index) => products[index]); // Obtener los productos válidos
-    
+
             // 🔹 Si hay errores, devolverlos y NO agregar nada
             if (errors.length > 0) {
                 return res.status(400).json({
@@ -153,51 +173,69 @@ export class WarehouseController extends ResponseData {
                     errors
                 });
             }
-    
+
             // 🔹 Obtener stock existente en la sección
             const existStock = await this.warehouseUseCase.getOneSection(section);
             const stockExist = existStock?.stock || [];
-    
+
             // 🔹 Concatenar productos sin sobrescribir el stock existente, evitando duplicados
             const updatedStock = Array.from(
                 new Map([...stockExist, ...validProducts].map(p => [p.product || p.variant, p])).values()
             );
-    
+
             // 🔹 Guardar los productos en la sección solo si TODAS las validaciones pasaron
             const responses = await this.warehouseUseCase.addProductsToSection(section, updatedStock);
-    
+
             this.invoke(responses, 200, res, 'Los productos se agregaron con éxito a la sección', next);
         } catch (error) {
             next(error);
         }
     }
-    
-    
+
+
 
     public async addProductToSection(req: Request, res: Response, next: NextFunction) {
         const { section, product } = req.body;
-    
+
         try {
-           
-    
+
+
             // Obtener stock existente en la sección
             const existStock = await this.warehouseUseCase.getOneSection(section);
             const stockExist = existStock?.stock || [];
-    
+
             // 🔹 Concatenar productos sin sobrescribir el stock existente
             const updatedStock = [...stockExist, ...product];
-    
+
             // 🔹 Guardar el nuevo stock en la sección
             const responses = await this.warehouseUseCase.addProductsToSection(section, updatedStock);
-    
+
             this.invoke(responses, 200, res, 'Los productos se agregaron con éxito a la sección', next);
         } catch (error) {
             next(error);
         }
     }
-    
-    
-    
-   
+
+    public async deleteZone(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        try {
+            const response = await this.warehouseUseCase.deleteOneZone(id)
+            this.invoke(response, 200, res, 'La zona se eliminó con éxito', next);
+        } catch (error) {
+            next(error);
+        }
+    }
+    public async deleteAisle(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        try {
+            const response = await this.warehouseUseCase.deleteOneAisle(id)
+            this.invoke(response, 200, res, 'El pasillo se eliminó con éxito', next);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+
+
 
 }
