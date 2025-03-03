@@ -32,7 +32,8 @@ const DEVELOPMENT : Configuration  = {
     AWS_ACCESS_SECRET_TEST :   process.env.AWS_ACCESS_SECRET_TEST!,
     AWS_REGION_TEST     :   process.env.AWS_REGION_TEST!,
     FACTURAPI_KEY       :   process.env.FACTURAPI_KEY!,
-    AWS_BUCKET_BACKUP_NAME : process.env.AWS_BUCKET_BACKUP_NAME!
+    AWS_BUCKET_BACKUP_NAME : process.env.AWS_BUCKET_BACKUP_NAME!,
+    SOCKET_CLIENT_ADMIN : process.env.SOCKET_CLIENT_ADMIN!
 }
 
 

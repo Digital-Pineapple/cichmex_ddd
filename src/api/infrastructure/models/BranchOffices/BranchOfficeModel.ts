@@ -46,13 +46,29 @@ const locationSchema = new mongoose.Schema<ILocation>(
     cp:{
       type:String,
       required:false
-    }
+    },
+    geoLocation: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitud, latitud]
+        required: true,
+      },
+    },
+  
   },
   {
     versionKey: false,
     timestamps: true
   }
 );
+
+
+locationSchema.index({ geoLocation: "2dsphere" });
+
 const BranchOfficeImageSchema = new Schema<ProductImageEntity>(
   {
     _id: {

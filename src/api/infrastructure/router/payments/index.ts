@@ -30,6 +30,13 @@ import { ShoppingCartRepository } from '../../repository/shoppingCart/ShoppingCa
 import ShoppingCartModel from '../../models/ShoppingCartModel';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
+import { UserRepository } from '../../repository/user/UserRepository';
+import { TypeUsersRepository } from '../../repository/typeUser/TypeUsersRepository';
+import { NotificationRepository } from '../../repository/notifications/NotificationRepository';
+import { NotificationUseCase } from '../../../application/Notifications/NotificationUseCase';
+import TypeUserModel from '../../models/TypeUserModel';
+import UserModel from '../../models/UserModel';
+import NotificationModel from '../../models/notification/NotificationModel';
 
 const paymentRouter = Router();
 
@@ -55,9 +62,15 @@ const shoppingCartUseCase = new ShoppingCartUseCase(shoppingCartRepository)
 const paymentUseCase = new PaymentUseCase(paymentRepository);
 const mpService = new MPService()
 const s3Service = new S3Service()
-const paymentController = new PaymentController(paymentUseCase, productOrderUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase, stockStoreHouseUseCase, stockSHoutputUseCase, shoppingCartUseCase, s3Service);
+const userRepository = new UserRepository(UserModel)
+const typeUserRepository = new TypeUsersRepository(TypeUserModel)
+const notificationRepository = new NotificationRepository(NotificationModel);
+const notificationUseCase = new NotificationUseCase(notificationRepository, userRepository, typeUserRepository)
+const paymentController = new PaymentController(paymentUseCase, productOrderUseCase, mpService, membershipBenefitsUseCase, membershipUseCase, membershipHistoryUseCase, stockStoreHouseUseCase, stockSHoutputUseCase, shoppingCartUseCase, s3Service, notificationUseCase);
 const paymentValidation = new PaymentValidations();
 const userValidations = new UserValidations()
+
+
 
 paymentRouter
     .get('/', paymentController.getAllPayments)

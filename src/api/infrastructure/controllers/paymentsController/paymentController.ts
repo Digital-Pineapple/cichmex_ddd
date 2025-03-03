@@ -20,6 +20,7 @@ import { PaymentEntity, PaymentVoucher } from '../../../domain/payments/PaymentE
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import mongoose from 'mongoose';
 import { getProperties } from '../../../../helpers/products';
+import { NotificationUseCase } from '../../../application/Notifications/NotificationUseCase';
 
 
 export class PaymentController extends ResponseData {
@@ -34,7 +35,8 @@ export class PaymentController extends ResponseData {
         private readonly stockStoreHouseUseCase: StockStoreHouseUseCase,
         private readonly stockSHoutputUseCase: StockSHoutputUseCase,
         private readonly shoppingCartUseCase: ShoppingCartUseCase,
-        private readonly s3Service: S3Service,        
+        private readonly s3Service: S3Service, 
+        private readonly notificationUseCase: NotificationUseCase       
 
 
     ) {
@@ -360,7 +362,7 @@ export class PaymentController extends ResponseData {
             const metadata1 = formData?.metadata;
             const point = metadata1?.payment_point || null;
             const path_notification = `${process.env.URL_NOTIFICATION}api/payments/Mem-Payment-success`;
-            console.log("mercado pago form data: " + JSON.stringify(infoPayment, null, 2));
+            // console.log("mercado pago form data: " + JSON.stringify(infoPayment, null, 2));
             
             const body1: any = {
                 transaction_amount: formData.transaction_amount,
@@ -461,10 +463,16 @@ export class PaymentController extends ResponseData {
                         })
                     );
                     //}
-
+                    
                     try {
-                        const order = await this.productOrderUseCase.createProductOrder(values1);
+                        const order: any | null = await this.productOrderUseCase.createProductOrder(values1);
                         const responseOrder = { ...order, id: payment?.id };
+                        await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
+                            "from" : user?._id,                            
+                            "message" : "Se ha creado un nuevo pedido",
+                            "type" : "order", 
+                            "resource_id": order._id,                                                                                                                                                                                          
+                        })
                         this.invoke(responseOrder, 200, res, 'Se pagó con éxito', next);
                     } catch (error) {
                         next(new ErrorHandler('Error: No se pudo crear su orden. Por favor, contacte con servicio al cliente', 500));
@@ -571,7 +579,13 @@ export class PaymentController extends ResponseData {
                 );
 
                 // Creación de la orden del producto
-                const order = await this.productOrderUseCase.createProductOrder(values1);
+                const order: any| null = await this.productOrderUseCase.createProductOrder(values1);
+                await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
+                    "from" : user?._id,                            
+                    "message" : "Se ha creado un nuevo pedido",
+                    "type" : "order", 
+                    "resource_id": order._id,                                                                                                                                                                                          
+                })
                 return this.invoke(order, 200, res, 'Se pagó con éxito', next);
             } catch (error) {
                 console.error('Error al actualizar el stock o crear la orden:', error);

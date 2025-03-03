@@ -11,6 +11,14 @@ export class UserRepository extends MongoRepository implements UserConfig {
     async register(user: UserEntity): Promise<UserEntity | null> {
         return await this.UserModel.create(user)
     }
+
+    async findByRoles(roles: Array<any>): Promise<UserEntity[] | null>{
+        const parsedRoles = roles.map(role=>role.toString());
+        return await this.UserModel.find({ type_user: { $in: parsedRoles } });
+    }
+    async findUsersBy(query: any): Promise<UserEntity[] | null>{        
+        return await this.UserModel.find(query);
+    }
     
    
 }

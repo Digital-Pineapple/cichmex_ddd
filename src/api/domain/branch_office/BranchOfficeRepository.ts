@@ -7,6 +7,7 @@ export interface BranchOfficeRepository extends MongoRepository {
 
     getInfoBranches(query: Object): Promise<BranchOfficeEntity[] | ErrorHandler| BranchOfficeResponse[] | null>
     getCichmexBranches(): Promise<BranchOfficeEntity[] | null>
+    findCloserBranches(coords: { lat: number, lng: number }): Promise<BranchOfficeEntity[] | null>  
 
 
 }

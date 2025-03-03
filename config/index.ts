@@ -44,6 +44,7 @@ export type Configuration = {
     AWS_REGION_TEST     ?:   string;   
     FACTURAPI_KEY : string; 
     AWS_BUCKET_BACKUP_NAME: string;
+    SOCKET_CLIENT_ADMIN : string;
 };
 
 

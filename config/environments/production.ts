@@ -30,7 +30,8 @@ const PRODUCTION : Configuration   = {
     DIR_NODEMAILER      :   process.env.DIR_NODEMAILER!,
     MERCADOPAGO_TOKEN   :   process.env.MERCADOPAGO_TOKEN!,   
     FACTURAPI_KEY       :   process.env.FACTURAPI_KEY!,
-    AWS_BUCKET_BACKUP_NAME : process.env.AWS_BUCKET_BACKUP_NAME!
+    AWS_BUCKET_BACKUP_NAME : process.env.AWS_BUCKET_BACKUP_NAME!,
+    SOCKET_CLIENT_ADMIN : process.env.SOCKET_CLIENT_ADMIN!
 
 }
 

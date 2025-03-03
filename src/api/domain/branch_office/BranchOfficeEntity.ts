@@ -34,6 +34,7 @@ export interface ILocation {
   direction: string;
   neighborhood?: string;
   cp?:number;
+  geoLocation?: object;
 }
 
 export interface ISchedules{
