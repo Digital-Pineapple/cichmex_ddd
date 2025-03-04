@@ -19,6 +19,7 @@ const zoneRepository     = new ZoneRepository(ZoneModel);
 const aisleRepository = new AisleRepository(AisleModel)
 const sectionRepository = new SectionRepository(SectionModel)
 const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel)
+
 const warehouseUseCase = new WarehouseUseCase(zoneRepository,aisleRepository,sectionRepository) 
 const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository)
 const warehouseController     = new WarehouseController(warehouseUseCase, stockStoreHouseUseCase)
@@ -30,6 +31,8 @@ warehouseRouter
 .get('/all_sections',userValidations.authTypeUserValidation(['SUPER-ADMIN']), warehouseController.getAllSections)
 .get('/aisle/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']), warehouseController.getAisle)
 .get('/sections/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']), warehouseController.getAisle)
+.get('/print_section_code/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']), warehouseController.PrintPdfSection)
+.get('/search_product_section/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']), warehouseController.PrintPdfSection)
 .post('/add_zone',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.createZone)
 .post('/add_aisle',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.createAisle)
 .post('/add_section',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.createSection)

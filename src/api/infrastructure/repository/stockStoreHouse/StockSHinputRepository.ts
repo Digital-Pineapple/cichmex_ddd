@@ -27,11 +27,26 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
         $group: {
           _id: "$folio",
           in_storehouse: { $first: "$in_storehouse" },
+          in_section: { $addToSet: "$in_section" },
           createdAt: { $first: "$createdAt" }
         }
       },
       {
-        $sort: { "createdAt": -1 }
+        $project: {
+          _id: 1,
+          in_storehouse: 1,
+          createdAt: 1,
+          in_section: {
+            $cond: {
+              if: { $gt: [{ $size: "$in_section" }, 0] }, // Si el array tiene elementos
+              then: { $allElementsTrue: ["$in_section"] }, // Verifica si todos son true
+              else: false // Si está vacío, devuelve false
+            }
+          }
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
       }
     ])
   }

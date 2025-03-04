@@ -35,26 +35,35 @@ const StockSHinputSchema = new Schema<SHProductInput>({
     type: Object,
     required: false,
   },
+  user_arrange:{
+    type: Object,
+    required: false,
+  },
   user_delivery: {
-    type: String,
+    type: Object,
     required: false
   },
   product_detail: {
     type: Object,
     required: true,
   },
-  in_storehouse: { 
-    type: Boolean, 
-    default: false },
+  in_storehouse: {
+    type: Boolean,
+    default: false
+  },
+  in_section: {
+    type: Boolean,
+    default: false,
+  },
   notes: {
     type: String,
     required: false,
-  }, 
-  date_received:{
-    type: String,
-    required:false,
   },
-  quantity_received:{
+  date_received: {
+    type: String,
+    required: false,
+  },
+  quantity_received: {
     type: Number,
     required: false,
   }

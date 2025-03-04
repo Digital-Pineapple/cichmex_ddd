@@ -22,10 +22,12 @@ export interface SHProductInput {
     status?:boolean;
     responsible?:  UserEntity,
     user_received?: UserEntity,
-    user_delivery?: string,
+    user_arrange: UserEntity,
+    user_delivery?: UserEntity,
     product_detail:ProductEntity,
     createdAt: NativeDate;
     in_storehouse: boolean;
+    in_section: boolean;
     notes: string;
     date_received: string;
     quantity_received: number;

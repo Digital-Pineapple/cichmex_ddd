@@ -109,6 +109,45 @@ public async findVariantInSections(variantId: string) : Promise<ISection[] | nul
     return result;
 }
 
+public async findDetailSection(id: string) : Promise<ISection[] | null>{  
+      
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error('ID no válido');
+    }
+    const objectId = new mongoose.Types.ObjectId(id);
+
+    return  await this.SectionModel.aggregate([
+        { $match: { "_id": objectId } }, // Filtrar secciones que contienen el producto
+        { 
+            $lookup: { 
+                from: "aisles", 
+                localField: "aisle", 
+                foreignField: "_id", 
+                as: "aisle" 
+            } 
+        },
+        { $unwind: "$aisle" },
+        { 
+            $lookup: { 
+                from: "zones", 
+                localField: "aisle.zone", 
+                foreignField: "_id", 
+                as: "zone" 
+            } 
+        },
+        { $unwind: "$zone" },
+        { 
+            $project: {
+                _id: 1,
+                name: 1,
+                "zone.name": 1,
+                "aisle.name": 1,
+                stock: 1,
+            } 
+        }
+        
+    ])
+}
 
 
 }

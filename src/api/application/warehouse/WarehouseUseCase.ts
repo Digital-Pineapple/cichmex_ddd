@@ -26,7 +26,13 @@ export class WarehouseUseCase {
         return await this.aisleRepository.getAllDetailAisle(id)
     }
     public async getOneSection(id: string): Promise<ISection | null> {
-        return await this.sectionRepository.findById(id)
+        return await this.sectionRepository.findById(id, PopulateAisle)
+    }
+    public async getDetailSection(id: string): Promise<ISection[] | null> {
+        return await this.sectionRepository.findDetailSection(id)
+    }
+    public async searchProductInSection(id: string): Promise<ISection | null> {
+        return await this.sectionRepository.findOneItem({ "stock.product": id })
     }
     public async getProductInSection(product_id: string): Promise<ISection[] | null> {
         return await this.sectionRepository.findProductInSections(product_id)

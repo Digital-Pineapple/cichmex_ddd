@@ -6,6 +6,8 @@ import { promises } from 'nodemailer/lib/xoauth2';
 import { log } from 'console';
 import { relativeTimeThreshold } from 'moment';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
+import { buildInputsReportPDF } from '../../../../libs/pdfPrintReport';
+import { buildReportSectionPDF } from '../../../../libs/pdfPrintSection';
 
 export class WarehouseController extends ResponseData {
     protected path = '/warehouse'
@@ -16,6 +18,7 @@ export class WarehouseController extends ResponseData {
         this.getAllZones = this.getAllZones.bind(this);
         this.getAllAisles = this.getAllAisles.bind(this);
         this.getAllSections = this.getAllSections.bind(this);
+        this.PrintPdfSection = this.PrintPdfSection.bind(this);
         this.createZone = this.createZone.bind(this);
         this.createAisle = this.createAisle.bind(this);
         this.createSection = this.createSection.bind(this);
@@ -28,6 +31,7 @@ export class WarehouseController extends ResponseData {
         this.deleteZone = this.deleteZone.bind(this)
         this.deleteAisle = this.deleteAisle.bind(this);
         this.deleteSection = this.deleteSection.bind(this);
+
     }
 
     public async getAllZones(req: Request, res: Response, next: NextFunction) {
@@ -45,6 +49,42 @@ export class WarehouseController extends ResponseData {
             const response = await this.warehouseUseCase.getOneAisle(id)
             this.invoke(response, 200, res, '', next);
         } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+
+   public async PrintPdfSection(req: Request, res: Response, next: NextFunction) {
+           const { id } = req.params
+           try {
+               const response = await this.warehouseUseCase.getDetailSection(id)
+               
+               res.writeHead(200, {
+                       "Content-Type": "application/pdf",
+                       "Content-Disposition": `attachment; filename=order${id}.pdf`
+                     });
+               
+                     const stream = res;
+               
+                     buildReportSectionPDF(
+                       response,
+                       (data: any) => stream.write(data),
+                       () => stream.end()
+                     );
+           } catch (error) {
+               console.log(error);
+   
+               next(new ErrorHandler('Hubo un error al consultar la información', 500));
+           }
+       }
+    
+       public async searchProductSection(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params
+        try {
+            const response = await this.warehouseUseCase.searchProductInSection(id)
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            console.log(error);
+
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
