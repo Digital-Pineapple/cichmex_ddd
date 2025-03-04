@@ -32,14 +32,16 @@ warehouseRouter
 .get('/sections/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']), warehouseController.getAisle)
 .post('/add_zone',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.createZone)
 .post('/add_aisle',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.createAisle)
+.post('/add_section',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.createSection)
 .post('/add_multiple_aisles',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.addMultipleAisles)
 .post('/add_multiple_sections',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.addMultipleSections)
 .post('/section/add_multiple_products',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.addMultipleProductsToSection)
 .post('/update_zone/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.updateZone)
 .post('/update_aisle/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.updateAisle)
+.post('/update_section/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.updateSection)
 .delete('/delete_zone/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.deleteZone)
 .delete('/delete_aisle/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.deleteAisle)
-
+.delete('/delete_section/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.deleteSection)
 
 
 export default warehouseRouter;

@@ -38,8 +38,10 @@ const taxInfo_1 = __importDefault(require("./taxInfo"));
 const banners_1 = __importDefault(require("./banners"));
 const activityLog_1 = __importDefault(require("./activityLog"));
 const warehouse_1 = __importDefault(require("./warehouse"));
+const notification_1 = __importDefault(require("./notification"));
 const apiRouter = () => {
     const apiRouter = (0, express_1.Router)();
+    apiRouter.use('/notification', notification_1.default);
     apiRouter.use('/auth', auth_1.default);
     apiRouter.use('/dynamic-route', dynamicRoute_1.default);
     apiRouter.use('/user', user_1.default);
@@ -77,6 +79,7 @@ const apiRouter = () => {
 };
 exports.apiRouter = apiRouter;
 const apiRouterx = (0, express_1.Router)();
+// apiRouterx.use('/notification', notificationsRouter)
 apiRouterx.use('/auth', auth_1.default);
 apiRouterx.use('/services', services_1.default);
 apiRouterx.use('/services-branch', servicesInBranch_1.default);
@@ -107,5 +110,4 @@ apiRouterx.use('/colorProduct', colorProduct_1.default);
 apiRouterx.use('/tax-info', taxInfo_1.default);
 apiRouterx.use('/banner', banners_1.default);
 apiRouterx.use('/activityLog', activityLog_1.default);
-apiRouterx.use('/warehouse', warehouse_1.default);
 exports.default = exports.apiRouter;

@@ -20,7 +20,7 @@ export class WarehouseUseCase {
         return await this.aisleRepository.findAll(PopulateZone)
     }
     public async getAllSections(): Promise<ISection[] | ErrorHandler | null> {
-        return await this.sectionRepository.findAll()
+        return await this.sectionRepository.findAll(PopulateAisle)
     }
     public async getOneAisle(id: string): Promise<IAisle | null> {
         return await this.aisleRepository.getAllDetailAisle(id)
@@ -66,7 +66,7 @@ export class WarehouseUseCase {
 
         return await this.zoneRepository.updateOne(id, { ...updated });
     }
-    public async updateOneAisle(id: string, updated: any): Promise<IZone | ErrorHandler | null> {
+    public async updateOneAisle(id: string, updated: any): Promise<IAisle | ErrorHandler | null> {
         const noRepeat = await this.aisleRepository.findOneItem({ 
             name: updated.name, 
             status: true, 
@@ -77,6 +77,18 @@ export class WarehouseUseCase {
         }
 
         return await this.aisleRepository.updateOne(id, { ...updated });
+    }
+    public async updateOneSection(id: string, updated: any): Promise<ISection | ErrorHandler | null> {
+        const noRepeat = await this.sectionRepository.findOneItem({ 
+            name: updated.name, 
+            status: true, 
+            aisle: updated.aisle 
+        });
+        if (noRepeat && noRepeat.id !== id) {
+            throw new ErrorHandler(`Sección con nombre ${noRepeat.name} ya está en uso`, 400);
+        }
+
+        return await this.sectionRepository.updateOne(id, { ...updated });
     }
     public async deleteOneZone(id: string): Promise<IZone | ErrorHandler | null> {
         const aisle = await this.aisleRepository.findOneItem({ zone: id, status: true })
@@ -91,6 +103,13 @@ export class WarehouseUseCase {
             return new ErrorHandler(`El pasillo tiene secciones activas`, 400);
         }
         return await this.aisleRepository.updateOne(id, { status: false })
+    }
+    public async deleteOneSection(id: string): Promise<ISection | ErrorHandler | null> {
+        const section = await this.sectionRepository.findOneItem({ _id: id, status: true })
+        if (section.stock.length > 0) {
+            return new ErrorHandler(`La seccion tiene stock de productos`, 400);
+        }
+        return await this.sectionRepository.updateOne(id, { status: false })
     }
 
 }

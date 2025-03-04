@@ -18,13 +18,16 @@ export class WarehouseController extends ResponseData {
         this.getAllSections = this.getAllSections.bind(this);
         this.createZone = this.createZone.bind(this);
         this.createAisle = this.createAisle.bind(this);
+        this.createSection = this.createSection.bind(this);
         this.addMultipleAisles = this.addMultipleAisles.bind(this);
         this.addMultipleSections = this.addMultipleSections.bind(this);
         this.addMultipleProductsToSection = this.addMultipleProductsToSection.bind(this);
         this.updateZone = this.updateZone.bind(this)
         this.updateAisle = this.updateAisle.bind(this);
+        this.updateSection = this.updateSection.bind(this);
         this.deleteZone = this.deleteZone.bind(this)
         this.deleteAisle = this.deleteAisle.bind(this);
+        this.deleteSection = this.deleteSection.bind(this);
     }
 
     public async getAllZones(req: Request, res: Response, next: NextFunction) {
@@ -93,6 +96,17 @@ export class WarehouseController extends ResponseData {
         }
     }
 
+    public async updateSection(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params
+        const body = req.body
+        try {
+            const response = await this.warehouseUseCase.updateOneSection(id, body)
+            this.invoke(response, 200, res, 'Sección editada con éxito', next);
+        } catch (error) {
+            next(error)
+        }
+    }
+
     public async createAisle(req: Request, res: Response, next: NextFunction) {
         const body = req.body
         try {
@@ -102,6 +116,18 @@ export class WarehouseController extends ResponseData {
             next(error)
         }
     }
+
+    public async createSection(req: Request, res: Response, next: NextFunction) {
+        const { name, aisle } = req.body
+        try {
+            const infoAisle = await this.warehouseUseCase.getOneAisle(aisle)
+            const response = await this.warehouseUseCase.createSection({ name: name, aisle: aisle, storehouse: infoAisle?.storehouse })
+            this.invoke(response, 200, res, 'Sección se creada con éxito', next);
+        } catch (error) {
+            next(error)
+        }
+    }
+
     public async addMultipleAisles(req: Request, res: Response, next: NextFunction) {
         const { names, zone, storehouse } = req.body;
         try {
@@ -230,6 +256,16 @@ export class WarehouseController extends ResponseData {
         try {
             const response = await this.warehouseUseCase.deleteOneAisle(id)
             this.invoke(response, 200, res, 'El pasillo se eliminó con éxito', next);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public async deleteSection(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        try {
+            const response = await this.warehouseUseCase.deleteOneSection(id)
+            this.invoke(response, 200, res, 'La sección se eliminó con éxito', next);
         } catch (error) {
             next(error);
         }
