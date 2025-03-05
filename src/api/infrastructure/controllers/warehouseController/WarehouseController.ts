@@ -15,9 +15,11 @@ export class WarehouseController extends ResponseData {
     constructor(private warehouseUseCase: WarehouseUseCase, private stockStoreHouseUseCase: StockStoreHouseUseCase) {
         super();
         this.getAisle = this.getAisle.bind(this);
+        this.getSection = this.getSection.bind(this);
         this.getAllZones = this.getAllZones.bind(this);
         this.getAllAisles = this.getAllAisles.bind(this);
         this.getAllSections = this.getAllSections.bind(this);
+        this.searchProductSection = this.searchProductSection.bind(this);
         this.PrintPdfSection = this.PrintPdfSection.bind(this);
         this.createZone = this.createZone.bind(this);
         this.createAisle = this.createAisle.bind(this);
@@ -25,6 +27,7 @@ export class WarehouseController extends ResponseData {
         this.addMultipleAisles = this.addMultipleAisles.bind(this);
         this.addMultipleSections = this.addMultipleSections.bind(this);
         this.addMultipleProductsToSection = this.addMultipleProductsToSection.bind(this);
+        this.addSingleProductToSection = this.addSingleProductToSection.bind(this);
         this.updateZone = this.updateZone.bind(this)
         this.updateAisle = this.updateAisle.bind(this);
         this.updateSection = this.updateSection.bind(this);
@@ -52,32 +55,41 @@ export class WarehouseController extends ResponseData {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
+    public async getSection(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params
+        try {
+            const response = await this.warehouseUseCase.getDetailSection(id)
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
 
-   public async PrintPdfSection(req: Request, res: Response, next: NextFunction) {
-           const { id } = req.params
-           try {
-               const response = await this.warehouseUseCase.getDetailSection(id)
-               
-               res.writeHead(200, {
-                       "Content-Type": "application/pdf",
-                       "Content-Disposition": `attachment; filename=order${id}.pdf`
-                     });
-               
-                     const stream = res;
-               
-                     buildReportSectionPDF(
-                       response,
-                       (data: any) => stream.write(data),
-                       () => stream.end()
-                     );
-           } catch (error) {
-               console.log(error);
-   
-               next(new ErrorHandler('Hubo un error al consultar la información', 500));
-           }
-       }
-    
-       public async searchProductSection(req: Request, res: Response, next: NextFunction) {
+    public async PrintPdfSection(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params
+        try {
+            const response = await this.warehouseUseCase.getDetailSection(id)
+
+            res.writeHead(200, {
+                "Content-Type": "application/pdf",
+                "Content-Disposition": `attachment; filename=order${id}.pdf`
+            });
+
+            const stream = res;
+
+            buildReportSectionPDF(
+                response,
+                (data: any) => stream.write(data),
+                () => stream.end()
+            );
+        } catch (error) {
+            console.log(error);
+
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
+
+    public async searchProductSection(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params
         try {
             const response = await this.warehouseUseCase.searchProductInSection(id)
@@ -193,6 +205,42 @@ export class WarehouseController extends ResponseData {
         }
     }
 
+    public async addSingleProductToSection(req: Request, res: Response, next: NextFunction) {
+        const { section, product, quantity } = req.body;
+
+        try {
+            const isUniqueProduct = product._id !== null;
+            const valuate = isUniqueProduct ? 'unique_product' : 'variant_product';
+            const exist = await this.warehouseUseCase.getOneSection(section);
+            const oldStock = exist?.stock || [];
+
+            const checkExistence = isUniqueProduct
+                ? this.warehouseUseCase.getProductInSection
+                : this.warehouseUseCase.getVariantInSection;
+
+            const noRepeat = await checkExistence.call(this.warehouseUseCase, product._id);
+            if (Array.isArray(noRepeat) && noRepeat.length > 0) {
+                return next(new ErrorHandler(`El producto se encuentra en la sección: ${noRepeat[0].name}`, 400));
+            }
+
+            const newStock = {
+                [isUniqueProduct ? 'product' : 'variant']: product._id,
+                quantity: quantity,
+                type: valuate
+            };
+
+            const updatedStock = [newStock, ...oldStock];
+            const updated = await this.warehouseUseCase.updateOneSection(section, { stock: updatedStock });
+
+            this.invoke(updated, 200, res, 'Se agregó con éxito', next);
+        } catch (error) {
+            console.error(error);
+            next(error);
+        }
+    }
+
+
+
     public async addMultipleProductsToSection(req: Request, res: Response, next: NextFunction) {
         const { section, products } = req.body;
 
@@ -202,8 +250,6 @@ export class WarehouseController extends ResponseData {
                 products.map(async (product: any, index: any) => {
                     if (product.type === "unique_product") {
                         const noRepeat: any = await this.warehouseUseCase.getProductInSection(product.product);
-                        console.log(noRepeat);
-
                         if (Array.isArray(noRepeat) && noRepeat.length > 0) {
                             throw {
                                 product: product.product,
@@ -259,28 +305,6 @@ export class WarehouseController extends ResponseData {
     }
 
 
-
-    public async addProductToSection(req: Request, res: Response, next: NextFunction) {
-        const { section, product } = req.body;
-
-        try {
-
-
-            // Obtener stock existente en la sección
-            const existStock = await this.warehouseUseCase.getOneSection(section);
-            const stockExist = existStock?.stock || [];
-
-            // 🔹 Concatenar productos sin sobrescribir el stock existente
-            const updatedStock = [...stockExist, ...product];
-
-            // 🔹 Guardar el nuevo stock en la sección
-            const responses = await this.warehouseUseCase.addProductsToSection(section, updatedStock);
-
-            this.invoke(responses, 200, res, 'Los productos se agregaron con éxito a la sección', next);
-        } catch (error) {
-            next(error);
-        }
-    }
 
     public async deleteZone(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;

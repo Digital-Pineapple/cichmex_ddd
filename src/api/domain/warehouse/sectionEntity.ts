@@ -6,9 +6,10 @@ export interface ISection extends Document {
   aisle: mongoose.Types.ObjectId; // Relación con Pasillo
   capacity: number;
   stock: [{
-    product: mongoose.Types.ObjectId;
+    product?: mongoose.Types.ObjectId;
+    variant?: mongoose.Types.ObjectId;
     quantity: number;
-    code: string; // Código único por sección
+    type: string;
   }];
   status?: boolean;
 }

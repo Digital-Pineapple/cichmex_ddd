@@ -53,6 +53,7 @@ export class StockStoreHouseController extends ResponseData {
         this.feedDailyProduct = this.feedDailyProduct.bind(this);
         this.readyToAccommodate = this.readyToAccommodate.bind(this)
         this.PrintReportInputsByFolio = this.PrintReportInputsByFolio.bind(this);
+        this.inputInSection = this.inputInSection.bind(this);
 
     }
 
@@ -538,6 +539,25 @@ export class StockStoreHouseController extends ResponseData {
             const response = await this.stockStoreHouseUseCase.updateStock(id, { stock: stock })
             this.invoke(response, 201, res, 'Se actualizó con éxito', next);
 
+        } catch (error) {
+
+            next(new ErrorHandler('Hubo un error al actualizar', 500));
+        }
+    }
+    public async inputInSection(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params
+        const user = req.user
+
+        const UserInfo = {
+            _id: user._id,
+            fullname: user.fullname,
+            email: user.email,
+            type_user: user.type_user
+        }
+
+        try {
+            const response = await this.stockSHinputUseCase.updateInputStorehouse(id,{in_section: true, user_arrange:UserInfo})
+            this.invoke (response, 200,res,'Se agrego producto a sección',next)
         } catch (error) {
 
             next(new ErrorHandler('Hubo un error al actualizar', 500));

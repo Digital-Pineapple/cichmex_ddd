@@ -9,9 +9,8 @@ const SectionSchema = new Schema<ISection>({
     stock: [{
       product: { type: Schema.Types.ObjectId, ref: 'Product' },
       variant:{ type: Schema.Types.ObjectId, ref: 'Variants'},
-      type: { type: String, enum: ['unique_product', 'variant_product'], required: true },
       quantity: { type: Number, default: 0 },
-      code: { type: String, required: true } 
+      type: { type: String, enum: ['unique_product', 'variant_product'], required: true },
     }],
     status:{ type: Boolean, required: false, default: true}
   },  {

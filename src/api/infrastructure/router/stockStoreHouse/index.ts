@@ -68,6 +68,7 @@ stockStoreHouseRouter
     .patch('/add/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, stockStoreHouseController.addStock)
     .patch('/remove/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, stockStoreHouseController.removeStock)
     .patch('/return/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']),ActivityLogger, stockStoreHouseController.returnStock)
+    .patch('/input/in_section/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN']),ActivityLogger, stockStoreHouseController.inputInSection)
     .delete('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, stockStoreHouseController.createStock)
     
 
