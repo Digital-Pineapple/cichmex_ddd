@@ -40,6 +40,7 @@ warehouseRouter
 .post('/add_multiple_sections',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.addMultipleSections)
 .post('/section/add_multiple_products',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.addMultipleProductsToSection)
 .post('/section/add_product',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.addSingleProductToSection)
+.patch('/section/update_stock',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.updateAddStockProduct)
 .post('/update_zone/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.updateZone)
 .post('/update_aisle/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.updateAisle)
 .post('/update_section/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, warehouseController.updateSection)

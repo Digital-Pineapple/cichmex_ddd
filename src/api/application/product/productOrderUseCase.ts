@@ -10,7 +10,7 @@ export class ProductOrderUseCase {
   constructor(private readonly productOrderRepository: ProductOrderRepository) {}
 
   public async getProductOrders(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-    return await this.productOrderRepository.findAllProductOrders(InfoBranchOrder, PopulatePayment)
+    return await this.productOrderRepository.findAllProductOrders(InfoBranchOrder, PopulatePayment, PopulateInfoUser)
   }
   public async getProductOrdersExpired(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
     return await this.productOrderRepository.getPOExpired()

@@ -18,8 +18,12 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
     }
 
 
-    async findAllProductOrders(populateConfig1?: any, populateConfig2?: any): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        const response: any = await this.ProductOrderModel.find().populate(populateConfig1).populate(populateConfig2).sort({ createdAt: -1 })
+    async findAllProductOrders(populateConfig1?: any, populateConfig2?: any, populateConfig3?: any): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+        const response: any = await this.ProductOrderModel.find().
+            populate(populateConfig1).
+            populate(populateConfig2).
+            populate(populateConfig3).
+            sort({ createdAt: -1 })
         return response
     }
 
@@ -49,11 +53,11 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
     }
 
     async getPaidAndSuplyToPointPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: true, route_status: false,  'route_detail.route_status': { $ne: 'assigned' } }).sort({ createdAt: -1 }).populate(PopulateBranch)
+        return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: true, route_status: false, 'route_detail.route_status': { $ne: 'assigned' } }).sort({ createdAt: -1 }).populate(PopulateBranch)
     }
 
     async getPaidAndVerifyPackageToPointPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: true, route_status: false,  'route_detail.route_status': { $eq:'assigned'} }).sort({ createdAt: -1 }).populate(PopulateBranch)
+        return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: true, route_status: false, 'route_detail.route_status': { $eq: 'assigned' } }).sort({ createdAt: -1 }).populate(PopulateBranch)
     }
 
     async getAssignedRou(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
@@ -64,7 +68,7 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
         return await this.ProductOrderModel.find({ payment_status: 'approved', 'route_detail.route_status': 'assigned', storeHouseStatus: true, route_status: false }).sort({ createdAt: -1 })
     }
 
-    async getAssignedPOUser(user_id:any): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+    async getAssignedPOUser(user_id: any): Promise<ProductOrderEntity[] | ErrorHandler | null> {
         return await this.ProductOrderModel.find({ payment_status: 'approved', 'route_detail.route_status': 'assigned', 'route_detail.user': user_id, storeHouseStatus: true, route_status: false }).sort({ createdAt: -1 })
     }
 

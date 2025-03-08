@@ -8,6 +8,7 @@ import { relativeTimeThreshold } from 'moment';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 import { buildInputsReportPDF } from '../../../../libs/pdfPrintReport';
 import { buildReportSectionPDF } from '../../../../libs/pdfPrintSection';
+import mongoose from 'mongoose';
 
 export class WarehouseController extends ResponseData {
     protected path = '/warehouse'
@@ -28,6 +29,7 @@ export class WarehouseController extends ResponseData {
         this.addMultipleSections = this.addMultipleSections.bind(this);
         this.addMultipleProductsToSection = this.addMultipleProductsToSection.bind(this);
         this.addSingleProductToSection = this.addSingleProductToSection.bind(this);
+        this.updateAddStockProduct = this.updateAddStockProduct.bind(this)
         this.updateZone = this.updateZone.bind(this)
         this.updateAisle = this.updateAisle.bind(this);
         this.updateSection = this.updateSection.bind(this);
@@ -207,10 +209,9 @@ export class WarehouseController extends ResponseData {
 
     public async addSingleProductToSection(req: Request, res: Response, next: NextFunction) {
         const { section, product, quantity } = req.body;
-
         try {
-            const isUniqueProduct = product._id !== null;
-            const valuate = isUniqueProduct ? 'unique_product' : 'variant_product';
+            const isUniqueProduct = product.product_id === null;
+            const valuate = isUniqueProduct ? "unique_product" : "variant_product";
             const exist = await this.warehouseUseCase.getOneSection(section);
             const oldStock = exist?.stock || [];
 
@@ -238,6 +239,47 @@ export class WarehouseController extends ResponseData {
             next(error);
         }
     }
+
+    public async updateAddStockProduct(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { section, product, quantity } = req.body;
+            console.log(section, product, quantity,'valores');
+            
+
+            // Obtener la sección
+            const mySection = await this.warehouseUseCase.getOneSection(section);
+            if (!mySection) return res.status(404).json({ message: "Sección no encontrada" });
+
+            let updatedStock = mySection.stock || [];
+            const productKey = product.type === "unique_product" ? "product" : "variant";
+            const ObjectId = new mongoose.Types.ObjectId(product._id)
+            // Buscar el producto en el stock
+            const stockItem = updatedStock.find((item: any) => item[productKey]?.equals(ObjectId));
+
+
+
+            if (!stockItem) return next(new ErrorHandler('El producto no existe en esta sección', 400));
+
+            const newQuantity = (stockItem.quantity ?? 0) + (quantity ?? 0);
+
+            if (newQuantity < 0) {
+                return next(new ErrorHandler(`Stock en sección: ${stockItem.quantity}`, 400));
+            }
+
+            // Si la cantidad es válida, actualizar el stock
+            stockItem.quantity = newQuantity;
+
+
+            // Actualizar la sección con el nuevo stock
+            const response = await this.warehouseUseCase.updateOneSection(section, { stock: updatedStock });
+
+            this.invoke(response, 200, res, 'Se agregó con éxito', next);
+        } catch (error) {
+            console.error(error);
+            next(error);
+        }
+    }
+
 
 
 
