@@ -57,7 +57,7 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       default: false,
     },
     supply_detail: {
-      type: Object,
+      type: Array,
       required: false,
     },
     route_detail: {

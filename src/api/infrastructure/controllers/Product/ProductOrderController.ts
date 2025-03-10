@@ -439,7 +439,7 @@ try {
       }
   
       // Agregar el nuevo detalle de surtido
-      detailPO.push({ product_id, section, quantity, type, user: UserInfo, date });
+      detailPO.push({ product_id, section, quantity, type, user: UserInfo, date, status: true });
   
       // Actualizar el pedido
       const update = await this.productOrderUseCase.updateProductOrder(id, { supply_detail: detailPO });
