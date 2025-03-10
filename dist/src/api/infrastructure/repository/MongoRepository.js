@@ -40,9 +40,9 @@ class MongoRepository {
             return result;
         });
     }
-    findById(_id, populateConfig, populateConfig2, populateConfig3) {
+    findById(_id, populateConfig, populateConfig2, populateConfig3, populateConfig4) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.findById({ _id, status: true }).populate(populateConfig).populate(populateConfig2).populate(populateConfig3);
+            return yield this.MODEL.findById({ _id, status: true }).populate(populateConfig).populate(populateConfig2).populate(populateConfig3).populate(populateConfig4);
         });
     }
     findByIdPupulate(_id, populateConfig) {
@@ -168,7 +168,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiphistories",
+                        from: "membershiphistories", // (hijo)--memberHistory
                         let: {
                             id: "$_id",
                         },
@@ -202,7 +202,7 @@ class MongoRepository {
                 //(padre) ---MembershipBenefits
                 {
                     $lookup: {
-                        from: "membershiphistories",
+                        from: "membershiphistories", // (hijo)--memberHistory
                         let: {
                             id: "$_id",
                         },

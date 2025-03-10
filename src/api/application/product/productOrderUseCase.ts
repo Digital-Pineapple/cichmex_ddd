@@ -1,5 +1,5 @@
 import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
-import { InfoBranchOrder, PopulateBranch, PopulateInfoUser, PopulatePayment } from "../../../shared/domain/PopulateInterfaces";
+import { InfoAddressOrder, InfoBranchOrder, PopulateBranch, PopulateInfoUser, PopulatePayment } from "../../../shared/domain/PopulateInterfaces";
 import { MomentService } from "../../../shared/infrastructure/moment/MomentService";
 import { RandomCodeId } from "../../../shared/infrastructure/validation/Utils";
 import {  ProductOrderEntity, ProductOrderResume } from "../../domain/product/ProductEntity";
@@ -24,7 +24,7 @@ export class ProductOrderUseCase {
   }
 
   public async getOneProductOrder( _id: string): Promise<ProductOrderEntity | ErrorHandler| null > {
-    const response =  await this.productOrderRepository.findById(_id, InfoBranchOrder, PopulateInfoUser, PopulatePayment)
+    const response =  await this.productOrderRepository.findById(_id, InfoBranchOrder, PopulateInfoUser, PopulatePayment, InfoAddressOrder)
     return response
   }
   public async ProductOrdersByBranch( _id: string): Promise<ProductOrderEntity[] | ErrorHandler| null > {
@@ -69,7 +69,7 @@ export class ProductOrderUseCase {
     return response
   }
   public async ProductOrdersByUser( _id: string): Promise<ProductOrderEntity[] | ErrorHandler| null > {
-    const response =  await this.productOrderRepository.getProductOrdersByUser(_id, InfoBranchOrder)
+    const response =  await this.productOrderRepository.getProductOrdersByUser(_id, InfoBranchOrder, InfoAddressOrder)
     return response
   }
 

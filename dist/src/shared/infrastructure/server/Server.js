@@ -19,15 +19,26 @@ const http_1 = require("http");
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const swagger_options_1 = require("../../../../swagger_options");
+const socketIOService_1 = require("../socket/socketIOService");
 class Server {
     constructor(router) {
         this.router = router;
+        // private readonly socketService: SocketService;    
         this.swaggerUiOptions = {
             explorer: true,
         };
         this.specs = (0, swagger_jsdoc_1.default)(swagger_options_1.options);
         this.startServer = () => __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
+                socketIOService_1.socketService.init(this.httpServer);
+                // new SocketService(this.httpServer);
+                // this.socketService
+                // this.serverIO.on("connection", (socket) => {
+                //     socket.on("message", (data) => {
+                //         console.log("socket says: " + data);                    
+                //     })                
+                //     resolve();             
+                // });
                 this.httpServer.listen(config_1.config.PORT, () => {
                     console.log(`🚀 Application ${config_1.config.APP_NAME} running on PORT ${config_1.config.PORT}`);
                     console.log(`📃 Documentation available at http://localhost:${config_1.config.PORT}/api-docs`);
@@ -39,6 +50,13 @@ class Server {
         });
         this.express = (0, express_1.default)();
         this.httpServer = (0, http_1.createServer)(this.express);
+        // this.socketService = new SocketService(this.httpServer);      
+        // this.serverIO = new ServerIO(this.httpServer, {
+        //   cors: {
+        //     origin: "http://localhost:3003",
+        //     methods: ["GET", "POST"]
+        //   }
+        // });
         // // Habilitar CORS
         // this.express.use(cors({
         //     origin: 'http://localhost:3003', // Puedes cambiarlo a los orígenes que necesites

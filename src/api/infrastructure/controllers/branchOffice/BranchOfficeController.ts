@@ -7,7 +7,8 @@ import { BranchOfficeResponse, ILocation } from '../../../domain/branch_office/B
 import { DocumentationUseCase } from '../../../application/documentation/DocumentationUseCase';
 import mongoose from 'mongoose';
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
-import { retrieveAWSImages } from '../../../../helpers/retrieveImages';
+import { retrieveAWSFiles } from '../../../../helpers/retrieveImages';
+
 
 export class BranchOfficeController extends ResponseData {
     protected path = '/branch_office';
@@ -36,7 +37,7 @@ export class BranchOfficeController extends ResponseData {
             const response: any | null = await this.branchOfficeUseCase.getAllBranchOffices()
             response.map(( item: any ) => {
                 const images = item.images
-                item.images = retrieveAWSImages(images);                
+                item.images = retrieveAWSFiles(images);                
             });           
             this.invoke(response, 200, res, "", next);
         }catch (error) {
@@ -69,7 +70,7 @@ export class BranchOfficeController extends ResponseData {
 
         try {
             const response: any| null = await this.branchOfficeUseCase.getDetailBranchOffice(id);
-            response.images = retrieveAWSImages(response.images);           
+            response.images = retrieveAWSFiles(response.images);           
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             console.log(error);            
@@ -81,7 +82,7 @@ export class BranchOfficeController extends ResponseData {
         const { id } = req.params;
         try {
             const response: any | null = await this.branchOfficeUseCase.getBranchesUser(id)
-            response.images = retrieveAWSImages(response.images);
+            response.images = retrieveAWSFiles(response.images);
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
