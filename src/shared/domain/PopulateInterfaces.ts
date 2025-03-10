@@ -16,6 +16,7 @@ import BannerModel from '../../api/infrastructure/models/banners/BannerModel';
 import DiscountCouponModel from '../../api/infrastructure/models/discountCoupon/DiscountCouponModel';
 import { ZoneModel } from '../../api/infrastructure/models/warehouse/ZoneModel';
 import { AisleModel } from '../../api/infrastructure/models/warehouse/AisleModel';
+import AddressModel from '../../api/infrastructure/models/AddressModel';
 export interface IAuthPopulateConfig {
     path    : string;
     select  : string;
@@ -170,6 +171,13 @@ export const InfoBranchOrder : IStockPopulateConfig={
     select: ["name",'opening_time', 'closing_time', 'location', "phone_number"],
     model:BranchOfficeModel
 }
+
+export const InfoAddressOrder = {
+    path: 'deliveryLocation',
+    // select: ["name", "phone", "zipcode"],
+    model: AddressModel
+}
+
 export const InfoPayment = {
     path: 'payment',
     select: ["MP_info"],

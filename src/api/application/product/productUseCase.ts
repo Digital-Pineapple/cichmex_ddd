@@ -3,6 +3,7 @@ import { ErrorHandler } from "../../../shared/domain/ErrorHandler";
 import { PopulateGuide, PopulateProductCategory, PopulateProductSubCategory } from "../../../shared/domain/PopulateInterfaces";
 import { ProductEntity } from "../../domain/product/ProductEntity";
 import { ProductRepository } from "../../domain/product/ProductRepository";
+import { retrieveAWSFiles, retrieveParsedImageProducts } from "../../../helpers/retrieveImages";
 
 
 export class ProductUseCase {
@@ -67,23 +68,37 @@ export class ProductUseCase {
     return  await this.productRepository.findAllItems({subCategory: subCategory, status: true})
   }
   public async getVideoProducts(page: number): Promise<ProductEntity[] | ErrorHandler |  null> {
-    return this.productRepository.findVideoProducts(page)
+    const res : any | null = await this.productRepository.findVideoProducts(page);
+    res.products = retrieveParsedImageProducts(res.products)
+    return res;  
   }
   public async getRandomProductsByCategory(id: any, skiproduct: any, storehouse: any ): Promise<ProductEntity[] | ErrorHandler |  null> {
-    return this.productRepository.findRandomProductsByCategory(id, skiproduct, storehouse)
+    let products : any | null  = await this.productRepository.findRandomProductsByCategory(id, skiproduct, storehouse)    
+    products =  retrieveParsedImageProducts(products)
+    return products;  
+
   }
   public async searchProducts(search: string, page: number): Promise<ProductEntity[] | ErrorHandler | null> {
-    return this.productRepository.findSearchProducts(search, page);
+    let res: any | null = await this.productRepository.findSearchProducts(search, page);    
+    res.products = retrieveParsedImageProducts(res.products);
+    return res;
   }
 
   public async getProductsByCategory(categoryId: ObjectId, storehouse: string, queryparams: Object): Promise<ProductEntity[] | ErrorHandler | null> {
-    return this.productRepository.findProductsByCategory(categoryId, storehouse, queryparams)
+    const response : any | null = await this.productRepository.findProductsByCategory(categoryId, storehouse, queryparams);
+    // console.log(response, "por categoria");    
+    response.products = retrieveParsedImageProducts(response.products)
+    return response
   }
   public async getProductsBySubCategory(subcategoryId: ObjectId, storehouse: string, queryparams: Object): Promise<ProductEntity[] | ErrorHandler | null> {
-    return this.productRepository.findProductsBySubCategory(subcategoryId, storehouse, queryparams)
+    const response: any | null = await this.productRepository.findProductsBySubCategory(subcategoryId, storehouse, queryparams)
+    response.products = retrieveParsedImageProducts(response.products)
+    return response
   }
   public async getRecentAddedProducts():  Promise<ProductEntity[] | ErrorHandler | null> {
-     return this.productRepository.findRecentAddedProducts();
+     let response: any | null = await this.productRepository.findRecentAddedProducts();
+     response = retrieveParsedImageProducts(response)
+     return response;
   }
   public async findProductsPaginate(skip: number, limit:number): Promise<ProductEntity[] | ErrorHandler | null> {
     return this.productRepository.GetProductPaginate(skip, limit)
