@@ -48,8 +48,7 @@ export class ProductController extends ResponseData {
     this.updateThumbnail = this.updateThumbnail.bind(this);
     this.addOneImageProduct = this.addOneImageProduct.bind(this)
     this.deleteOneImageDetail = this.deleteOneImageDetail.bind(this);
-    this.getSimilarProducts = this.getSimilarProducts.bind(this);
-    this.updateURLS = this.updateURLS.bind(this);
+    this.getSimilarProducts = this.getSimilarProducts.bind(this);    
     this.deleteVideoDetail = this.deleteVideoDetail.bind(this);
     this.addOneVideoProduct = this.addOneVideoProduct.bind(this);
     this.processFiles = this.processFiles.bind(this);
@@ -658,7 +657,7 @@ export class ProductController extends ResponseData {
     try {      
       const page = queryparams?.page                
       const parsedPage = (page && Number(page)) || 1
-      const response: any | null = await this.productUseCase.getVideoProducts(parsedPage);
+      const response: any | null = await this.productUseCase.getVideoProducts(parsedPage);   
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       console.log(error);
@@ -715,66 +714,6 @@ export class ProductController extends ResponseData {
     }
   }
 
-
-
-
-
-
-  public async updateURLS(req: Request, res: Response, next: NextFunction) {
-    try {
-      const response = await this.productUseCase.getProducts();
-
-      if (!(response instanceof ErrorHandler)) {
-        await Promise.all(
-          response.map(async (item: any) => {
-            // Update image URLs
-            item.images = item.images?.map((image: any) => {
-              if (typeof image === "string" && !image?.startsWith("https://")) {
-                return {
-                  _id: new ObjectId(),
-                  url: `https://cichmex.s3.us-east-2.amazonaws.com/production${image}.jpg`,
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                };
-              } else if (image?.url && !image.url.startsWith("https://")) {
-                image.url = `https://cichmex.s3.us-east-2.amazonaws.com/production${image.url}.jpg`;
-                image.updatedAt = new Date(); // Update timestamp
-              }
-              return image;
-            }) || [];
-
-            // Update video URLs
-            // item.videos = item.videos?.map((video: any) => {          
-            //   if(typeof video === "string" && !video?.startsWith("https://")) {
-            //     video = `https://cichmex.s3.us-east-2.amazonaws.com/production${video}.mp4`
-            //   }    
-            //   if (video && !video.url?.startsWith("https://")) {
-            //     video.url = `https://cichmex.s3.us-east-2.amazonaws.com/production${video.url}.mp4`;
-            //   }
-            //   return video;
-            // }) || [];
-
-            // Update thumbnail URL
-            if (item.thumbnail && !item.thumbnail?.startsWith("https://")) {
-              item.thumbnail = `https://cichmex.s3.us-east-2.amazonaws.com/production${item.thumbnail}.jpg`;
-            }
-
-            // Update product in the database
-            await this.productUseCase.updateProduct(item._id, {
-              images: item.images,
-              videos: item.videos,
-              thumbnail: item.thumbnail,
-            });
-          })
-        );
-      }
-
-      this.invoke(response, 200, res, "", next);
-    } catch (error) {
-      console.log("Error:", error);
-      next(new ErrorHandler("Hubo un error al actualizar la información", 500));
-    }
-  }
 
   public async AddProdcutWithVariants(req: Request, res: Response, next: NextFunction) {
     const data = { ...req.body }

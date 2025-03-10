@@ -70,8 +70,9 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       default: false
     },
     deliveryLocation: {
-      type: Object,
+      type: mongoose.Types.ObjectId,
       required: false,
+      ref: 'Address'
     },
     status: {
       type: Boolean,
@@ -106,7 +107,7 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       enum: ['web', 'mobile']
     },
     requiredTax: {
-      type: String,
+      type: Boolean,
       required: false,
       default: false
     },
@@ -117,7 +118,12 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
     tax_expiration_date: {
       type: Date,
       required: false
-    }  
+    },
+    order_status: {
+      type: Number,
+      required: true,
+      default: 0,
+    }     
   },
   {
     versionKey: false,

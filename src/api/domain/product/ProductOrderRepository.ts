@@ -4,7 +4,7 @@ import {  ProductOrderEntity, ProductOrderResume } from "./ProductEntity"
 
 export interface ProductOrderRepository extends MongoRepository {
 
-     getProductOrdersByUser( _id: string, populateConfig1?:any): Promise<ProductOrderEntity[] | ErrorHandler| null > 
+     getProductOrdersByUser( _id: string, populateConfig1?:any, populateConfig2?: any): Promise<ProductOrderEntity[] | ErrorHandler| null > 
      
      getProductOrdersByBranch( _id: string, populateConfig1?:any): Promise<ProductOrderEntity[] | ErrorHandler| null > 
 

@@ -9,6 +9,7 @@ import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { ShippingCostUseCase } from '../../../application/shippingCost/ShippingCostUseCase';
 import { VariantProductUseCase } from '../../../application/variantProduct/VariantProductUseCase';
 import { v4 as uuidv4 } from 'uuid';
+import { ProductCart } from '../../../domain/shoppingCart/shoppingCartEntity';
 
 export class ShoppingCartController extends ResponseData {
     protected path = '/shoppingCart'
@@ -133,13 +134,8 @@ export class ShoppingCartController extends ResponseData {
         const { id } = req.params; // ID del producto
         const user = req.user;
         const { quantity, variant_id = null } = req.body;        
-        interface Product {
-            _id: string;
-            item: ObjectId;
-            variant?: ObjectId | null;
-            quantity: number;
-        }                        
-        try {          
+   
+        try {                                  
             let itemResponse = {};                                   
             // Validar entradas
             if(!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));            
@@ -148,7 +144,7 @@ export class ShoppingCartController extends ResponseData {
             if(quantity <= 0) return next(new ErrorHandler('La cantidad debe ser mayor a 0', 400));  
                       
             let userCart;
-            const newProduct : Product = {
+            const newProduct : ProductCart = {
                 _id: uuidv4(),
                 item: new ObjectId(id),
                 variant: null,
@@ -260,9 +256,9 @@ export class ShoppingCartController extends ResponseData {
           if(quantity <= 0) return next(new ErrorHandler('La cantidad debe ser mayor a 0', 400));
 
           // Obtener el carrito de compras del usuario
-          const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);    
+          const responseShoppingCartUser: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);    
           if (responseShoppingCartUser && responseShoppingCartUser.products) {
-             const index = responseShoppingCartUser.products.findIndex(product => product._id === id);    
+             const index = responseShoppingCartUser.products.findIndex((product: any) => product._id === id);    
              // console.log("index was setted");            
              if (index !== -1) {
                 // Si el producto ya está en el carrito, actualizar la cantidad
