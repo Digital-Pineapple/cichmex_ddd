@@ -57,6 +57,7 @@ productOrderRouter
   .post('/assignRoute', documentationValidations.PDFFileValidation ,userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),ActivityLogger, productOrderController.AssignRoute)
   .post('/fill-order/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN"]),ActivityLogger,  productOrderController.fillProductOrder)
   .post("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), ActivityLogger,productOrderController.updateProductOrder)
+  .post("/fill_one_product/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), ActivityLogger,productOrderController.fillOneProduct)
   .delete("/:id",userValidations.authTypeUserValidation(["CUSTOMER"]),ActivityLogger, productOrderController.deleteProductOrder)
   .get("/ordersByBranch/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]), productOrderController.getProductOrderByBranch);
 
