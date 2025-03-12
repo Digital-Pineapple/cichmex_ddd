@@ -80,7 +80,7 @@ export interface ProductOrderEntity {
   branch?: BranchOfficeEntity;
   deliveryLocation?: ILocation;
   storeHouseStatus?: boolean;
-  supply_detail: SupplyOneProduct[];
+  supply_detail?: SupplyOneProduct[];
   route_status?: boolean;
   route_detail?: PORouteDetail
   point_pickup_status?: boolean;

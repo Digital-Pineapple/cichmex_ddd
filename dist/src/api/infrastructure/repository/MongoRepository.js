@@ -143,9 +143,9 @@ class MongoRepository {
             return yield this.MODEL.findOne(Object.assign({}, query)).populate(populateConfig1).populate(populateConfig2).populate(populateConfig3);
         });
     }
-    findAllItems(query, populateConfig1, populateConfig2, populateConfig3) {
+    findAllItems(query, populateConfig1, populateConfig2, populateConfig3, populateConfig4) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.MODEL.find(Object.assign({}, query)).populate(populateConfig1).populate(populateConfig2).populate(populateConfig3).sort({ 'CreatedAt': -1 });
+            return yield this.MODEL.find(Object.assign({}, query)).populate(populateConfig1).populate(populateConfig2).populate(populateConfig3).populate(populateConfig4).sort({ 'createdAt': -1 });
         });
     }
     search(search) {

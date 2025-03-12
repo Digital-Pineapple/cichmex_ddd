@@ -392,11 +392,9 @@ try {
 
   public async fillProductOrder(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const { _id, uuid, email, fullname } = req.user;
     const { storeHouse } = req.body;
-    const date = new Date()
     try {
-      const response = await this.productOrderUseCase.startFillProductOrder(id, { storeHouseStatus: storeHouse, supply_detail: { user: { _id, uuid, email, fullname }, date: date } })
+      const response = await this.productOrderUseCase.startFillProductOrder(id, { storeHouseStatus: storeHouse })
 
       this.invoke(response, 201, res, 'Orden surtida con éxito', next);
     } catch (error) {
