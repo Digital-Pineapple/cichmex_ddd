@@ -16,8 +16,8 @@ export class MPService {
         this.payment = new Payment(client);
     }
 
-    async createLinkMP(items: any, redirect_uri: string) {
-        const path = redirect_uri || process.env.PATH_MP;
+    async createLinkMP(items: any, redirect_urls: any) {
+        // const path = redirect_uri || process.env.PATH_MP;
         const path_notification = process.env.URL_NOTIFICATION;
         const itemsMP = items
         // items.map((item: any) => {
@@ -42,11 +42,7 @@ export class MPService {
                 body: {
                     items: itemsMP,
                     // payer: { name: user_id },
-                    back_urls: {
-                        success: `${path}/PagoExitoso`,
-                        failure: `${path}/inicio`,
-                        pending: `${path}/inicio`,
-                    },
+                    back_urls: redirect_urls,
                     auto_return: "approved",
                     notification_url: `${path_notification}/api/payments/success`,
                 },

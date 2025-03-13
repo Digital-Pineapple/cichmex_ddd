@@ -178,9 +178,9 @@ export class PaymentController extends ResponseData {
     }
 
     public async createLMP(req: Request, res: Response, next: NextFunction) {        
-        const { products, redirect_uri } = req.body;
+        const { products, redirect_urls } = req.body;
         try {
-            const { response, success, message } = await this.mpService.createLinkMP(products, redirect_uri);
+            const { response, success, message } = await this.mpService.createLinkMP(products, redirect_urls);
             if(success){
                 this.invoke(response?.init_point, 201, res, '', next);
             } else {
