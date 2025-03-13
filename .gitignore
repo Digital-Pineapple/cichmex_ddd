@@ -4,3 +4,4 @@
 /wwebjs_auth
 .env*
 dist/
+.qodo

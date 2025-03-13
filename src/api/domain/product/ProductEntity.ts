@@ -80,7 +80,7 @@ export interface ProductOrderEntity {
   branch?: BranchOfficeEntity;
   deliveryLocation?: ILocation;
   storeHouseStatus?: boolean;
-  supply_detail: ProductOrderSupply;
+  supply_detail?: SupplyOneProduct[];
   route_status?: boolean;
   route_detail?: PORouteDetail
   point_pickup_status?: boolean;
@@ -135,11 +135,15 @@ export interface ProductOrderResume {
   lastTen?: any
 
 }
-export interface ProductOrderSupply {
-  user: UserEntity,
-  date: string,
-
-}
+ export interface SupplyOneProduct{
+  product_id: ObjectId,
+  status: boolean,
+  section:ObjectId,
+  quantity: number,
+  type: string,
+  user:UserEntity,
+  date: Date
+ }
 export interface PORouteDetail {
   user: UserEntity,
   route_status?: string,

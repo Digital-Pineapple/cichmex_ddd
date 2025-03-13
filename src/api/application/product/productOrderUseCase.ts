@@ -36,7 +36,7 @@ export class ProductOrderUseCase {
     return response
   }
   public async ProductOrdersPaidAndFill(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
-    const response =  await this.productOrderRepository.findAllItems({payment_status: 'approved',storeHouseStatus:true}, PopulateBranch)
+    const response =  await this.productOrderRepository.findAllItems({payment_status: 'approved',storeHouseStatus:true},InfoBranchOrder, PopulateInfoUser, PopulatePayment, InfoAddressOrder )
     return response
   }
   public async PendingTransferPO(): Promise<ProductOrderEntity[] | ErrorHandler| null > {

@@ -113,10 +113,10 @@ export abstract class MongoRepository {
     return await this.MODEL.findOne({ ...query}).populate(
       populateConfig1).populate(populateConfig2).populate(populateConfig3);
   }
-  public async findAllItems(query: Object, populateConfig1?: any | Object, populateConfig2?: any, populateConfig3?: any): Promise<any> {
+  public async findAllItems(query: Object, populateConfig1?: any | Object, populateConfig2?: any, populateConfig3?: any, populateConfig4?: any): Promise<any> {
 
     return await this.MODEL.find({ ...query }).populate(
-      populateConfig1).populate(populateConfig2).populate(populateConfig3).sort({'CreatedAt':-1})
+      populateConfig1).populate(populateConfig2).populate(populateConfig3).populate(populateConfig4).sort({'createdAt':-1})
   }
 
   public async search(search: any): Promise<any> {

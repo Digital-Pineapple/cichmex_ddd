@@ -243,9 +243,6 @@ export class WarehouseController extends ResponseData {
     public async updateAddStockProduct(req: Request, res: Response, next: NextFunction) {
         try {
             const { section, product, quantity } = req.body;
-            console.log(section, product, quantity,'valores');
-            
-
             // Obtener la sección
             const mySection = await this.warehouseUseCase.getOneSection(section);
             if (!mySection) return res.status(404).json({ message: "Sección no encontrada" });
@@ -273,7 +270,7 @@ export class WarehouseController extends ResponseData {
             // Actualizar la sección con el nuevo stock
             const response = await this.warehouseUseCase.updateOneSection(section, { stock: updatedStock });
 
-            this.invoke(response, 200, res, 'Se agregó con éxito', next);
+            this.invoke(response, 200, res, 'Se actualizo el stock con éxito', next);
         } catch (error) {
             console.error(error);
             next(error);

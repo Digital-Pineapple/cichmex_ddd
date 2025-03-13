@@ -30,6 +30,7 @@ export class ProductOrderController extends ResponseData {
     this.updateProductOrder = this.updateProductOrder.bind(this);
     this.deleteProductOrder = this.deleteProductOrder.bind(this);
     this.fillProductOrder = this.fillProductOrder.bind(this);
+    this.fillOneProduct = this.fillOneProduct.bind(this);
     this.paidAndSupplyPOToPoint = this.paidAndSupplyPOToPoint.bind(this);
     this.paidAndSupplyPO = this.paidAndSupplyPO.bind(this);
     this.AssignRoute = this.AssignRoute.bind(this);
@@ -394,11 +395,9 @@ try {
 
   public async fillProductOrder(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const { _id, uuid, email, fullname } = req.user;
     const { storeHouse } = req.body;
-    const date = new Date()
     try {
-      const response = await this.productOrderUseCase.startFillProductOrder(id, { storeHouseStatus: storeHouse, supply_detail: { user: { _id, uuid, email, fullname }, date: date } })
+      const response = await this.productOrderUseCase.startFillProductOrder(id, { storeHouseStatus: storeHouse })
 
       this.invoke(response, 201, res, 'Orden surtida con éxito', next);
     } catch (error) {
@@ -406,6 +405,57 @@ try {
       next(new ErrorHandler("Hubo un error ", 500));
     }
   }
+
+  public async fillOneProduct(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const { product_id, section, quantity, type } = req.body;
+    const user = req.user;
+  
+    if (!id || !product_id || !section || !quantity || !type) {
+      return next(new ErrorHandler('Faltan parámetros requeridos', 400));
+    }
+  
+    const UserInfo = {
+      _id: user._id,
+      fullname: user.fullname,
+      email: user.email,
+      type_user: user.type_user
+    };
+    const date = new Date();
+  
+    try {
+      // Obtener el pedido
+      const PO = await this.productOrderUseCase.getOneProductOrder(id);
+      if (!PO || PO instanceof ErrorHandler) {
+        return next(new ErrorHandler('No se encontró el pedido', 404));
+      }
+  
+      const detailPO = PO.supply_detail || [];
+      
+      // Verificar si el producto ya existe en la lista de surtidos
+      const productAlreadyFilled = detailPO.some((item: any) => item.product_id === product_id);
+  
+      if (productAlreadyFilled) {
+        return next(new ErrorHandler('Este producto ya ha sido surtido', 400));
+      }
+  
+      // Agregar el nuevo detalle de surtido
+      detailPO.push({ product_id, section, quantity, type, user: UserInfo, date, status: true });
+  
+      // Actualizar el pedido
+      const update = await this.productOrderUseCase.updateProductOrder(id, { supply_detail: detailPO });
+  
+      if (!update) {
+        return next(new ErrorHandler('Error al actualizar el pedido', 500));
+      }
+  
+      // Respuesta de éxito
+      this.invoke(update, 201, res, 'Producto surtido con éxito', next);
+    } catch (error) {
+      next(error);
+    }
+  }
+  
 
   public async autoAssignProductOrders(req: Request, res: Response, next: NextFunction) {
     const user = req.user
