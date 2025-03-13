@@ -1,6 +1,16 @@
 import mongoose, { model, Schema } from "mongoose";
 import { ProductOrderEntity } from "../../../domain/product/ProductEntity";
-
+/*
+order_status : {
+ 0: 'pendiente pago',
+ 1: 'verificar pago',
+ 2: 'preparar orden',
+ 3: 'enviado',
+ 4: 'en punto entrega,
+ 5: 'entregado',
+ 6: 'cancelado',  
+}
+*/
 const ProductOrderSchema = new Schema<ProductOrderEntity>(
   {
     _id: {
@@ -121,7 +131,7 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
     },
     order_status: {
       type: Number,
-      required: true,
+      required: true,      
       default: 0,
     }     
   },

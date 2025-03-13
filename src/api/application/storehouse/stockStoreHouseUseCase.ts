@@ -1,6 +1,7 @@
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { StockStoreHouseRepository } from '../../domain/storehouse/stockStoreHouseRepository';
 import { StockStoreHouseEntity } from '../../domain/storehouse/stockStoreHouseEntity';
+import { getProperties } from '../../../helpers/products';
 
 
 export class StockStoreHouseUseCase {
@@ -49,6 +50,26 @@ export class StockStoreHouseUseCase {
     }
     public async getAllProductOutputs(): Promise<StockStoreHouseEntity[]| null> {
         return this.stockStoreHouseRepository.findAllOutputs()
+    }
+
+    public async validateProductsStock(products: any): Promise<any> {
+        await Promise.all(
+            products.map(async (product: any) => {
+                let available;                    
+                const isVariant = Boolean(product?.variant ?? null);
+                let name = product.item.name;                     
+                if(isVariant){
+                   available = await this.getVariantStock(product.variant._id)                           
+                   name = name + getProperties(product.variant.attributes)
+                }else{
+                    available = await this.getProductStockPayment(product.item._id);                          
+                }
+                if (!available) {
+                    throw new ErrorHandler(`Sin existencias del producto: ${name}`, 500)                    
+                }
+            })
+        );
+        
     }
     
     

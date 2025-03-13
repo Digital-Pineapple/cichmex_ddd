@@ -19,7 +19,7 @@ import { MomentService } from '../../../../shared/infrastructure/moment/MomentSe
 import { PaymentEntity, PaymentVoucher } from '../../../domain/payments/PaymentEntity';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import mongoose from 'mongoose';
-import { getProperties } from '../../../../helpers/products';
+import { getProperties, parseProductsToMercadoPago } from '../../../../helpers/products';
 import { NotificationUseCase } from '../../../application/Notifications/NotificationUseCase';
 
 
@@ -177,8 +177,8 @@ export class PaymentController extends ResponseData {
         }
     }
 
-    public async createLMP(req: Request, res: Response, next: NextFunction) {
-        const { products, user_id } = req.body;
+    public async createLMP(req: Request, res: Response, next: NextFunction) {        
+        const { products } = req.body;
         try {
             const { response, success, message } = await this.mpService.createLinkMP(products);
             if(success){
@@ -324,46 +324,15 @@ export class PaymentController extends ResponseData {
         const order_id = RandomCodeId('CIC')
         const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
         const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
-        // console.log("the access token is:" + access_token);               
-        const productToSend = productsOrder.map((item: any) => {
-            const variant = item?.variant ?? null;
-            const product = item.item;
-            const quantity = item.quantity;
-            const isVariant = Boolean(variant);
-            const variantPrice = variant?.porcentDiscount ? variant?.discountPrice : variant?.price;
-            const productPrice = product?.porcentDiscount ? product?.discountPrice : product?.price; 
-            const newItem = {
-              id:  product._id,
-              title: product.name + (isVariant ? getProperties(variant?.attributes) : ""),
-              unit_price: isVariant ? variantPrice : productPrice,
-              picture_url:  isVariant ? variant.images[0]?.url : product.images[0]?.url,
-              quantity: quantity
-            };
-            return  newItem           
-        });                         
+        const taxDateExpiration = moment(currentDate).add(1, 'month').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+        // console.log("the access token is:" + access_token);            
+        const productToSend =  parseProductsToMercadoPago(productsOrder);                             
         try {
-            await Promise.all(
-                productsOrder.map(async (product: any) => {
-                    let available;                    
-                    const isVariant = Boolean(product?.variant ?? null);
-                    let name = product.item.name;                     
-                    if(isVariant){
-                       available = await this.stockStoreHouseUseCase.getVariantStock(product.variant._id)                           
-                       name = name + getProperties(product.variant.attributes)
-                    }else{
-                        available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);                          
-                    }
-                    if (!available) {
-                        return next(new ErrorHandler(`Sin existencias del producto: ${name}`, 500))
-                    }
-                })
-            );
+            await this.stockStoreHouseUseCase.validateProductsStock(productsOrder);          
             const { formData, selectedPaymentMethod } = infoPayment;
             const metadata1 = formData?.metadata;
             const point = metadata1?.payment_point || null;
-            const path_notification = `${process.env.URL_NOTIFICATION}api/payments/Mem-Payment-success`;
-            // console.log("mercado pago form data: " + JSON.stringify(infoPayment, null, 2));
-            
+            const path_notification = `${process.env.URL_NOTIFICATION}api/payments/Mem-Payment-success`;                        
             const body1: any = {
                 transaction_amount: formData.transaction_amount,
                 payment_method_id: formData.payment_method_id,
@@ -395,14 +364,10 @@ export class PaymentController extends ResponseData {
              const payment = await payment1.create({
                     requestOptions: { idempotencyKey: uuid4 },
                     body: body1,
-             });                      
-            // console.log("the payment says: " + JSON.stringify(payment));
+             });                                  
             
             const { additional_info, id, status, transaction_details, payment_method } = payment
-            if(status === "rejected"){
-                return next(new ErrorHandler('El pago fue rechazado ;c', 400));
-            }
-            
+            if(status === "rejected"){ return next(new ErrorHandler('El pago fue rechazado ;c', 400)) }            
             if (payment) {
                 const createPayment: any = await this.paymentUseCase.createNewPayment({
                     uuid: uuid4,
@@ -428,6 +393,8 @@ export class PaymentController extends ResponseData {
                         download_ticket: payment?.transaction_details?.external_resource_url,
                         order_id: createPayment?.order_id,
                         origin: origin,
+                        order_status: status === "approved" ? 2 : 0,
+                        tax_expiration_date: taxDateExpiration
                     };
 
                     if (typeDelivery === 'homedelivery') {
@@ -469,7 +436,7 @@ export class PaymentController extends ResponseData {
                         const responseOrder = { ...order, id: payment?.id };
                         await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
                             "from" : user?._id,                            
-                            "message" : "Se ha creado un nuevo pedido",
+                            "message" : "Cichmex, se ha creado un nuevo pedido",
                             "type" : "order", 
                             "resource_id": order._id,                                                                                                                                                                                          
                         })
@@ -483,7 +450,6 @@ export class PaymentController extends ResponseData {
             }
         } catch (error) {
             console.log("el error xd es: " + error);
-
             next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }
     }
@@ -597,7 +563,7 @@ export class PaymentController extends ResponseData {
             return next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }
     }
-
+    
 
 
 

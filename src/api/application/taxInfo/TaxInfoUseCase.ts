@@ -21,8 +21,9 @@ export class TaxInfoUseCase {
         if(taxInfoUser){
             return new ErrorHandler('Ya cuenta con información registrada', 500);
         }          
-        const facturapiCustomer = await this.facturapiService.createCustomer(body);                   
-        return await this.taxInfoRepository.createOne({...body, facturapi_id: facturapiCustomer.id})
+        const facturapiCustomer = await this.facturapiService.createCustomer(body);   
+        const customer = await this.taxInfoRepository.createOne({...body,user: user_id, facturapi_id: facturapiCustomer.id})
+        return customer                
     }
 
     public async updateTaxInfo(id :any , body: any): Promise<ITaxInfoEntity | ErrorHandler | null> {

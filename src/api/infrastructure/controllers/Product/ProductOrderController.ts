@@ -180,6 +180,8 @@ try {
          }  
         
         response = await this.productOrderUseCase.updateProductOrder(order_id, {
+          deliveryStatus: true,
+          order_status: 3,
           route_detail: {
             guide: guide,
             route_status: 'assigned',
@@ -187,6 +189,7 @@ try {
             user_id: '',
             guide_pdf: updated_guide_pdf
           },
+          
         });
         this.invoke(response, 200, res, "Guía y Compañía de Envío Asignadas Correctamente", next);
       }
@@ -358,7 +361,7 @@ try {
   public async endShippingOrder(req: Request, res: Response, next: NextFunction) {
     const { _id, notes } = req.body;
     try {
-      const response = await this.productOrderUseCase.updateProductOrder(_id, { deliveryStatus: true, 'verification.notes': notes })
+      const response = await this.productOrderUseCase.updateProductOrder(_id, { deliveryStatus: true, 'verification.notes': notes, order_status: 5 })
       this.invoke(response, 201, res, 'Se entregó con éxito', next);
     } catch (error) {
       next(new ErrorHandler('Hubo un error al entregar', 500));
