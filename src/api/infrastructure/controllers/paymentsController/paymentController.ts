@@ -178,9 +178,9 @@ export class PaymentController extends ResponseData {
     }
 
     public async createLMP(req: Request, res: Response, next: NextFunction) {        
-        const { products } = req.body;
+        const { products, redirect_uri } = req.body;
         try {
-            const { response, success, message } = await this.mpService.createLinkMP(products);
+            const { response, success, message } = await this.mpService.createLinkMP(products, redirect_uri);
             if(success){
                 this.invoke(response?.init_point, 201, res, '', next);
             } else {
@@ -195,7 +195,7 @@ export class PaymentController extends ResponseData {
     public async createPaymentMP(req: Request, res: Response, next: NextFunction) {
         const { membership, user, values } = req.body;
         const access_token = config.MERCADOPAGO_TOKEN;
-        const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
+        const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });    
         const payment1 = new Payment(client);
         const uuid4 = uuidv4();
 
@@ -913,7 +913,31 @@ export class PaymentController extends ResponseData {
             next(new ErrorHandler('Hubo un error al rechazar', 500));
         }
     }
+   
+    public async createOrder(req: Request, res: Response, next: NextFunction){
+        const { _id } = req.user;
+        const { branch_id,  address_id, payment_id, productsOrder } = req.body;
+        try{
+            const access_token = config.MERCADOPAGO_TOKEN;
+            const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
+            const payment = new Payment(client);
+            const paymentDetail = await payment.get({ id: payment_id }); 
+            if(!paymentDetail){
+                return next(new ErrorHandler('Error al obtener la información del pago', 500));
+            }
+            const origin = req.headers["x-origin"];  
+            const uuid4 = generateUUID();
+            const order_id = RandomCodeId('CIC')
+            const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+            const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+            const taxDateExpiration = moment(currentDate).add(1, 'month').format("YYYY-MM-DDTHH:mm:ss.SSSZ");            
 
+        }catch(error){
+            next(new ErrorHandler(error instanceof Error ? error.message : 'Error al crear la orden', 500));
+        }
+    
+
+    }
 
 
 

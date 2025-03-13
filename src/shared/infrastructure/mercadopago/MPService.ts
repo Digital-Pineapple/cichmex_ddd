@@ -16,8 +16,8 @@ export class MPService {
         this.payment = new Payment(client);
     }
 
-    async createLinkMP(items: any) {
-        const path = process.env.PATH_MP;
+    async createLinkMP(items: any, redirect_uri: string) {
+        const path = redirect_uri || process.env.PATH_MP;
         const path_notification = process.env.URL_NOTIFICATION;
         const itemsMP = items
         // items.map((item: any) => {
