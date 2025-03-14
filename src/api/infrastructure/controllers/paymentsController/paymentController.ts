@@ -57,6 +57,7 @@ export class PaymentController extends ResponseData {
         this.deleteVoucher = this.deleteVoucher.bind(this)
         this.editVoucher = this.editVoucher.bind(this)
         this.rejectProofOfPayment = this.rejectProofOfPayment.bind(this);
+        this.createOrder = this.createOrder.bind(this);
 
 
     }
@@ -178,8 +179,9 @@ export class PaymentController extends ResponseData {
     }
 
     public async createLMP(req: Request, res: Response, next: NextFunction) {        
-        const { products, redirect_urls } = req.body;
+        const { products, redirect_urls, cart } = req.body;
         try {
+            await this.stockStoreHouseUseCase.validateProductsStock(cart);
             const { response, success, message } = await this.mpService.createLinkMP(products, redirect_urls);
             if(success){
                 this.invoke(response?.init_point, 201, res, '', next);
@@ -930,7 +932,8 @@ export class PaymentController extends ResponseData {
             const order_id = RandomCodeId('CIC')
             const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
             const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
-            const taxDateExpiration = moment(currentDate).add(1, 'month').format("YYYY-MM-DDTHH:mm:ss.SSSZ");            
+            const taxDateExpiration = moment(currentDate).add(1, 'month').format("YYYY-MM-DDTHH:mm:ss.SSSZ"); 
+            this.invoke({ok:true}, 200, res, 'Se pago correctamente', next)           
 
         }catch(error){
             next(new ErrorHandler(error instanceof Error ? error.message : 'Error al crear la orden', 500));
