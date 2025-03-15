@@ -158,57 +158,114 @@ export class ProductController extends ResponseData {
     }
   }
 
-
-
   public async getProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-  
     try {
-      // Obtener el producto y su stock en paralelo
-      const [responseProduct, responseStock] = await Promise.all([
-        this.productUseCase.getProduct(id),
-        this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse)
-      ]);
-  
-      if (!responseProduct) {
-        return next(new ErrorHandler("Producto no encontrado", 404));
+      const responseStock = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse)
+      const responseProduct: any | null = await this.productUseCase.getProduct(id);
+
+      const parsed = responseProduct.toJSON();
+      let response = null;
+      if (responseStock && responseProduct.stock) {
+        response = {
+          ...parsed,
+          stock: responseStock.stock
+        }
+      } else {
+        response = responseProduct
       }
-  
-      const parsedProduct = responseProduct.toJSON();
-      const productStock = responseStock?.stock || 0;
-  
-      // Construir respuesta con stock si existe
-      const productResponse = {
-        ...parsedProduct,
-        stock: responseProduct.stock ? productStock : parsedProduct.stock
-      };
-  
-      // Obtener variantes del producto
-      const variants: any[] = await this.variantProductUseCase.findAllVarinatsByProduct(id);
-  
-      // Procesar variantes con su stock en paralelo
+
+      const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(id);
+      // Espera a que todas las promesas se resuelvan
       const newVariants = await Promise.all(
         variants.map(async (variant: any) => {
           const stockVariant = await this.stockStoreHouseUseCase.getVariantStock(
             variant._id,
             this.onlineStoreHouse
           );
-  
-          return { ...variant._doc, stock: stockVariant?.stock || 0 };
+          
+          return { ...variant._doc, stock: stockVariant.stock };
         })
       );
-  
-      // Generar respuesta completa
-      const AllResponse = { ...productResponse, variants: newVariants };
-  
-      // Enviar respuesta
+      let stock = 0
+      if (Array.isArray(variants) && variants.length <= 0) {
+
+        try {
+          const stockProduct = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse);
+          console.log(stockProduct);
+          
+
+          // Verifica si stockProduct es válido
+          if (stockProduct && typeof stockProduct.stock === 'number') {
+            stock = stockProduct.stock;
+          } else {
+            stock = 0
+          }
+        } catch (error) {
+          console.error('Error al obtener el stock del producto:', error);
+          throw new ErrorHandler('Hubo un error al obtener el stock del producto', 500);
+        }
+      }
+      const AllResponse = { ...response._doc, variants: newVariants, stock: stock }
+
       this.invoke(AllResponse, 200, res, "", next);
-  
     } catch (error) {
-      console.error('Error al consultar la información del producto:', error);
+      console.log(error);
+
+
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
+
+  // public async getProduct(req: Request, res: Response, next: NextFunction) {
+  //   const { id } = req.params;
+  
+  //   try {
+  //     // Obtener el producto y su stock en paralelo
+  //     const [responseProduct, responseStock] = await Promise.all([
+  //       this.productUseCase.getProduct(id),
+  //       this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse)
+  //     ]);
+  
+  //     if (!responseProduct) {
+  //       return next(new ErrorHandler("Producto no encontrado", 404));
+  //     }
+  
+  //     const parsedProduct = responseProduct.toJSON();
+  //     const productStock = responseStock?.stock || 0;
+  
+  //     // Construir respuesta con stock si existe
+  //     const productResponse = {
+  //       ...parsedProduct,
+  //       stock: responseProduct.stock ? productStock : parsedProduct.stock
+  //     };
+  
+  //     // Obtener variantes del producto
+  //     const variants: any[] = await this.variantProductUseCase.findAllVarinatsByProduct(id);
+  
+  //     // Procesar variantes con su stock en paralelo
+  //     const newVariants = await Promise.all(
+  //       variants.map(async (variant: any) => {
+  //         const stockVariant = await this.stockStoreHouseUseCase.getVariantStock(
+  //           variant._id,
+  //           this.onlineStoreHouse
+  //         );
+  
+  //         return { ...variant._doc, stock: stockVariant?.stock || 0 };
+  //       })
+  //     );
+  
+  //     // Generar respuesta completa
+  //     const AllResponse = { ...productResponse, variants: newVariants };
+  
+  //     // Enviar respuesta
+  //     this.invoke(AllResponse, 200, res, "", next);
+  
+  //   } catch (error) {
+  //     console.error('Error al consultar la información del producto:', error);
+  //     next(new ErrorHandler("Hubo un error al consultar la información", 500));
+  //   }
+  // }
   
 
 

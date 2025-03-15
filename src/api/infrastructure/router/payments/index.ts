@@ -84,12 +84,15 @@ paymentRouter
     .post('/transfer-payment', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.transferPayment)
     // .post('/Products-PayLocation', paymentController.createPaymentProductMPLocation)
     .post('/success', paymentController.createTicket)
+    .post('/successwebhook', paymentController.webhookMP)
     .post('/Mem-Payment-success', paymentController.PaymentSuccess)
     .post("/validatePaymentProof", userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),ActivityLogger, paymentController.validateProofOfPayment)
     // .post('/ticket', paymentController)
     .post('/deleteTicket', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]),ActivityLogger, paymentController.deleteVoucher)
     .put('/updateTicket', paymentValidation.ImageValidation, userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]),ActivityLogger, paymentController.editVoucher)
     .delete('/:id', paymentController.deletePayment)
+    // .post('/createOrder', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.createOrder)
+    .post('/webhook', paymentController.webhook)
 
 
 export default paymentRouter;

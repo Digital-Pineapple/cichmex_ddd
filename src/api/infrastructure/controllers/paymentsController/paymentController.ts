@@ -19,7 +19,7 @@ import { MomentService } from '../../../../shared/infrastructure/moment/MomentSe
 import { PaymentEntity, PaymentVoucher } from '../../../domain/payments/PaymentEntity';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import mongoose from 'mongoose';
-import { getProperties } from '../../../../helpers/products';
+import { getProperties, parseProductsToMercadoPago } from '../../../../helpers/products';
 import { NotificationUseCase } from '../../../application/Notifications/NotificationUseCase';
 
 
@@ -57,7 +57,9 @@ export class PaymentController extends ResponseData {
         this.deleteVoucher = this.deleteVoucher.bind(this)
         this.editVoucher = this.editVoucher.bind(this)
         this.rejectProofOfPayment = this.rejectProofOfPayment.bind(this);
-
+        // this.createOrder = this.createOrder.bind(this);
+        this.webhook = this.webhook.bind(this);
+        this.webhookMP = this.webhookMP.bind(this)
 
     }
 
@@ -177,10 +179,25 @@ export class PaymentController extends ResponseData {
         }
     }
 
-    public async createLMP(req: Request, res: Response, next: NextFunction) {
-        const { products, user_id } = req.body;
-        try {
-            const { response, success, message } = await this.mpService.createLinkMP(products);
+    public async createLMP(req: Request, res: Response, next: NextFunction) {        
+        const { products, redirect_urls, cart, total, subtotal, shipping_cost, address_id, branch_id, user_id, type_delivery, discount, coupon_id } = req.body;
+        const origin = req.headers["x-origin"];              
+        try {            
+            const metadata = {
+                products: cart,
+                total: total, 
+                subtotal: subtotal,
+                shipping_cost: shipping_cost, 
+                address_id: address_id, 
+                branch_id: branch_id, 
+                user_id: user_id, 
+                type_delivery: type_delivery, 
+                discount: discount,
+                coupon_id: coupon_id,
+                origin : origin
+            }
+            await this.stockStoreHouseUseCase.validateProductsStock(cart);
+            const { response, success, message } = await this.mpService.createLinkMP(products, redirect_urls, metadata);
             if(success){
                 this.invoke(response?.init_point, 201, res, '', next);
             } else {
@@ -195,7 +212,7 @@ export class PaymentController extends ResponseData {
     public async createPaymentMP(req: Request, res: Response, next: NextFunction) {
         const { membership, user, values } = req.body;
         const access_token = config.MERCADOPAGO_TOKEN;
-        const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
+        const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });    
         const payment1 = new Payment(client);
         const uuid4 = uuidv4();
 
@@ -324,46 +341,15 @@ export class PaymentController extends ResponseData {
         const order_id = RandomCodeId('CIC')
         const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
         const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
-        // console.log("the access token is:" + access_token);               
-        const productToSend = productsOrder.map((item: any) => {
-            const variant = item?.variant ?? null;
-            const product = item.item;
-            const quantity = item.quantity;
-            const isVariant = Boolean(variant);
-            const variantPrice = variant?.porcentDiscount ? variant?.discountPrice : variant?.price;
-            const productPrice = product?.porcentDiscount ? product?.discountPrice : product?.price; 
-            const newItem = {
-              id:  product._id,
-              title: product.name + (isVariant ? getProperties(variant?.attributes) : ""),
-              unit_price: isVariant ? variantPrice : productPrice,
-              picture_url:  isVariant ? variant.images[0]?.url : product.images[0]?.url,
-              quantity: quantity
-            };
-            return  newItem           
-        });                         
+        const taxDateExpiration = moment(currentDate).add(1, 'month').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+        // console.log("the access token is:" + access_token);            
+        const productToSend =  parseProductsToMercadoPago(productsOrder);                             
         try {
-            await Promise.all(
-                productsOrder.map(async (product: any) => {
-                    let available;                    
-                    const isVariant = Boolean(product?.variant ?? null);
-                    let name = product.item.name;                     
-                    if(isVariant){
-                       available = await this.stockStoreHouseUseCase.getVariantStock(product.variant._id)                           
-                       name = name + getProperties(product.variant.attributes)
-                    }else{
-                        available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);                          
-                    }
-                    if (!available) {
-                        return next(new ErrorHandler(`Sin existencias del producto: ${name}`, 500))
-                    }
-                })
-            );
+            await this.stockStoreHouseUseCase.validateProductsStock(productsOrder);          
             const { formData, selectedPaymentMethod } = infoPayment;
             const metadata1 = formData?.metadata;
             const point = metadata1?.payment_point || null;
-            const path_notification = `${process.env.URL_NOTIFICATION}api/payments/Mem-Payment-success`;
-            // console.log("mercado pago form data: " + JSON.stringify(infoPayment, null, 2));
-            
+            const path_notification = `${process.env.URL_NOTIFICATION}api/payments/Mem-Payment-success`;                        
             const body1: any = {
                 transaction_amount: formData.transaction_amount,
                 payment_method_id: formData.payment_method_id,
@@ -395,14 +381,10 @@ export class PaymentController extends ResponseData {
              const payment = await payment1.create({
                     requestOptions: { idempotencyKey: uuid4 },
                     body: body1,
-             });                      
-            // console.log("the payment says: " + JSON.stringify(payment));
+             });                                  
             
             const { additional_info, id, status, transaction_details, payment_method } = payment
-            if(status === "rejected"){
-                return next(new ErrorHandler('El pago fue rechazado ;c', 400));
-            }
-            
+            if(status === "rejected"){ return next(new ErrorHandler('El pago fue rechazado ;c', 400)) }            
             if (payment) {
                 const createPayment: any = await this.paymentUseCase.createNewPayment({
                     uuid: uuid4,
@@ -428,6 +410,8 @@ export class PaymentController extends ResponseData {
                         download_ticket: payment?.transaction_details?.external_resource_url,
                         order_id: createPayment?.order_id,
                         origin: origin,
+                        order_status: status === "approved" ? 2 : 0,
+                        tax_expiration_date: taxDateExpiration
                     };
 
                     if (typeDelivery === 'homedelivery') {
@@ -469,7 +453,7 @@ export class PaymentController extends ResponseData {
                         const responseOrder = { ...order, id: payment?.id };
                         await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
                             "from" : user?._id,                            
-                            "message" : "Se ha creado un nuevo pedido",
+                            "message" : "Cichmex, se ha creado un nuevo pedido",
                             "type" : "order", 
                             "resource_id": order._id,                                                                                                                                                                                          
                         })
@@ -483,18 +467,20 @@ export class PaymentController extends ResponseData {
             }
         } catch (error) {
             console.log("el error xd es: " + error);
-
             next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
         }
     }
 
     public async transferPayment(req: Request, res: Response, next: NextFunction) {
-        const { branch_id, productsOrder, location, typeDelivery, shipping_cost, discount, subTotal, total } = req.body;
+        const { branch_id, productsOrder, location, typeDelivery, shipping_cost, discount, subTotal, total, coupon } = req.body;
         const uuid4 = generateUUID();
         const order_id = RandomCodeId('CIC');
         const user = req.user;
         const origin = req.headers["x-origin"];                
         try {
+            if(!typeDelivery) return next(new ErrorHandler(`tipo de entrega es requerido`, 404))           
+            if(typeDelivery === "homedelivery" && !location) return next(new ErrorHandler(`id de direccion requerida`, 404))           
+            if(typeDelivery === "pickup" && !branch_id) return next(new ErrorHandler(`id de sucursal requerida`, 404))           
             // Verificación de existencia de productos
             await Promise.all(
                 productsOrder.map(async (product: any) => {
@@ -542,12 +528,15 @@ export class PaymentController extends ResponseData {
                 order_id: order_id,
                 origin: origin,
             };
-
+            if(coupon){
+                values1.coupon = coupon
+            }
             // Configuración de la entrega según el tipo
             if (typeDelivery === 'homedelivery') {
                 values1.deliveryLocation = location;
                 values1["typeDelivery"] = "homedelivery";
-            } else if (typeDelivery === 'pickup') {
+            } 
+            if (typeDelivery === 'pickup') {
                 values1.branch = branch_id;
                 values1.point_pickup_status = false;
                 values1["typeDelivery"] = "pickup";
@@ -594,12 +583,25 @@ export class PaymentController extends ResponseData {
 
         } catch (error) {
             console.error('Error al crear el pago en la base de datos:', error);
-            return next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
+            if (error instanceof Error) {
+                return next(new ErrorHandler(`${error.message}`, 500));
+            } else {
+                return next(new ErrorHandler('Error al crear ', 500));
+            }
         }
     }
+    
 
-
-
+    public async webhookMP(req: Request, res: Response, next: NextFunction) {        
+        try {            
+            const info: any = await this.mpService.reciveWebHook(req);                                    
+                   
+            res.status(200).send('OK');
+            this.invoke(info, 201, res, 'Pago validado', next);
+        } catch (error) {
+            next(new ErrorHandler('Error', 500));
+        }
+    }
 
     public async createTicket(req: Request, res: Response, next: NextFunction) {
 
@@ -947,8 +949,67 @@ export class PaymentController extends ResponseData {
             next(new ErrorHandler('Hubo un error al rechazar', 500));
         }
     }
-
-
-
-
+   
+    public async webhook(req: Request, res: Response, next: NextFunction){                
+        try {
+            const paymentId = req.body.data && req.body.data.id;
+            if (!paymentId) {
+                return next(new ErrorHandler(`id de pago no encontrado`, 404))           
+            }
+            const access_token = config.MERCADOPAGO_TOKEN;
+            const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
+            const paymentClient = new Payment(client);
+            const payment = await paymentClient.get({ id: paymentId });                                                                                                     
+            if (payment.metadata) {
+              const metadata = payment.metadata;
+              console.log('Metadata recibida:', metadata);
+              
+            const uuid4 = generateUUID();
+            const order_id = RandomCodeId('CIC')
+            const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+            const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+            const taxDateExpiration = moment(currentDate).add(1, 'month').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+            const orderPayload: any = {                                
+                products: metadata.products,
+                discount: metadata.discount,
+                subTotal: metadata.subtotal,
+                total: metadata.total,
+                user_id: metadata.user_id,
+                shipping_cost: metadata.shipping_cost,
+                paymentType: payment,
+                payment_status: payment?.status,
+                download_ticket: payment?.transaction_details?.external_resource_url,                
+                origin: origin,
+                order_status: payment.status === "approved" ? 2 : 0,
+                tax_expiration_date: taxDateExpiration
+            }; 
+            const order: any | null = await this.productOrderUseCase.createProductOrder(orderPayload);
+            const { additional_info, id, status, transaction_details, payment_method } = payment
+            const createPayment: any = await this.paymentUseCase.createNewPayment({
+                uuid: uuid4,
+                MP_info: { additional_info, id, status, transaction_details, payment_method },
+                user_id: metadata.user_id,
+                payment_status: payment?.status,
+                system: "CICHMEX",
+                order_id: order_id
+            });
+            const responseOrder = { ...order, id: payment?.id };
+            await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
+                "from" : metadata.user_id,                            
+                "message" : "Cichmex, se ha creado un nuevo pedido",
+                "type" : "order", 
+                "resource_id": order._id,                                                                                                                                                                                          
+            })
+            this.invoke(responseOrder, 200, res, 'Se pagó con éxito', next);                
+                      
+            } 
+          } catch (error) {
+            console.error('Error en el webhook:', error);
+            if (error instanceof Error) {
+                return next(new ErrorHandler(`${error.message}`, 500));
+            } else {
+                return next(new ErrorHandler('Error al crear la orden', 500));
+            }
+          }
+    }
 }

@@ -1,6 +1,16 @@
 import mongoose, { model, Schema } from "mongoose";
 import { ProductOrderEntity } from "../../../domain/product/ProductEntity";
-
+/*
+order_status : {
+ 0: 'pendiente pago',
+ 1: 'verificar pago',
+ 2: 'preparar orden',
+ 3: 'enviado',
+ 4: 'en punto entrega,
+ 5: 'entregado',
+ 6: 'cancelado',  
+}
+*/
 const ProductOrderSchema = new Schema<ProductOrderEntity>(
   {
     _id: {
@@ -36,11 +46,11 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
     },
     subTotal: {
       type: Number,
-      required: false,
+      required: true,
     },
     total: {
       type: Number,
-      required: false,
+      required: true,
     },
     shipping_cost: {
       type: Number,
@@ -99,7 +109,7 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
     typeDelivery: {
       type: String,
       enum: ['homedelivery', 'pickup'],
-      required: false
+      required: true
     },
     origin: {
       type: String,
@@ -121,8 +131,12 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
     },
     order_status: {
       type: Number,
-      required: true,
+      required: true,      
       default: 0,
+    },
+    coupon: {
+      type: mongoose.Types.ObjectId,
+      required: false,
     }     
   },
   {

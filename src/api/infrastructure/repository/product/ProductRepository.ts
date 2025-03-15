@@ -7,7 +7,7 @@ import { ObjectId } from 'mongodb';
 import { PopulateProductCategory, PopulateProductSubCategory } from '../../../../shared/domain/PopulateInterfaces';
 
 export class ProductRepository extends MongoRepository implements ProductConfig  {
-    private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634";
+    private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634";    
     constructor(protected ProductModel: Model<any>) {
         super(ProductModel);
     }
