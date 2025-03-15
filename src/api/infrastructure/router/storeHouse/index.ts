@@ -32,7 +32,7 @@ const storeHouseValidations = new StoreHouseValidations()
 
 storeHouseRouter
 
-    .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']),storeHouseController.getAllStoreHouses)
+    .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]),storeHouseController.getAllStoreHouses)
     .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']),storeHouseController.getOneStoreHouse)
     .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']),storeHouseValidations.imagesValidation, ActivityLogger, storeHouseController.createStoreHouse)
     .put('/update/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']),storeHouseValidations.imagesValidation, ActivityLogger, storeHouseController.updateStoreHouse)

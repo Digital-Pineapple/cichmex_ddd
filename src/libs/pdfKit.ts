@@ -94,6 +94,7 @@ doc.text(`${deliveryLocation(orderData)}`, column2X , doc.y);
 }
 
 function createTable(doc: PDFDocument, products: any[], orderData: any) {
+
     const table = {
         title: "Productos",
         subtitle: "Productos del pedido",
@@ -113,7 +114,7 @@ function createTable(doc: PDFDocument, products: any[], orderData: any) {
         y:180,
         x:50
     });
-
+    
     const tableBottomPosition = doc.y; // Obtiene la posición Y después de la tabla
     doc.text(`Descuento: $${orderData.discount ? orderData?.discount?.toFixed(2) : '0.00'}`, { align: 'center' });
     doc.text(`SubTotal: $${orderData?.subTotal.toFixed(2)}`, { align: 'center' });

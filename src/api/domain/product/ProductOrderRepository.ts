@@ -10,7 +10,7 @@ export interface ProductOrderRepository extends MongoRepository {
 
      getPOExpired(): Promise<ProductOrderEntity[] | ErrorHandler| null > 
      
-     findAllProductOrders(populateConfig1?:any, populateConfig2?:any,  populateConfig3?: any): Promise<ProductOrderEntity[] | ErrorHandler | null> 
+     findAllProductOrders(populateConfig1?:any, populateConfig2?:any,  populateConfig3?: any, populateConfig4?: any): Promise<ProductOrderEntity[] | ErrorHandler | null> 
 
      getPaidProductOrders(): Promise<ProductOrderEntity[] | ErrorHandler | null> 
 

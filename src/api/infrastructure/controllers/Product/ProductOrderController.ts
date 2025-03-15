@@ -91,18 +91,19 @@ export class ProductOrderController extends ResponseData {
 
 
   public async paidProductOrders(req: Request, res: Response, next: NextFunction) {
-
     try {
       const response = await this.productOrderUseCase.ProductOrdersPaid()
       this.invoke(response, 200, res, "", next);
     } catch (error) {
+      console.log(error);
+      
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
   public async paidAndFillProductOrders(req: Request, res: Response, next: NextFunction) {
     try {
-      const response = await this.productOrderUseCase.ProductOrdersPaidAndFill()
-      this.invoke(response, 200, res, "", next);
+        const getPo = await this.productOrderUseCase.ProductOrdersPaidAndFill()
+        this.invoke(getPo, 200, res, '', next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }

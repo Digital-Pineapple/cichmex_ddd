@@ -18,10 +18,10 @@ const userValidations = new UserValidations();
 
 notificationsRouter
     .get('/testingSocket', notificationController.sendEvent)
-    .get('/user', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN','SUPER-ADMIN','CUSTOMER']), notificationController.getByUser)
+    .get('/user', userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN','SUPER-ADMIN','CUSTOMER', "CARRIER-DRIVER", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), notificationController.getByUser)
     .delete('/:id', notificationController.delete)
     .post('/', notificationController.create)    
-    .put('/:id/markAsRead',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN','SUPER-ADMIN','CUSTOMER']), notificationController.markAsRead)   
-    .put('/markAllAsReaded',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN','SUPER-ADMIN','CUSTOMER']), notificationController.markAllAsReaded)   
+    .put('/:id/markAsRead',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN','SUPER-ADMIN','CUSTOMER', "CARRIER-DRIVER", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), notificationController.markAsRead)   
+    .put('/markAllAsReaded',userValidations.authTypeUserValidation(['SUPER-ADMIN','ADMIN','SUPER-ADMIN','CUSTOMER', "CARRIER-DRIVER", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), notificationController.markAllAsReaded)   
     
     export default notificationsRouter;
