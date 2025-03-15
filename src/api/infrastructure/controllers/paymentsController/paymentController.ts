@@ -58,7 +58,8 @@ export class PaymentController extends ResponseData {
         this.editVoucher = this.editVoucher.bind(this)
         this.rejectProofOfPayment = this.rejectProofOfPayment.bind(this);
         this.createOrder = this.createOrder.bind(this);
-
+        this.webhook = this.webhook.bind(this);
+        this.webhookMP = this.webhookMP.bind(this)
 
     }
 
@@ -179,8 +180,21 @@ export class PaymentController extends ResponseData {
     }
 
     public async createLMP(req: Request, res: Response, next: NextFunction) {        
-        const { products, redirect_urls, cart } = req.body;
-        try {
+        const { products, redirect_urls, cart, total, subtotal, shipping_cost, address_id, branch_id, user_id, type_delivery, discount, coupon_id } = req.body;
+        console.log(req.body);
+        try {            
+            // const payload = {
+            //     products: cart,
+            //     total: total, 
+            //     subtotal: subtotal,
+            //     shipping_cost: shipping_cost, 
+            //     address_id: address_id, 
+            //     branch_id: branch_id, 
+            //     user_id: user_id, 
+            //     type_delivery: type_delivery, 
+            //     discount: discount,
+            //     coupon_id: coupon_id
+            // }
             await this.stockStoreHouseUseCase.validateProductsStock(cart);
             const { response, success, message } = await this.mpService.createLinkMP(products, redirect_urls);
             if(success){
@@ -457,12 +471,15 @@ export class PaymentController extends ResponseData {
     }
 
     public async transferPayment(req: Request, res: Response, next: NextFunction) {
-        const { branch_id, productsOrder, location, typeDelivery, shipping_cost, discount, subTotal, total } = req.body;
+        const { branch_id, productsOrder, location, typeDelivery, shipping_cost, discount, subTotal, total, coupon } = req.body;
         const uuid4 = generateUUID();
         const order_id = RandomCodeId('CIC');
         const user = req.user;
         const origin = req.headers["x-origin"];                
         try {
+            if(!typeDelivery) return next(new ErrorHandler(`tipo de entrega es requerido`, 404))           
+            if(typeDelivery === "homedelivery" && !location) return next(new ErrorHandler(`id de direccion requerida`, 404))           
+            if(typeDelivery === "pickup" && !branch_id) return next(new ErrorHandler(`id de sucursal requerida`, 404))           
             // Verificación de existencia de productos
             await Promise.all(
                 productsOrder.map(async (product: any) => {
@@ -510,12 +527,15 @@ export class PaymentController extends ResponseData {
                 order_id: order_id,
                 origin: origin,
             };
-
+            if(coupon){
+                values1.coupon = coupon
+            }
             // Configuración de la entrega según el tipo
             if (typeDelivery === 'homedelivery') {
                 values1.deliveryLocation = location;
                 values1["typeDelivery"] = "homedelivery";
-            } else if (typeDelivery === 'pickup') {
+            } 
+            if (typeDelivery === 'pickup') {
                 values1.branch = branch_id;
                 values1.point_pickup_status = false;
                 values1["typeDelivery"] = "pickup";
@@ -567,7 +587,16 @@ export class PaymentController extends ResponseData {
     }
     
 
-
+    public async webhookMP(req: Request, res: Response, next: NextFunction) {        
+        try {            
+            const info: any = await this.mpService.reciveWebHook(req);                                    
+                   
+            res.status(200).send('OK');
+            this.invoke(info, 201, res, 'Pago validado', next);
+        } catch (error) {
+            next(new ErrorHandler('Error', 500));
+        }
+    }
 
     public async createTicket(req: Request, res: Response, next: NextFunction) {
 
@@ -918,23 +947,53 @@ export class PaymentController extends ResponseData {
    
     public async createOrder(req: Request, res: Response, next: NextFunction){
         const { _id } = req.user;
-        const { branch_id,  address_id, payment_id, productsOrder } = req.body;
+        const { payment_id, branch_id, productsOrder, location, typeDelivery, subtotal, shipping_cost, discount, total } = req.body;        
         try{
             const access_token = config.MERCADOPAGO_TOKEN;
             const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
-            const payment = new Payment(client);
-            const paymentDetail = await payment.get({ id: payment_id }); 
-            if(!paymentDetail){
-                return next(new ErrorHandler('Error al obtener la información del pago', 500));
-            }
+            const paymentClient = new Payment(client);
+            const payment = await paymentClient.get({ id: payment_id });             
+            if(!payment) return next(new ErrorHandler('Error al obtener la información del pago', 500));            
+            if(payment.status === "rejected") return next(new ErrorHandler('El pago fue rechazado ;c', 400));   
+
             const origin = req.headers["x-origin"];  
             const uuid4 = generateUUID();
             const order_id = RandomCodeId('CIC')
             const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
             const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
-            const taxDateExpiration = moment(currentDate).add(1, 'month').format("YYYY-MM-DDTHH:mm:ss.SSSZ"); 
-            this.invoke({ok:true}, 200, res, 'Se pago correctamente', next)           
-
+            const taxDateExpiration = moment(currentDate).add(1, 'month').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+            const orderPayload: any = {                                
+                products: productsOrder,
+                discount: discount,
+                subTotal: subtotal,
+                total: total,
+                user_id: _id,
+                shipping_cost: shipping_cost,
+                paymentType: payment,
+                payment_status: payment?.status,
+                download_ticket: payment?.transaction_details?.external_resource_url,                
+                origin: origin,
+                order_status: payment.status === "approved" ? 2 : 0,
+                tax_expiration_date: taxDateExpiration
+            }; 
+            const order: any | null = await this.productOrderUseCase.createProductOrder(orderPayload);
+            const { additional_info, id, status, transaction_details, payment_method } = payment
+            const createPayment: any = await this.paymentUseCase.createNewPayment({
+                uuid: uuid4,
+                MP_info: { additional_info, id, status, transaction_details, payment_method },
+                user_id: _id,
+                payment_status: payment?.status,
+                system: "CICHMEX",
+                order_id: order_id
+            });
+            const responseOrder = { ...order, id: payment?.id };
+            await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
+                "from" : _id,                            
+                "message" : "Cichmex, se ha creado un nuevo pedido",
+                "type" : "order", 
+                "resource_id": order._id,                                                                                                                                                                                          
+            })
+            this.invoke(responseOrder, 200, res, 'Se pagó con éxito', next);                    
         }catch(error){
             next(new ErrorHandler(error instanceof Error ? error.message : 'Error al crear la orden', 500));
         }
@@ -942,6 +1001,11 @@ export class PaymentController extends ResponseData {
 
     }
 
-
-
+    public async webhook(req: Request, res: Response, next: NextFunction){                
+        try{
+                          
+        }catch(error){
+            next(new ErrorHandler(error instanceof Error ? error.message : 'Error al crear la orden', 500));
+        }
+    }
 }

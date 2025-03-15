@@ -96,6 +96,7 @@ export interface ProductOrderEntity {
   facturapi_tax_id?: string;
   tax_expiration_date?: Date;
   order_status?: Number;
+  coupon?: ObjectId;
 }
 
 export interface ILocationOrder {

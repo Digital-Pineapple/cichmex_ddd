@@ -46,11 +46,11 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
     },
     subTotal: {
       type: Number,
-      required: false,
+      required: true,
     },
     total: {
       type: Number,
-      required: false,
+      required: true,
     },
     shipping_cost: {
       type: Number,
@@ -109,7 +109,7 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
     typeDelivery: {
       type: String,
       enum: ['homedelivery', 'pickup'],
-      required: false
+      required: true
     },
     origin: {
       type: String,
@@ -133,6 +133,10 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       type: Number,
       required: true,      
       default: 0,
+    },
+    coupon: {
+      type: mongoose.Types.ObjectId,
+      required: false,
     }     
   },
   {
