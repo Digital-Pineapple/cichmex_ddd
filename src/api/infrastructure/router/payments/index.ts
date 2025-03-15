@@ -91,7 +91,7 @@ paymentRouter
     .post('/deleteTicket', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]),ActivityLogger, paymentController.deleteVoucher)
     .put('/updateTicket', paymentValidation.ImageValidation, userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]),ActivityLogger, paymentController.editVoucher)
     .delete('/:id', paymentController.deletePayment)
-    .post('/createOrder', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.createOrder)
+    // .post('/createOrder', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.createOrder)
     .post('/webhook', paymentController.webhook)
 
 

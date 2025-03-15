@@ -16,7 +16,7 @@ export class MPService {
         this.payment = new Payment(client);
     }
 
-    async createLinkMP(items: any, redirect_urls: any) {
+    async createLinkMP(items: any, redirect_urls: any, metadata: any) {
         // const path = redirect_uri || process.env.PATH_MP;
         const path_notification = process.env.URL_NOTIFICATION;
         const itemsMP = items 
@@ -28,6 +28,7 @@ export class MPService {
                     back_urls: redirect_urls,
                     // auto_return: "approved",
                     notification_url: `${path_notification}/api/payments/successwebhook`,
+                    metadata: metadata
                 },
             });
 

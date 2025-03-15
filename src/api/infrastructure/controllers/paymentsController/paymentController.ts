@@ -57,7 +57,7 @@ export class PaymentController extends ResponseData {
         this.deleteVoucher = this.deleteVoucher.bind(this)
         this.editVoucher = this.editVoucher.bind(this)
         this.rejectProofOfPayment = this.rejectProofOfPayment.bind(this);
-        this.createOrder = this.createOrder.bind(this);
+        // this.createOrder = this.createOrder.bind(this);
         this.webhook = this.webhook.bind(this);
         this.webhookMP = this.webhookMP.bind(this)
 
@@ -181,22 +181,23 @@ export class PaymentController extends ResponseData {
 
     public async createLMP(req: Request, res: Response, next: NextFunction) {        
         const { products, redirect_urls, cart, total, subtotal, shipping_cost, address_id, branch_id, user_id, type_delivery, discount, coupon_id } = req.body;
-        console.log(req.body);
+        const origin = req.headers["x-origin"];              
         try {            
-            // const payload = {
-            //     products: cart,
-            //     total: total, 
-            //     subtotal: subtotal,
-            //     shipping_cost: shipping_cost, 
-            //     address_id: address_id, 
-            //     branch_id: branch_id, 
-            //     user_id: user_id, 
-            //     type_delivery: type_delivery, 
-            //     discount: discount,
-            //     coupon_id: coupon_id
-            // }
+            const metadata = {
+                products: cart,
+                total: total, 
+                subtotal: subtotal,
+                shipping_cost: shipping_cost, 
+                address_id: address_id, 
+                branch_id: branch_id, 
+                user_id: user_id, 
+                type_delivery: type_delivery, 
+                discount: discount,
+                coupon_id: coupon_id,
+                origin : origin
+            }
             await this.stockStoreHouseUseCase.validateProductsStock(cart);
-            const { response, success, message } = await this.mpService.createLinkMP(products, redirect_urls);
+            const { response, success, message } = await this.mpService.createLinkMP(products, redirect_urls, metadata);
             if(success){
                 this.invoke(response?.init_point, 201, res, '', next);
             } else {
@@ -582,7 +583,11 @@ export class PaymentController extends ResponseData {
 
         } catch (error) {
             console.error('Error al crear el pago en la base de datos:', error);
-            return next(new ErrorHandler('Error al crear el pago en la base de datos', 500));
+            if (error instanceof Error) {
+                return next(new ErrorHandler(`${error.message}`, 500));
+            } else {
+                return next(new ErrorHandler('Error al crear ', 500));
+            }
         }
     }
     
@@ -945,30 +950,32 @@ export class PaymentController extends ResponseData {
         }
     }
    
-    public async createOrder(req: Request, res: Response, next: NextFunction){
-        const { _id } = req.user;
-        const { payment_id, branch_id, productsOrder, location, typeDelivery, subtotal, shipping_cost, discount, total } = req.body;        
-        try{
+    public async webhook(req: Request, res: Response, next: NextFunction){                
+        try {
+            const paymentId = req.body.data && req.body.data.id;
+            if (!paymentId) {
+                return next(new ErrorHandler(`id de pago no encontrado`, 404))           
+            }
             const access_token = config.MERCADOPAGO_TOKEN;
             const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
             const paymentClient = new Payment(client);
-            const payment = await paymentClient.get({ id: payment_id });             
-            if(!payment) return next(new ErrorHandler('Error al obtener la información del pago', 500));            
-            if(payment.status === "rejected") return next(new ErrorHandler('El pago fue rechazado ;c', 400));   
-
-            const origin = req.headers["x-origin"];  
+            const payment = await paymentClient.get({ id: paymentId });                                                                                                     
+            if (payment.metadata) {
+              const metadata = payment.metadata;
+              console.log('Metadata recibida:', metadata);
+              
             const uuid4 = generateUUID();
             const order_id = RandomCodeId('CIC')
             const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
             const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
             const taxDateExpiration = moment(currentDate).add(1, 'month').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
             const orderPayload: any = {                                
-                products: productsOrder,
-                discount: discount,
-                subTotal: subtotal,
-                total: total,
-                user_id: _id,
-                shipping_cost: shipping_cost,
+                products: metadata.products,
+                discount: metadata.discount,
+                subTotal: metadata.subtotal,
+                total: metadata.total,
+                user_id: metadata.user_id,
+                shipping_cost: metadata.shipping_cost,
                 paymentType: payment,
                 payment_status: payment?.status,
                 download_ticket: payment?.transaction_details?.external_resource_url,                
@@ -981,31 +988,28 @@ export class PaymentController extends ResponseData {
             const createPayment: any = await this.paymentUseCase.createNewPayment({
                 uuid: uuid4,
                 MP_info: { additional_info, id, status, transaction_details, payment_method },
-                user_id: _id,
+                user_id: metadata.user_id,
                 payment_status: payment?.status,
                 system: "CICHMEX",
                 order_id: order_id
             });
             const responseOrder = { ...order, id: payment?.id };
             await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
-                "from" : _id,                            
+                "from" : metadata.user_id,                            
                 "message" : "Cichmex, se ha creado un nuevo pedido",
                 "type" : "order", 
                 "resource_id": order._id,                                                                                                                                                                                          
             })
-            this.invoke(responseOrder, 200, res, 'Se pagó con éxito', next);                    
-        }catch(error){
-            next(new ErrorHandler(error instanceof Error ? error.message : 'Error al crear la orden', 500));
-        }
-    
-
-    }
-
-    public async webhook(req: Request, res: Response, next: NextFunction){                
-        try{
-                          
-        }catch(error){
-            next(new ErrorHandler(error instanceof Error ? error.message : 'Error al crear la orden', 500));
-        }
+            this.invoke(responseOrder, 200, res, 'Se pagó con éxito', next);                
+                      
+            } 
+          } catch (error) {
+            console.error('Error en el webhook:', error);
+            if (error instanceof Error) {
+                return next(new ErrorHandler(`${error.message}`, 500));
+            } else {
+                return next(new ErrorHandler('Error al crear la orden', 500));
+            }
+          }
     }
 }
