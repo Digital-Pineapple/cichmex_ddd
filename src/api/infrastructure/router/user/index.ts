@@ -49,7 +49,7 @@ userRouter
     .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "PARTNER", "CUSTOMER"]), userController.getUser)
     .get('/allInfo/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN", "WAREHOUSE-MANAGER"]), userController.getAllInfoUser)
     .get('/getVerifyEmail/:id', userController.getVerifyEmail)
-    .get('/carrier-driver/all',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), userController.getAllCarrierDrivers)
+    .get('/carrier-driver/all',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN", "WAREHOUSE-MANAGER"]), userController.getAllCarrierDrivers)
     .get('/warehouseman/all',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), userController.getAllWarehouseman)
     .post('/send-code', userController.sendCode)
     .post ('/whatsapp/send-code', userController.sendCodeWhatsapp)
@@ -74,7 +74,7 @@ userRouter
     .put('/update/address/:id', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.updateAddress)
     .put('/warehouseman/update/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "WAREHOUSE-MANAGER"]),ActivityLogger, userController.UpdateWarehouseman)
     .get('/addresses/ok', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.getAddresses) 
-    .delete('/carrier-driver/:id', userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN"]), userController.deleteCarrierDriver)
+    .delete('/carrier-driver/:id', userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN", "WAREHOUSE-MANAGER"]), userController.deleteCarrierDriver)
 
 
 export default userRouter;

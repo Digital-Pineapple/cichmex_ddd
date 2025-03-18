@@ -97,6 +97,7 @@ export interface ProductOrderEntity {
   tax_expiration_date?: Date;
   order_status?: Number;
   coupon?: ObjectId;
+  verification?: VerificationDetail 
 }
 
 export interface ILocationOrder {
@@ -152,4 +153,8 @@ export interface PORouteDetail {
   guide?: string,
   shipping_company?: string
   guide_pdf ?: string,
+}
+export interface VerificationDetail {
+  verification_code: string,
+  verification_status: boolean,
 }

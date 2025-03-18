@@ -158,6 +158,8 @@ try {
 
   this.invoke(response, 200, res, "", next);
 } catch (error) {
+  console.log(error,'info');
+  
   next(new ErrorHandler("Hubo un error al consultar la información", 500));
 }
 }
@@ -183,7 +185,7 @@ try {
         
         response = await this.productOrderUseCase.updateProductOrder(order_id, {
           deliveryStatus: true,
-          order_status: 3,
+          order_status: 8,
           route_detail: {
             guide: guide,
             route_status: 'assigned',
@@ -264,7 +266,7 @@ try {
     const {id} = req.params
     const code = RandomCodeShipping()
     try {
-      const response: any | null = await this.productOrderUseCase.updateProductOrder(id, {route_detail: { route_status: 'assigned', user: user._id }, verification: { verification_code: code, verification_status: false } })
+      const response: any | null = await this.productOrderUseCase.updateProductOrder(id, {order_status: 4 , verification: { verification_code: code, verification_status: false } })
 
       this.invoke(response, 200, res, "Paquete tomado exitosamente", next);
     } catch (error) {
@@ -398,7 +400,7 @@ try {
     const { id } = req.params;
     const { storeHouse } = req.body;
     try {
-      const response = await this.productOrderUseCase.startFillProductOrder(id, { storeHouseStatus: storeHouse })
+      const response = await this.productOrderUseCase.startFillProductOrder(id, { storeHouseStatus: storeHouse, order_status:3 })
 
       this.invoke(response, 201, res, 'Orden surtida con éxito', next);
     } catch (error) {
@@ -627,6 +629,7 @@ const numericLocation = convertToNumericLocation(coords);
         ...points1,  // Puntos intermedios
         numericLocation,
       ];
+      
        const distanceMatrix = await this.regionsService.getDistanceMatrix(pointsWithUserLocation);
        
         const bestRoute = this.regionsService.simulatedAnnealingTSP(distanceMatrix);

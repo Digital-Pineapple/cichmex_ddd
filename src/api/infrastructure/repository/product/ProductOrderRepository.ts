@@ -4,7 +4,7 @@ import { MongoRepository } from '../MongoRepository';
 import { ProductOrderEntity, ProductOrderResume } from '../../../domain/product/ProductEntity';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import moment from 'moment';
-import { InfoPayment, PopulateBranch, PopulatePayment } from '../../../../shared/domain/PopulateInterfaces';
+import { InfoAddressOrder, InfoBranch, InfoBranchOrder, InfoPayment, PopulateBranch, PopulatePayment } from '../../../../shared/domain/PopulateInterfaces';
 
 
 export class ProductOrderRepository extends MongoRepository implements ProductOrderConfig {
@@ -62,15 +62,15 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
     }
 
     async getAssignedRou(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: true, route_status: false, }).sort({ createdAt: -1 })
+        return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: true, route_status: false, order_status: 3 }).sort({ createdAt: -1 })
     }
 
     async getAssignedPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.ProductOrderModel.find({ payment_status: 'approved', 'route_detail.route_status': 'assigned', storeHouseStatus: true, route_status: false }).sort({ createdAt: -1 })
+        return await this.ProductOrderModel.find({ payment_status: 'approved', 'route_detail.route_status': 'assigned', storeHouseStatus: true, route_status: false, order_status: 3 }).sort({ createdAt: -1 })
     }
 
     async getAssignedPOUser(user_id: any): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.ProductOrderModel.find({ payment_status: 'approved', 'route_detail.route_status': 'assigned', 'route_detail.user': user_id, storeHouseStatus: true, route_status: false }).sort({ createdAt: -1 })
+        return await this.ProductOrderModel.find({ payment_status: 'approved', 'route_detail.route_status': 'assigned', 'route_detail.user': user_id, storeHouseStatus: true, route_status: false, order_status:3 }).populate(InfoBranchOrder).populate(InfoAddressOrder).sort({ createdAt: -1 })
     }
 
     async getDeliveriesPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
