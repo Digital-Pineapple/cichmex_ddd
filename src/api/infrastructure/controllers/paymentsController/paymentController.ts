@@ -179,32 +179,18 @@ export class PaymentController extends ResponseData {
         }
     }
 
-    public async createLMP(req: Request, res: Response, next: NextFunction) {        
-        const { products, redirect_urls, cart, total, subtotal, shipping_cost, address_id, branch_id, user_id, type_delivery, discount, coupon_id } = req.body;
-        const origin = req.headers["x-origin"];              
-        try {            
-            const metadata = {
-                products: cart,
-                total: total, 
-                subtotal: subtotal,
-                shipping_cost: shipping_cost, 
-                address_id: address_id, 
-                branch_id: branch_id, 
-                user_id: user_id, 
-                type_delivery: type_delivery, 
-                discount: discount,
-                coupon_id: coupon_id,
-                origin : origin
-            }
-            await this.stockStoreHouseUseCase.validateProductsStock(cart);
-            const { response, success, message } = await this.mpService.createLinkMP(products, redirect_urls, metadata);
+    public async createLMP(req: Request, res: Response, next: NextFunction) {                
+        const origin = req.headers["x-origin"] || "web";            
+        try {                     
+            await this.stockStoreHouseUseCase.validateProductsStock(req.body.cart);
+            const { response, success, message } = await this.mpService.createLinkMP(req.body, origin);
             if(success){
-                this.invoke(response?.init_point, 201, res, '', next);
+                this.invoke({ init_point: response?.init_point, id: response?.id }, 201, res, '', next);
             } else {
                 next(new ErrorHandler(`Error: ${message}`, 500)); // Enviar error al siguiente middleware
             }
         } catch (error) {
-            next(new ErrorHandler('Error', 500)); // Enviar error al siguiente middleware
+            next(new ErrorHandler(error instanceof Error ? error.message : 'Error al crear la preferencia', 500));
         }
     }
 
@@ -424,30 +410,8 @@ export class PaymentController extends ResponseData {
                         values1["typeDelivery"] = "pickup";
                     }
                     // if (payment?.status === 'approved') {
-                    await Promise.all(
-                        productsOrder.map(async (product: any) => {
-                            let available;                    
-                            if(Boolean(product?.variant ?? null)){
-                                available = await this.stockStoreHouseUseCase.getVariantStock(product.variant._id)
-                            }else{
-                                available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);
-                            }
-                            if (available) {
-                                const newQuantity = available.stock - parseInt(product.quantity);
-                                const update = await this.stockSHoutputUseCase.createOutput({
-                                    order_id: order_id,
-                                    newQuantity: newQuantity,
-                                    quantity: product.quantity,
-                                    SHStock_id: available._id,
-                                    product_detail: product,
-                                    reason: 'Sale Cichmex'
-                                });
-                                await this.stockStoreHouseUseCase.updateStock(available._id, { stock: update?.newQuantity });
-                            }
-                        })
-                    );
-                    //}
-                    
+                    await this.updateProductStock(productsOrder, order_id);             
+                    //}                    
                     try {
                         const order: any | null = await this.productOrderUseCase.createProductOrder(values1);
                         const responseOrder = { ...order, id: payment?.id };
@@ -482,23 +446,7 @@ export class PaymentController extends ResponseData {
             if(typeDelivery === "homedelivery" && !location) return next(new ErrorHandler(`id de direccion requerida`, 404))           
             if(typeDelivery === "pickup" && !branch_id) return next(new ErrorHandler(`id de sucursal requerida`, 404))           
             // Verificación de existencia de productos
-            await Promise.all(
-                productsOrder.map(async (product: any) => {
-                    let available;
-                    const isVariant = Boolean(product?.variant ?? null);
-                    let name = product.item.name; 
-                    if(isVariant){
-                       available = await this.stockStoreHouseUseCase.getVariantStock(product.variant._id)                           
-                       name = name + getProperties(product?.variant?.attributes)
-                    }else{
-                        available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);                          
-                    }
-                    if (!available) {
-                        return next(new ErrorHandler(`Sin existencias del producto: ${name}`, 500))
-                    }
-                })
-            );
-
+            await this.stockStoreHouseUseCase.validateProductsStock(productsOrder);         
             // Creación de un nuevo pago en la base de datos
             const response1: any = await this.paymentUseCase.createNewPayment({
                 uuid: uuid4,
@@ -544,29 +492,7 @@ export class PaymentController extends ResponseData {
 
             try {
                 // Actualización del stock y creación de salida
-                await Promise.all(
-                    productsOrder.map(async (product: any) => {
-                        let available;                    
-                        if(Boolean(product?.variant ?? null)){
-                            available = await this.stockStoreHouseUseCase.getVariantStock(product.variant._id)
-                        }else{
-                            available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);
-                        }
-                        if (available) {
-                            const newQuantity = available.stock - parseInt(product.quantity);
-                            const update = await this.stockSHoutputUseCase.createOutput({
-                                order_id: order_id,
-                                newQuantity: newQuantity,
-                                quantity: product.quantity,
-                                SHStock_id: available._id,
-                                product_detail: product,
-                                reason: 'Sale Cichmex'
-                            });
-                            await this.stockStoreHouseUseCase.updateStock(available._id, { stock: update?.newQuantity });
-                        }
-                    })
-                );
-
+                await this.updateProductStock(productsOrder, order_id)         
                 // Creación de la orden del producto
                 const order: any| null = await this.productOrderUseCase.createProductOrder(values1);
                 await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
@@ -950,66 +876,96 @@ export class PaymentController extends ResponseData {
         }
     }
    
-    public async webhook(req: Request, res: Response, next: NextFunction){                
+    public async webhook(req: Request, res: Response, next: NextFunction){            
         try {
+            // console.log("webhook, i was executed");
             const paymentId = req.body.data && req.body.data.id;
-            if (!paymentId) {
-                return next(new ErrorHandler(`id de pago no encontrado`, 404))           
-            }
+            if (!paymentId) return next(new ErrorHandler(`id de pago no encontrado`, 404))                       
             const access_token = config.MERCADOPAGO_TOKEN;
             const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
             const paymentClient = new Payment(client);
-            const payment = await paymentClient.get({ id: paymentId });                                                                                                     
-            if (payment.metadata) {
-              const metadata = payment.metadata;
-              console.log('Metadata recibida:', metadata);
-              
-            const uuid4 = generateUUID();
-            const order_id = RandomCodeId('CIC')
-            const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
-            const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
-            const taxDateExpiration = moment(currentDate).add(1, 'month').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
-            const orderPayload: any = {                                
-                products: metadata.products,
-                discount: metadata.discount,
-                subTotal: metadata.subtotal,
-                total: metadata.total,
-                user_id: metadata.user_id,
-                shipping_cost: metadata.shipping_cost,
-                paymentType: payment,
-                payment_status: payment?.status,
-                download_ticket: payment?.transaction_details?.external_resource_url,                
-                origin: origin,
-                order_status: payment.status === "approved" ? 2 : 0,
-                tax_expiration_date: taxDateExpiration
-            }; 
-            const order: any | null = await this.productOrderUseCase.createProductOrder(orderPayload);
-            const { additional_info, id, status, transaction_details, payment_method } = payment
-            const createPayment: any = await this.paymentUseCase.createNewPayment({
-                uuid: uuid4,
-                MP_info: { additional_info, id, status, transaction_details, payment_method },
-                user_id: metadata.user_id,
-                payment_status: payment?.status,
-                system: "CICHMEX",
-                order_id: order_id
-            });
-            const responseOrder = { ...order, id: payment?.id };
-            await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
-                "from" : metadata.user_id,                            
-                "message" : "Cichmex, se ha creado un nuevo pedido",
-                "type" : "order", 
-                "resource_id": order._id,                                                                                                                                                                                          
-            })
-            this.invoke(responseOrder, 200, res, 'Se pagó con éxito', next);                
-                      
+            const payment = await paymentClient.get({ id: paymentId });  
+            if(payment.status === "rejected") return next(new ErrorHandler(`El pago no se aprobo`, 404))                                                                                                                              
+            if (payment.metadata) {              
+                const metadata = payment.metadata;                          
+                const uuid4 = generateUUID();            
+                const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+                const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+                const taxDateExpiration = moment(currentDate).add(1, 'month').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+                const orderPayload: any = {      
+                    order_id: metadata.order_id,                          
+                    products: metadata.products,
+                    discount: metadata.discount,
+                    subTotal: metadata.subtotal,
+                    total: metadata.total,
+                    user_id: metadata.user_id,
+                    shipping_cost: metadata.shipping_cost,
+                    paymentType: payment,
+                    payment_status: payment?.status,
+                    download_ticket: payment?.transaction_details?.external_resource_url,                
+                    origin: metadata.origin,
+                    order_status: payment.status === "approved" ? 2 : 0,
+                    tax_expiration_date: taxDateExpiration,
+                    typeDelivery: metadata.type_delivery,                
+                }; 
+                if (metadata.type_delivery === "homedelivery") {
+                    orderPayload.deliveryLocation = metadata?.address_id;                
+                } 
+                if (metadata.type_delivery === 'pickup') {
+                    orderPayload.branch = metadata.branch_id;               
+                }
+                const { additional_info, id, status, transaction_details, payment_method } = payment
+                const createPayment: any = await this.paymentUseCase.createNewPayment({
+                    uuid: uuid4,
+                    MP_info: { additional_info, id, status, transaction_details, payment_method },
+                    user_id: metadata.user_id,
+                    payment_status: payment?.status,
+                    system: "CICHMEX",
+                    order_id: metadata.order_id
+                });
+                const order: any | null = await this.productOrderUseCase.createProductOrder({...orderPayload, payment: createPayment._id});
+                const responseOrder = { ...order, id: payment?.id };
+                await this.updateProductStock(metadata.products, metadata.order_id);
+                await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
+                    "from" : metadata.user_id,                            
+                    "message" : "Cichmex, se ha creado un nuevo pedido",
+                    "type" : "order", 
+                    "resource_id": order._id,                                                                                                                                                                                          
+                })            
+                this.invoke(responseOrder, 200, res, 'Se pagó con éxito', next);                                      
             } 
           } catch (error) {
             console.error('Error en el webhook:', error);
-            if (error instanceof Error) {
-                return next(new ErrorHandler(`${error.message}`, 500));
-            } else {
-                return next(new ErrorHandler('Error al crear la orden', 500));
-            }
+            return next(new ErrorHandler(error instanceof Error ? error.message : 'Error al crear la orden', 500));
           }
     }
+    
+    private async updateProductStock(productsOrder: any[], order_id: string) {
+        try{
+            await Promise.all(productsOrder.map(async (product: any) => {
+                    let available;
+                    if (product?.variant) {
+                        available = await this.stockStoreHouseUseCase.getVariantStock(product.variant._id);
+                    } else {
+                        available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);
+                    }
+                    if (available) {
+                        const newQuantity = available.stock - parseInt(product.quantity);
+                        const update = await this.stockSHoutputUseCase.createOutput({
+                            order_id,
+                            newQuantity,
+                            quantity: product.quantity,
+                            SHStock_id: available._id,
+                            product_detail: product,
+                            reason: 'Sale Cichmex'
+                        });
+                        await this.stockStoreHouseUseCase.updateStock(available._id, { stock: update?.newQuantity });
+                    }
+                })
+            );
+        }catch(error){
+            console.log("hubo un error al actualizar el stock", error);            
+        }
+    }
 }
+

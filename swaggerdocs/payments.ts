@@ -200,9 +200,69 @@ const payments = {
     post: {
       tags: ["Payments"],
       description: "crea una preferencia de Mercado Pago",
-      parameters: [
+      parameters: [        
         {
-          name: "productsOrder",
+          name: "total",
+          in: "body",
+          required:true,
+          description: "total de compra"
+        },
+        {
+          name: "subtotal",
+          in: "body",
+          required:true,
+          description: "subtotal de compra"
+        },       
+        {
+          name: "type_delivery",
+          in: "body",
+          required:true,
+          description: "el valor puede ser 'homedelivery' o 'pickup'"
+        },   
+        {
+          name: "shipping_cost",
+          in: "body",
+          required: false,
+          description: "costo de envio"          
+        },   
+        {
+          name: "user_id",
+          in: "body",
+          required: true,
+          description: "id de usuario"
+        },
+        {
+          name: "products",
+          in: "body",
+          required: true,
+          description: "items de mercado pago"
+        },
+        {
+          name: "redirect_urls",
+          in: "body",
+          required: true,
+          description: "back urls mercado pago"
+        },
+        {
+          name: "address_id",
+          in: "body",
+          required: false,
+          description: "id de la direccion de usuario (requerido si es homedelivery)"
+        },
+        {
+          name: "branch_id",
+          in: "body",
+          required: false,
+          description: "id de sucursal (requerido si es pickup)"
+        },
+        {
+          name: "X-Origin",
+          in: "headers",
+          required: true,
+          description: "origen de la peticion 'web' o 'mobile' (se setea en los headers de la peticion)"
+        },
+        {
+          name: "cart",
           in: "body",
           required: true,
           schema: {
@@ -218,7 +278,42 @@ const payments = {
           },
           description: "productos del carrito",
         },
+        {
+          name: "discount",
+          in: "body",
+          required: false,
+          description: "cantidad de descuento aplicado"          
+        },
+        {
+          name: "coupon_id",
+          in: "body",
+          required: false,
+          description: "id del cupon aplicado"
+        }        
       ],
+   "responses": {
+    "201": {
+      "description": "Pago creado exitosamente",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "example": "euyriuerirye"
+              },
+              "init_point": {
+                "type": "string",
+                "example": "gfsfffdgdfhgjdfgjh"
+              }
+            }
+          }
+        }
+      }
+    }
+}
+
     },
   },  
   "/payments/addTicket": {

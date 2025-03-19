@@ -2,6 +2,7 @@ import { config } from '../../../../config';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import moment, { ISO_8601 } from 'moment'
 import { getProperties } from '../../../helpers/products';
+import { RandomCodeId } from '../validation/Utils';
 
 export class MPService {
     private access_token: string;
@@ -16,19 +17,33 @@ export class MPService {
         this.payment = new Payment(client);
     }
 
-    async createLinkMP(items: any, redirect_urls: any, metadata: any) {
-        // const path = redirect_uri || process.env.PATH_MP;
+    async createLinkMP(body: any, origin: any) {
+        const { products, redirect_urls, cart, total, subtotal, shipping_cost, address_id, branch_id, user_id, type_delivery, discount, coupon_id } = body;
+        const order_id = RandomCodeId('CIC')
+        const metadata = {
+            products: cart,
+            total: total, 
+            subtotal: subtotal,
+            shipping_cost: shipping_cost, 
+            address_id: address_id, 
+            branch_id: branch_id, 
+            user_id: user_id, 
+            type_delivery: type_delivery, 
+            discount: discount,
+            coupon_id: coupon_id,
+            origin : origin, 
+            order_id: order_id,            
+        }        
         const path_notification = process.env.URL_NOTIFICATION;
-        const itemsMP = items 
+        const itemsMP = products 
         try {
             const response = await this.preference.create({
                 body: {
-                    items: itemsMP,
-                    // payer: { name: user_id },
-                    back_urls: redirect_urls,
-                    // auto_return: "approved",
-                    notification_url: `${path_notification}/api/payments/successwebhook`,
-                    metadata: metadata
+                    items: itemsMP,                    
+                    back_urls: redirect_urls,                    
+                    notification_url: `${path_notification}/api/payments/webhook`,
+                    metadata: metadata,
+                    external_reference: order_id
                 },
             });
 
