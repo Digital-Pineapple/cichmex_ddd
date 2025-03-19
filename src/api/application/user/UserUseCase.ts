@@ -18,13 +18,21 @@ export class UserUseCase extends Authentication {
     const carrier_drivers = allUsers.filter((item:any)=> item.type_user?.role?.includes('CARRIER-DRIVER'))
     return carrier_drivers
   }
+  public async allWarehouseman(): Promise<UserEntity[] | ErrorHandler | null> {
+    const allUsers = await this.userRepository.findAll(TypeUserPopulateConfig, PhonePopulateConfig);
+    const data = allUsers.filter((item: any) => 
+        item.type_user?.role?.includes('WAREHOUSEMAN') || 
+        item.type_user?.role?.includes('WAREHOUSE-MANAGER')
+    );
+    return data;
+}
   public async getUser(id: string): Promise<UserEntity | ErrorHandler | null > {
     return await this.userRepository.findAllAll(id)
  }
   public async getOneUser(id: string): Promise<UserEntity | ErrorHandler | null > { 
      return await this.userRepository.findAllAll(id, TypeUserPopulateConfig,PhonePopulateConfig, PopulatePointStore)
   }
-  public async getOneCarrierDriver(id: string): Promise<UserEntity | ErrorHandler | null > { 
+  public async getOneUserAll(id: string): Promise<UserEntity | ErrorHandler | null > { 
     return await this.userRepository.findAllAll(id, TypeUserPopulateConfig,PhonePopulateConfig, PopulatePointStore, PopulateRegionUser )
  }
   public async getUserEmail(id: string): Promise<IGoogleResponse | ErrorHandler | null > {

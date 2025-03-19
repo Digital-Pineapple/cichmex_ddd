@@ -52,7 +52,7 @@ export class PaymentController extends ResponseData {
         this.PaymentSuccess = this.PaymentSuccess.bind(this)
         this.createPaymentProductMP = this.createPaymentProductMP.bind(this)
         this.addTicket = this.addTicket.bind(this);
-        this, this.autoCancelPO = this.autoCancelPO.bind(this);
+         this.autoCancelPO = this.autoCancelPO.bind(this);
         this.validateProofOfPayment = this.validateProofOfPayment.bind(this)
         this.deleteVoucher = this.deleteVoucher.bind(this)
         this.editVoucher = this.editVoucher.bind(this)

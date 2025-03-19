@@ -8,6 +8,7 @@ import { StoreHouseUseCase } from '../../../application/storehouse/storeHouseUse
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 import { log } from 'console';
+import mongoose from 'mongoose';
 
 
 export class StoreHouseController extends ResponseData {
@@ -28,8 +29,20 @@ export class StoreHouseController extends ResponseData {
     }
 
     public async getAllStoreHouses(req: Request, res: Response, next: NextFunction) {
+        const user = req.user
+        const typeUser = user.type_user?.role
+        const storehouseUser = user?.employee_detail?.store_house?._id
+        let response : any = []
         try {
-            const response = await this.storeHouseUseCase.getStoreHouses()
+            const getStorehouses = await this.storeHouseUseCase.getStoreHouses()
+            if (
+                (getStorehouses && typeUser?.includes('WAREHOUSEMAN') || typeUser?.includes("WAREHOUSE-MANAGER")) &&
+                !(getStorehouses instanceof ErrorHandler)
+              ) {
+                response = getStorehouses?.filter((i: any) => i._id.toString() === storehouseUser );
+              }else{
+                response = getStorehouses
+              }
             this.invoke(response, 200, res, '', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));

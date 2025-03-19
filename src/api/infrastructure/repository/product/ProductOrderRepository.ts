@@ -18,11 +18,12 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
     }
 
 
-    async findAllProductOrders(populateConfig1?: any, populateConfig2?: any, populateConfig3?: any): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+    async findAllProductOrders(populateConfig1?: any, populateConfig2?: any, populateConfig3?: any, populateConfig4?:any): Promise<ProductOrderEntity[] | ErrorHandler | null> {
         const response: any = await this.ProductOrderModel.find().
             populate(populateConfig1).
             populate(populateConfig2).
             populate(populateConfig3).
+            populate(populateConfig4).
             sort({ createdAt: -1 })
         return response
     }

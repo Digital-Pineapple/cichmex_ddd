@@ -15,6 +15,7 @@ import { IGoogleResponse } from '../../../application/authentication/Authenticat
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import { AddressUseCase } from '../../../application/address/AddressUseCase';
 import { SNService } from '../../../../shared/infrastructure/aws/SNService';
+import { relativeTimeThreshold } from 'moment';
 // import { whatsappService } from '../../../../shared/infrastructure/whatsapp/WhatsappService..external';
 
 
@@ -59,9 +60,12 @@ export class UserController extends ResponseData {
         this.updateAddress = this.updateAddress.bind(this);
         this.getAddresses = this.getAddresses.bind(this);
         this.deleteAddress = this.deleteAddress.bind(this);
-        this.getOneCarrierDriver = this.getOneCarrierDriver.bind(this);
+        this.getAllInfoUser = this.getAllInfoUser.bind(this);
         this.deleteCarrierDriver = this.deleteCarrierDriver.bind(this);
         this.UpdateCarrierDriver = this.UpdateCarrierDriver.bind(this)
+        this.RegisterWarehouseman = this.RegisterWarehouseman.bind(this);
+        this.getAllWarehouseman = this.getAllWarehouseman.bind(this);
+        this.UpdateWarehouseman = this.UpdateWarehouseman.bind(this);
     }
 
 
@@ -140,10 +144,17 @@ export class UserController extends ResponseData {
         }
     }
 
-    public async getOneCarrierDriver(req: Request, res: Response, next: NextFunction): Promise<void> {
-        const { id } = req.params
+    public async getAllWarehouseman(req: Request, res: Response, next: NextFunction): Promise<void> {
+        const {_id , type_user} = req.user
+        let response : any  = []
         try {
-            const response = await this.userUseCase.getOneCarrierDriver(id)
+            const users = await this.userUseCase.allWarehouseman()
+            if (type_user?.role[0] === 'WAREHOUSEMAN' || type_user?.role[0] === "WAREHOUSE-MANAGER") {
+                const myUsers = response.filter((i:any)=> i.employee_detail.store_house._id === _id)
+                response = myUsers
+                
+            }
+            response = users
             this.invoke(response, 200, res, '', next);
         } catch (error) {
 
@@ -151,6 +162,16 @@ export class UserController extends ResponseData {
         }
     }
 
+    public async getAllInfoUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+        const { id } = req.params
+        try {
+            const response = await this.userUseCase.getOneUserAll(id)
+            this.invoke(response, 200, res, '', next);
+        } catch (error) {
+
+            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+        }
+    }
     public async sendCode(req: Request, res: Response, next: NextFunction): Promise<IPhone | ErrorHandler | void> {
         const { phone_number, prefix, system = "CICHMEX" } = req.body;
         try {
@@ -529,6 +550,55 @@ export class UserController extends ResponseData {
         }
     }
 
+    public async RegisterWarehouseman(req: Request, res: Response, next: NextFunction) {
+        const { values } = req.body;
+        const p = values.phone.split(' ');
+        const prefix = p[0];
+        const phone_number = JSON.parse(p[1] + p[2] + p[3]);
+        const info_phone = {
+            prefix,
+            phone_number,
+            code: generateRandomCode()
+        };
+        const uuid = generateUUID()
+        let response: any = '';
+
+        const noRepeatPhone = await this.phoneUserUseCase.findOnePhone(phone_number)
+        if (noRepeatPhone) return next(new ErrorHandler('El telefono ya ha sido registrado', 400));
+
+        const noRepeatUser = await this.userUseCase.findUser(values.email)
+
+        if (noRepeatUser) return next(new ErrorHandler('El usuario ya ha sido registrado', 400));
+        if (values.type !== 'WAREHOUSEMAN' && values.type !== 'WAREHOUSE-MANAGER') {
+            return next(new ErrorHandler('El tipo de usuario no es válido', 400));
+        }
+        
+
+        try {
+            const r_phone: any = await this.phoneUserUseCase.createEmployeePhone(info_phone);
+
+            try {
+                const responsedefault = await this.typeUserUseCase.findTypeUser({ role: [values.type] })
+
+                if (responsedefault) {
+                    const TypeUser_id = responsedefault._id;
+                    const response1 = await this.userUseCase.createUser({ ...values, type_user: TypeUser_id, phone_id: r_phone?._id, uuid: uuid });
+                    response = response1;
+                    this.invoke(response, 200, res, 'Creado con éxito', next);
+                } else {
+                    next(new ErrorHandler("Tipo de usuario no encontrado", 400));
+                }
+            } catch (error) {
+                console.log(error);
+
+                next(new ErrorHandler("Correo existente", 500));
+            }
+
+        } catch (error) {
+            next(new ErrorHandler("Error al crear telefono", 500));
+        }
+    }
+
     public async UpdateCarrierDriver(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params
         const { values } = req.body;
@@ -542,6 +612,35 @@ export class UserController extends ResponseData {
             next(new ErrorHandler("Error al acrualizar", 500));
         }
     }
+    public async UpdateWarehouseman(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        const { values } = req.body;
+    
+        if (!['WAREHOUSEMAN', 'WAREHOUSE-MANAGER'].includes(values.type)) {
+            return next(new ErrorHandler('El tipo de usuario no es válido. Los tipos válidos son: WAREHOUSEMAN, WAREHOUSE-MANAGER', 400));
+        }
+    
+        try {
+            const typeUserResult = await this.typeUserUseCase.findTypeUser({ role: [values.type] });
+            
+            if (!typeUserResult) {
+                return next(new ErrorHandler('No se encontró el tipo de usuario especificado.', 404));
+            }
+    
+            const TypeUser_id = typeUserResult._id;
+            const updatedUser = await this.userUseCase.updateUser(id, { ...values, type_user: TypeUser_id });
+    
+            if (!updatedUser) {
+                return next(new ErrorHandler('No se pudo actualizar el usuario.', 500));
+            }
+    
+            this.invoke(updatedUser, 200, res, 'Se actualizó de manera correcta', next);
+        } catch (error) {
+            console.error(error);
+            next(new ErrorHandler('Error al actualizar', 500));
+        }
+    }
+    
 
 
 

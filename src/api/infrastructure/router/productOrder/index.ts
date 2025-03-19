@@ -30,19 +30,19 @@ const productOrderController = new ProductOrderController(productOrderUseCase,re
 
 productOrderRouter
 
+  .get("/paid/all",userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN","WAREHOUSEMAN","WAREHOUSE-MANAGER"]), productOrderController.paidProductOrders)
   .get("/",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.getAllProductOrders)
+  .get("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CUSTOMER", "ADMIN", "CARRIER-DRIVER", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), productOrderController.getOneProductOrder)
   .get("/AssignedPO",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER", "ADMIN"]), productOrderController.getAssignedPO)
   .get("/AssignedPO/user",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER", "ADMIN"]), productOrderController.getAssignedPOUser)
   .get("/deliveries",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CARRIER-DRIVER"]), productOrderController.getDeliveries)
-  .get("/paid",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.paidProductOrders)
-  .get("/paidAndFill/find",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.paidAndFillProductOrders)
+  .get("/paidAndFill/find",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), productOrderController.paidAndFillProductOrders)
   .get("/pending-transfer",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.pendingTransferPO)
   .get("/paidAndSupplyToPoint",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.paidAndSupplyPOToPoint)
   .get("/paidAndSupply",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.paidAndSupplyPO)
   .get('/resume',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.gerProductOrderResume)
-  .get("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CUSTOMER", "ADMIN", "CARRIER-DRIVER"]), productOrderController.getOneProductOrder)
   .get("/user/resume",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CUSTOMER", "ADMIN"]), productOrderController.getOneProductOrderByUser)
-  .get("/pdfOrder/:id", userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CARRIER-DRIVER"]), productOrderController.pdfOrder)
+  .get("/pdfOrder/:id", userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CARRIER-DRIVER", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), productOrderController.pdfOrder)
   .get("/autoAssignOrders/region",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER", "ADMIN"]), productOrderController.autoAssignProductOrders)
   .get("/readyToPoint/ok",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER", "ADMIN"]), productOrderController.ReadyProductOrdersToPoint)
   .get('/verifyPackage/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER", "ADMIN"]), productOrderController.VerifyPackage)
@@ -55,9 +55,9 @@ productOrderRouter
   .post('/verifyQrToPoint',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]),ActivityLogger, productOrderController.verifyQrToPoint)
   .post('/verifyStartRoute',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),ActivityLogger, productOrderController.verifyAndStartRoute)
   .post('/assignRoute', documentationValidations.PDFFileValidation ,userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),ActivityLogger, productOrderController.AssignRoute)
-  .post('/fill-order/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN"]),ActivityLogger,  productOrderController.fillProductOrder)
+  .post('/fill-order/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]),ActivityLogger,  productOrderController.fillProductOrder)
   .post("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), ActivityLogger,productOrderController.updateProductOrder)
-  .post("/fill_one_product/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), ActivityLogger,productOrderController.fillOneProduct)
+  .post("/fill_one_product/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), ActivityLogger,productOrderController.fillOneProduct)
   .delete("/:id",userValidations.authTypeUserValidation(["CUSTOMER"]),ActivityLogger, productOrderController.deleteProductOrder)
   .get("/ordersByBranch/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]), productOrderController.getProductOrderByBranch);
 

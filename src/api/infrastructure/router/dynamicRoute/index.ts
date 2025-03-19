@@ -16,7 +16,7 @@ const userValidations = new UserValidations();
 dynamicRouteRouter
     .get('/all', userValidations.authTypeUserValidation(['SUPER-ADMIN']), dynamicRouteController.getAllRoutes)
     .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), dynamicRouteController.getOneRoute)
-    .get('/links/all', userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN', 'CARRIER-DRIVER']), dynamicRouteController.getRoutes)
+    .get('/links/all', userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN', 'CARRIER-DRIVER', "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), dynamicRouteController.getRoutes)
     .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, dynamicRouteController.CreateRoute)
     .put('/update/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, dynamicRouteController.UpdateRoute)
     .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, dynamicRouteController.DeleteRoute)
