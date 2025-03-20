@@ -190,6 +190,7 @@ export class PaymentController extends ResponseData {
                 next(new ErrorHandler(`Error: ${message}`, 500)); // Enviar error al siguiente middleware
             }
         } catch (error) {
+            console.log("creando preferencia: " ,error);            
             next(new ErrorHandler(error instanceof Error ? error.message : 'Error al crear la preferencia', 500));
         }
     }
@@ -892,9 +893,13 @@ export class PaymentController extends ResponseData {
                 const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
                 const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
                 const taxDateExpiration = moment(currentDate).add(1, 'month').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+                const cart: any = await this.shoppingCartUseCase.getShoppingCartByUser(metadata.user_id);
+                const products = JSON.stringify(cart.products);
+                // console.log(products);                                
+                // // console.log(products, "productos");                            
                 const orderPayload: any = {      
                     order_id: metadata.order_id,                          
-                    products: metadata.products,
+                    products: JSON.parse(products),
                     discount: metadata.discount,
                     subTotal: metadata.subtotal,
                     total: metadata.total,
@@ -925,7 +930,7 @@ export class PaymentController extends ResponseData {
                 });
                 const order: any | null = await this.productOrderUseCase.createProductOrder({...orderPayload, payment: createPayment._id});
                 const responseOrder = { ...order, id: payment?.id };
-                await this.updateProductStock(metadata.products, metadata.order_id);
+                await this.updateProductStock(cart.products, metadata.order_id);
                 await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
                     "from" : metadata.user_id,                            
                     "message" : "Cichmex, se ha creado un nuevo pedido",

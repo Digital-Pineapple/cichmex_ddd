@@ -21,7 +21,7 @@ export class MPService {
         const { products, redirect_urls, cart, total, subtotal, shipping_cost, address_id, branch_id, user_id, type_delivery, discount, coupon_id } = body;
         const order_id = RandomCodeId('CIC')
         const metadata = {
-            products: cart,
+            // products: cart,
             total: total, 
             subtotal: subtotal,
             shipping_cost: shipping_cost, 
