@@ -21,18 +21,19 @@ export class MPService {
         const { products, redirect_urls, cart, total, subtotal, shipping_cost, address_id, branch_id, user_id, type_delivery, discount, coupon_id } = body;
         const order_id = RandomCodeId('CIC')
         const metadata = {
-            total: total, 
-            subtotal: subtotal,
-            shipping: shipping_cost, 
-            address: address_id, 
-            branch: branch_id, 
-            user: user_id, 
-            delivery: type_delivery, 
-            discount: discount,
-            coupon: coupon_id,
-            origin : origin,                         
-        }                                     
-        console.log(JSON.stringify(metadata).length, "longitud");                
+            t: total, 
+            s: subtotal,
+            sc: shipping_cost, 
+            a: address_id, 
+            b: branch_id, 
+            u: user_id, 
+            d: type_delivery, 
+            dis: discount,
+            c: coupon_id,
+            o: origin
+          };                          
+        console.log(JSON.stringify(metadata).length, "longitud");    
+
         const path_notification = process.env.URL_NOTIFICATION;
         const itemsMP = products 
         try {
@@ -41,7 +42,7 @@ export class MPService {
                     items: itemsMP,                    
                     back_urls: redirect_urls,                    
                     notification_url: `${path_notification}/api/payments/webhook`,
-                    metadata: metadata,
+                    metadata,
                     external_reference: order_id
                 },
             });
@@ -49,6 +50,8 @@ export class MPService {
             return { response, success: true, message: 'Pago realizado correctamente' };
         } catch (error) {
             console.log(error, "xdxd");
+            console.log(metadata, "metadata xdxd");
+            
             throw new Error(error.message);                       
         }
     }

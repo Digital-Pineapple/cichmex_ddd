@@ -885,7 +885,7 @@ export class PaymentController extends ResponseData {
             const access_token = config.MERCADOPAGO_TOKEN;
             const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
             const paymentClient = new Payment(client);
-            const payment = await paymentClient.get({ id: paymentId });  
+            const payment = await paymentClient.get({ id: paymentId });             
             if(payment.status === "rejected") return next(new ErrorHandler(`El pago no se aprobo`, 404))                                                                                                                              
             if (payment.metadata) {              
                 const metadata = payment.metadata;  
@@ -901,18 +901,19 @@ export class PaymentController extends ResponseData {
                 const orderPayload: any = {      
                     order_id: orderId,                          
                     products: JSON.parse(products),
-                    discount: metadata.discount,
-                    subTotal: metadata.subtotal,
-                    total: metadata.total,
-                    user_id: metadata.user,
-                    shipping_cost: metadata.shipping,
+                    discount: metadata.dis,
+                    subTotal: metadata.s,
+                    total: metadata.t,
+                    user_id: metadata.u,
+                    shipping_cost: metadata.sc,
                     paymentType: payment.payment_method,
                     payment_status: payment?.status,
                     download_ticket: payment?.transaction_details?.external_resource_url,                
-                    origin: metadata.origin,
+                    origin: metadata.o,
                     order_status: payment.status === "approved" ? 2 : 0,
                     tax_expiration_date: taxDateExpiration,
-                    typeDelivery: metadata.delivery,                
+                    typeDelivery: metadata.d,  
+                    coupon_id: metadata.c              
                 }; 
                 if (metadata.type_delivery === "homedelivery") {
                     orderPayload.deliveryLocation = metadata?.address;                
