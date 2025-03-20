@@ -149,7 +149,8 @@ export interface ProductOrderResume {
 export interface PORouteDetail {
   user: UserEntity,
   route_status?: string,
-  deliveryDate?: string,
+  end_shipping_date?: string,
+  start_shipping_date ?: string,
   guide?: string,
   shipping_company?: string
   guide_pdf ?: string,

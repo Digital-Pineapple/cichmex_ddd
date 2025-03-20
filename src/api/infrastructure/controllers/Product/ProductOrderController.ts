@@ -15,7 +15,7 @@ export class ProductOrderController extends ResponseData {
 
   constructor(
     private productOrderUseCase: ProductOrderUseCase,
-    private readonly regionUseCase : RegionUseCase,
+    private readonly regionUseCase: RegionUseCase,
     private readonly s3Service: S3Service,
     private readonly regionsService: RegionsService,
     private stockStoreHouseUseCase: StockStoreHouseUseCase,
@@ -50,7 +50,11 @@ export class ProductOrderController extends ResponseData {
     this.OptimizedPackagesToPoint = this.OptimizedPackagesToPoint.bind(this);
     this.OutOfRegionsPO = this.OutOfRegionsPO.bind(this);
     this.paidAndFillProductOrders = this.paidAndFillProductOrders.bind(this);
-  this.getAssignedPOUser = this.getAssignedPOUser.bind(this)
+    this.getAssignedPOUser = this.getAssignedPOUser.bind(this);
+    this.startMyRoutes = this.startMyRoutes.bind(this);
+    
+    this.ReadyProductOrdersToDelivery = this.ReadyProductOrdersToDelivery.bind(this);
+    this.OptimizedPackagesToDelivery = this.OptimizedPackagesToDelivery.bind(this);
   }
 
   public async getAllProductOrders(req: Request, res: Response, next: NextFunction) {
@@ -62,7 +66,7 @@ export class ProductOrderController extends ResponseData {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
-  
+
   public async pdfOrder(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
@@ -96,14 +100,14 @@ export class ProductOrderController extends ResponseData {
       this.invoke(response, 200, res, "", next);
     } catch (error) {
       console.log(error);
-      
+
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
   public async paidAndFillProductOrders(req: Request, res: Response, next: NextFunction) {
     try {
-        const getPo = await this.productOrderUseCase.ProductOrdersPaidAndFill()
-        this.invoke(getPo, 200, res, '', next);
+      const getPo = await this.productOrderUseCase.ProductOrdersPaidAndFill()
+      this.invoke(getPo, 200, res, '', next);
     } catch (error) {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
@@ -141,7 +145,7 @@ export class ProductOrderController extends ResponseData {
   }
 
   public async getAssignedPO(req: Request, res: Response, next: NextFunction) {
-        const user = req.user
+    const user = req.user
     try {
       const response = await this.productOrderUseCase.POGetAssigned()
 
@@ -153,23 +157,23 @@ export class ProductOrderController extends ResponseData {
 
   public async getAssignedPOUser(req: Request, res: Response, next: NextFunction) {
     const user = req.user
-try {
-  const response = await this.productOrderUseCase.POGetAssignedUser(user.id)
+    try {
+      const response = await this.productOrderUseCase.POGetAssignedUser(user.id)
 
-  this.invoke(response, 200, res, "", next);
-} catch (error) {
-  console.log(error,'info');
-  
-  next(new ErrorHandler("Hubo un error al consultar la información", 500));
-}
-}
+      this.invoke(response, 200, res, "", next);
+    } catch (error) {
+      console.log(error, 'info');
+
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
 
 
   public async AssignRoute(req: Request, res: Response, next: NextFunction) {
     const { order_id, user_id, guide, shipping_company, guide_pdf } = req.body;
-    let updated_guide_pdf = guide_pdf  
+    let updated_guide_pdf = guide_pdf
     try {
-  
+
       let response;
       if (user_id) {
         response = await this.productOrderUseCase.updateProductOrder(order_id, {
@@ -179,13 +183,13 @@ try {
       } else {
         if (req.file) {
           const path = `/${this.path}/${user_id}/${order_id}/${guide}`
-           const {url} = await this.s3Service.uploadToS3AndGetUrl(path , req.file, "application/pdf");
-           updated_guide_pdf =  url.split("?")[0] 
-         }  
-        
+          const { url } = await this.s3Service.uploadToS3AndGetUrl(path, req.file, "application/pdf");
+          updated_guide_pdf = url.split("?")[0]
+        }
+
         response = await this.productOrderUseCase.updateProductOrder(order_id, {
           deliveryStatus: true,
-          order_status: 8,
+          order_status: 7,
           route_detail: {
             guide: guide,
             route_status: 'assigned',
@@ -193,7 +197,7 @@ try {
             user_id: '',
             guide_pdf: updated_guide_pdf
           },
-          
+
         });
         this.invoke(response, 200, res, "Guía y Compañía de Envío Asignadas Correctamente", next);
       }
@@ -208,7 +212,7 @@ try {
       const response = await this.productOrderUseCase.getProductOrdersResume()
       this.invoke(response, 200, res, "", next);
     } catch (error) {
-      
+
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
@@ -219,7 +223,7 @@ try {
     try {
       // Obteniendo la orden de producto
       const response: any = await this.productOrderUseCase.getOneProductOrder(id);
-  
+
       // Verificando si existen vouchers de pago y obteniendo las URLs desde S3
       if (response.payment && response.payment.verification && response.payment.verification.payment_vouchers) {
         const promises = response.payment.verification.payment_vouchers.map(async (item: any) => {
@@ -228,15 +232,15 @@ try {
         });
         await Promise.all(promises); // Espera a que todas las promesas se resuelvan
       }
-  
+
       // Invocando la respuesta final
       this.invoke(response, 200, res, "", next);
-  
+
     } catch (error) {
       next(new ErrorHandler(`Error al consultar la información`, 500)); // Manejo de error
     }
   }
-  
+
 
   public async getDeliveries(req: Request, res: Response, next: NextFunction) {
     try {
@@ -261,12 +265,38 @@ try {
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
+
+  public async startMyRoutes(req: Request, res: Response, next: NextFunction) {
+    const { routes } = req.body;
+
+    if (!routes || routes.length === 0) {
+      return next(new ErrorHandler('Faltan datos', 400));
+    }
+
+    try {
+      const allPromises = routes.map(async (i: any) => {
+        await this.productOrderUseCase.updateProductOrder(i._id, {
+          route_status: true,
+          order_status: 5,
+          route_detail:{...i.route_detail,start_shipping_date: new Date()} 
+
+        });
+      });
+
+      // Espera que todas las promesas se completen
+      await Promise.all(allPromises);
+
+      this.invoke('', 200, res, "Comenzó el envío exitosamente", next);
+    } catch (error) {
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
   public async VerifyPackage(req: Request, res: Response, next: NextFunction) {
     const user = req.user
-    const {id} = req.params
+    const { id } = req.params
     const code = RandomCodeShipping()
     try {
-      const response: any | null = await this.productOrderUseCase.updateProductOrder(id, {order_status: 4 , verification: { verification_code: code, verification_status: false } })
+      const response: any | null = await this.productOrderUseCase.updateProductOrder(id, { order_status: 4, verification: { verification_code: code, verification_status: false } })
 
       this.invoke(response, 200, res, "Paquete tomado exitosamente", next);
     } catch (error) {
@@ -400,7 +430,7 @@ try {
     const { id } = req.params;
     const { storeHouse } = req.body;
     try {
-      const response = await this.productOrderUseCase.startFillProductOrder(id, { storeHouseStatus: storeHouse, order_status:3 })
+      const response = await this.productOrderUseCase.startFillProductOrder(id, { storeHouseStatus: storeHouse, order_status: 3 })
 
       this.invoke(response, 201, res, 'Orden surtida con éxito', next);
     } catch (error) {
@@ -413,11 +443,11 @@ try {
     const { id } = req.params;
     const { product_id, section, quantity, type } = req.body;
     const user = req.user;
-  
+
     if (!id || !product_id || !section || !quantity || !type) {
       return next(new ErrorHandler('Faltan parámetros requeridos', 400));
     }
-  
+
     const UserInfo = {
       _id: user._id,
       fullname: user.fullname,
@@ -425,70 +455,70 @@ try {
       type_user: user.type_user
     };
     const date = new Date();
-  
+
     try {
       // Obtener el pedido
       const PO = await this.productOrderUseCase.getOneProductOrder(id);
       if (!PO || PO instanceof ErrorHandler) {
         return next(new ErrorHandler('No se encontró el pedido', 404));
       }
-  
+
       const detailPO = PO.supply_detail || [];
-      
+
       // Verificar si el producto ya existe en la lista de surtidos
       const productAlreadyFilled = detailPO.some((item: any) => item.product_id === product_id);
-  
+
       if (productAlreadyFilled) {
         return next(new ErrorHandler('Este producto ya ha sido surtido', 400));
       }
-  
+
       // Agregar el nuevo detalle de surtido
       detailPO.push({ product_id, section, quantity, type, user: UserInfo, date, status: true });
-  
+
       // Actualizar el pedido
       const update = await this.productOrderUseCase.updateProductOrder(id, { supply_detail: detailPO });
-  
+
       if (!update) {
         return next(new ErrorHandler('Error al actualizar el pedido', 500));
       }
-  
+
       // Respuesta de éxito
       this.invoke(update, 201, res, 'Producto surtido con éxito', next);
     } catch (error) {
       next(error);
     }
   }
-  
+
 
   public async autoAssignProductOrders(req: Request, res: Response, next: NextFunction) {
     const user = req.user
     const operationRegions = user.employee_detail?.operationRegions || [] // Corregido el nombre de la variable
-  
+
     try {
       const OPRegions: any[] = [];
-  
+
       // Uso de for...of en lugar de map con await
       for (const item of operationRegions) {
         const i = item.toString()
-        
+
         const region = await this.regionUseCase.getOneRegion(i);
-        
+
         if (region instanceof ErrorHandler) {
           return next(new ErrorHandler('No existe la región', 500)); // Manejo correcto de error
         }
-  
+
         OPRegions.push(region); // Si la región es válida, se agrega al arreglo
       }
-  
+
       // Obtener puntos de las órdenes pagadas y con suministro
       const points: any = await this.productOrderUseCase.POPaidAndSupplyToPoint();
 
       // Agrupar las órdenes por región
       const response = this.regionsService.groupOrdersByRegion(points, OPRegions);
-  
+
       // Enviar respuesta
       this.invoke(response, 201, res, 'Consulta exitosa', next);
-      
+
     } catch (error) {
       console.log(error);
       next(new ErrorHandler("Hubo un error", 500)); // Manejo de errores
@@ -498,32 +528,67 @@ try {
   public async ReadyProductOrdersToPoint(req: Request, res: Response, next: NextFunction) {
     const user = req.user
     const operationRegions = user.employee_detail?.operationRegions || [] // Corregido el nombre de la variable
-  
+
     try {
       const OPRegions: any[] = [];
-  
+
       // Uso de for...of en lugar de map con await
       for (const item of operationRegions) {
         const i = item.toString()
-        
+
         const region = await this.regionUseCase.getOneRegion(i);
-        
+
         if (region instanceof ErrorHandler) {
           return next(new ErrorHandler('No existe la región', 500)); // Manejo correcto de error
         }
-  
+
         OPRegions.push(region); // Si la región es válida, se agrega al arreglo
       }
-  
+      const userId = user._id.toString()
       // Obtener puntos de las órdenes pagadas y con suministro
-      const points: any = await this.productOrderUseCase.POReadyToRoute();
+      const points: any = await this.productOrderUseCase.POReadyToRoute(userId);
 
       // Agrupar las órdenes por región
       const response = this.regionsService.groupOrdersByRegion(points, OPRegions);
-  
+
       // Enviar respuesta
       this.invoke(response, 201, res, 'Consulta exitosa', next);
-      
+
+    } catch (error) {
+      console.log(error);
+      next(new ErrorHandler("Hubo un error", 500)); // Manejo de errores
+    }
+  }
+
+  public async ReadyProductOrdersToDelivery(req: Request, res: Response, next: NextFunction) {
+    const user = req.user
+    const operationRegions = user.employee_detail?.operationRegions || [] // Corregido el nombre de la variable
+
+    try {
+      const OPRegions: any[] = [];
+
+      // Uso de for...of en lugar de map con await
+      for (const item of operationRegions) {
+        const i = item.toString()
+
+        const region = await this.regionUseCase.getOneRegion(i);
+
+        if (region instanceof ErrorHandler) {
+          return next(new ErrorHandler('No existe la región', 500)); // Manejo correcto de error
+        }
+
+        OPRegions.push(region); // Si la región es válida, se agrega al arreglo
+      }
+      const userId = user._id.toString()
+      // Obtener puntos de las órdenes pagadas y con suministro
+      const points: any = await this.productOrderUseCase.findPOReadyToDelivery(userId)
+
+      // Agrupar las órdenes por región
+      const response = this.regionsService.groupOrdersByRegion(points, OPRegions);
+
+      // Enviar respuesta
+      this.invoke(response, 201, res, 'Consulta exitosa', next);
+
     } catch (error) {
       console.log(error);
       next(new ErrorHandler("Hubo un error", 500)); // Manejo de errores
@@ -531,20 +596,20 @@ try {
   }
 
   public async OutOfRegionsPO(req: Request, res: Response, next: NextFunction) {
-    
+
     const OPRegions = await this.regionUseCase.getAllRegions()
     try {
-      
-  
+
+
       // Obtener puntos de las órdenes pagadas y con suministro
       const points: any = await this.productOrderUseCase.POPaidAndSupplyToPoint();
 
       // Agrupar las órdenes por región
       const response = this.regionsService.groupOutOfRegion(points, OPRegions);
-  
+
       // Enviar respuesta
       this.invoke(response, 201, res, 'Consulta exitosa', next);
-      
+
     } catch (error) {
       console.log(error);
       next(new ErrorHandler("Hubo un error", 500)); // Manejo de errores
@@ -553,63 +618,64 @@ try {
 
   public async OptimizedPackagesToPoint(req: Request, res: Response, next: NextFunction) {
     const user = req.user;
-    const {coords} = req.query
+    const { coords } = req.query
     const operationRegions = user.employee_detail?.operationRegions || [];
-    
 
 
-const convertToNumericLocation = (coords: any) => {
-  // Verificar que lat y lgt sean strings, y no arrays
-  const lat = Array.isArray(coords.lat) ? coords.lat[0] : coords.lat;
-  const lgt = Array.isArray(coords.lgt) ? coords.lgt[0] : coords.lgt;
 
-  // Convertir las cadenas a números si son válidas
-  const numericLocation = {
-    lat: lat ? Number(lat) : NaN,
-    lgt: lgt ? Number(lgt) : NaN
-  };
+    const convertToNumericLocation = (coords: any) => {
+      // Verificar que lat y lgt sean strings, y no arrays
+      const lat = Array.isArray(coords.lat) ? coords.lat[0] : coords.lat;
+      const lgt = Array.isArray(coords.lgt) ? coords.lgt[0] : coords.lgt;
 
-  // Verificar que la conversión sea válida
-  if (!isNaN(numericLocation.lat) && !isNaN(numericLocation.lgt)) {
-    return numericLocation;
-  } else {
-    throw new Error("Invalid latitude or longitude values.");
-  }
-};
-const numericLocation = convertToNumericLocation(coords);
-  
+      // Convertir las cadenas a números si son válidas
+      const numericLocation = {
+        lat: lat ? Number(lat) : NaN,
+        lgt: lgt ? Number(lgt) : NaN
+      };
+
+      // Verificar que la conversión sea válida
+      if (!isNaN(numericLocation.lat) && !isNaN(numericLocation.lgt)) {
+        return numericLocation;
+      } else {
+        throw new Error("Invalid latitude or longitude values.");
+      }
+    };
+    const numericLocation = convertToNumericLocation(coords);
+
     try {
       const OPRegions: any[] = [];
-  
+
       // Uso de for...of con manejo de errores por región
       for (const item of operationRegions) {
         const regionId = item.toString();
-  
+
         try {
           const region = await this.regionUseCase.getOneRegion(regionId);
-          
+
           if (!region) {
             console.warn(`No existe la región con ID: ${regionId}`);
             continue; // Si no existe la región, pasamos a la siguiente
           }
-  
+
           OPRegions.push(region); // Agregar la región válida
         } catch (err) {
           console.warn(`Error al obtener la región con ID: ${regionId}`, err);
           // Manejar el error, pero continuar con el resto de las regiones
         }
       }
-  
+      const userId = user._id.toHexString()
+
       // Obtener puntos de las órdenes pagadas y con suministro
-      const points: any = await this.productOrderUseCase.POReadyToRoute();
-      
+      const points: any = await this.productOrderUseCase.POReadyToRoute(userId);
+
       // Agrupar las órdenes por región
       const response = this.regionsService.groupOrdersByRegion(points, OPRegions);
       const extractCoordinates = (orders: any) => {
-        return orders.map((order : any) => {
+        return orders.map((order: any) => {
           // Priorizar `deliveryLocation` si existe, sino usar `branch.location`
           const location = order.deliveryLocation || order.branch?.location;
-      
+
           if (location && location.lat && location.lgt) {
             return {
               lat: location.lat,
@@ -629,24 +695,122 @@ const numericLocation = convertToNumericLocation(coords);
         ...points1,  // Puntos intermedios
         numericLocation,
       ];
-      
-       const distanceMatrix = await this.regionsService.getDistanceMatrix(pointsWithUserLocation);
-       
-        const bestRoute = this.regionsService.simulatedAnnealingTSP(distanceMatrix);
-  
-       const directions = await this.regionsService.getOptimizedRoute(pointsWithUserLocation, bestRoute);
-       
-  
+
+      const distanceMatrix = await this.regionsService.getDistanceMatrix(pointsWithUserLocation);
+
+      const bestRoute = this.regionsService.simulatedAnnealingTSP(distanceMatrix);
+
+      const directions = await this.regionsService.getOptimizedRoute(pointsWithUserLocation, bestRoute);
+
+
       // Enviar respuesta
-      this.invoke({...directions}, 201, res, 'Consulta exitosa', next);
-  
+      this.invoke({ ...directions }, 201, res, 'Consulta exitosa', next);
+
     } catch (error) {
       console.log(error);
-      
+
       next(new ErrorHandler("Hubo un error", 500)); // Manejo general de errores
     }
   }
-  
+
+  public async OptimizedPackagesToDelivery(req: Request, res: Response, next: NextFunction) {
+    const user = req.user;
+    const { coords } = req.query
+    const operationRegions = user.employee_detail?.operationRegions || [];
+
+
+
+    const convertToNumericLocation = (coords: any) => {
+      // Verificar que lat y lgt sean strings, y no arrays
+      const lat = Array.isArray(coords.lat) ? coords.lat[0] : coords.lat;
+      const lgt = Array.isArray(coords.lgt) ? coords.lgt[0] : coords.lgt;
+
+      // Convertir las cadenas a números si son válidas
+      const numericLocation = {
+        lat: lat ? Number(lat) : NaN,
+        lgt: lgt ? Number(lgt) : NaN
+      };
+
+      // Verificar que la conversión sea válida
+      if (!isNaN(numericLocation.lat) && !isNaN(numericLocation.lgt)) {
+        return numericLocation;
+      } else {
+        throw new Error("Invalid latitude or longitude values.");
+      }
+    };
+    const numericLocation = convertToNumericLocation(coords);
+
+    try {
+      const OPRegions: any[] = [];
+
+      // Uso de for...of con manejo de errores por región
+      for (const item of operationRegions) {
+        const regionId = item.toString();
+
+        try {
+          const region = await this.regionUseCase.getOneRegion(regionId);
+
+          if (!region) {
+            console.warn(`No existe la región con ID: ${regionId}`);
+            continue; // Si no existe la región, pasamos a la siguiente
+          }
+
+          OPRegions.push(region); // Agregar la región válida
+        } catch (err) {
+          console.warn(`Error al obtener la región con ID: ${regionId}`, err);
+          // Manejar el error, pero continuar con el resto de las regiones
+        }
+      }
+      const userId = user._id.toHexString()
+
+      // Obtener puntos de las órdenes pagadas y con suministro
+      const points: any = await this.productOrderUseCase.findPOReadyToDelivery(userId);
+
+      // Agrupar las órdenes por región
+      const response = this.regionsService.groupOrdersByRegion(points, OPRegions);
+      const extractCoordinates = (orders: any) => {
+        return orders.map((order: any) => {
+          // Priorizar `deliveryLocation` si existe, sino usar `branch.location`
+          const location = order.deliveryLocation || order.branch?.location;
+
+          if (location && location.lat && location.lgt) {
+            return {
+              lat: location.lat,
+              lgt: location.lgt,
+              order: order.order_id
+            };
+          } else {
+            console.warn("No valid location found for order:", order);
+            return null; // Devuelve null si no hay coordenadas válidas
+          }
+        }).filter(Boolean); // Filtrar los valores null o undefined
+      };
+      const points1 = extractCoordinates(response)
+
+      const pointsWithUserLocation = [
+        numericLocation,  // Ubicación actual como inicio
+        ...points1,  // Puntos intermedios
+        numericLocation,
+      ];
+
+      const distanceMatrix = await this.regionsService.getDistanceMatrix(pointsWithUserLocation);
+
+      const bestRoute = this.regionsService.simulatedAnnealingTSP(distanceMatrix);
+
+      const directions = await this.regionsService.getOptimizedRoute(pointsWithUserLocation, bestRoute);
+
+
+      // Enviar respuesta
+      this.invoke({ ...directions }, 201, res, 'Consulta exitosa', next);
+
+    } catch (error) {
+      console.log(error);
+
+      next(new ErrorHandler("Hubo un error", 500)); // Manejo general de errores
+    }
+  }
+
+
 
 
 
@@ -654,17 +818,17 @@ const numericLocation = convertToNumericLocation(coords);
     const { id } = req.params;
     const user = req.user.id
     try {
-      if(!id) return next(new ErrorHandler('El id de la orden es requerido', 404));
+      if (!id) return next(new ErrorHandler('El id de la orden es requerido', 404));
       const userOrder: any = await this.productOrderUseCase.getOnePO({ order_id: id, status: true, user_id: user })
       const products = userOrder.products
       await Promise.all(products.map(async (product: any) => {
         const stockProduct = await this.stockStoreHouseUseCase.getProductStock(product.item._id, this.onlineStoreHouse)
-        const currentProductStock = stockProduct.stock;        
-        const stockToReturn = product.quantity; 
+        const currentProductStock = stockProduct.stock;
+        const stockToReturn = product.quantity;
         const newProductStock = currentProductStock + stockToReturn;
-        const updateStock = await this.stockStoreHouseUseCase.updateStock(stockProduct._id, { stock: newProductStock })                         
+        const updateStock = await this.stockStoreHouseUseCase.updateStock(stockProduct._id, { stock: newProductStock })
       }))
-        
+
       if (!userOrder) {
         return next(new ErrorHandler('No se encontro el pedido', 500));
       }

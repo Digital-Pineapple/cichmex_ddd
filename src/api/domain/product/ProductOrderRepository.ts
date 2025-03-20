@@ -25,7 +25,7 @@ export interface ProductOrderRepository extends MongoRepository {
 
      getPendingTransferPO(): Promise<ProductOrderEntity[] | ErrorHandler | null>
      
-     getPaidAndVerifyPackageToPointPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> 
+     getPaidAndVerifyPackageToPointPO(user_id: any): Promise<ProductOrderEntity[] | ErrorHandler | null> 
      
      getAssignedPOUser(user_id:any): Promise<ProductOrderEntity[] | ErrorHandler | null> 
 

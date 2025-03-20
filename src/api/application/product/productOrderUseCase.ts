@@ -55,8 +55,8 @@ export class ProductOrderUseCase {
     const response =  await this.productOrderRepository.getPaidAndSuplyToPointPO()
     return response
   }
-  public async POReadyToRoute(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
-    const response =  await this.productOrderRepository.getPaidAndVerifyPackageToPointPO()
+  public async POReadyToRoute(user_id: any): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+    const response =  await this.productOrderRepository.getPaidAndVerifyPackageToPointPO(user_id)
     return response
   }
   public async PODeliveries(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
@@ -77,6 +77,10 @@ export class ProductOrderUseCase {
     return await this.productOrderRepository.createOne({...body})
   }
 
+  public async findPOReadyToDelivery(user_id:any): Promise<ProductOrderEntity[] | null> {
+    return await this.productOrderRepository.findAllItems({route_status: true, order_status: 5, 'route_detail.user':user_id}, PopulateBranch)
+  }
+
   public async updateProductOrder(
     _id: any,
     updated: any
@@ -91,7 +95,7 @@ export class ProductOrderUseCase {
   ): Promise<ProductOrderEntity> {
     
     
-    return await this.productOrderRepository.updateOne(_id, {storeHouseStatus: updated.storeHouseStatus, supply_detail:updated.supply_detail});
+    return await this.productOrderRepository.updateOne(_id, {...updated});
     
   }
   

@@ -30,7 +30,9 @@ const productOrderController = new ProductOrderController(productOrderUseCase,re
 
 productOrderRouter
 
+  .get('/optimation_to_delivery', userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER", "ADMIN"]), productOrderController.OptimizedPackagesToDelivery)
   .get("/pending-transfer",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.pendingTransferPO)
+  .get("/ready_to_delivery",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CARRIER-DRIVER", "ADMIN"]), productOrderController.ReadyProductOrdersToDelivery)
   .get("/paid/all",userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN","WAREHOUSEMAN","WAREHOUSE-MANAGER"]), productOrderController.paidProductOrders)
   .get("/",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), productOrderController.getAllProductOrders)
   .get("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "CUSTOMER", "ADMIN", "CARRIER-DRIVER", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), productOrderController.getOneProductOrder)
@@ -58,6 +60,7 @@ productOrderRouter
   .post('/fill-order/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]),ActivityLogger,  productOrderController.fillProductOrder)
   .post("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), ActivityLogger,productOrderController.updateProductOrder)
   .post("/fill_one_product/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), ActivityLogger,productOrderController.fillOneProduct)
+  .put("/start_routes",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CARRIER-DRIVER"]), ActivityLogger,productOrderController.startMyRoutes)
   .delete("/:id",userValidations.authTypeUserValidation(["CUSTOMER"]),ActivityLogger, productOrderController.deleteProductOrder)
   .get("/ordersByBranch/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]), productOrderController.getProductOrderByBranch);
 

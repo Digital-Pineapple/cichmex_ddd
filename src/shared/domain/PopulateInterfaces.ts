@@ -202,9 +202,9 @@ export const PopulateRegionUser : IStockPopulateConfig={
     select: ["name","regionCode","type","path"],
     model: RegionModel
 }
-export const PopulateBranch : IStockPopulateConfig={
+export const PopulateBranch : IGuideConfig={
     path: 'branch',
-    select: ["name","location"],
+    // select: ["name","location"],
     model: BranchOfficeModel
 }
 

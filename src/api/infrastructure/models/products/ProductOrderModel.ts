@@ -7,12 +7,11 @@ order_status : {
  2: 'preparar orden',
  3: "surtido en almacén",
  4: "cargada por transportista",
- 5: "pendiente por cargar transportista",
- 6: "Enviado a punto de entrega"
- 7: 'en punto entrega,
- 8: 'enviado a domicilio',
- 9: 'entregado',
- 10: 'cancelado',  
+ 5: "Enviado a punto de entrega"
+ 6: 'en punto entrega,
+ 7: 'enviado a domicilio',
+ 8: 'entregado',
+ 9: 'cancelado',  
 
 }
 */
