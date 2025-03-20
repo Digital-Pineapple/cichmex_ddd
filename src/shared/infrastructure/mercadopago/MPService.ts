@@ -34,6 +34,7 @@ export class MPService {
             origin : origin, 
             order_id: order_id,            
         }        
+        console.log(JSON.stringify(metadata).length, "longitud");                
         const path_notification = process.env.URL_NOTIFICATION;
         const itemsMP = products 
         try {
@@ -49,8 +50,14 @@ export class MPService {
 
             return { response, success: true, message: 'Pago realizado correctamente' };
         } catch (error) {
-            console.error('Error creating link:', error);
-            return { success: false, message: `Error: ${error}` };
+            // console.log(error, "xdxd");
+            
+            // if (error instanceof Error) {
+                throw new Error(error.message);
+            // } else {
+            //     throw new Error('Ocurrio un error al crear link de pago');
+            // }            
+            // return { success: false, message: `Error: ${error}` };
         }
     }
 
