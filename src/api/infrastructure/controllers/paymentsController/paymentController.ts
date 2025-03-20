@@ -184,11 +184,11 @@ export class PaymentController extends ResponseData {
         try {                     
             await this.stockStoreHouseUseCase.validateProductsStock(req.body.cart);
             const { response, success, message } = await this.mpService.createLinkMP(req.body, origin);
-            if(success){
-                this.invoke({ init_point: response?.init_point, id: response?.id }, 201, res, '', next);
-            } else {
-                next(new ErrorHandler(`Error: ${message}`, 500)); // Enviar error al siguiente middleware
-            }
+            // if(success){
+            this.invoke({ init_point: response?.init_point, id: response?.id }, 201, res, '', next);
+            // } else {
+            //     next(new ErrorHandler(`Error: ${message}`, 500)); // Enviar error al siguiente middleware
+            // }
         } catch (error) {
             console.log("creando preferencia: " ,error);            
             next(new ErrorHandler(error instanceof Error ? error.message : 'Error al crear la preferencia', 500));
@@ -888,7 +888,8 @@ export class PaymentController extends ResponseData {
             const payment = await paymentClient.get({ id: paymentId });  
             if(payment.status === "rejected") return next(new ErrorHandler(`El pago no se aprobo`, 404))                                                                                                                              
             if (payment.metadata) {              
-                const metadata = payment.metadata;                          
+                const metadata = payment.metadata;  
+                const orderId = payment.external_reference;                        
                 const uuid4 = generateUUID();            
                 const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
                 const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
@@ -898,39 +899,39 @@ export class PaymentController extends ResponseData {
                 // console.log(products);                                
                 // // console.log(products, "productos");                            
                 const orderPayload: any = {      
-                    order_id: metadata.order_id,                          
+                    order_id: orderId,                          
                     products: JSON.parse(products),
                     discount: metadata.discount,
                     subTotal: metadata.subtotal,
                     total: metadata.total,
-                    user_id: metadata.user_id,
-                    shipping_cost: metadata.shipping_cost,
-                    paymentType: payment,
+                    user_id: metadata.user,
+                    shipping_cost: metadata.shipping,
+                    paymentType: payment.payment_method,
                     payment_status: payment?.status,
                     download_ticket: payment?.transaction_details?.external_resource_url,                
                     origin: metadata.origin,
                     order_status: payment.status === "approved" ? 2 : 0,
                     tax_expiration_date: taxDateExpiration,
-                    typeDelivery: metadata.type_delivery,                
+                    typeDelivery: metadata.delivery,                
                 }; 
                 if (metadata.type_delivery === "homedelivery") {
-                    orderPayload.deliveryLocation = metadata?.address_id;                
+                    orderPayload.deliveryLocation = metadata?.address;                
                 } 
                 if (metadata.type_delivery === 'pickup') {
-                    orderPayload.branch = metadata.branch_id;               
+                    orderPayload.branch = metadata.branch;               
                 }
                 const { additional_info, id, status, transaction_details, payment_method } = payment
                 const createPayment: any = await this.paymentUseCase.createNewPayment({
                     uuid: uuid4,
                     MP_info: { additional_info, id, status, transaction_details, payment_method },
-                    user_id: metadata.user_id,
+                    user_id: metadata.user,
                     payment_status: payment?.status,
                     system: "CICHMEX",
-                    order_id: metadata.order_id
+                    order_id: orderId
                 });
                 const order: any | null = await this.productOrderUseCase.createProductOrder({...orderPayload, payment: createPayment._id});
                 const responseOrder = { ...order, id: payment?.id };
-                await this.updateProductStock(cart.products, metadata.order_id);
+                await this.updateProductStock(cart.products, orderId);
                 await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
                     "from" : metadata.user_id,                            
                     "message" : "Cichmex, se ha creado un nuevo pedido",

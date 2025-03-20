@@ -21,19 +21,17 @@ export class MPService {
         const { products, redirect_urls, cart, total, subtotal, shipping_cost, address_id, branch_id, user_id, type_delivery, discount, coupon_id } = body;
         const order_id = RandomCodeId('CIC')
         const metadata = {
-            // products: cart,
             total: total, 
             subtotal: subtotal,
-            shipping_cost: shipping_cost, 
-            address_id: address_id, 
-            branch_id: branch_id, 
-            user_id: user_id, 
-            type_delivery: type_delivery, 
+            shipping: shipping_cost, 
+            address: address_id, 
+            branch: branch_id, 
+            user: user_id, 
+            delivery: type_delivery, 
             discount: discount,
-            coupon_id: coupon_id,
-            origin : origin, 
-            order_id: order_id,            
-        }        
+            coupon: coupon_id,
+            origin : origin,                         
+        }                                     
         console.log(JSON.stringify(metadata).length, "longitud");                
         const path_notification = process.env.URL_NOTIFICATION;
         const itemsMP = products 
@@ -50,14 +48,8 @@ export class MPService {
 
             return { response, success: true, message: 'Pago realizado correctamente' };
         } catch (error) {
-            // console.log(error, "xdxd");
-            
-            // if (error instanceof Error) {
-                throw new Error(error.message);
-            // } else {
-            //     throw new Error('Ocurrio un error al crear link de pago');
-            // }            
-            // return { success: false, message: `Error: ${error}` };
+            console.log(error, "xdxd");
+            throw new Error(error.message);                       
         }
     }
 
