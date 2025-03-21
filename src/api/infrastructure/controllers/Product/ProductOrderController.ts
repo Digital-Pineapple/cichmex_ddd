@@ -52,7 +52,7 @@ export class ProductOrderController extends ResponseData {
     this.paidAndFillProductOrders = this.paidAndFillProductOrders.bind(this);
     this.getAssignedPOUser = this.getAssignedPOUser.bind(this);
     this.startMyRoutes = this.startMyRoutes.bind(this);
-    
+
     this.ReadyProductOrdersToDelivery = this.ReadyProductOrdersToDelivery.bind(this);
     this.OptimizedPackagesToDelivery = this.OptimizedPackagesToDelivery.bind(this);
   }
@@ -278,7 +278,7 @@ export class ProductOrderController extends ResponseData {
         await this.productOrderUseCase.updateProductOrder(i._id, {
           route_status: true,
           order_status: 5,
-          route_detail:{...i.route_detail,start_shipping_date: new Date()} 
+          route_detail: { ...i.route_detail, start_shipping_date: new Date() }
 
         });
       });
@@ -313,18 +313,11 @@ export class ProductOrderController extends ResponseData {
     try {
       const { verification, _id }: any | null = await this.productOrderUseCase.getOnePO({ order_id: order_id, user_id: user_id })
 
-
       if (verification.verification_code !== v_code) {
-        return next(new ErrorHandler("El código no coincide", 500));
+        next(new ErrorHandler("Codigo de verificación incorrecto", 500));
       }
-      if (branch_id) {
-        const update = await this.productOrderUseCase.updateProductOrder(_id, { point_pickup_status: true, 'route_detail.route_status': 'point_puckup' })
-        this.invoke(update, 200, res, "Paquete entregado punto de recolección", next);
-      }
-      else {
         const update = await this.productOrderUseCase.updateProductOrder(_id, { verification: { verification_status: true, verification_time: date, verification_code: v_code } })
         this.invoke(update, 200, res, "Código válido", next);
-      }
     } catch (error) {
 
       next(new ErrorHandler("Error en el codigo", 500));
@@ -332,20 +325,21 @@ export class ProductOrderController extends ResponseData {
   }
 
   public async verifyQrToPoint(req: Request, res: Response, next: NextFunction) {
-    const { order_id, user_id, branch_id, v_code } = req.body
+    const { order_id } = req.body
+    const { id } = req.user
 
     try {
-      const { verification, _id }: any | null = await this.productOrderUseCase.getOnePO({ order_id: order_id, user_id: user_id })
+      const { _id }: any | null = await this.productOrderUseCase.getOnePO({ order_id: order_id })
+      const update = await this.productOrderUseCase.updateProductOrder(_id, {
+        point_pickup_status: true, order_status: 6,
+        'route_detail.route_status': 'point_puckup',
+        'route_detail.user_receive': id
+      })
+      this.invoke(update, 200, res, "Paquete recibido punto de recolección", next);
 
-
-      if (verification.verification_code !== v_code) {
-        return next(new ErrorHandler("El código no coincide", 500));
-      }
-      if (branch_id) {
-        const update = await this.productOrderUseCase.updateProductOrder(_id, { point_pickup_status: true, 'route_detail.route_status': 'point_puckup' })
-        this.invoke(update, 200, res, "Paquete entregado punto de recolección", next);
-      }
     } catch (error) {
+      console.log(error);
+
       next(new ErrorHandler("Error en el codigo", 500));
     }
   }
@@ -377,6 +371,7 @@ export class ProductOrderController extends ResponseData {
 
       this.invoke(response, 200, res, "", next);
     } catch (error) {
+      console.log(error,'data');
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
   }
@@ -395,7 +390,7 @@ export class ProductOrderController extends ResponseData {
   public async endShippingOrder(req: Request, res: Response, next: NextFunction) {
     const { _id, notes } = req.body;
     try {
-      const response = await this.productOrderUseCase.updateProductOrder(_id, { deliveryStatus: true, 'verification.notes': notes, order_status: 5 })
+      const response = await this.productOrderUseCase.updateProductOrder(_id, { deliveryStatus: true, 'verification.notes': notes, order_status: 8 })
       this.invoke(response, 201, res, 'Se entregó con éxito', next);
     } catch (error) {
       next(new ErrorHandler('Hubo un error al entregar', 500));

@@ -20,7 +20,7 @@ export class ProductOrderUseCase {
   }
   public async getOnePO(body:any): Promise<ProductOrderEntity> {
     
-    return await this.productOrderRepository.findOneItem({...body})
+    return await this.productOrderRepository.findOneItem({...body}, InfoBranchOrder)
   }
 
   public async getOneProductOrder( _id: string): Promise<ProductOrderEntity | ErrorHandler| null > {
@@ -28,7 +28,7 @@ export class ProductOrderUseCase {
     return response
   }
   public async ProductOrdersByBranch( _id: string): Promise<ProductOrderEntity[] | ErrorHandler| null > {
-    const response =  await this.productOrderRepository.getProductOrdersByBranch(_id)
+    const response =  await this.productOrderRepository.getProductOrdersByBranch(_id, PopulateInfoUser)
     return response
   }
   public async ProductOrdersPaid(): Promise<ProductOrderEntity[] | ErrorHandler| null > {

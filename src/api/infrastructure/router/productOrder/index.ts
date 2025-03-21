@@ -54,7 +54,7 @@ productOrderRouter
   .post('/end-shipping',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]),ActivityLogger, productOrderController.endShippingOrder)
   .post('/endShippingToPoint',userValidations.authTypeUserValidation(["PARTNER", "ADMIN"]),ActivityLogger, productOrderController.endShippingOrdertoPoint)
   .post('/start-verifyQr',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]),ActivityLogger, productOrderController.verifyQr)
-  .post('/verifyQrToPoint',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]),ActivityLogger, productOrderController.verifyQrToPoint)
+  .put('/verifyQrToPoint',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]),ActivityLogger, productOrderController.verifyQrToPoint)
   .post('/verifyStartRoute',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),ActivityLogger, productOrderController.verifyAndStartRoute)
   .post('/assignRoute', documentationValidations.PDFFileValidation ,userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "WAREHOUSE-MANAGER", "WAREHOUSEMAN"]),ActivityLogger, productOrderController.AssignRoute)
   .post('/fill-order/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]),ActivityLogger,  productOrderController.fillProductOrder)

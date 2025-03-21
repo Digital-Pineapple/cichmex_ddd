@@ -6,7 +6,7 @@ export interface ProductOrderRepository extends MongoRepository {
 
      getProductOrdersByUser( _id: string, populateConfig1?:any, populateConfig2?: any): Promise<ProductOrderEntity[] | ErrorHandler| null > 
      
-     getProductOrdersByBranch( _id: string, populateConfig1?:any): Promise<ProductOrderEntity[] | ErrorHandler| null > 
+     getProductOrdersByBranch( _id: string, populateConfig1?:any, populateConfig2?:any, populateConfig3?:any): Promise<ProductOrderEntity[] | ErrorHandler| null > 
 
      getPOExpired(): Promise<ProductOrderEntity[] | ErrorHandler| null > 
      

@@ -154,8 +154,10 @@ export interface PORouteDetail {
   guide?: string,
   shipping_company?: string
   guide_pdf ?: string,
+  user_receive ?: string,
 }
 export interface VerificationDetail {
   verification_code: string,
   verification_status: boolean,
+  verification_time: string,
 }

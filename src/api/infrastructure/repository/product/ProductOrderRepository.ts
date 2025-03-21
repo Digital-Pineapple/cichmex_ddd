@@ -34,8 +34,11 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
 
     }
 
-    async getProductOrdersByBranch(_id: string): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.ProductOrderModel.find({ branch: _id, payment_status: 'approved' }).sort({ createdAt: -1 })
+    async getProductOrdersByBranch(_id: string, populateConfig1?: any, populateConfig2?: any, populateConfig3?: any): Promise<ProductOrderEntity[] | ErrorHandler | null> {
+        return await this.ProductOrderModel.find({ branch: _id, payment_status: 'approved' }).populate(populateConfig1)
+        .populate(populateConfig2)
+        .populate(populateConfig3)
+        .sort({ createdAt: -1 })
 
     }
     async getPOExpired(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
