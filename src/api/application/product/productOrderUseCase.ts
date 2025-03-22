@@ -31,7 +31,7 @@ export class ProductOrderUseCase {
     const response =  await this.productOrderRepository.getProductOrdersByBranch(_id, PopulateInfoUser)
     return response
   }
-  public async ordersByBranchDelivered( _id: string): Promise<ProductOrderEntity[] | ErrorHandler| null > {
+  public async ordersByBranchDelivered( _id: any): Promise<ProductOrderEntity[] | ErrorHandler| null > {
     return await this.productOrderRepository.findAllItems({branch:_id, order_status: 8 }, InfoBranchOrder, PopulateInfoUser)
   }
   public async ProductOrdersPaid(): Promise<ProductOrderEntity[] | ErrorHandler| null > {
