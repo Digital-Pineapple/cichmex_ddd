@@ -1,10 +1,10 @@
 const path = "https://cloud.cichmex.mx/"
 export const retrieveAWSFiles = (images : any ) => {
     const absolutePath = `${path}${process.env.S3_ENVIRONMENT}`;
-    // if(images.length === 0){
-    //     return images
-    // }
-    const parsedImages = images.map((image : any) => {
+    if(images?.length === 0){
+        return 
+    }
+    const parsedImages = images?.map((image : any) => {
         // if(image?.url){
         //     return image;
         // }
@@ -29,9 +29,9 @@ function removeBasePath(url: string) {
 
 export function retrieveParsedImageProducts(products: any){
     try{
-        return products.map((product: any) => { 
+        return products?.map((product: any) => { 
             if(product?.has_variants || product?.variants?.length > 0){                        
-                product.variants = product.variants.map((variant: any) => { 
+                product.variants = product.variants?.map((variant: any) => { 
                     return {
                         ...variant,
                         images : retrieveAWSFiles(variant?.images),            

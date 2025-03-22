@@ -643,7 +643,7 @@ export class ProductController extends ResponseData {
       };
       this.invoke(response, 201, res, '', next);
     } catch (error) {
-      // console.log();      
+      console.log("category", error);      
       next(new ErrorHandler("Hubo un error al buscar", 500));
       console.log("category product error", error);
     }
