@@ -916,10 +916,10 @@ export class PaymentController extends ResponseData {
                     coupon_id: metadata.coupon_id                                     
                 };                                                                                   
                 if (metadata.type_delivery === "homedelivery") {
-                    orderPayload.deliveryLocation = metadata?.address;                
+                    orderPayload.deliveryLocation = metadata?.address_id;                
                 } 
                 if (metadata.type_delivery === 'pickup') {
-                    orderPayload.branch = metadata.branch;               
+                    orderPayload.branch = metadata.branch_id;               
                 }
                 const { additional_info, id, status, transaction_details, payment_method } = payment
                 const createPayment: any = await this.paymentUseCase.createNewPayment({
