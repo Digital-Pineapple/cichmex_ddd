@@ -37,6 +37,7 @@ import { NotificationUseCase } from '../../../application/Notifications/Notifica
 import TypeUserModel from '../../models/TypeUserModel';
 import UserModel from '../../models/UserModel';
 import NotificationModel from '../../models/notification/NotificationModel';
+import { validateOrderFields } from '../../../../shared/infrastructure/validation/Order/OrderMiddleware';
 
 const paymentRouter = Router();
 
@@ -78,13 +79,13 @@ paymentRouter
     .get("/expired/sales", userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), paymentController.autoCancelPO)
     .post('/addTicket', paymentValidation.ImageValidation, userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.addTicket)
     .post('/rejectTicket', paymentValidation.ImageValidation, userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),ActivityLogger, paymentController.rejectProofOfPayment)
-    .post('/createPreferenceMP', paymentValidation.paymentValidation, paymentController.createLMP)
+    .post('/createPreferenceMP',  paymentValidation.paymentValidation, validateOrderFields , paymentController.createLMP)
     .post('/Membership-Pay', paymentController.createPaymentMP)
     .post('/Products-Pay', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.createPaymentProductMP)
     .post('/transfer-payment', userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CUSTOMER"]), paymentController.transferPayment)
     // .post('/Products-PayLocation', paymentController.createPaymentProductMPLocation)
     .post('/success', paymentController.createTicket)
-    .post('/successwebhook', paymentController.webhookMP)
+    // .post('/successwebhook', paymentController.webhook)
     .post('/Mem-Payment-success', paymentController.PaymentSuccess)
     .post("/validatePaymentProof", userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]),ActivityLogger, paymentController.validateProofOfPayment)
     // .post('/ticket', paymentController)
