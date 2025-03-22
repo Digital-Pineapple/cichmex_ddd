@@ -1,13 +1,13 @@
 const path = "https://cloud.cichmex.mx/"
 export const retrieveAWSFiles = (images : any ) => {
     const absolutePath = `${path}${process.env.S3_ENVIRONMENT}`;
-    if(images.length === 0){
-        return images
-    }
+    // if(images.length === 0){
+    //     return images
+    // }
     const parsedImages = images.map((image : any) => {
-        if(image?.url){
-            return image;
-        }
+        // if(image?.url){
+        //     return image;
+        // }
         return  {
             ...image,
             url : absolutePath + removeBasePath(image?.url)

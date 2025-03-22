@@ -21,6 +21,7 @@ import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/Shoppi
 import mongoose from 'mongoose';
 import { getProperties, parseProductsToMercadoPago } from '../../../../helpers/products';
 import { NotificationUseCase } from '../../../application/Notifications/NotificationUseCase';
+import MetadataModel from '../../models/metadata/MetadataModel';
 
 
 export class PaymentController extends ResponseData {
@@ -888,33 +889,32 @@ export class PaymentController extends ResponseData {
             const payment = await paymentClient.get({ id: paymentId });             
             if(payment.status === "rejected") return next(new ErrorHandler(`El pago no se aprobo`, 404))                                                                                                                              
             if (payment.metadata) {              
-                const metadata = payment.metadata;  
-                const orderId = payment.external_reference;                        
+                const metadata = payment.metadata;
+                // const metadata = resMetadata.data;                
+                const orderId = payment.external_reference || "";                        
                 const uuid4 = generateUUID();            
                 const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
                 const expDate = moment(currentDate).add(48, 'hours').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
                 const taxDateExpiration = moment(currentDate).add(1, 'month').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
                 const cart: any = await this.shoppingCartUseCase.getShoppingCartByUser(metadata.user_id);
                 const products = JSON.stringify(cart.products);
-                // console.log(products);                                
-                // // console.log(products, "productos");                            
                 const orderPayload: any = {      
-                    order_id: orderId,                          
+                    order_id: metadata.order_id,                          
                     products: JSON.parse(products),
-                    discount: metadata.dis,
-                    subTotal: metadata.s,
-                    total: metadata.t,
-                    user_id: metadata.u,
-                    shipping_cost: metadata.sc,
+                    discount: metadata.discount,
+                    subTotal: metadata.subtotal,
+                    total: metadata.total,
+                    user_id: metadata.user_id,
+                    shipping_cost: metadata.shipping_cost,
                     paymentType: payment.payment_method,
                     payment_status: payment?.status,
                     download_ticket: payment?.transaction_details?.external_resource_url,                
-                    origin: metadata.o,
+                    origin: metadata.origin,
                     order_status: payment.status === "approved" ? 2 : 0,
                     tax_expiration_date: taxDateExpiration,
-                    typeDelivery: metadata.d,  
-                    coupon_id: metadata.c              
-                }; 
+                    typeDelivery: metadata.type_delivery,
+                    coupon_id: metadata.coupon_id                                     
+                };                                                                                   
                 if (metadata.type_delivery === "homedelivery") {
                     orderPayload.deliveryLocation = metadata?.address;                
                 } 
@@ -947,6 +947,7 @@ export class PaymentController extends ResponseData {
           }
     }
     
+
     private async updateProductStock(productsOrder: any[], order_id: string) {
         try{
             await Promise.all(productsOrder.map(async (product: any) => {
