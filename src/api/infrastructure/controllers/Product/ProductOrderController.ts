@@ -55,6 +55,7 @@ export class ProductOrderController extends ResponseData {
 
     this.ReadyProductOrdersToDelivery = this.ReadyProductOrdersToDelivery.bind(this);
     this.OptimizedPackagesToDelivery = this.OptimizedPackagesToDelivery.bind(this);
+    this.getOrdersDelivered = this.getOrdersDelivered.bind(this);
   }
 
   public async getAllProductOrders(req: Request, res: Response, next: NextFunction) {
@@ -365,6 +366,17 @@ export class ProductOrderController extends ResponseData {
   }
 
   public async getProductOrderByBranch(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    try {
+      const response = await this.productOrderUseCase.ordersByBranchDelivered(id)
+
+      this.invoke(response, 200, res, "", next);
+    } catch (error) {
+      console.log(error,'data');
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+  public async getOrdersDelivered(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
       const response = await this.productOrderUseCase.ProductOrdersByBranch(id)
