@@ -37,16 +37,16 @@ const userValidations = new UserValidations();
 discountCouponRouter
 
     // .get('/all', userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.getAllDiscountCoupons)
-    .get('/all', userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.getAllDiscountCoupons)
-    .get('/',userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.getAllDiscountCoupons)
-    .get('/get_one/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.getOneDiscountDetail)
+    .get('/all', userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), discountCouponController.getAllDiscountCoupons)
+    .get('/',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), discountCouponController.getAllDiscountCoupons)
+    .get('/get_one/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), discountCouponController.getOneDiscountDetail)
     .post('/find',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN', 'CUSTOMER']), discountCouponController.findCoupon )
     // .post('/',  userValidations.authTypeUserValidation(['SUPER-ADMIN']), discountCouponController.createDiscountCoupon)
-    .post('/',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, discountCouponController.createDiscountCoupon)
+    .post('/',userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, discountCouponController.createDiscountCoupon)
     .post('/consume',  userValidations.authTypeUserValidation(['CUSTOMER']), discountCouponController.consumeOneCoupon)
-    .put('/update/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger,  discountCouponController.updateDiscountCoupon)
-    .put('/changeActive/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, discountCouponController.changeActiveDiscount)
-    .delete('/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, discountCouponController.deleteDiscountCoupon)
+    .put('/update/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger,  discountCouponController.updateDiscountCoupon)
+    .put('/changeActive/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, discountCouponController.changeActiveDiscount)
+    .delete('/:id',  userValidations.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, discountCouponController.deleteDiscountCoupon)
 
 export default discountCouponRouter;
 
