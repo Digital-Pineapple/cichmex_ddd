@@ -9,6 +9,7 @@ import { RegionUseCase } from '../../../application/regions/regionUseCase';
 import { RegionsService } from '../../../../shared/infrastructure/Regions/RegionsService';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 import { log } from 'console';
+import mongoose from 'mongoose';
 export class ProductOrderController extends ResponseData {
   protected path = "/productOrder";
   private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634";
@@ -368,7 +369,7 @@ export class ProductOrderController extends ResponseData {
   public async getProductOrderByBranch(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
-      const response = await this.productOrderUseCase.ordersByBranchDelivered(id)
+      const response = await this.productOrderUseCase.ProductOrdersByBranch(id)
 
       this.invoke(response, 200, res, "", next);
     } catch (error) {
@@ -378,8 +379,9 @@ export class ProductOrderController extends ResponseData {
   }
   public async getOrdersDelivered(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
+    const orderId = new mongoose.Types.ObjectId(id)
     try {
-      const response = await this.productOrderUseCase.ProductOrdersByBranch(id)
+      const response = await this.productOrderUseCase.ordersByBranchDelivered(orderId)
 
       this.invoke(response, 200, res, "", next);
     } catch (error) {
