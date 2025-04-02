@@ -5,7 +5,7 @@ import { IZone } from '../../domain/warehouse/zoneEntity';
 import { IAisle } from '../../domain/warehouse/aisleEntity';
 import { ISection } from '../../domain/warehouse/sectionEntity';
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
-import { PopulateAisle, PopulateZone } from '../../../shared/domain/PopulateInterfaces';
+import { PopulateAisle, PopulateStorehouse, PopulateZone } from '../../../shared/domain/PopulateInterfaces';
 export class WarehouseUseCase {
 
     constructor(private readonly zoneRepository: zoneRepository,
@@ -14,16 +14,31 @@ export class WarehouseUseCase {
     ) { }
 
     public async getAllZones(): Promise<IZone[] | ErrorHandler | null> {
-        return await this.zoneRepository.findAll()
+        return await this.zoneRepository.findAll(PopulateStorehouse)
+    }
+    public async getAllZonesByStorehouse(storehouse: any): Promise<IZone[] | ErrorHandler | null> {
+        return await this.zoneRepository.findAllItems({status: true, storehouse:storehouse })
     }
     public async getAllAisles(): Promise<IZone[] | ErrorHandler | null> {
-        return await this.aisleRepository.findAll(PopulateZone)
+        return await this.aisleRepository.findAll(PopulateZone, PopulateStorehouse )
+    }
+    public async getAllAislesByStorehouse(storehouse: any): Promise<IZone[] | ErrorHandler | null> {
+        return await this.aisleRepository.findAllItems({status: true, storehouse:storehouse }, PopulateZone)
     }
     public async getAllSections(): Promise<ISection[] | ErrorHandler | null> {
-        return await this.sectionRepository.findAll(PopulateAisle)
+        return await this.sectionRepository.findAll(PopulateAisle, PopulateStorehouse)
     }
-    public async getOneAisle(id: string): Promise<IAisle | null> {
+    public async getAllSectionsByStorehouse(storehouse: any): Promise<ISection[] | ErrorHandler | null> {
+        return await this.sectionRepository.findAllItems({status: true, storehouse:storehouse })
+    }
+    public async getOneAisle(id: any): Promise<IAisle | null> {
         return await this.aisleRepository.getAllDetailAisle(id)
+    }
+    public async getOneAisleAdd(id: any): Promise<IAisle | null> {
+        return await this.aisleRepository.findById(id, PopulateZone, PopulateStorehouse)
+    }
+    public async getOneZone(id: any): Promise<IZone | null> {
+        return await this.zoneRepository.findById(id, PopulateStorehouse)
     }
     public async getOneSection(id: string): Promise<ISection | null> {
         return await this.sectionRepository.findById(id, PopulateAisle)

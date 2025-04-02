@@ -12,17 +12,21 @@ import { WarehouseController } from '../../controllers/warehouseController/Wareh
 import { StockStoreHouseRepository } from '../../repository/stockStoreHouse/StockStoreHouseRepository';
 import StockStoreHouseModel from '../../models/stockStoreHouse/StockStoreHouseModel';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
+import { StoreHouseRepository } from '../../repository/storeHouse/StoreHouseRepository';
+import { StoreHouseModel } from '../../models/storeHouse/StoreHouseModel';
+import { StoreHouseUseCase } from '../../../application/storehouse/storeHouseUseCase';
 
 const warehouseRouter = Router();
 
 const zoneRepository     = new ZoneRepository(ZoneModel);
 const aisleRepository = new AisleRepository(AisleModel)
 const sectionRepository = new SectionRepository(SectionModel)
-const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel)
+const storeHouseRepository = new StoreHouseRepository(StoreHouseModel)  
+
 
 const warehouseUseCase = new WarehouseUseCase(zoneRepository,aisleRepository,sectionRepository) 
-const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository)
-const warehouseController     = new WarehouseController(warehouseUseCase, stockStoreHouseUseCase)
+const storeHouseUseCase = new StoreHouseUseCase(storeHouseRepository)
+const warehouseController     = new WarehouseController(warehouseUseCase, storeHouseUseCase)
 const userValidations = new UserValidations();
 
 warehouseRouter

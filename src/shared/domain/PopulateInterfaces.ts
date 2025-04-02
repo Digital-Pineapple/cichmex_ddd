@@ -17,6 +17,7 @@ import DiscountCouponModel from '../../api/infrastructure/models/discountCoupon/
 import { ZoneModel } from '../../api/infrastructure/models/warehouse/ZoneModel';
 import { AisleModel } from '../../api/infrastructure/models/warehouse/AisleModel';
 import AddressModel from '../../api/infrastructure/models/AddressModel';
+import { StoreHouseModel } from '../../api/infrastructure/models/storeHouse/StoreHouseModel';
 export interface IAuthPopulateConfig {
     path    : string;
     select  : string;
@@ -236,5 +237,10 @@ export const PopulateProductSection : IGuideConfig ={
 export const PopulateProductDetail : IGuideConfig ={
     path: 'product_detail',
     model: ProductModel
+
+}
+export const PopulateStorehouse : IGuideConfig ={
+    path: 'storehouse',
+    model: StoreHouseModel
 
 }

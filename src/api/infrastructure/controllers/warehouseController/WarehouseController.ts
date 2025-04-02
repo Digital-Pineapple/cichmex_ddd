@@ -1,19 +1,15 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, response } from 'express';
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { WarehouseUseCase } from '../../../application/warehouse/WarehouseUseCase';
-import { promises } from 'nodemailer/lib/xoauth2';
-import { log } from 'console';
-import { relativeTimeThreshold } from 'moment';
-import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
-import { buildInputsReportPDF } from '../../../../libs/pdfPrintReport';
 import { buildReportSectionPDF } from '../../../../libs/pdfPrintSection';
 import mongoose from 'mongoose';
+import { StoreHouseUseCase } from '../../../application/storehouse/storeHouseUseCase';
 
 export class WarehouseController extends ResponseData {
     protected path = '/warehouse'
 
-    constructor(private warehouseUseCase: WarehouseUseCase, private stockStoreHouseUseCase: StockStoreHouseUseCase) {
+    constructor(private warehouseUseCase: WarehouseUseCase, private storeHouseUseCase: StoreHouseUseCase) {
         super();
         this.getAisle = this.getAisle.bind(this);
         this.getSection = this.getSection.bind(this);
@@ -40,13 +36,29 @@ export class WarehouseController extends ResponseData {
     }
 
     public async getAllZones(req: Request, res: Response, next: NextFunction) {
+        const user = req.user;
+        let response;
+    
         try {
-            const response = await this.warehouseUseCase.getAllZones()
-            this.invoke(response, 200, res, '', next);
+            if (user.type_user?.role.includes("SUPER-ADMIN") || user.type_user?.role.includes("ADMIN")) {
+                response = await this.warehouseUseCase.getAllZones();
+                return this.invoke(response, 200, res, '', next);
+            }
+            
+            if (user.type_user?.role.includes("ADMIN") || user.type_user?.role.includes("WAREHOUSE-MANAGER")) {
+                response = await this.warehouseUseCase.getAllZonesByStorehouse(user.employee_detail?.store_house?._id);
+                return this.invoke(response, 200, res, '', next);
+            }
+    
+            // Si no tiene los permisos necesarios
+            return next(new ErrorHandler('No tienes permisos para acceder a esta información', 403));
+    
         } catch (error) {
-            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+            console.error(error);
+            return next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
+    
 
     public async getAisle(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params
@@ -104,19 +116,47 @@ export class WarehouseController extends ResponseData {
     }
 
     public async getAllAisles(req: Request, res: Response, next: NextFunction) {
+        const user = req.user;
+        let response;
         try {
-            const response = await this.warehouseUseCase.getAllAisles()
-            this.invoke(response, 200, res, '', next);
+            if (user.type_user?.role.includes("SUPER-ADMIN")|| user.type_user?.role.includes("ADMIN")) {
+                response = await this.warehouseUseCase.getAllAisles();
+                return this.invoke(response, 200, res, '', next);
+            }
+            
+            if ( user.type_user?.role.includes("WAREHOUSE-MANAGER")) {
+                response = await this.warehouseUseCase.getAllAislesByStorehouse(user.employee_detail?.store_house?._id);
+                return this.invoke(response, 200, res, '', next);
+            }
+    
+            // Si no tiene los permisos necesarios
+            return next(new ErrorHandler('No tienes permisos para acceder a esta información', 403));
+    
         } catch (error) {
-            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+            console.error(error);
+            return next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
     public async getAllSections(req: Request, res: Response, next: NextFunction) {
+        const user = req.user;
+        let response;
         try {
-            const response = await this.warehouseUseCase.getAllSections()
-            this.invoke(response, 200, res, '', next);
+            if (user.type_user?.role.includes("SUPER-ADMIN") || user.type_user?.role.includes("ADMIN") ) {
+                response = await this.warehouseUseCase.getAllSections();
+                return this.invoke(response, 200, res, '', next);
+            }
+            
+            if (user.type_user?.role.includes("WAREHOUSE-MANAGER")) {
+                response = await this.warehouseUseCase.getAllSectionsByStorehouse(user.employee_detail?.store_house?._id);
+                return this.invoke(response, 200, res, '', next);
+            }
+    
+            // Si no tiene los permisos necesarios
+            return next(new ErrorHandler('No tienes permisos para acceder a esta información', 403));
+    
         } catch (error) {
-            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+            console.error(error);
+            return next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
 
@@ -124,7 +164,11 @@ export class WarehouseController extends ResponseData {
         const body = req.body
         try {
             const response = await this.warehouseUseCase.crateZone(body)
-            this.invoke(response, 200, res, 'La zona se creó con éxito', next);
+            if (response instanceof ErrorHandler) {
+                return next(response);
+            }
+            const storehouse = await this.warehouseUseCase.getOneZone(response?._id)
+            this.invoke(storehouse, 200, res, 'La zona se creó con éxito', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
@@ -134,7 +178,11 @@ export class WarehouseController extends ResponseData {
         const body = req.body
         try {
             const response = await this.warehouseUseCase.updateZone(id, body)
-            this.invoke(response, 200, res, 'La zona se editó con éxito', next);
+            if (response instanceof ErrorHandler) {
+                return next(response);
+            }
+            const zone = await this.warehouseUseCase.getOneZone(response?._id)
+            this.invoke(zone, 200, res, 'La zona se editó con éxito', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
@@ -144,7 +192,11 @@ export class WarehouseController extends ResponseData {
         const body = req.body
         try {
             const response = await this.warehouseUseCase.updateOneAisle(id, body)
-            this.invoke(response, 200, res, 'El pasillo se editó con éxito', next);
+            if (response instanceof ErrorHandler) {
+                return next(response);
+            }
+            const aisle = await this.warehouseUseCase.getOneAisleAdd(response?._id)
+            this.invoke(aisle, 200, res, 'El pasillo se editó con éxito', next);
         } catch (error) {
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
@@ -165,7 +217,11 @@ export class WarehouseController extends ResponseData {
         const body = req.body
         try {
             const response = await this.warehouseUseCase.createAisle(body)
-            this.invoke(response, 200, res, 'El pasillo se creó con éxito', next);
+            if (response instanceof ErrorHandler) {
+                return next(response);
+            }
+            const aisle = await this.warehouseUseCase.getOneAisleAdd(response?._id)
+            this.invoke(aisle, 200, res, 'El pasillo se creó con éxito', next);
         } catch (error) {
             next(error)
         }
