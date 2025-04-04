@@ -39,7 +39,7 @@ export class BannerController extends ResponseData {
         }
     }
     public async getOneBanner(req: Request, res: Response, next: NextFunction) {
-        const { id } = req.params
+        const { id } = req.params  
         try {
             const response = await this.bannerUseCase.getOneBanner(id)
             this.invoke(response, 200, res, '', next);

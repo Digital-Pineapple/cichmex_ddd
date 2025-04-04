@@ -1,4 +1,5 @@
-import { branchoffice, category, subcategory, auth, user, cart, product, orders, address, payments } from "./swaggerdocs";
+import { max } from "moment";
+import { branchoffice, category, subcategory,banner,auth, user, cart, product, orders, address, payments, discountCoupon } from "./swaggerdocs";
 export const options = {
   definition: {
     openapi: "3.0.0",
@@ -13,6 +14,9 @@ export const options = {
     servers: [
       {
         url: "http://localhost:3000/api",
+      },
+      {
+        url: "http://localhost:3004/api",
       },
       {
         url: "https://api.carwashymas.com/api",
@@ -31,6 +35,52 @@ export const options = {
         },
       },
       schemas: {
+        DiscountCoupon: {
+          type: "object",
+          properties: {
+            _id: {
+              type: "string",
+              example: "66a12d5cf2162cfd3c5999c34",
+            },
+            uuid: { type: "string" },
+            name: { type: "string" },
+            description:{ type: "string" },
+            code: { type: "string" },
+            percent: { type: "number" },
+            fixed_amount: { type: "number" },
+            type_discount: {
+              type: "string",
+              enum: ["free_shipping", "first_buy", "for_creators","is_amount","is_percent"],
+              description: "Tipo de descuento",
+              example: "free_shipping",
+            },
+            unlimited: { type: "boolean" },
+            start_date: { type: "string", format: "date-time" },
+            expiration_date: { type: "string", format: "date-time" },
+            min_cart_amount: { type: "number" },
+            max_cart_amount: { type: "number" },
+            for_all_products: { type: "boolean" },
+            products: {
+              type: "array",
+              items: { type: "string" },
+              example: ["product_id_1", "product_id_2"],
+            },
+            creator_id: { type: "string" },
+            status: { type: "boolean" },
+            is_active: { type: "boolean" },
+            maxUses: { type: "number" },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-07-24T16:35:40.009Z",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-08-16T23:01:28.854Z",
+            },
+          },
+        },
         User: {
           type: "object",
           properties: {
@@ -88,6 +138,36 @@ export const options = {
             user: { $ref: "#/components/schemas/User" },
           },
         },
+        Banner: {
+          type: "object",
+          properties: {
+            _id: {
+              type: "string",
+              example: "66a12d5cf2162cfd3c5999c34",
+            },
+            is_active: { type: "string" },
+            no_slide: { type: "number" },
+            for_discount: { type: "string" }, 
+            discount: { type: "#/components/schemas/DoscountCoupon" },
+            title: { type: "string" },
+            description: { type: "string" },
+            type_event: { type: "string" },
+            image_slide: { type: "string" },
+            image_slide_movil: { type: "string" },
+            status: { type: "boolean" },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-07-24T16:35:40.009Z",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-08-16T23:01:28.854Z",
+            },
+          },
+        },
+        
         Category: {
           type: "object",
           properties: {
@@ -403,6 +483,7 @@ export const options = {
       },
     },
     paths: {
+      ...discountCoupon,
       ...auth,
       ...user,
       ...cart,
@@ -412,7 +493,9 @@ export const options = {
       ...subcategory,
       ...branchoffice,      
       ...address,
-      ...payments
+      ...payments,
+      ...banner,
+
     },
   },
   apis: ["./src/shared/infrastructure/routes/Router.ts"],

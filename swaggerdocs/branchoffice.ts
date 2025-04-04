@@ -275,6 +275,49 @@ const branchoffice = {
       },
     },
   },
+  "/branch-offices/desactivate/{id}": {
+    post: {
+      tags: ["BranchOffice"],
+      description: "Desactivate a branch office by id",
+      summary: "Desactivar branch office",
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: {
+            type: "string",
+          },
+        },
+      ],
+      responses: {
+        "200": {
+          description: "Desactivar sucursal",
+          content: {
+            "application/json": {
+              schema: {
+                allOf: [
+                  { $ref: "#/components/schemas/BranchOffice" },
+                  {
+                    type: "object",
+                    properties: {
+                      activated: {
+                        type: "boolean",
+                        example: true,
+                      },
+                    },
+                  },
+                ],
+              }, // Add this closing brace
+            },
+          },
+        },
+        "500": {
+          description: "Hubo un error al desactivar",
+        },
+      },
+    },
+  },
 };
 
 export { branchoffice };
