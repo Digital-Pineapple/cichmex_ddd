@@ -1,5 +1,13 @@
-import { max } from "moment";
-import { branchoffice, category, subcategory,banner,auth, user, cart, product, orders, address, payments, discountCoupon } from "./swaggerdocs";
+  import {
+  branchoffice,
+  category, subcategory,
+   banner, auth, user, cart, 
+   product, orders, address, payments, discountCoupon,
+   dynamicRoutes,
+   memberships,
+   membershipsBenefits
+} from "./swaggerdocs";
+
 export const options = {
   definition: {
     openapi: "3.0.0",
@@ -10,7 +18,7 @@ export const options = {
     },
     schemes: ["http", "https"],
     consumes: ["application/json"],
-    produces: ["application/json"],   
+    produces: ["application/json"],
     servers: [
       {
         url: "http://localhost:3000/api",
@@ -25,7 +33,7 @@ export const options = {
         url: "https://testapi.carwashymas.com/api",
       },
     ],
-    security: [{ bearerAuth: [] }], 
+    security: [{ bearerAuth: [] }],
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -35,6 +43,127 @@ export const options = {
         },
       },
       schemas: {
+        MembershipBenefits: {
+          type: "object",
+          properties: {
+            _id: {
+              type: "string",
+              example: "66a12d5cf2162cfd3c5999c34",
+            },
+            membership_id: {
+              type: "string",
+              example: "66a12d5cf2162cfd3c5999c34",
+            },
+            service_id: {
+              type: "string",
+              example: "66a12d5cf2162cfd3c5999c34",
+            },
+            client_id: {
+              type: "string",
+              example: "66a12d5cf2162cfd3c5999c34",
+            },
+            quantity: {
+              type: "number",
+              example: 10,
+            },
+            start_date: {
+              type: "string",
+              format: "date-time",
+              example: "2024-07-24T16:35:40.009Z",
+            },
+            end_date: {
+              type: "string",
+              format: "date-time",
+              example: "2024-08-16T23:01:28.854Z",
+            },
+            activated: {
+              type: "boolean",
+              example: true,
+            },
+            status: {
+              type: "boolean",
+              example: true,
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-07-24T16:35:40.009Z",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-08-16T23:01:28.854Z",
+            },
+          },
+        },
+        Memberships: {
+          type: "object",
+          properties: {
+            _id: {
+              type: "string",
+              example: "66a12d5cf2162cfd3c5999c34",
+            },
+            
+            name: { type: "string" },
+            price_standard: { type: "number" },
+            discount_porcent: { type: "number" },
+            discount_products: { type: "number" },
+            price_discount: { type: "number" },
+            service_quantity: {
+              type: "array",
+              items: { type: "string" },
+              example: ["service_id_1", "service_id_2"],
+            },
+            type_cars: {
+              type: "array",
+              items: { type: "string" },
+              example: ["type_car_id_1", "type_car_id_2"],
+            },
+            status: { type: "boolean" },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-07-24T16:35:40.009Z",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-08-16T23:01:28.854Z",
+            },
+          },
+        },
+        DynamicRoutes: {
+          type: "object",
+          properties: {
+            _id: {
+              type: "string",
+              example: "66a12d5cf2162cfd3c5999c34",
+            },
+            uuid: { type: "string" },
+            name: { type: "string" },
+            path: { type: "string" },
+            component: { type: "number" },
+            authRequired: { type: "boolean" },
+            rolesAllowed: {
+              type: "array",
+              items: { type: "string" },
+              example: ["SUPER-ADMIN", "ADMIN"],
+            },
+            system: { type: "string" },
+            status: { type: "boolean" },
+            redirectTo: { type: "string" },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-07-24T16:35:40.009Z",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-08-16T23:01:28.854Z",
+            },
+          },
+        },
         DiscountCoupon: {
           type: "object",
           properties: {
@@ -44,13 +173,13 @@ export const options = {
             },
             uuid: { type: "string" },
             name: { type: "string" },
-            description:{ type: "string" },
+            description: { type: "string" },
             code: { type: "string" },
             percent: { type: "number" },
             fixed_amount: { type: "number" },
             type_discount: {
               type: "string",
-              enum: ["free_shipping", "first_buy", "for_creators","is_amount","is_percent"],
+              enum: ["free_shipping", "first_buy", "for_creators", "is_amount", "is_percent"],
               description: "Tipo de descuento",
               example: "free_shipping",
             },
@@ -113,7 +242,7 @@ export const options = {
             "status": { "type": "boolean" },
             "default": { "type": "boolean" },
             "lat": { "type": "number" },
-            "lgt": { "type": "number" },           
+            "lgt": { "type": "number" },
             "createdAt": {
               "type": "string",
               "format": "date-time"
@@ -147,7 +276,7 @@ export const options = {
             },
             is_active: { type: "string" },
             no_slide: { type: "number" },
-            for_discount: { type: "string" }, 
+            for_discount: { type: "string" },
             discount: { type: "#/components/schemas/DoscountCoupon" },
             title: { type: "string" },
             description: { type: "string" },
@@ -167,7 +296,7 @@ export const options = {
             },
           },
         },
-        
+
         Category: {
           type: "object",
           properties: {
@@ -286,7 +415,7 @@ export const options = {
               example: true,
             },
           },
-        },        
+        },
         "CartResponse": {
           "type": "object",
           "properties": {
@@ -479,22 +608,25 @@ export const options = {
             },
 
           }
-        }        
+        }
       },
     },
     paths: {
-      ...discountCoupon,
+      ...membershipsBenefits,
+      ...memberships,
+      ...address,
       ...auth,
-      ...user,
+      ...banner,
       ...cart,
+      ...discountCoupon,
+      ...dynamicRoutes,
+      ...user,
       ...product,
       ...orders,
       ...category,
       ...subcategory,
-      ...branchoffice,      
-      ...address,
+      ...branchoffice,
       ...payments,
-      ...banner,
 
     },
   },

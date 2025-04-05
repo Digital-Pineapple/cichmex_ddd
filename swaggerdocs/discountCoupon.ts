@@ -1,3 +1,4 @@
+import { request } from "http";
 import _ from "mongoose-paginate-v2";
 
 const discountCoupon: any = {
@@ -401,18 +402,35 @@ const discountCoupon: any = {
                         schema: {
                             type: "object",
                             properties: {
-                                name: { type: "string", example: "Cupon de descuento" },
-                                description: { type: "string", example: "Descripción del cupon" },
-                                code: { type: "string", example: "DESCUENTO10" },
-                                percent: { type: "number", example: 10 },
-                                fixed_amount: { type: "number", example: 5 },
-                                type_discount: { type: "string", example: "is_percent" },
-                                unlimited: { type: "boolean", example: true },
-                                start_date: { type: "string", example: "2023-09-01T12:00:00Z" },
-                                expiration_date: { type: "string", example: "2023-09-30T12:00:00Z" },
-                                min_cart_amount:{type:"number",example:"50"},
-                                max_cart_amount:{type:"number",example:"100"},
-                                for_all_products:{type:"boolean",example:true},
+                                values:{
+                                    type: "object",
+                                    properties: { 
+                                        name: { type: "string", example: "Cupon de descuento" },
+                                        description: { type: "string", example: "Descripción del cupon" },
+                                        code: { type: "string", example: "DESCUENTO10" },
+                                        percent: { type: "number", example: 10 },
+                                        fixed_amount: { type: "number", example: 5 },
+                                        type_discount: { type: "string", example: "is_percent" },
+                                        unlimited: { type: "boolean", example: true },
+                                        start_date: { type: "string", example: "2023-09-01T12:00:00Z" },
+                                        expiration_date: { type: "string", example: "2023-09-30T12:00:00Z" },
+                                        min_cart_amount: { type: "number", example: 50 },
+                                        max_cart_amount: { type: "number", example: 100 },
+                                        for_all_products: { type: "boolean", example: true },
+                                        products_id_list :{
+                                            type:"array",
+                                            items:{
+                                                type:"string"
+                                            }
+                                        }, 
+                                        maxUses: { type: "number", example: 100 },
+                                        creator_id: { type: "string", example: "64f5b4a2c8d3e1e3f8c8e4b2" },
+                                        status: { type: "boolean", example: true },
+                                        is_active: { type: "boolean", example: false },
+
+                                    }
+                                }
+            
                             },
                         },
                     },
@@ -464,6 +482,19 @@ const discountCoupon: any = {
             tags: ["Discounts"],
             description: "Cambiar el estado de un cupon de descuento",
             summary: "Cambiar el estado de un cupon de descuento",
+            requestBody: {
+                required: true,
+                content: {
+                    "application/json": {
+                        schema: {
+                            type: "object",
+                            properties: {
+                                is_active: { type: "boolean", example: true },
+                            },
+                        },
+                    },
+                },
+            },
             parameters: [
                 {
                     name: "id",

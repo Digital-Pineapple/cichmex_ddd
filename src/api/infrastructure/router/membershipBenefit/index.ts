@@ -22,7 +22,7 @@ const userValidations = new UserValidations();
 
 
 membershipBenefitRouter
-    .get('/', userValidations.authTypeUserValidation(['65a8193ae6f31eef3013bc53']), membershipBenefitsController.getAllMembershipsBenefits)
+    .get('/', userValidations.authTypeUserValidation(['SUPER-ADMIN']), membershipBenefitsController.getAllMembershipsBenefits)
     .get('/history', membershipBenefitsController.getHistory)
     .get('/:id',validateAuthentication, membershipBenefitsController.getMembershipHistory)
     .get('/user/:id', validateAuthentication, membershipBenefitsController.getAllMembershipsBenefitsByUser)
