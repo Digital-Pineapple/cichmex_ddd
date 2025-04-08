@@ -87,7 +87,7 @@ const category: any = {
       parameters: [{
         description: "category id",
         name: "id",
-        in: "path",      
+        in: "path",
         required: true,
         schema: {
           type: "string",
@@ -143,8 +143,8 @@ const category: any = {
       },
     }
   },
-  "/category/SC":{
-    get:{
+  "/category/SC": {
+    get: {
       tags: ["Category"],
       description: "Return all categories with their subcategories",
       parameters: [],
@@ -167,7 +167,7 @@ const category: any = {
         },
       },
     }
-  },  
+  },
 };
 
 export { category };

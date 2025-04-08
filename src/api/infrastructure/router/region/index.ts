@@ -9,18 +9,18 @@ import { ActivityLogger } from '../../../../shared/infrastructure/middleware/Act
 
 const regionRouter = Router();
 
-const regionRepository    = new RegionRepository (RegionModel);
-const regionUseCase      = new RegionUseCase (regionRepository);
-const regionController   = new RegionController(regionUseCase);
+const regionRepository = new RegionRepository(RegionModel);
+const regionUseCase = new RegionUseCase(regionRepository);
+const regionController = new RegionController(regionUseCase);
 const userValidation = new UserValidations()
 
 regionRouter
 
-    .get('/',userValidation.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), regionController.getAllRegions)
-    .get('/:id',userValidation.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), regionController.getOneRegion)
-    .post("/", userValidation.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, regionController.createRegion )
-    .put("/update/:id",userValidation.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, regionController.updateRegion)
-    .delete("/:id",userValidation.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']),ActivityLogger, regionController.deteleRegion)
+    .get('/', userValidation.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), regionController.getAllRegions)
+    .get('/:id', userValidation.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), regionController.getOneRegion)
+    .post("/", userValidation.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), ActivityLogger, regionController.createRegion)
+    .put("/update/:id", userValidation.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), ActivityLogger, regionController.updateRegion)
+    .delete("/:id", userValidation.authTypeUserValidation(['SUPER-ADMIN', 'ADMIN']), ActivityLogger, regionController.deteleRegion)
 
 export default regionRouter;
 
