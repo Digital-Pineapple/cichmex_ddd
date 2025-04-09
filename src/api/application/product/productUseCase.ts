@@ -69,7 +69,7 @@ export class ProductUseCase {
   }
   public async getVideoProducts(page: number): Promise<ProductEntity[] | ErrorHandler |  null> {
     const res : any | null = await this.productRepository.findVideoProducts(page);
-    res.products = retrieveParsedImageProducts(res.products)
+    // res.products = retrieveParsedImageProducts(res.products)
     return res;  
   }
   public async getRandomProductsByCategory(id: any, skiproduct: any, storehouse: any ): Promise<ProductEntity[] | ErrorHandler |  null> {
