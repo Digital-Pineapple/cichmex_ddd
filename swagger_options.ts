@@ -1,3 +1,4 @@
+import { ref } from "pdfkit";
 import {
   branchoffice,
   category, subcategory,
@@ -16,7 +17,8 @@ import {
   servicesInBranch,
   shippingCost,
   sizeGuide,
-  stockStorehouse
+  stockStorehouse,
+  storeHouse
 } from "./swaggerdocs";
 
 export const options = {
@@ -350,7 +352,28 @@ export const options = {
             },
           },
         },
-
+        Images: {
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            url: { type: "string" },
+            status: { type: "boolean" },
+          }
+        },
+        ILocation: {
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            state_id: { type: "string" },
+            municipality: { type: "string" },
+            lat: { type: "number" },
+            lgt: { type: "number" },
+            direction: { type: "string" },
+            neighborhood: { type: "string" },
+            cp: { type: "string" },
+            geLocation: { type: "object" },
+          }
+        },
         Category: {
           type: "object",
           properties: {
@@ -957,61 +980,84 @@ export const options = {
             updatedAt: { type: "string", format: "date-time" },
           }
         },
-        StockStoreHouse:{
+        StockStoreHouse: {
           type: 'object',
-          properties:{
-            _id: { type: "string"},
-            StoreHouse_id:{ type: "string"},
-            product_id:{ type: "string"},
-            variant_id:{ type: "string"},
-            stock:{ type : "number"},
+          properties: {
+            _id: { type: "string" },
+            StoreHouse_id: { type: "string" },
+            product_id: { type: "string" },
+            variant_id: { type: "string" },
+            stock: { type: "number" },
             status: { type: "boolean" },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
           }
         },
-        StockSHInput:{
+        StockSHInput: {
           type: 'object',
-          properties:{
-            _id: { type: "string"},
-            folio:{ type: "string"},
-            SHStock_id:{ type: "string"},
-            quantity:{ type: "number"},
-            newQuantity:{ type: "number"},
-            responsible:{ type: "object"},
-            user_received:{ type: "object"},
-            user_arrange:{ type: "object"},
-            user_delivery:{ type: "object"},
-            product_detail: { type: "object"},
-            in_storehouse:{ type: "boolean"},
-            in_section:{type: "boolean"},
-            notes: { type: "string"},
-            date_received:{ type: "string"},
-            quantity_received:{ type: "string"},
+          properties: {
+            _id: { type: "string" },
+            folio: { type: "string" },
+            SHStock_id: { type: "string" },
+            quantity: { type: "number" },
+            newQuantity: { type: "number" },
+            responsible: { type: "object" },
+            user_received: { type: "object" },
+            user_arrange: { type: "object" },
+            user_delivery: { type: "object" },
+            product_detail: { type: "object" },
+            in_storehouse: { type: "boolean" },
+            in_section: { type: "boolean" },
+            notes: { type: "string" },
+            date_received: { type: "string" },
+            quantity_received: { type: "string" },
             status: { type: "boolean" },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
           }
         },
-        StockSHOutput:{
+        StockSHOutput: {
           type: 'object',
-          properties:{
-            _id: { type: "string"},
-            folio:{ type: "string"},
-            order_id:{ type: "string"},
-            SHStock_id:{ type: "string"},
-            quantity:{ type: "number"},
-            newQuantity:{ type: "number"},
-            responsible:{ type: "object"},
-            reason:{ type: "string"},
-            user_received:{ type: "object"},
-            user_delivery:{ type: "object"},
-            product_detail: { type: "object"},
+          properties: {
+            _id: { type: "string" },
+            folio: { type: "string" },
+            order_id: { type: "string" },
+            SHStock_id: { type: "string" },
+            quantity: { type: "number" },
+            newQuantity: { type: "number" },
+            responsible: { type: "object" },
+            reason: { type: "string" },
+            user_received: { type: "object" },
+            user_delivery: { type: "object" },
+            product_detail: { type: "object" },
             status: { type: "boolean" },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
           }
         },
+        "StoreHouse": {
+          "type": "object",
+          "properties": {
+            "_id": { "type": "string" },
+            "storehouse_key": { "type": "string" },
+            "user_id": { "type": "string" },
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "phone_number": { "type": "string" },
+            "images": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/Images" }
+            },
+            "location": { "$ref": "#/components/schemas/ILocation" },
+            tag:{ type: "string"},
+            "status": { "type": "boolean" },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "updatedAt": { "type": "string", "format": "date-time" }
+          }
+        },
+        
+
+
 
       },
     },
@@ -1038,6 +1084,7 @@ export const options = {
       ...shippingCost,
       ...sizeGuide,
       ...stockStorehouse,
+      ...storeHouse,
       ...user,
 
 

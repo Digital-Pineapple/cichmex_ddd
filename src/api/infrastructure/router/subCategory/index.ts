@@ -25,8 +25,6 @@ subCategoryRouter
     .post('/', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),subCategoryValidations.subCategoryPhotoValidation,ActivityLogger, subCategoryController.createSubCategory)
     .patch('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), subCategoryValidations.subCategoryPhotoValidation,ActivityLogger, subCategoryController.updateSubCategory)
     .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]),ActivityLogger, subCategoryController.deleteSubCategory)
-    // .get('/search/search', subCategoryController.searchSubCategory)
-
 
 export default subCategoryRouter;
 

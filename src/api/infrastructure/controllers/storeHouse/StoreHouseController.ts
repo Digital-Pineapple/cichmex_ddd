@@ -1,14 +1,9 @@
-import { Request, Response, NextFunction, response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
-
-
-import { PopulateProductCS, stockBranchPopulateConfig } from '../../../../shared/domain/PopulateInterfaces';
 import { StoreHouseUseCase } from '../../../application/storehouse/storeHouseUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
-import { log } from 'console';
-import mongoose from 'mongoose';
 
 
 export class StoreHouseController extends ResponseData {
