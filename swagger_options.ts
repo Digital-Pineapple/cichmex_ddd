@@ -18,7 +18,11 @@ import {
   shippingCost,
   sizeGuide,
   stockStorehouse,
-  storeHouse
+  storeHouse,
+  taxInfo,
+  typeCar,
+  typeUser,
+  variantProduct,
 } from "./swaggerdocs";
 
 export const options = {
@@ -264,15 +268,6 @@ export const options = {
               format: "date-time",
               example: "2024-08-16T23:01:28.854Z",
             },
-          },
-        },
-        User: {
-          type: "object",
-          properties: {
-            id: { type: "string" },
-            email: { type: "string" },
-            fullname: { type: "string" },
-            phone: { type: "string" },
           },
         },
         "AddressEntity": {
@@ -1055,10 +1050,122 @@ export const options = {
             "updatedAt": { "type": "string", "format": "date-time" }
           }
         },
-        
-
-
-
+        TaxInfo:{
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            user:{ type: "string" },
+            legal_name: { type: "string" },
+            tax_id:{ type: "string" },
+            tax_system:{type: "number"},
+            email:{ type: "string" },
+            phone:{type: "number"},
+            default_invoice_use:{ type: "string" },
+            address: { $ref: "#/components/schemas/TaxAddress" },
+            facturapi_id: { type: "string" },
+            status: { type: "boolean" },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" }
+          }
+        },
+        TaxAddress: {
+          type: "object",
+          properties: {
+            street: { type: "string" },
+            exterior: { type: "number" },
+            interior: { type: "number" },
+            neighborhood: { type: "string" },
+            city: { type: "string" },
+            municipality: { type: "string" },
+            zip: { type: "number" },
+            state: { type: "string" },
+            country: { type: "string" }
+          }
+        },
+        TypeCar:{
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            name: { type: "string" },
+            typeCar_image: { type: "string" },
+            status:{ type:"boolean"},
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" }
+          }
+        },
+        TypeUser:{
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            uuid:{  type: "string" },
+            system:{ type: "array", example:"['CICHMEX']" },
+            role:{ type: "array", example:"['ADMIN']" },
+            status:{ type:"boolean"},
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" }
+          }
+        },
+        EmployeeDetail:{
+          type:"object",
+          properties:{
+            salary:{ type: "number" },
+            sales_commission:{ type: "number" },
+            branch_office:{ type: "string" },
+            store_house:{type: "string"},
+            operationRegions:{ type: "array", items: { type: "string" } },
+          }
+        },
+        UserVerifyCode:{
+          type: "object",
+          properties: {
+            attempts: { type: "number" },
+            code: { type: "number" },
+          }
+        },
+        IPhone:{
+          type: "object",
+          properties: {
+            _id:{ type: "string" },
+            code: { type: "string" },
+            prefix: { type: "string" },
+            phone_number: { type: "number" },
+            expiration_date: { type: "string", format: "date-time" },
+            verified: { type: "boolean" },
+            status: { type: "boolean" },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" },
+          }
+        },
+        User: {
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            id: { type: "string" },
+            uuid: { type: "string" },
+            fullname: { type: "string" },
+            privacity:{ type: "boolean" },
+            email: { type: "string" },
+            email_verified: { type: "boolean" },
+            password: { type: "string" },
+            stripe_user:{ type: "string" },
+            type_user: { type: "string" },
+            profile_image: { type: "string" },
+            google: { type: "boolean"},
+            facebook: { type: "boolean"},
+            facebook_id: { type: "string"},
+            tikTok: { type: "boolean"},
+            tikTok_id: { type: "string"},
+            phone_id: { type: "string"},
+            accountVerify: { type: "boolean" },
+            employee_detail:{ type: "object", $ref: "#/components/schemas/EmployeeDetail" },
+            verify_code: { type: "object", $ref: "#/components/schemas/UserVerifyCode" },
+            facturapi_id: { type: "string" },
+            status:{ type:"boolean"},
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" },
+          },
+        },
+      
       },
     },
     paths: {
@@ -1078,14 +1185,18 @@ export const options = {
       ...product,
       ...productOrder,
       ...region,
-      ...subcategory,
       ...services,
       ...servicesInBranch,
       ...shippingCost,
       ...sizeGuide,
       ...stockStorehouse,
       ...storeHouse,
+      ...subcategory,
+      ...taxInfo,
+      ...typeCar,
+      ...typeUser,
       ...user,
+      ...variantProduct,
 
 
     },

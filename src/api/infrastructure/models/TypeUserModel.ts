@@ -1,6 +1,4 @@
 import mongoose, { Schema, model } from 'mongoose';import { TypeUserEntity } from '../../domain/typeUser/TypeUserEntity';
-import { generateUUID } from '../../../shared/infrastructure/validation/Utils';
-
 
 const TypeUserSchema = new Schema<TypeUserEntity> ({
     _id: {

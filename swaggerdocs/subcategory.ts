@@ -76,6 +76,7 @@ const subcategory: any = {
     get: {
       tags: ["SubCategory"],
       description: "Return one subcategory by id",
+      summary: "Obtiene subcategoria por id",
       parameters: [
         {
           description: "subcategory id",
@@ -188,6 +189,75 @@ const subcategory: any = {
       },
     },
   },
+  "/sub-category/detail/{id}": {
+    get: {
+      tags: ["SubCategory"],
+      description: "Return one subcategory by id",
+      summary: "Obtiene subcategoria por id",
+      parameters: [
+        {
+          description: "subcategory id",
+          name: "id",
+          in: "path",
+          required: true,
+          schema: {
+            type: "string",
+          },
+        },
+      ],
+      responses: {
+        "200": {
+          description: "The request was successful",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/SubCategory",
+              },
+            },
+          },
+        },
+        "500": {
+          description: "Internal Server Error",
+        },
+      },
+    },
+  },
+  "/sub-category/subCategory/{id}": {
+    get: {
+      tags: ["SubCategory"],
+      description: "Return all subcategories by category id",
+      summary: "Obtiene subcategorias por id de categoria",
+      parameters: [
+        {
+          description: "category id",
+          name: "id",
+          in: "path",
+          required: true,
+          schema: {
+            type: "string",
+          },
+        },
+      ],
+      responses: {
+        "200": {
+          description: "The request was successful",
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: {
+                  $ref: "#/components/schemas/SubCategory",
+                },
+              },
+            },
+          },
+        },
+        "500": {
+          description: "Internal Server Error",
+        },
+      },
+    },
+  }
 };
 
 export { subcategory };
