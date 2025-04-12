@@ -3,13 +3,14 @@ import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 import { ShippingCostUseCase } from '../../../application/shippingCost/ShippingCostUseCase';
 import { generateUUID } from '../../../../shared/infrastructure/validation/Utils';
+import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 
 
 export class ShippingCostController extends ResponseData {
 
     protected path = '/ShippingCost';
 
-    constructor(private shippingCostUseCase: ShippingCostUseCase) {
+    constructor(private shippingCostUseCase: ShippingCostUseCase, private shoppingCartUseCase: ShoppingCartUseCase) {
         super();
         this.getAllShippingCost = this.getAllShippingCost.bind(this);
         this.getOneShippingCost = this.getOneShippingCost.bind(this);
@@ -17,6 +18,7 @@ export class ShippingCostController extends ResponseData {
         this.creteShippingCost  = this.creteShippingCost.bind(this);
         this.updateShippingCost = this.updateShippingCost.bind(this);
         this.deleteShippingCost = this.deleteShippingCost.bind(this);
+        this.calculateShippingCost = this.calculateShippingCost.bind(this);
     }
 
     public async getAllShippingCost(req: Request, res: Response, next: NextFunction) {
@@ -90,6 +92,31 @@ export class ShippingCostController extends ResponseData {
             next(new ErrorHandler('Hubo un error al eliminar', 500));
         }
 
+    }
+
+    public async calculateShippingCost(req: Request, res: Response, next: NextFunction) {
+        const user = req.user;
+        try {
+            const userCart: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
+            let weight = 0;
+            userCart.products.map((product: any) => {
+                if(product.variant){
+                    weight += product.variant.weight * product.quantity;
+                }else{
+                    weight += product.item.weight * product.quantity;
+                }
+            });
+            console.log('Weight:', weight);            
+            const resp = await this.shippingCostUseCase.findShippingCost(weight)
+            // console.log("res", res);
+            
+            const shipping_cost = resp?.price_weight
+            console.log('Shipping cost:', shipping_cost);
+            this.invoke({shipping_cost: shipping_cost }, 200, res, '', next);
+        } catch (error) {
+            console.log("err", error);            
+            next(new ErrorHandler((error as Error).message || 'Error al calcular costo de envio', 500));                
+        }
     }
 
 }

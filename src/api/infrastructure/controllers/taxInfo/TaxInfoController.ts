@@ -25,6 +25,7 @@ export class TaxInfoController extends ResponseData {
         this.updateOneTaxInfo  = this.updateOneTaxInfo.bind(this);
         this.deleteTaxInfo     = this.deleteTaxInfo.bind(this);
         this.createInvoice     = this.createInvoice.bind(this);
+        this.downloadInvoice   = this.downloadInvoice.bind(this);
     }
 
     public async getAllTaxInfo(req: Request, res: Response, next: NextFunction) {
@@ -92,64 +93,37 @@ export class TaxInfoController extends ResponseData {
     }
 
     public async createInvoice(req: Request, res: Response, next: NextFunction){
-        const { data, order_id } = req.body
-        const user = req.user;
-        try{        
-            const taxInfo: any | null = await this.taxInfoUseCase.getMyTaxInfo(user._id);
-            const order: any | null = await this.productOrderUseCase.getOneProductOrder(order_id);
-            let payment_form = "";     
-            switch(payment_form){
-                case "transfer":
-                    payment_form = "03";
-                break;
-                case "ticket":
-                    payment_form = "01";
-                break;    
-                case "credit_card":
-                    payment_form = "04"
-                break;
-                case "debit_card":
-                    payment_form = "28"
-                break;
-                   default: "";        
-            }  
-            const use = "G01";
-            const facturapiItems = order.products.map((item: any) => {
-                const parsedProduct = {
-                    product: {
-                        description: item?.item?.name,
-                        product_key: item?.item?.product_key,
-                        price: item?.variant ? item?.variant?.price : item?.item?.price,     
-                        sku: item?.variant ? item?.item?.sku : item?.item?.sku,
-                        taxes: [ { type: 'IVA', rate: 0.16 } ]
-                    },
-                    quantity: item?.quantity
-                }
-                return parsedProduct;
-            });
-            if(order?.typeDelivery === "homedelivery"){
-                facturapiItems.push(
-                    { 
-                        product: {
-                            description: "costo de envio",
-                            product_key: "78102200",
-                            price: order?.shipping_cost,
-                            taxes: [ { type: 'IVA', rate: 0.16 } ]
-                       }
-                })
+        const { customer, payment_form, payment_method, items, order_id, email } = req.body        
+        try{                  
+            const order : any | null = await this.productOrderUseCase.getOneProductOrder(order_id);     
+            if(order.invoice_id) return next(new ErrorHandler('Ya existe una factura para este pedido', 400));              
+            const use = "G01";           
+            let invoice = await this.facturapiService.createInvoice(customer, items, payment_form, payment_method, use);                                                      
+            if(invoice){
+                await this.productOrderUseCase.updateProductOrder(order_id, { invoice_id : invoice.id, required_invoice : true });
             }
-            let invoice;
-            if(taxInfo){
-                invoice = await this.facturapiService.createInvoice(taxInfo?.facturapi_key, facturapiItems, payment_form, use);
-            }else{
-                const tax: any | null = await this.taxInfoUseCase.createTaxInfo(user._id, data);
-                invoice = await this.facturapiService.createInvoice(tax?.facturapi_key, facturapiItems, payment_form, use);
-            }                                               
+            if(email){      
+                await this.facturapiService.sendInvoiceByEmail(invoice.id, email);          
+            }
             this.invoke(invoice, 200, res, 'Factura creada', next);
         }catch(error){
-            next(new ErrorHandler('Error al crear la factura', 500));
+            next(new ErrorHandler((error as Error).message || 'Error al crear la factura', 500));            
         }
     }    
+
+    public async downloadInvoice(req: Request, res: Response, next: NextFunction){
+        const { invoice_id } = req.body
+        try{
+            if(!invoice_id) return next(new ErrorHandler('id de factura requerido', 404));           
+            const zipStream: any | null = await this.facturapiService.downloadZipStreamInvoice(invoice_id);
+            if (!zipStream) return next(new ErrorHandler('Factura no encontrada', 404));            
+            res.setHeader('Content-Type', 'application/zip');
+            res.setHeader('Content-Disposition', `attachment; filename="factura-${invoice_id}.zip"`);
+            zipStream.pipe(res);                      
+        }catch(error){                        
+            next(new ErrorHandler((error as Error).message || 'Error al descargar la factura', 500));   
+        }
+    }
 
     public async createGlobalInvoice(req: Request, res: Response, next: NextFunction){
         const { order_id } = req.body

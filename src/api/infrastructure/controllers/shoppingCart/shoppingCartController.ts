@@ -1,7 +1,8 @@
+// Import necessary modules and dependencies
 import { ProductUseCase } from './../../../application/product/productUseCase';
 import { StockStoreHouseUseCase } from './../../../application/storehouse/stockStoreHouseUseCase';
 import { ObjectId } from 'mongodb';
-import { Request, Response, NextFunction, response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
@@ -11,11 +12,12 @@ import { VariantProductUseCase } from '../../../application/variantProduct/Varia
 import { v4 as uuidv4 } from 'uuid';
 import { ProductCart } from '../../../domain/shoppingCart/shoppingCartEntity';
 
+// Define the ShoppingCartController class, extending ResponseData
 export class ShoppingCartController extends ResponseData {
-    protected path = '/shoppingCart'
-    private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634"
-    
+    protected path = '/shoppingCart'; // Define the base path for the controller
+    private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634"; // Online storehouse ID
 
+    // Constructor to initialize dependencies and bind methods
     constructor(
         private shoppingCartUseCase: ShoppingCartUseCase,
         private stockStoreHouseUseCase: StockStoreHouseUseCase,
@@ -25,14 +27,12 @@ export class ShoppingCartController extends ResponseData {
         private readonly s3Service: S3Service
     ) {
         super();
+        // Bind methods to ensure proper context
         this.getAllShoppingCarts = this.getAllShoppingCarts.bind(this);
         this.getShoppingCart = this.getShoppingCart.bind(this);
-        // this.createShoppingCart = this.createShoppingCart.bind(this);
-        // this.updateShoppingCart = this.updateShoppingCart.bind(this);
         this.deleteShoppingCart = this.deleteShoppingCart.bind(this);
-        // this.deleteMembershipInCart = this.deleteMembershipInCart.bind(this)
-        this.deleteProductCart = this.deleteProductCart.bind(this)
-        this.emptyCart = this.emptyCart.bind(this)
+        this.deleteProductCart = this.deleteProductCart.bind(this);
+        this.emptyCart = this.emptyCart.bind(this);
         this.addToCart = this.addToCart.bind(this);
         this.updateProductQuantity = this.updateProductQuantity.bind(this);
         this.replaceProductQuantity = this.replaceProductQuantity.bind(this);
@@ -40,6 +40,7 @@ export class ShoppingCartController extends ResponseData {
         this.noAuthCart = this.noAuthCart.bind(this);
     }
 
+    // Fetch all shopping carts
     public async getAllShoppingCarts(req: Request, res: Response, next: NextFunction) {
         try {
             const response = await this.shoppingCartUseCase.getShoppingCarts();
@@ -48,44 +49,50 @@ export class ShoppingCartController extends ResponseData {
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
+
+    // Fetch a specific shopping cart for the logged-in user
     public async getShoppingCart(req: Request, res: Response, next: NextFunction) {
         const user = req.user;
-        try {                                    
-            const response: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id+"");
-            if(!response) return next(new ErrorHandler('No existe un carrito de compras asociado a este usuario', 404));            
-            const products = response?.products;   
-            const totalCart = await this.shoppingCartUseCase.getTotalCart(products);    
-            const weight = await this.shoppingCartUseCase.getTotalWeight(products);                                         
-            const shippingCost : any = await this.shippingCostUseCase.findShippingCost(weight);                         
+        try {
+            const response: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id + "");
+            if (!response) return next(new ErrorHandler('No existe un carrito de compras asociado a este usuario', 404));
+
+            const products = response?.products;
+            const totalCart = await this.shoppingCartUseCase.getTotalCart(products);
+            const weight = await this.shoppingCartUseCase.getTotalWeight(products);
+            const shippingCost: any = await this.shippingCostUseCase.findShippingCost(weight);
             const responseData = response.toJSON();
-            if(products.length > 0){
+
+            // Add stock information to products
+            if (products.length > 0) {
                 const newproducts: any = await Promise.all(
                     products.map(async (product: any) => {
                         let stock;
-                        if(product?.variant){
+                        if (product?.variant) {
                             stock = await this.stockStoreHouseUseCase.getVariantStock(product.variant?._id, this.onlineStoreHouse);
-                        }else{
+                        } else {
                             stock = await this.stockStoreHouseUseCase.getProductStock(product.item?._id, this.onlineStoreHouse);
                         }
                         return { ...product.toJSON(), stock: stock?.stock ?? 0 };
                     })
-                )            
+                );
                 responseData.products = [...newproducts];
-            }                        
-            const price = shippingCost?.price_weight || 0
+            }
+
+            const price = shippingCost?.price_weight || 0;
             const updatedResponse = {
                 ...responseData,
                 total_cart: totalCart,
-                // shipping_cost: price,
-                // totalWithShipping: totalCart + price
-            }                                                                    
-            this.invoke(updatedResponse, 200, res, '', next);          
-        } catch (error) {           
-            console.log(error, "error");            
+            };
+
+            this.invoke(updatedResponse, 200, res, '', next);
+        } catch (error) {
+            console.log(error, "error");
             next(new ErrorHandler('Hubo un error al consultar la información', 500));
         }
     }
 
+    // Delete a shopping cart by ID
     public async deleteShoppingCart(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         try {
@@ -94,217 +101,213 @@ export class ShoppingCartController extends ResponseData {
         } catch (error) {
             next(new ErrorHandler('Hubo un error eliminar', 500));
         }
-    }  
-    
+    }
+
+    // Empty the shopping cart for the logged-in user
     public async emptyCart(req: Request, res: Response, next: NextFunction) {
-        const user = req.user; 
+        const user = req.user;
         try {
             const cart: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
-            if(!cart){
+            if (!cart) {
                 return next(new ErrorHandler('Este usuario no tiene carrito de compras', 404));
             }
             const response = await this.shoppingCartUseCase.updateShoppingCart(cart._id.toString(), { products: [] });
             this.invoke(response, 201, res, 'Carrito de compras vaciado', next);
         } catch (error) {
-            console.log(error);            
+            console.log(error);
             next(new ErrorHandler('Hubo un error eliminar', 500));
         }
     }
 
+    // Delete a specific product from the shopping cart
     public async deleteProductCart(req: Request, res: Response, next: NextFunction) {
-        const { id } = req.params; // product id
+        const { id } = req.params; // Product ID
         const user = req.user;
         try {
-            if(!id) return next(new ErrorHandler('El id del producto es requerido', 404));
-            const response : any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id)
-            if(!response) return next(new ErrorHandler('No existe un carrito de compras asociado a este usuario', 404));
+            if (!id) return next(new ErrorHandler('El id del producto es requerido', 404));
+            const response: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
+            if (!response) return next(new ErrorHandler('No existe un carrito de compras asociado a este usuario', 404));
+
             const products = response?.products;
             const productsFiltered = products?.filter((product: any) => product?._id.toString() !== id);
-            const response2 = await this.shoppingCartUseCase.updateShoppingCart(response._id.toString(), { products: productsFiltered } )
+            const response2 = await this.shoppingCartUseCase.updateShoppingCart(response._id.toString(), { products: productsFiltered });
 
             this.invoke(response2, 201, res, 'Eliminado con exito', next);
-        } catch (error) {               
+        } catch (error) {
             console.log(user);
-                                    
             next(new ErrorHandler('Hubo un error eliminar', 500));
         }
     }
 
+    // Add a product to the shopping cart
     public async addToCart(req: Request, res: Response, next: NextFunction) {
-        const { id } = req.params; // ID del producto
+        const { id } = req.params; // Product ID
         const user = req.user;
-        const { quantity, variant_id = null } = req.body;        
-   
-        try {                                  
-            let itemResponse = {};                                   
-            // Validar entradas
-            if(!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));            
-            if(!id) return next(new ErrorHandler('El id del producto es requerido', 404));
-            if (typeof quantity !== 'number') return next(new ErrorHandler('La cantidad debe ser un número', 400));                 
-            if(quantity <= 0) return next(new ErrorHandler('La cantidad debe ser mayor a 0', 400));  
-                      
+        const { quantity, variant_id = null } = req.body;
+
+        try {
+            // Validate inputs
+            if (!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));
+            if (!id) return next(new ErrorHandler('El id del producto es requerido', 404));
+            if (typeof quantity !== 'number') return next(new ErrorHandler('La cantidad debe ser un número', 400));
+            if (quantity <= 0) return next(new ErrorHandler('La cantidad debe ser mayor a 0', 400));
+
             let userCart;
-            const newProduct : ProductCart = {
+            const newProduct: ProductCart = {
                 _id: uuidv4(),
                 item: new ObjectId(id),
                 variant: null,
                 quantity: quantity
             };
-            if(variant_id){                
-              newProduct['variant'] = new ObjectId(variant_id);                
-            }          
-            // Obtener carrito de compras del usuario
-            const responseShoppingCartUser : any = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);                                                                                 
-            if (responseShoppingCartUser) {                         
-                userCart = responseShoppingCartUser
-            }else{
-                userCart = await this.shoppingCartUseCase.createShoppingCart({user_id: user._id, products: [] });                         
-            }                                 
+            if (variant_id) {
+                newProduct['variant'] = new ObjectId(variant_id);
+            }
+
+            // Fetch or create the user's shopping cart
+            const responseShoppingCartUser: any = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
+            if (responseShoppingCartUser) {
+                userCart = responseShoppingCartUser;
+            } else {
+                userCart = await this.shoppingCartUseCase.createShoppingCart({ user_id: user._id, products: [] });
+            }
+
             let index;
             let stock;
-            // Buscar el índice del producto en el carrito (si existe)
-            if(variant_id){
-                index = userCart.products.findIndex((product: any) => { 
-                    if(product.variant){
-                        return product.variant._id.equals(variant_id)
+            // Check if the product already exists in the cart
+            if (variant_id) {
+                index = userCart.products.findIndex((product: any) => {
+                    if (product.variant) {
+                        return product.variant._id.equals(variant_id);
                     }
-                    return false
+                    return false;
                 });
                 stock = await this.stockStoreHouseUseCase.getVariantStock(variant_id, this.onlineStoreHouse);
-            }else{
-                index = userCart.products.findIndex((product: any) => product.item._id.equals(id));      
-                stock = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse);                 
-            }            
-            // Si el producto ya está en el carrito, actualizar la cantidad
+            } else {
+                index = userCart.products.findIndex((product: any) => product.item._id.equals(id));
+                stock = await this.stockStoreHouseUseCase.getProductStock(id, this.onlineStoreHouse);
+            }
+
+            let itemResponse = {};
+            // Update quantity if the product exists
             if (index !== -1) {
                 const productInCart = userCart.products[index];
                 const stockProducto = stock?.stock;
-                const totalQuantity = productInCart?.quantity + quantity;                                
-                if(totalQuantity > stockProducto){
-                    productInCart.quantity = stockProducto
-                }else{
+                const totalQuantity = productInCart?.quantity + quantity;
+                if (totalQuantity > stockProducto) {
+                    productInCart.quantity = stockProducto;
+                } else {
                     productInCart.quantity += quantity;
-                }                      
+                }
                 itemResponse = {
                     _id: productInCart._id,
                     item: productInCart.item._id,
-                    variant: productInCart?.variant?._id ?? null,       
-                    quantity: productInCart?.quantity             
-                }     
-            } 
-            // Si el producto no está en el carrito, agregarlo
-            if(index === -1){
+                    variant: productInCart?.variant?._id ?? null,
+                    quantity: productInCart?.quantity
+                };
+            }
+
+            // Add the product if it doesn't exist in the cart
+            if (index === -1) {
                 userCart.products.push(newProduct);
                 itemResponse = newProduct;
-            }     
-                            
-            // console.log(userCart._id, "userCart");                                                                                    
-            const response = await this.shoppingCartUseCase.updateShoppingCart(userCart._id, { products: userCart.products });                       
+            }
+
+            const response = await this.shoppingCartUseCase.updateShoppingCart(userCart._id, { products: userCart.products });
             this.invoke(itemResponse, 201, res, 'Carrito de compras actualizado', next);
-        } catch (error) {          
+        } catch (error) {
             console.error('Error actualizando el carrito de compras:', error);
             next(new ErrorHandler('Hubo un error al actualizar el carrito', 500));
         }
     }
-   
-    public async replaceProductQuantity(req: Request, res: Response, next: NextFunction) {        
+
+    // Replace the quantity of a product in the cart
+    public async replaceProductQuantity(req: Request, res: Response, next: NextFunction) {
         const user = req.user;
         const { id, quantity } = req.body;
-        try{
-            // validar enttradas
-            if(!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));
-            if(!id) return next(new ErrorHandler('El id del producto es requerido', 404));            
-            if (typeof quantity !== 'number') return next(new ErrorHandler('La cantidad debe ser un número', 400)); 
-            if(quantity <= 0) return next(new ErrorHandler('La cantidad debe ser mayor a 0', 400));
+        try {
+            // Validate inputs
+            if (!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));
+            if (!id) return next(new ErrorHandler('El id del producto es requerido', 404));
+            if (typeof quantity !== 'number') return next(new ErrorHandler('La cantidad debe ser un número', 400));
+            if (quantity <= 0) return next(new ErrorHandler('La cantidad debe ser mayor a 0', 400));
 
-               // Obtener el carrito de compras del usuario
-            const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);    
+            // Fetch the user's shopping cart
+            const responseShoppingCartUser = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
             if (responseShoppingCartUser && responseShoppingCartUser.products) {
-                // Encontrar el índice del producto en el carrito
-                const index = responseShoppingCartUser.products.findIndex(product => product._id === id);    
-                // Validar si el producto fue encontrado
+                const index = responseShoppingCartUser.products.findIndex(product => product._id === id);
                 if (index !== -1) {
-                responseShoppingCartUser.products[index].quantity = quantity;
-                // Actualizar el carrito de compras
-                const response = await this.shoppingCartUseCase.updateShoppingCart(responseShoppingCartUser._id.toString(), { products: responseShoppingCartUser.products });
-                // Enviar respuesta al cliente
-                this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
+                    responseShoppingCartUser.products[index].quantity = quantity;
+                    const response = await this.shoppingCartUseCase.updateShoppingCart(responseShoppingCartUser._id.toString(), { products: responseShoppingCartUser.products });
+                    this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
                 } else {
-                // Producto no encontrado en el carrito
                     next(new ErrorHandler('Producto no encontrado en el carrito', 404));
                 }
             } else {
-                // Carrito de compras no encontrado
                 next(new ErrorHandler('Carrito de compras no encontrado', 404));
             }
-        }catch(error){
-            console.log("error en replaceProductQuantity" + error);        
+        } catch (error) {
+            console.log("error en replaceProductQuantity" + error);
             next(new ErrorHandler('Hubo un error al remplazar la cantidad', 500));
         }
-        
     }
-    
 
-    public async updateProductQuantity(req: Request, res: Response, next: NextFunction): Promise<void> {        
+    // Update the quantity of a product in the cart
+    public async updateProductQuantity(req: Request, res: Response, next: NextFunction): Promise<void> {
         const user = req.user;
-        const { id, quantity } = req.body;    
+        const { id, quantity } = req.body;
         try {
-          // validar inputs  
-          if(!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));
-          if(!id) return next(new ErrorHandler('El id del producto es requerido', 404));        
-          if (typeof quantity !== 'number') return next(new ErrorHandler('La cantidad debe ser un número', 400)); 
-          if(quantity <= 0) return next(new ErrorHandler('La cantidad debe ser mayor a 0', 400));
+            // Validate inputs
+            if (!quantity) return next(new ErrorHandler('La cantidad es requerida', 404));
+            if (!id) return next(new ErrorHandler('El id del producto es requerido', 404));
+            if (typeof quantity !== 'number') return next(new ErrorHandler('La cantidad debe ser un número', 400));
+            if (quantity <= 0) return next(new ErrorHandler('La cantidad debe ser mayor a 0', 400));
 
-          // Obtener el carrito de compras del usuario
-          const responseShoppingCartUser: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);    
-          if (responseShoppingCartUser && responseShoppingCartUser.products) {
-             const index = responseShoppingCartUser.products.findIndex((product: any) => product._id === id);    
-             // console.log("index was setted");            
-             if (index !== -1) {
-                // Si el producto ya está en el carrito, actualizar la cantidad
-                responseShoppingCartUser.products[index].quantity += quantity;   
-                 // Actualizar el carrito de compras
-                const response = await this.shoppingCartUseCase.updateShoppingCart(responseShoppingCartUser._id.toString(), { products: responseShoppingCartUser.products });
-                // Enviar respuesta al cliente
-                this.invoke(response, 201, res, 'Carrito de compras actualizado', next);            
-            } 
-            if(index === -1){
-                // Si el producto no está en el carrito, agregarlo
-                return next(new ErrorHandler('Producto no encontrado en el carrito', 404));
-            }      
-          } else {
-            // Carrito de compras no encontrado
-            next(new ErrorHandler('Carrito de compras no encontrado', 404));
-          }
+            // Fetch the user's shopping cart
+            const responseShoppingCartUser: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
+            if (responseShoppingCartUser && responseShoppingCartUser.products) {
+                const index = responseShoppingCartUser.products.findIndex((product: any) => product._id === id);
+                if (index !== -1) {
+                    responseShoppingCartUser.products[index].quantity += quantity;
+                    const response = await this.shoppingCartUseCase.updateShoppingCart(responseShoppingCartUser._id.toString(), { products: responseShoppingCartUser.products });
+                    this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
+                } else {
+                    next(new ErrorHandler('Producto no encontrado en el carrito', 404));
+                }
+            } else {
+                next(new ErrorHandler('Carrito de compras no encontrado', 404));
+            }
         } catch (error) {
-          console.error(error);
-          next(new ErrorHandler('Hubo un error al actualizar el carrito', 500));
+            console.error(error);
+            next(new ErrorHandler('Hubo un error al actualizar el carrito', 500));
         }
     }
 
-    public async mergeCart(req: Request, res: Response, next: NextFunction) {    
+    // Merge a guest cart with the user's cart
+    public async mergeCart(req: Request, res: Response, next: NextFunction) {
         const user = req.user;
         const { products } = req.body;
-        try {                                                                              
-            const parseProducts = JSON.parse(products);                           
-            if (!parseProducts || parseProducts.length === 0) return next(new ErrorHandler('No se encontraron productos', 404));                                                                   
-            const cartUser : any = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);                       
-            if(!cartUser){
-                const newcart : any | null = await this.shoppingCartUseCase.createShoppingCart({user_id: user._id, products: []});     
+        try {
+            const parseProducts = JSON.parse(products);
+            if (!parseProducts || parseProducts.length === 0) return next(new ErrorHandler('No se encontraron productos', 404));
+
+            const cartUser: any = await this.shoppingCartUseCase.getShoppingCartByUser(user._id);
+            if (!cartUser) {
+                const newcart: any | null = await this.shoppingCartUseCase.createShoppingCart({ user_id: user._id, products: [] });
                 const products: any = [];
                 parseProducts.forEach((product: any) => {
-                    const producto : any = {
+                    const producto: any = {
                         _id: product._id,
                         item: new ObjectId(product.item),
                         variant: product?.variant ? new ObjectId(product?.variant) : null,
                         quantity: product.quantity
-                    }
+                    };
                     products.push(producto);
-                }) 
-                const updatedCart = await this.shoppingCartUseCase.updateShoppingCart(newcart?._id, { products: products });                         
-                return this.invoke(updatedCart, 200, res, '', next);                          
-            }                        
-            const productsCart = cartUser?.products;                                             
+                });
+                const updatedCart = await this.shoppingCartUseCase.updateShoppingCart(newcart?._id, { products: products });
+                return this.invoke(updatedCart, 200, res, '', next);
+            }
+
+            const productsCart = cartUser?.products;
             await Promise.all(
                 parseProducts.map(async (product: any) => {
                     let stock;
@@ -314,7 +317,7 @@ export class ShoppingCartController extends ResponseData {
                         variant: product?.variant ? new ObjectId(product?.variant) : null,
                         quantity: product.quantity,
                     };
-            
+
                     let index;
                     if (product?.variant) {
                         stock = await this.stockStoreHouseUseCase.getVariantStock(product.variant, this.onlineStoreHouse);
@@ -322,60 +325,61 @@ export class ShoppingCartController extends ResponseData {
                     } else {
                         stock = await this.stockStoreHouseUseCase.getProductStock(product.item, this.onlineStoreHouse);
                         index = productsCart.findIndex((item: any) => item.item?._id.equals(product.item));
-                    }                                                
+                    }
+
                     if (index !== -1) {
-                         const productInCart = productsCart[index];
+                        const productInCart = productsCart[index];
                         const totalQuantity = productInCart?.quantity + product.quantity;
-                        if(totalQuantity > stock.stock){
-                            productInCart.quantity = stock.stock
-                        }else{
+                        if (totalQuantity > stock.stock) {
+                            productInCart.quantity = stock.stock;
+                        } else {
                             productInCart.quantity += product.quantity;
                         }
                     } else {
-                        // Agregar el nuevo producto al carrito
                         productsCart.push(producto);
                     }
                 })
-            );                                                              
-             const response  = await this.shoppingCartUseCase.updateShoppingCart(cartUser?._id, { products: productsCart });                                                       
-             this.invoke(response, 200, res, '', next);                                 
-            } catch (error) {            
-                console.log(error);
-                next(new ErrorHandler('Hubo un error al fusionar el carrito', 500));
-            }
-    }
-
-    public async noAuthCart(req: Request, res: Response, next: NextFunction) {
-        let { items } = req.body
-        try {
-          items = JSON.parse(items);
-          if(!items) return next(new ErrorHandler("Hubo un error al obtener la información", 500));
-          if(items.length >= 10) return next(new ErrorHandler("Inicia sesión para agregar mas productos a tu carrito", 400)); 
-          const noAuthCart = await Promise.all(items.map(async (item: any) => {
-            const product: any | null = await this.productUseCase.getProduct(item.item);
-            if(!product) return ;               
-            let variant: any | null;
-            let stock: any | null;
-            if(item.variant){
-                variant = await this.variantProductUseCase.findVariantById(item.variant);
-                stock = await this.stockStoreHouseUseCase.getVariantStock(item.variant, this.onlineStoreHouse);
-            }else{
-                stock = await this.stockStoreHouseUseCase.getProductStock(item.item, this.onlineStoreHouse);  
-            }                   
-            return {
-              _id: item._id,  
-              variant: variant,  
-              item: product,              
-              quantity: item.quantity,
-              stock: stock.stock ?? 0,
-            }           
-          }))                    
-          
-          this.invoke(noAuthCart, 200, res, "", next);
+            );
+            const response = await this.shoppingCartUseCase.updateShoppingCart(cartUser?._id, { products: productsCart });
+            this.invoke(response, 200, res, '', next);
         } catch (error) {
-          console.log("error no auth cart:", error);            
-          next(new ErrorHandler("Hubo un error al obtener la información", 500));
+            console.log(error);
+            next(new ErrorHandler('Hubo un error al fusionar el carrito', 500));
         }
     }
 
+    // Handle a cart for unauthenticated users
+    public async noAuthCart(req: Request, res: Response, next: NextFunction) {
+        let { items } = req.body;
+        try {
+            items = JSON.parse(items);
+            if (!items) return next(new ErrorHandler("Hubo un error al obtener la información", 500));
+            if (items.length >= 10) return next(new ErrorHandler("Inicia sesión para agregar mas productos a tu carrito", 400));
+
+            const noAuthCart = await Promise.all(items.map(async (item: any) => {
+                const product: any | null = await this.productUseCase.getProduct(item.item);
+                if (!product) return;
+                let variant: any | null;
+                let stock: any | null;
+                if (item.variant) {
+                    variant = await this.variantProductUseCase.findVariantById(item.variant);
+                    stock = await this.stockStoreHouseUseCase.getVariantStock(item.variant, this.onlineStoreHouse);
+                } else {
+                    stock = await this.stockStoreHouseUseCase.getProductStock(item.item, this.onlineStoreHouse);
+                }
+                return {
+                    _id: item._id,
+                    variant: variant,
+                    item: product,
+                    quantity: item.quantity,
+                    stock: stock.stock ?? 0,
+                };
+            }));
+
+            this.invoke(noAuthCart, 200, res, "", next);
+        } catch (error) {
+            console.log("error no auth cart:", error);
+            next(new ErrorHandler("Hubo un error al obtener la información", 500));
+        }
+    }
 }

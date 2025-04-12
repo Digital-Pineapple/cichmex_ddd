@@ -34,6 +34,8 @@ import bannerRouter from './banners';
 import activityLogRouter from './activityLog';
 import warehouseRouter from './warehouse';
 import notificationsRouter from './notification';
+import municipalitiesRouter from './municipalities';
+import statesRouter from './states';
 
 export const apiRouter = (): Router => {
 
@@ -73,6 +75,8 @@ export const apiRouter = (): Router => {
     apiRouter.use('/banner', bannerRouter)    
     apiRouter.use('/activityLog', activityLogRouter)
     apiRouter.use('/warehouse', warehouseRouter)
+    apiRouter.use('/municipalities', municipalitiesRouter)
+    apiRouter.use('/states', statesRouter)
 
     return apiRouter;
 }

@@ -21,13 +21,14 @@ const userValidations       = new UserValidations()
 const taxInfoController     = new TaxInfoController(taxInfoUseCase, s3Service, facturapiService, productOrderUseCase);
 
 taxInfoRouter
+.post("/create-invoice", userValidations.authTypeUserValidation(['CUSTOMER', 'SUPER-ADMIN', 'ADMIN' ]), taxInfoController.createInvoice)
+.post("/download-invoice", userValidations.authTypeUserValidation(['CUSTOMER', 'SUPER-ADMIN', 'ADMIN' ]), taxInfoController.downloadInvoice)
 .get('/', userValidations.authTypeUserValidation([ 'SUPER-ADMIN']), taxInfoController.getAllTaxInfo)
 .get('/user', userValidations.authTypeUserValidation(['CUSTOMER' ]), taxInfoController.getOneTaxInfo)
 .post('/addMyTaxInfo', userValidations.authTypeUserValidation([ 'CUSTOMER' ]), taxInfoController.createMyTaxInfo)
 .post('/', userValidations.authTypeUserValidation([  'SUPER-ADMIN', 'ADMIN', 'CUSTOMER' ]), taxInfoController.updateMyTaxInfo)
 .post('/:id', userValidations.authTypeUserValidation([  'SUPER-ADMIN', 'ADMIN' ]), taxInfoController.updateOneTaxInfo)
 .delete('/:id', userValidations.authTypeUserValidation([  'SUPER-ADMIN', 'ADMIN', 'CUSTOMER' ]), taxInfoController.deleteTaxInfo)
-.post("/create-invoice", userValidations.authTypeUserValidation([ 'SUPER-ADMIN', 'ADMIN', 'CUSTOMER' ]), taxInfoController.createInvoice)
     
 
 export default taxInfoRouter;

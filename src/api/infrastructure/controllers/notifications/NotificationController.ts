@@ -4,21 +4,24 @@ import { ResponseData } from '../../../../shared/infrastructure/validation/Respo
 import { NotificationUseCase } from '../../../application/Notifications/NotificationUseCase';
 import { socketService } from '../../../../shared/infrastructure/socket/socketIOService';
 
+// Controlador para manejar las notificaciones
 export class NotificationController extends ResponseData {
-    protected path = '/notification';
+    protected path = '/notification'; // Ruta base para las notificaciones
 
     constructor( 
-        private readonly notificationUseCase: NotificationUseCase,                
+        private readonly notificationUseCase: NotificationUseCase, // Caso de uso para manejar la lógica de negocio de notificaciones
     ) {
         super();
-        this.getByUser = this.getByUser.bind(this); 
-        this.create= this.create.bind(this);     
-        this.markAsRead = this.markAsRead.bind(this); 
-        this.delete = this.delete.bind(this);
-        this.markAllAsReaded = this.markAllAsReaded.bind(this);
-        this.sendEvent = this.sendEvent.bind(this);
+        this.getByUser = this.getByUser.bind(this); // Método para obtener notificaciones por usuario
+        this.create= this.create.bind(this); // Método para crear una notificación
+        this.markAsRead = this.markAsRead.bind(this); // Método para marcar una notificación como leída
+        this.delete = this.delete.bind(this); // Método para eliminar una notificación
+        this.markAllAsReaded = this.markAllAsReaded.bind(this); // Método para marcar todas las notificaciones como leídas
+        this.sendEvent = this.sendEvent.bind(this); // Método para enviar eventos relacionados con notificaciones
     }
-   public async getByUser(req: Request, res: Response, next: NextFunction){         
+
+    // Obtener notificaciones por usuario
+    public async getByUser(req: Request, res: Response, next: NextFunction){         
         const user = req.user;    
         try{                                
             const notifications = await this.notificationUseCase.getByUserId(user?._id);                    
@@ -27,8 +30,10 @@ export class NotificationController extends ResponseData {
             console.log( "notifications",error);        
             next(new ErrorHandler('Error al obtener las notificaiones del usuario', 500));
         }
-   }
-   public async create(req: Request, res: Response, next: NextFunction){
+    }
+
+    // Crear una nueva notificación
+    public async create(req: Request, res: Response, next: NextFunction){
         const { notificationP } = req.body;                          
         try{        
             const notification = await this.notificationUseCase.create(notificationP);
@@ -38,6 +43,8 @@ export class NotificationController extends ResponseData {
             next(new ErrorHandler(`${(error as any).message || "Error al crear la notificación"}`, 500));
         }
     }
+
+    // Marcar una notificación como leída
     public async markAsRead(req: Request, res: Response, next: NextFunction){      
         const { id } = req.params;      
         const user = req.user;
@@ -49,6 +56,8 @@ export class NotificationController extends ResponseData {
             next(new ErrorHandler('Error al obtener las notificaiones del usuario', 500));
         }
     }
+
+    // Eliminar una notificación
     public async delete(req: Request, res: Response, next: NextFunction){  
         const { id } = req.params;             
         try{        
@@ -60,50 +69,23 @@ export class NotificationController extends ResponseData {
         }
     }
     
+    // Marcar todas las notificaciones como leídas
     public async markAllAsReaded(req: Request, res: Response, next: NextFunction){
         const user = req.user;
         try{
             await this.notificationUseCase.markAllAsReaded(user?._id);
             this.invoke({}, 204, res,'', next);            
         }catch(error){
-            // console.log("the error is", error);            
             next(new ErrorHandler(`${(error as any).message || "Error al editar"}`, 500));
         }
     }
 
-    public async sendEvent(req: Request, res: Response, next: NextFunction){  
-        // console.log("hi from socket event");              
+    // Enviar un evento relacionado con notificaciones
+    public async sendEvent(req: Request, res: Response, next: NextFunction){                
         try{  
-            // socketService.emitToAdminUserChannel("6750a44897442e7b71f06e5f", "received_notification", {
-            //     "_id" : "67be24af34ee0cf2e3e8eca5",
-            //     "from" : "6750a44897442e7b71f06e55",
-            //     "channel" : "inApp",
-            //     "message" : "Este es un mensaje de socket io",
-            //     "type" : "promotion",
-            //     "user_id" : "6750a44897442e7b71f06e55",
-            //     "readed" : true,
-            //     "status" : true,
-            //     "createdAt" : "2025-02-25T20:14:39.053+0000",
-            //     "updatedAt" : "2025-02-25T22:04:36.415+0000",
-            //     "random": Date()
-            // })
-            // await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
-            //     "from" : "6750a44897442e7b71f06e55",                            
-            //     "message" : "Se ha creado un nuevo pedido",
-            //     "type" : "order", 
-            //     "resource_id": "6750a44897442e7b71f06e55",                                                                                                                                                                                          
-            // })            
-        
             this.invoke({ok:true}, 200, res,'', next);            
         }catch(error){
-            // console.log("the error is", error);            
             next(new ErrorHandler(`${(error as any).message || "Error al editar"}`, 500));
         }
     }
-
-    
-
-    
-
-     
 }

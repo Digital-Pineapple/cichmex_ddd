@@ -39,6 +39,8 @@ const banners_1 = __importDefault(require("./banners"));
 const activityLog_1 = __importDefault(require("./activityLog"));
 const warehouse_1 = __importDefault(require("./warehouse"));
 const notification_1 = __importDefault(require("./notification"));
+const municipalities_1 = __importDefault(require("./municipalities"));
+const states_1 = __importDefault(require("./states"));
 const apiRouter = () => {
     const apiRouter = (0, express_1.Router)();
     apiRouter.use('/notification', notification_1.default);
@@ -75,6 +77,8 @@ const apiRouter = () => {
     apiRouter.use('/banner', banners_1.default);
     apiRouter.use('/activityLog', activityLog_1.default);
     apiRouter.use('/warehouse', warehouse_1.default);
+    apiRouter.use('/municipalities', municipalities_1.default);
+    apiRouter.use('/states', states_1.default);
     return apiRouter;
 };
 exports.apiRouter = apiRouter;

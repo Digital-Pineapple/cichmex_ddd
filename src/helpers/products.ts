@@ -30,6 +30,8 @@ export const parseProductsToMercadoPago = (products: Array<Object>) => {
           title: product.name + (isVariant ? getProperties(variant?.attributes) : ""),
           unit_price: isVariant ? variantPrice : productPrice,
           picture_url:  isVariant ? variant.images[0]?.url : product.images[0]?.url,
+          category_id : product.category,
+          description: product.description,
           quantity: quantity
         };
         return  newItem           
