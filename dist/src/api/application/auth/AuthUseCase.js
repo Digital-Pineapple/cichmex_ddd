@@ -345,5 +345,16 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
             return response;
         });
     }
+    validatePassword(user_id, password) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield this.authRepository.findOneItem({ _id: user_id });
+            if (!user)
+                return new ErrorHandler_1.ErrorHandler('No exite este usuario', 400);
+            const validatePassword = this.decryptPassword(password, user.password);
+            if (!validatePassword)
+                return new ErrorHandler_1.ErrorHandler('El usuario o contraseña no son validos', 400);
+            return validatePassword;
+        });
+    }
 }
 exports.AuthUseCase = AuthUseCase;

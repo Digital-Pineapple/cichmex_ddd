@@ -22,6 +22,8 @@ import AddressModel from '../../models/AddressModel';
 import { AddressUseCase } from '../../../application/address/AddressUseCase';
 import { SNService } from '../../../../shared/infrastructure/aws/SNService';
 import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
+import { AuthRepository } from '../../repository/auth/AuthRepository';
+import { AuthUseCase } from '../../../application/auth/AuthUseCase';
 
 const userRouter = Router();
 
@@ -30,6 +32,9 @@ const userRepository = new UserRepository(UserModel)
 const typeUserRepository = new TypeUsersRepository(TypeUserModel)
 const shoppingCartRepository = new ShoppingCartRepository(ShoppingCartModel)
 const adressRepository = new AddressRepository(AddressModel)
+const authRepository = new AuthRepository(UserModel);
+const authUseCase = new AuthUseCase(authRepository);
+
 
 const userPhoneserUseCase = new UserPhoneUseCase(userPhoneRepository);
 const userUseCase = new UserUseCase(userRepository);
@@ -40,7 +45,8 @@ const s3Service = new S3Service()
 const userValidations = new UserValidations()
 const snsService = new SNService();
 const twilioService = new TwilioService();
-const userController = new UserController(userPhoneserUseCase, userUseCase, typeUserUseCase,shoppingCartUseCase,  addressUseCase, twilioService, s3Service, snsService);
+const userController = new UserController(userPhoneserUseCase, userUseCase, typeUserUseCase,shoppingCartUseCase,  addressUseCase, twilioService, s3Service, snsService, authUseCase);
+
 
 userRouter
     .get('/',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), userController.allUsers)
@@ -75,6 +81,7 @@ userRouter
     .put('/warehouseman/update/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "WAREHOUSE-MANAGER"]),ActivityLogger, userController.UpdateWarehouseman)
     .get('/addresses/ok', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.getAddresses) 
     .delete('/carrier-driver/:id', userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN"]), userController.deleteCarrierDriver)
+    .delete('/', userValidations.authTypeUserValidation(["CUSTOMER"]), userController.deleteMyAccount)
 
 
 export default userRouter;

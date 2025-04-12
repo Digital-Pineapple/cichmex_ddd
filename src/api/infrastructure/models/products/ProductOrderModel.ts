@@ -116,16 +116,16 @@ const ProductOrderSchema = new Schema<ProductOrderEntity>(
       required: false,
       enum: ['web', 'mobile']
     },
-    requiredTax: {
+    required_invoice: {
       type: Boolean,
       required: false,
       default: false
     },
-    facturapi_tax_id: {
+    invoice_id: {
       type: String,
       required: false,      
     },
-    tax_expiration_date: {
+    invoice_expiration_date: {
       type: Date,
       required: false
     },

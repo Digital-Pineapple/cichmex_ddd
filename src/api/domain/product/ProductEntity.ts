@@ -92,9 +92,9 @@ export interface ProductOrderEntity {
   updatedAt: NativeDate;
   typeDelivery?: string;
   origin?: string;
-  requiredTax?: boolean;
-  facturapi_tax_id?: string;
-  tax_expiration_date?: Date;
+  required_invoice?: boolean;
+  invoice_id?: string;
+  invoice_expiration_date?: Date;
   order_status?: Number;
   coupon?: ObjectId;
 }

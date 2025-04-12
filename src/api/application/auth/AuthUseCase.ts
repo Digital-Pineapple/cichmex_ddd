@@ -329,6 +329,13 @@ export class AuthUseCase extends Authentication {
         return response
 
     }
+    async validatePassword(user_id: any, password: string): Promise<ErrorHandler | Boolean> {
+        const user = await this.authRepository.findOneItem({ _id: user_id });        
+        if (!user) return new ErrorHandler('No exite este usuario', 400);
+        const validatePassword = this.decryptPassword(password, user.password)
+        if (!validatePassword) return new ErrorHandler('El usuario o contraseña no son validos', 400);
+        return validatePassword;
+    }
 
 
 }
