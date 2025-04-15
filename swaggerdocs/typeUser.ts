@@ -215,11 +215,12 @@ const typeUser = {
             }
         }
     },
-    "/type-user/seed": {
+    "/type-user/seed/ok": {
         get:{
             tags: ["TypeUser"],
             summary: "Sembrar tipos de usuario",
             description: "Seed type users",
+            security: [],
             responses: {
                 200:{
                     description:"Type users seeded successfully",

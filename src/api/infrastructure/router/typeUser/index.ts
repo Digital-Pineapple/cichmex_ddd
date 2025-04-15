@@ -15,11 +15,11 @@ const typeUserController     = new TypeUserController(typeUserUseCase);
 const userValidations = new UserValidations();
 
 typeUserRouter
+    .get ('/seed/ok', typeUserController.TypeUserSeed)
     .get('/',userValidations.authTypeUserValidation(['SUPER-ADMIN']), typeUserController.getAllTypeUser)
     .get('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']), typeUserController.getTypeUser)
     .post('/',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, typeUserController.createTypeUser)
     .post('/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger, typeUserController.updateTypeUser)
     .delete('/:id', userValidations.authTypeUserValidation(['SUPER-ADMIN']),ActivityLogger,  typeUserController.deleteTypeUser)
-    // .get ('/seed/ok', typeUserController.TypeUserSeed)
 
 export default typeUserRouter;

@@ -23,6 +23,7 @@ import {
   typeCar,
   typeUser,
   variantProduct,
+  warehouse,
 } from "./swaggerdocs";
 
 export const options = {
@@ -1044,23 +1045,23 @@ export const options = {
               "items": { "$ref": "#/components/schemas/Images" }
             },
             "location": { "$ref": "#/components/schemas/ILocation" },
-            tag:{ type: "string"},
+            tag: { type: "string" },
             "status": { "type": "boolean" },
             "createdAt": { "type": "string", "format": "date-time" },
             "updatedAt": { "type": "string", "format": "date-time" }
           }
         },
-        TaxInfo:{
+        TaxInfo: {
           type: "object",
           properties: {
             _id: { type: "string" },
-            user:{ type: "string" },
+            user: { type: "string" },
             legal_name: { type: "string" },
-            tax_id:{ type: "string" },
-            tax_system:{type: "number"},
-            email:{ type: "string" },
-            phone:{type: "number"},
-            default_invoice_use:{ type: "string" },
+            tax_id: { type: "string" },
+            tax_system: { type: "number" },
+            email: { type: "string" },
+            phone: { type: "number" },
+            default_invoice_use: { type: "string" },
             address: { $ref: "#/components/schemas/TaxAddress" },
             facturapi_id: { type: "string" },
             status: { type: "boolean" },
@@ -1082,50 +1083,50 @@ export const options = {
             country: { type: "string" }
           }
         },
-        TypeCar:{
+        TypeCar: {
           type: "object",
           properties: {
             _id: { type: "string" },
             name: { type: "string" },
             typeCar_image: { type: "string" },
-            status:{ type:"boolean"},
+            status: { type: "boolean" },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" }
           }
         },
-        TypeUser:{
+        TypeUser: {
           type: "object",
           properties: {
             _id: { type: "string" },
-            uuid:{  type: "string" },
-            system:{ type: "array", example:"['CICHMEX']" },
-            role:{ type: "array", example:"['ADMIN']" },
-            status:{ type:"boolean"},
+            uuid: { type: "string" },
+            system: { type: "array", example: "['CICHMEX']" },
+            role: { type: "array", example: "['ADMIN']" },
+            status: { type: "boolean" },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" }
           }
         },
-        EmployeeDetail:{
-          type:"object",
-          properties:{
-            salary:{ type: "number" },
-            sales_commission:{ type: "number" },
-            branch_office:{ type: "string" },
-            store_house:{type: "string"},
-            operationRegions:{ type: "array", items: { type: "string" } },
+        EmployeeDetail: {
+          type: "object",
+          properties: {
+            salary: { type: "number" },
+            sales_commission: { type: "number" },
+            branch_office: { type: "string" },
+            store_house: { type: "string" },
+            operationRegions: { type: "array", items: { type: "string" } },
           }
         },
-        UserVerifyCode:{
+        UserVerifyCode: {
           type: "object",
           properties: {
             attempts: { type: "number" },
             code: { type: "number" },
           }
         },
-        IPhone:{
+        IPhone: {
           type: "object",
           properties: {
-            _id:{ type: "string" },
+            _id: { type: "string" },
             code: { type: "string" },
             prefix: { type: "string" },
             phone_number: { type: "number" },
@@ -1143,29 +1144,88 @@ export const options = {
             id: { type: "string" },
             uuid: { type: "string" },
             fullname: { type: "string" },
-            privacity:{ type: "boolean" },
+            privacity: { type: "boolean" },
             email: { type: "string" },
             email_verified: { type: "boolean" },
             password: { type: "string" },
-            stripe_user:{ type: "string" },
+            stripe_user: { type: "string" },
             type_user: { type: "string" },
             profile_image: { type: "string" },
-            google: { type: "boolean"},
-            facebook: { type: "boolean"},
-            facebook_id: { type: "string"},
-            tikTok: { type: "boolean"},
-            tikTok_id: { type: "string"},
-            phone_id: { type: "string"},
+            google: { type: "boolean" },
+            facebook: { type: "boolean" },
+            facebook_id: { type: "string" },
+            tikTok: { type: "boolean" },
+            tikTok_id: { type: "string" },
+            phone_id: { type: "string" },
             accountVerify: { type: "boolean" },
-            employee_detail:{ type: "object", $ref: "#/components/schemas/EmployeeDetail" },
+            employee_detail: { type: "object", $ref: "#/components/schemas/EmployeeDetail" },
             verify_code: { type: "object", $ref: "#/components/schemas/UserVerifyCode" },
             facturapi_id: { type: "string" },
-            status:{ type:"boolean"},
+            status: { type: "boolean" },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
           },
         },
-      
+        Zone: {
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            storehouse: { type: "string" },
+            name: { type: "string" },
+            type: {
+              type: "string",
+              enum: ["storage_zone", "picking_zone", "loading_dock"],
+              description: "Tipo de zona",
+              example: "storage_zone",
+            },
+            aisles: { type: "array", items: { type: "string" } },
+            status: { type: "boolean" },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" }
+          }
+        },
+        Aisle: {
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            zone: { type: "string" },
+            name: { type: "string" },
+            sections: { type: "array", items: { type: "string" } },
+            status: { type: "boolean" },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" }
+          }
+        },
+        Section: {
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            storehouse: { type: "string" },
+            name: { type: "string" },
+            aisle: { type: "string" },
+            capacity: { type: "number" },
+            stock: {
+              type: "array", items: {
+                type: "object", properties: {
+                  product_id: { type: "string" },
+                  variant_id: { type: "string" },
+                  quantity: { type: "number" },
+                  type: {
+                    type: "string",
+                    enum: ['unique_product', 'variant_product'],
+                    description: "Tipo de producto",
+                    example: "unique_producto",
+                  },
+                }
+              }
+            },
+            status: { type: "boolean" },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" }
+          }
+        }
+
+
       },
     },
     paths: {
@@ -1195,8 +1255,9 @@ export const options = {
       ...taxInfo,
       ...typeCar,
       ...typeUser,
-      ...user,
       ...variantProduct,
+      ...user,
+      ...warehouse,
 
 
     },
