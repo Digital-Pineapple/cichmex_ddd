@@ -864,22 +864,22 @@ export class ProductController extends ResponseData {
           const sku = generateUUID()
           const addVariant: any = await this.variantProductUseCase.CreateVariant({ ...variant, sku: sku, product_id: id });
           const folio = RandomCodeId('PR')
-          const stock = JSON.parse(variant.stock)
+          // const stock = JSON.parse(variant.stock)
 
           const createStock: any = await this.stockStoreHouseUseCase.createStock({
             StoreHouse_id: SH_id,
             product_id: id,
             variant_id: addVariant._id,
-            stock: stock
+            // stock: stock
           })
-          await this.stockSHinputUseCase.createInput({
-            folio: folio,
-            SHStock_id: createStock._id,
-            quantity: stock,
-            newQuantity: variant.stock,
-            responsible: user,
-            product_detail: id,
-          })
+          // await this.stockSHinputUseCase.createInput({
+          //   folio: folio,
+          //   SHStock_id: createStock._id,
+          //   quantity: stock,
+          //   newQuantity: variant.stock,
+          //   responsible: user,
+          //   product_detail: id,
+          // })
 
           // Si hay imágenes para esta variante
           if (filesByVariant[variantIndex]) {
@@ -1007,21 +1007,21 @@ export class ProductController extends ResponseData {
               product_id: id,
             });
 
-            const stock = variant.stock
+            // const stock = variant.stock
             const SHStock = await this.stockStoreHouseUseCase.createStock({
               StoreHouse_id: SH_id,
               product_id: id,
               variant_id: addVariant._id,
-              stock,
+              // stock,
             });
-            await this.stockSHinputUseCase.createInput({
-              folio: folio,
-              SHStock_id: SHStock?._id,
-              quantity: stock,
-              newQuantity: stock,
-              responsible: UserInfo,
-              product_detail: id
-            })
+            // await this.stockSHinputUseCase.createInput({
+            //   folio: folio,
+            //   SHStock_id: SHStock?._id,
+            //   quantity: stock,
+            //   newQuantity: stock,
+            //   responsible: UserInfo,
+            //   product_detail: id
+            // })
 
             // Asignar imágenes a la variante por color
             const color: any = variant.attributes?.color;
@@ -1221,22 +1221,22 @@ export class ProductController extends ResponseData {
             });
 
             const folio = RandomCodeId('PR');
-            const stock = JSON.parse(variant.stock);
+            // const stock = JSON.parse(variant.stock);
             const createStock: any = await this.stockStoreHouseUseCase.createStock({
               StoreHouse_id: SH_id,
               product_id: id,
               variant_id: addVariant._id,
-              stock,
+              // stock,
             });
 
-            await this.stockSHinputUseCase.createInput({
-              folio,
-              SHStock_id: createStock._id,
-              quantity: stock,
-              newQuantity: stock,
-              responsible: user,
-              product_detail: id,
-            });
+            // await this.stockSHinputUseCase.createInput({
+            //   folio,
+            //   SHStock_id: createStock._id,
+            //   quantity: stock,
+            //   newQuantity: stock,
+            //   responsible: user,
+            //   product_detail: id,
+            // });
           }
 
 

@@ -286,6 +286,16 @@ const stockStorehouse = {
         get: {
             tags: ["Stock Storehouse"],
             description: "Todas las entradas por folio",
+            parameters: [
+                {
+                    in: "path",
+                    name: "folio",
+                    required: true,
+                    schema: {
+                        type: "string"
+                    }
+                }
+            ],
             responses: {
                 200: {
                     description: "Lista stock ",
