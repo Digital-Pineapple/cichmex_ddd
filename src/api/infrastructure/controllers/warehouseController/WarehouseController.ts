@@ -80,26 +80,64 @@ export class WarehouseController extends ResponseData {
     }
 
     public async PrintPdfSection(req: Request, res: Response, next: NextFunction) {
-        const { id } = req.params
+        const { id } = req.params;
         try {
-            const response = await this.warehouseUseCase.getDetailSection(id)
-
-            res.writeHead(200, {
-                "Content-Type": "application/pdf",
-                "Content-Disposition": `attachment; filename=order${id}.pdf`
+            const response = await this.warehouseUseCase.getDetailSection(id);
+            
+            // Configurar headers
+            res.setHeader("Content-Type", "application/pdf");
+            res.setHeader("Content-Disposition", `inline; filename=section_${id}.pdf`);
+            res.setHeader("Cache-Control", "no-cache");
+            res.setHeader("Pragma", "no-cache");
+    
+            // Crear una promesa para manejar el stream del PDF
+            await new Promise((resolve, reject) => {
+                const stream = res;
+                
+                // Manejar errores durante la generación del PDF
+                stream.on('error', (err) => {
+                    console.error('Stream error:', err);
+                    reject(err);
+                });
+    
+                buildReportSectionPDF(
+                    response,
+                    (chunk: any) => {
+                        try {
+                            stream.write(chunk);
+                        } catch (err) {
+                            console.error('Write error:', err);
+                            reject(err);
+                        }
+                    },
+                    () => {
+                        try {
+                            stream.end();
+                            resolve(true);
+                        } catch (err) {
+                            console.error('End error:', err);
+                            reject(err);
+                        }
+                    }
+                );
             });
-
-            const stream = res;
-
-            buildReportSectionPDF(
-                response,
-                (data: any) => stream.write(data),
-                () => stream.end()
-            );
+    
         } catch (error) {
-            console.log(error);
-
-            next(new ErrorHandler('Hubo un error al consultar la información', 500));
+            console.error('Error generating PDF:', error);
+            
+            // Si la respuesta no ha sido enviada aún
+            if (!res.headersSent) {
+                // Cancelar la respuesta chunked
+                res.removeHeader('Transfer-Encoding');
+                res.removeHeader('Content-Type');
+                
+                next(new ErrorHandler('Hubo un error al generar el PDF', 500));
+            } else {
+                // Si ya se enviaron headers, solo loguear el error
+                console.error('Error after headers sent:', error);
+                // Forzar cierre de la conexión
+                res.socket?.end();
+            }
         }
     }
 
