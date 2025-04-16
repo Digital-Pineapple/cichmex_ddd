@@ -417,7 +417,7 @@ export class ProductController extends ResponseData {
       if (Array.isArray(req.files) && req.files.length > 0) {
         await Promise.all(
           req.files.map(async (item: any, index: number) => {
-            const pathVideo = `${this.path}/${id}/${index}`;
+            const pathVideo = `${this.path}/${id}/${index}/${ new Date().getTime() }`;
             const { url } = await this.s3Service.uploadToS3AndGetUrl(
               pathVideo + ".mp4",
               item,
@@ -509,7 +509,7 @@ export class ProductController extends ResponseData {
 
       const newVideos = await Promise.all(
         req.files.map(async (item: any) => {
-          const pathVideo = `${this.path}/${id}/${type}`;
+          const pathVideo = `${this.path}/${id}/${type}/${ new Date().getTime() }`; 
           const { url } = await this.s3Service.uploadToS3AndGetUrl(
             pathVideo + ".mp4",
             item,
