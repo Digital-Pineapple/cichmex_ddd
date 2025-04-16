@@ -1,3 +1,4 @@
+// Importaciones de módulos y clases necesarios
 import { CategoryUseCase } from './../../../application/category/CategoryUseCase';
 import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
@@ -17,10 +18,15 @@ import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHout
 import { PopulateVariantProduct } from '../../../../shared/domain/PopulateInterfaces';
 import { VariantProductEntity } from '../../../domain/variantProduct/variantProductEntity';
 import { log } from 'console';
+
+// Definición de la clase ProductController que extiende de ResponseData
 export class ProductController extends ResponseData {
+  // Definición de la ruta base para los endpoints de esta clase
   protected path = "/product";
+  // ID de la tienda en línea
   private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634"
 
+  // Constructor de la clase que recibe las dependencias necesarias
   constructor(
     private productUseCase: ProductUseCase,
     private categoryUseCase: CategoryUseCase,
@@ -31,6 +37,7 @@ export class ProductController extends ResponseData {
     private subCategoryUseCase: SubCategoryUseCase,
     private variantProductUseCase: VariantProductUseCase,
   ) {
+    // Inicialización de los métodos de la clase
     super();
     this.getAllProducts = this.getAllProducts.bind(this);
     this.getAllProductsPaginate = this.getAllProductsPaginate.bind(this);
@@ -67,6 +74,7 @@ export class ProductController extends ResponseData {
     this.getProductsBySearch = this.getProductsBySearch.bind(this)
   }
 
+  // Método para obtener todos los productos
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
     try {
       // Obtener todos los productos
