@@ -459,10 +459,7 @@ export class PaymentController extends ResponseData {
                 order_id: order_id,
             });
 
-            if (!response1 || response1 instanceof ErrorHandler) {
-                return next(new ErrorHandler('Error en la creación del pago', 500));
-            }
-
+            if (!response1 || response1 instanceof ErrorHandler) return next(new ErrorHandler('Error en la creación del pago', 500));            
             // Preparación de los valores de la orden
             const values1: any = {
                 payment: response1._id,
@@ -490,25 +487,18 @@ export class PaymentController extends ResponseData {
                 values1.branch = branch_id;
                 values1.point_pickup_status = false;
                 values1["typeDelivery"] = "pickup";
-            }
-
-            try {
-                // Actualización del stock y creación de salida
-                await this.updateProductStock(productsOrder, order_id)         
-                // Creación de la orden del producto
-                const order: any| null = await this.productOrderUseCase.createProductOrder(values1);
-                await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
-                    "from" : user?._id,                            
-                    "message" : "Se ha creado un nuevo pedido",
-                    "type" : "order", 
-                    "resource_id": order._id,                                                                                                                                                                                          
-                })
-                return this.invoke(order, 200, res, 'Se pagó con éxito', next);
-            } catch (error) {
-                console.error('Error al actualizar el stock o crear la orden:', error);
-                return next(new ErrorHandler('Error: No se pudo crear su orden. Por favor, contacte con servicio al cliente', 500));
-            }
-
+            }            
+            // Actualización del stock y creación de salida
+            await this.updateProductStock(productsOrder, order_id)         
+            // Creación de la orden del producto
+            const order: any| null = await this.productOrderUseCase.createProductOrder(values1);
+            await this.notificationUseCase.sendNotificationToUsers(["CICHMEX", "CARWASH"], ["SUPER-ADMIN"],  {                                                      
+                "from" : user?._id,                            
+                "message" : "Se ha creado un nuevo pedido",
+                "type" : "order", 
+                "resource_id": order._id,                                                                                                                                                                                          
+            })
+            return this.invoke(order, 200, res, 'Se pagó con éxito', next);
         } catch (error) {
             console.error('Error al crear el pago en la base de datos:', error);
             if (error instanceof Error) {

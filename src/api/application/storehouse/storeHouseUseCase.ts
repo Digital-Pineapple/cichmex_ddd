@@ -17,6 +17,9 @@ export class StoreHouseUseCase {
     public async getDetailStoreHouse(_id: string): Promise<storeHouseEntity | null> {
         return await this.StoreHouseRepository.findById(_id);
     }
+    public async getStoreHouseByUser(user_id: any): Promise<storeHouseEntity | null> {
+        return await this.StoreHouseRepository.findOneItem({user_id, status: true});
+    }
 
     public async createStoreHouse(body:object): Promise<storeHouseEntity | null> {
        const nextId = await CounterService.getNextSequence('StoreHouse')

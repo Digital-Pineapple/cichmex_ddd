@@ -10,14 +10,14 @@ export class FacturapiService {
     this.facturapi = new Facturapi(this.facturapi_key);
   }
 
-  async createInvoice(customer: string | Object, items: Array<Object>, payment_form: string, use: string) {
+  async createInvoice(customer: string | Object, items: Array<Object>, payment_form: string, payment_method : string,  use: string) {
     try{
       const payload = {
         customer: customer,
         items: items,
-        payment_form: payment_form,
+        payment_form: payment_form,        
         use: use,
-        payment_method: "PUE"
+        payment_method: payment_method
       }
       const invoice = this.facturapi.invoices.create(payload);
       return invoice;
@@ -45,16 +45,16 @@ export class FacturapiService {
 
   async cancelInvoice(id: string, motive: string) {
     try {
-      const invoice = await this.facturapi.invoices.cancel(id, motive);
+      const invoice = await this.facturapi.invoices.cancel(id, { motive: '02' } );
       return invoice;
     } catch(error) {
       throw new ErrorHandler("Facturapi: Error al cancelar factura", 400);
     }
   }
 
-  async downloadInvoice(id: string, format: string = 'pdf') {
+  async downloadZipStreamInvoice(id: string) {
     try {
-      const invoice = await this.facturapi.invoices.downloadZip(id, format);
+      const invoice = await this.facturapi.invoices.downloadZip(id);
       return invoice;
     } catch(error) {
       throw new ErrorHandler("Facturapi: Error al descargar factura", 400);

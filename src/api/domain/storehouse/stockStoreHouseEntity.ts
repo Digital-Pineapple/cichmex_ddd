@@ -8,7 +8,7 @@ export interface StockStoreHouseEntity  {
   StoreHouse_id : storeHouseEntity;
   product_id?: ProductEntity;
   variant_id ?: VariantProductEntity;
-  stock: number;
+  stock?: number;
   status?: boolean;
   createdAt: NativeDate;
   updatedAt: NativeDate;

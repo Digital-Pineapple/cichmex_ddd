@@ -54,11 +54,11 @@ export class VariantProductController extends ResponseData {
   ): Promise<void> {
     const { body } = req.body; // Corregido acceso al cuerpo de la solicitud
     const { _id } = req.user;
-    const stockParse = JSON.parse(body.stock)
+    // const stockParse = JSON.parse(body.stock)
 
     try {
       // Validación de datos entrantes
-      if (!body.product_id || !body.color || !body.size || !stockParse || !body.purchase_price) {
+      if (!body.product_id || !body.color || !body.size || !body.purchase_price) {
         return next(new ErrorHandler('Faltan datos obligatorios', 400));
       }
 
@@ -100,18 +100,18 @@ export class VariantProductController extends ResponseData {
         StoreHouse_id: SH_id,
         product_id: productId,
         variant_id: variant._id,
-        stock: body.stock, // Corregido el error tipográfico
+        // stock: body.stock,
       });
 
       // Registrar entrada en el almacén
-      await this.stockSHinputUseCase.createInput({
-        SHStock_id: SHStock?._id,
-        quantity: stockParse,
-        newQuantity: stockParse,
-        responsible: _id,
-        folio: folio,
-        product_detail: productId,
-      });
+      // await this.stockSHinputUseCase.createInput({
+      //   SHStock_id: SHStock?._id,
+      //   quantity: stockParse,
+      //   newQuantity: stockParse,
+      //   responsible: _id,
+      //   folio: folio,
+      //   product_detail: productId,
+      // });
 
       this.invoke(variant, 200, res, 'Se creó con éxito', next);
     } catch (error) {

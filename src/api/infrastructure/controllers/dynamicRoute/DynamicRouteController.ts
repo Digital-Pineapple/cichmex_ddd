@@ -45,12 +45,11 @@ export class DynamicRouteController extends ResponseData {
     public async getRoutes(req: Request, res: Response, next: NextFunction) {
         const { type_user } = req.user;
         const { system } = req.query;
-
+        
         try {
             const response: any = await this.dynamicRouteUseCase.getRoutes(type_user?.role, system);
 
             let responseData: any = [];
-
             if (!response || response.length === 0) {
                 return next(new ErrorHandler('No se encontraron rutas', 404));
             }
@@ -96,6 +95,8 @@ export class DynamicRouteController extends ResponseData {
             const response: any = await this.dynamicRouteUseCase.createOneRoute({ ...values, uuid })
             this.invoke(response, 200, res, 'Ruta creada con éxito', next);
         } catch (error) {
+            console.log(error);
+            
             next(new ErrorHandler('Hubo un error al crear', 500));
         }
     }

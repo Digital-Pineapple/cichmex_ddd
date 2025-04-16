@@ -1,3 +1,4 @@
+// Importaciones de módulos y clases necesarios
 import { CategoryUseCase } from './../../../application/category/CategoryUseCase';
 import { Request, Response, NextFunction, response } from 'express';
 import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
@@ -17,10 +18,15 @@ import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHout
 import { PopulateVariantProduct } from '../../../../shared/domain/PopulateInterfaces';
 import { VariantProductEntity } from '../../../domain/variantProduct/variantProductEntity';
 import { log } from 'console';
+
+// Definición de la clase ProductController que extiende de ResponseData
 export class ProductController extends ResponseData {
+  // Definición de la ruta base para los endpoints de esta clase
   protected path = "/product";
+  // ID de la tienda en línea
   private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634"
 
+  // Constructor de la clase que recibe las dependencias necesarias
   constructor(
     private productUseCase: ProductUseCase,
     private categoryUseCase: CategoryUseCase,
@@ -31,6 +37,7 @@ export class ProductController extends ResponseData {
     private subCategoryUseCase: SubCategoryUseCase,
     private variantProductUseCase: VariantProductUseCase,
   ) {
+    // Inicialización de los métodos de la clase
     super();
     this.getAllProducts = this.getAllProducts.bind(this);
     this.getAllProductsPaginate = this.getAllProductsPaginate.bind(this);
@@ -67,6 +74,7 @@ export class ProductController extends ResponseData {
     this.getProductsBySearch = this.getProductsBySearch.bind(this)
   }
 
+  // Método para obtener todos los productos
   public async getAllProducts(req: Request, res: Response, next: NextFunction) {
     try {
       // Obtener todos los productos
@@ -409,7 +417,7 @@ export class ProductController extends ResponseData {
       if (Array.isArray(req.files) && req.files.length > 0) {
         await Promise.all(
           req.files.map(async (item: any, index: number) => {
-            const pathVideo = `${this.path}/${id}/${index}`;
+            const pathVideo = `${this.path}/${id}/${index}/${ new Date().getTime() }`;
             const { url } = await this.s3Service.uploadToS3AndGetUrl(
               pathVideo + ".mp4",
               item,
@@ -501,7 +509,7 @@ export class ProductController extends ResponseData {
 
       const newVideos = await Promise.all(
         req.files.map(async (item: any) => {
-          const pathVideo = `${this.path}/${id}/${type}`;
+          const pathVideo = `${this.path}/${id}/${type}/${ new Date().getTime() }`; 
           const { url } = await this.s3Service.uploadToS3AndGetUrl(
             pathVideo + ".mp4",
             item,
@@ -864,22 +872,22 @@ export class ProductController extends ResponseData {
           const sku = generateUUID()
           const addVariant: any = await this.variantProductUseCase.CreateVariant({ ...variant, sku: sku, product_id: id });
           const folio = RandomCodeId('PR')
-          const stock = JSON.parse(variant.stock)
+          // const stock = JSON.parse(variant.stock)
 
           const createStock: any = await this.stockStoreHouseUseCase.createStock({
             StoreHouse_id: SH_id,
             product_id: id,
             variant_id: addVariant._id,
-            stock: stock
+            // stock: stock
           })
-          await this.stockSHinputUseCase.createInput({
-            folio: folio,
-            SHStock_id: createStock._id,
-            quantity: stock,
-            newQuantity: variant.stock,
-            responsible: user,
-            product_detail: id,
-          })
+          // await this.stockSHinputUseCase.createInput({
+          //   folio: folio,
+          //   SHStock_id: createStock._id,
+          //   quantity: stock,
+          //   newQuantity: variant.stock,
+          //   responsible: user,
+          //   product_detail: id,
+          // })
 
           // Si hay imágenes para esta variante
           if (filesByVariant[variantIndex]) {
@@ -1007,21 +1015,21 @@ export class ProductController extends ResponseData {
               product_id: id,
             });
 
-            const stock = variant.stock
+            // const stock = variant.stock
             const SHStock = await this.stockStoreHouseUseCase.createStock({
               StoreHouse_id: SH_id,
               product_id: id,
               variant_id: addVariant._id,
-              stock,
+              // stock,
             });
-            await this.stockSHinputUseCase.createInput({
-              folio: folio,
-              SHStock_id: SHStock?._id,
-              quantity: stock,
-              newQuantity: stock,
-              responsible: UserInfo,
-              product_detail: id
-            })
+            // await this.stockSHinputUseCase.createInput({
+            //   folio: folio,
+            //   SHStock_id: SHStock?._id,
+            //   quantity: stock,
+            //   newQuantity: stock,
+            //   responsible: UserInfo,
+            //   product_detail: id
+            // })
 
             // Asignar imágenes a la variante por color
             const color: any = variant.attributes?.color;
@@ -1221,22 +1229,22 @@ export class ProductController extends ResponseData {
             });
 
             const folio = RandomCodeId('PR');
-            const stock = JSON.parse(variant.stock);
+            // const stock = JSON.parse(variant.stock);
             const createStock: any = await this.stockStoreHouseUseCase.createStock({
               StoreHouse_id: SH_id,
               product_id: id,
               variant_id: addVariant._id,
-              stock,
+              // stock,
             });
 
-            await this.stockSHinputUseCase.createInput({
-              folio,
-              SHStock_id: createStock._id,
-              quantity: stock,
-              newQuantity: stock,
-              responsible: user,
-              product_detail: id,
-            });
+            // await this.stockSHinputUseCase.createInput({
+            //   folio,
+            //   SHStock_id: createStock._id,
+            //   quantity: stock,
+            //   newQuantity: stock,
+            //   responsible: user,
+            //   product_detail: id,
+            // });
           }
 
 

@@ -210,6 +210,7 @@ export class DiscountCouponController extends ResponseData {
 
     public async createDiscountCoupon(req: Request, res: Response, next: NextFunction) {
         const { values } = req.body;
+        
         const uuid = generateUUID();
 
         try {

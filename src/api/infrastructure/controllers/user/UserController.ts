@@ -11,11 +11,12 @@ import { UserUseCase } from '../../../application/user/UserUseCase';
 import { TypeUserUseCase } from '../../../application/typeUser/TypeUserUseCase';
 import { S3Service } from '../../../../shared/infrastructure/aws/S3Service';
 import { sendMail } from '../../../../shared/infrastructure/nodemailer/emailer';
-import { IGoogleResponse } from '../../../application/authentication/AuthenticationService';
+import { Authentication, IGoogleResponse } from '../../../application/authentication/AuthenticationService';
 import { ShoppingCartUseCase } from '../../../application/shoppingCart.ts/ShoppingCartUseCase';
 import { AddressUseCase } from '../../../application/address/AddressUseCase';
 import { SNService } from '../../../../shared/infrastructure/aws/SNService';
 import { relativeTimeThreshold } from 'moment';
+import { AuthUseCase } from '../../../application/auth/AuthUseCase';
 // import { whatsappService } from '../../../../shared/infrastructure/whatsapp/WhatsappService..external';
 
 
@@ -30,8 +31,8 @@ export class UserController extends ResponseData {
         private readonly addressUseCase: AddressUseCase,
         private readonly twilioService: TwilioService,
         private readonly s3Service: S3Service,
-        private readonly snsService: SNService,        
-
+        private readonly snsService: SNService,    
+        private readonly authUseCase: AuthUseCase,    
     ) {
         super();
         this.allPhones = this.allPhones.bind(this);
@@ -66,6 +67,7 @@ export class UserController extends ResponseData {
         this.RegisterWarehouseman = this.RegisterWarehouseman.bind(this);
         this.getAllWarehouseman = this.getAllWarehouseman.bind(this);
         this.UpdateWarehouseman = this.UpdateWarehouseman.bind(this);
+        this.deleteMyAccount = this.deleteMyAccount.bind(this);
     }
 
 
@@ -721,6 +723,18 @@ export class UserController extends ResponseData {
         } catch (error) {
             next(new ErrorHandler("Hubo un error al eliminar", 500));
         }
+    }
+
+    public async deleteMyAccount(req: Request, res: Response, next: NextFunction) {
+        // const { password } = req.body;
+        const user = req.user;
+        try{                                                
+            // const validPassword = await this.authUseCase.validatePassword(user.id+"", password);
+            const response = await this.userUseCase.updateUser(user.id+"", { status: false });            
+            this.invoke({ok : true}, 200, res, 'Se elimino correctamente', next);        
+        }catch(error){            
+            next(new ErrorHandler((error as Error).message || 'Error al eliminar cuenta', 500));              
+        } 
     }
 
 
