@@ -11,16 +11,19 @@ export class BranchOfficeUseCase {
     private readonly branchOfficeRepository: BranchOfficeRepository
   ) { }
 
+  // Obtener todas las sucursales de Cichmex
   public async getCichmexBranches(): Promise<BranchOfficeEntity[] | null> {
     return await this.branchOfficeRepository.getCichmexBranches();    
   }
 
+  // Obtener todas las sucursales
   public async getAllBranchOffices(): Promise<
     BranchOfficeEntity[] | ErrorHandler | null
   > {
     return await this.branchOfficeRepository.findAll();
   }
 
+  // Obtener información detallada de las sucursales
   public async getInfoBranchOffices(): Promise<BranchOfficeEntity[] | BranchOfficeResponse[] | null> {
    let data : any  =  await this.branchOfficeRepository.getInfoBranches({activated:true}) 
    
@@ -44,12 +47,14 @@ export class BranchOfficeUseCase {
 
 
 
+  // Obtener detalles de una sucursal específica
   public async getDetailBranchOffice(
     _id: string
   ): Promise<BranchOfficeEntity | null> {
     return await this.branchOfficeRepository.findByIdPupulate(_id, BranchPopulateConfig);
   }
 
+  // Obtener sucursales asociadas a un usuario específico
   public async getBranchesUser(
     _id: string
   ): Promise<BranchOfficeEntity[] | null> {
@@ -57,6 +62,7 @@ export class BranchOfficeUseCase {
   }
 
 
+  // Crear una nueva sucursal
   public async createBranchOffice(
     body: any, location :object
   ): Promise<BranchOfficeEntity | ErrorHandler> {
@@ -73,6 +79,7 @@ export class BranchOfficeUseCase {
     return await this.branchOfficeRepository.createOne({ ...newBranch, branch_key: branchKey });
   }
 
+  // Actualizar una sucursal existente
   public async updateBranchOffice(
     _id: string,
     updated: any
@@ -86,6 +93,7 @@ export class BranchOfficeUseCase {
   }
 
 
+  // Eliminar una sucursal
   public async deleteOneBranchOffice(
     _id: string
   ): Promise<BranchOfficeEntity | ErrorHandler | null> {
@@ -94,6 +102,7 @@ export class BranchOfficeUseCase {
     return this.branchOfficeRepository.updateOne(_id, { status: false });
 
   }
+  // Validar una sucursal
   public async validateBranchOffice(
     _id: string,
     object: any
@@ -101,6 +110,7 @@ export class BranchOfficeUseCase {
     return this.branchOfficeRepository.updateOne(_id, { ...object });
   }
 
+  // Obtener las sucursales más cercanas a una ubicación específica
   public async getCloserBranches(coords : { lat: number, lng: number }): Promise<BranchOfficeEntity[] | null> {
     const branches = await this.branchOfficeRepository.findCloserBranches(coords);
     return branches;    

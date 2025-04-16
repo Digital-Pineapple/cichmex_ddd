@@ -3,6 +3,7 @@ import { MunicipalitiesUseCase } from '../../../application/municipalities/Munic
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 
+// Controlador para manejar las municipalidades
 export class MunicipalitiesController extends ResponseData {
     constructor(private municipalitiesUseCase: MunicipalitiesUseCase) {
         super();
@@ -14,6 +15,7 @@ export class MunicipalitiesController extends ResponseData {
         this.getMunicipalitiesByState = this.getMunicipalitiesByState.bind(this);
     }
 
+    // Método para obtener todas las municipalidades
     public async getAllMunicipalities(req: Request, res: Response, next: NextFunction) {
         try {
             const municipalities = await this.municipalitiesUseCase.getAllMunicipalities();
@@ -23,6 +25,7 @@ export class MunicipalitiesController extends ResponseData {
         }
     }
 
+    // Método para obtener una municipalidad por su ID
     public async getOneMunicipality(req: Request, res: Response, next: NextFunction) {
         try {
             const municipality = await this.municipalitiesUseCase.getOneMunicipality(req.params.id);
@@ -32,6 +35,7 @@ export class MunicipalitiesController extends ResponseData {
         }
     }
 
+    // Método para crear una nueva municipalidad
     public async createMunicipality(req: Request, res: Response, next: NextFunction) {
         try {
             const municipality = await this.municipalitiesUseCase.createMunicipality(req.body);
@@ -41,6 +45,7 @@ export class MunicipalitiesController extends ResponseData {
         }
     }
 
+    // Método para actualizar una municipalidad
     public async updateMunicipality(req: Request, res: Response, next: NextFunction) {
         try {
             const municipality = await this.municipalitiesUseCase.updateMunicipality(req.params.id, req.body);
@@ -50,6 +55,7 @@ export class MunicipalitiesController extends ResponseData {
         }
     }
 
+    // Método para eliminar una municipalidad
     public async deleteMunicipality(req: Request, res: Response, next: NextFunction) {
         try {
             await this.municipalitiesUseCase.deleteMunicipality(req.params.id);
@@ -59,6 +65,7 @@ export class MunicipalitiesController extends ResponseData {
         }
     }
 
+    // Método para obtener las municipalidades por un estado específico
     public async getMunicipalitiesByState(req: Request, res: Response, next: NextFunction) {
         try {
             const { stateId } = req.params;
