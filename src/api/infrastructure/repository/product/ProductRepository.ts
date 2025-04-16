@@ -1,3 +1,4 @@
+// Importaciones necesarias
 import { Model, ObjectId as MongooseObjectId } from 'mongoose';
 import { ProductRepository as ProductConfig } from '../../../domain/product/ProductRepository'
 import { MongoRepository } from '../MongoRepository';
@@ -6,12 +7,16 @@ import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ObjectId } from 'mongodb';
 import { PopulateProductCategory, PopulateProductSubCategory } from '../../../../shared/domain/PopulateInterfaces';
 
+// Clase que implementa la interfaz del repositorio de productos
 export class ProductRepository extends MongoRepository implements ProductConfig  {
+    // ID del almacén en línea
     private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634";    
+    // Constructor que recibe el modelo de producto
     constructor(protected ProductModel: Model<any>) {
         super(ProductModel);
     }
 
+    // Métodos para buscar y actualizar productos
     async findProduct(query: Object): Promise<ProductEntity | null> {
         return await this.findOneItem(query);
     }
@@ -20,20 +25,25 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
         return await this.updateOne(_id, updated);
     }
     
+    // Método para obtener todos los productos
     async AllProducts(): Promise<ProductEntity[] | null> {
         return await this.ProductModel.find({status:true})
     }
 
+    // Método para crear un producto
     async createProduct(body: Object): Promise<ProductEntity | null> {
         return await this.createOne(body);
     }
+    // Método para actualizar imágenes y slug de un producto
     async updateImagesAndSlug(slug: string, images:[string], _id: string): Promise<ProductEntity | null > {
         return await this.findAndUpdateProduct(_id,{images:images, slug:slug})
     }
     
+    // Método para obtener productos por categoría
     async getProductsByCategory(query:any, populateConfig1?:any): Promise<ProductEntity[] | ErrorHandler | null > {
         return await this.ProductModel.find({...query}).populate(populateConfig1)
     }
+    // Método para iniciar la eliminación de un detalle de imagen
     async startDeleteImageDetail(id: string, imageId: string): Promise<ProductEntity | ErrorHandler | null> {
         try {
             // Busca el producto por su ID
@@ -62,6 +72,7 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
         }
     }
     
+    // Método para iniciar la eliminación de un detalle de video
     async startDeleteVideoDetail(id: string, video_id: string): Promise<ProductEntity | ErrorHandler | null> {
       try {
           // Busca el producto por su ID
@@ -91,13 +102,12 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
   }
   
     
+   // Método para encontrar un producto por su ID con detalles
    async  findDetailProductById(id:string, populateCofig1?:any, populateConfig2?:any, populateConfig3?:any): Promise<ProductEntity| ErrorHandler | null> {
     return await this.ProductModel.findById(id).populate(populateCofig1).populate(populateConfig2).populate(populateConfig3)
-    // return await this.MODEL.aggregate([
-        
-    // ]).
    }
 
+   // Método para buscar productos por su nombre
    async findSearchProducts(search: string, page: number): Promise<any> {
     // console.log('search', search);    
     const PAGESIZE = 30;
@@ -221,6 +231,7 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
     };
 }
 
+// Método para encontrar productos de video
 // async findVideoProducts(page: number): Promise<ProductEntity[] | ErrorHandler | null> {
 //     const storehouseId = new ObjectId(this.onlineStoreHouse);
 //     const PAGESIZE = 10;
@@ -401,9 +412,12 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
 //     return result;
 // }
 async findVideoProducts(page: number): Promise<ProductEntity[]  | ErrorHandler | null> {
+    // Esta función busca productos que tienen videos verticales y los devuelve paginados.
+    // Primero, se establece el ID del almacén en línea y el tamaño de la página.
     const storehouseId = new ObjectId(this.onlineStoreHouse);
     const PAGESIZE = 10;
 
+    // Se ejecuta una agregación de MongoDB para filtrar y procesar los productos.
     const result = await this.MODEL.aggregate([
         {
             $match: {
@@ -568,13 +582,23 @@ async findVideoProducts(page: number): Promise<ProductEntity[]  | ErrorHandler |
         }
     ]);
 
+    // Se extraen el total de productos y los productos paginados del resultado.
     const total = result[0].metadata[0]?.total || 0;
     const products = result[0].data;
 
+    // Se devuelve el total de productos y los productos encontrados.
     return { total, products };
 }
 
 
+// Este método asincrónico busca los productos más recientemente agregados.
+// Primero filtra los productos por estado 'true', luego los ordena por fecha de creación en orden descendente.
+// Después, limita los resultados a los primeros 12.
+// Luego, busca las categorías y subcategorías asociadas a cada producto.
+// A continuación, busca las variantes de cada producto y determina si tiene variantes activas.
+// Luego, busca el stock de las variantes y lo agrega a cada variante.
+// Si un producto no tiene variantes, busca el stock por 'product_id' y lo agrega al producto.
+// Finalmente, consolida todas las variantes en un solo producto y proyecta solo los campos necesarios.
 async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> {
     const storehouseId = new ObjectId(this.onlineStoreHouse);
     const result = await this.MODEL.aggregate([
@@ -759,6 +783,7 @@ async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> 
 
 
 
+   // Esta función busca productos aleatorios por categoría, excluyendo un producto específico y filtrando por el estado y el almacén.
    async findRandomProductsByCategory(categoryId : any, skiproduct:any , storehouse: any ): Promise<ProductEntity[] | ErrorHandler | null> {
     const storehouseId = new ObjectId(storehouse);  
      const result = await this.MODEL.aggregate([
@@ -810,6 +835,14 @@ async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> 
      return result;
    }
 
+   /**
+    * Esta función busca productos por categoría, filtrando por el estado, rango de precios, y paginando los resultados.
+    * 
+    * @param categoryId El ID de la categoría de los productos a buscar.
+    * @param storehouse El ID del almacén específico donde buscar los productos.
+    * @param qparams Los parámetros de consulta, incluyendo la página, el rango de precios, y la subcategoría.
+    * @returns Un objeto que contiene los productos encontrados, el total de productos, el rango de precios, el número de páginas, el límite de productos por página, y la página actual.
+    */
    async findProductsByCategory(categoryId : MongooseObjectId, storehouse: string, qparams: any ): Promise<ProductEntity[] | ErrorHandler | null> {    
     const page = Number(qparams.page) || 1;
     let matchStage: any = {
@@ -911,6 +944,12 @@ async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> 
     };        
   }
   
+   // Este método asincrónico busca productos por subcategoría, filtrando por el estado, rango de precios, y paginando los resultados.
+   // 
+   // @param subcategoryId El ID de la subcategoría de los productos a buscar.
+   // @param storehouse El ID del almacén específico donde buscar los productos.
+   // @param qparams Los parámetros de consulta, incluyendo la página, el rango de precios, y la categoría.
+   // @returns Un objeto que contiene los productos encontrados, el total de productos, el rango de precios, el número de páginas, el límite de productos por página, y la página actual.
    async findProductsBySubCategory(subcategoryId : MongooseObjectId, storehouse: string, qparams: any ): Promise<ProductEntity[]  | null> {
     const page = Number(qparams.page) || 1;
     let matchStage: any = {};         
@@ -1002,10 +1041,19 @@ async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> 
 
    }
 
+   // Este método asincrónico obtiene una lista paginada de productos.
+   // Utiliza el método 'find' para filtrar los productos por estado 'true',
+   // luego llama a 'populate' para poblar los campos de categoría y subcategoría,
+   // 'skip' y 'limit' se utilizan para la paginación, 'sort' ordena los resultados
+   // por la fecha de creación en orden descendente. Finalmente, 'exec' ejecuta la consulta.
    async GetProductPaginate (skip: number, limit:number){
     return await this.ProductModel.find({status:true}).populate(PopulateProductCategory).populate(PopulateProductSubCategory).skip(skip).limit(limit).sort({createdAt:-1}).exec()
    }
 
+  // Este método asincrónico cuenta el número de documentos en la colección de productos
+  // que tienen el estado 'status' igual a 'true'. Utiliza el método 'find' para filtrar
+  // los documentos por el estado, luego llama a 'countDocuments' para contar el número
+  // de documentos que coinciden con el filtro. Finalmente, 'exec' ejecuta la consulta.
   async countProducts() {
     return this.ProductModel.find({status:true}).countDocuments().exec();
   }

@@ -1,3 +1,4 @@
+// Importaciones necesarias
 import { Request, Response, NextFunction } from 'express';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
@@ -9,10 +10,11 @@ import mongoose from 'mongoose';
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
 import { retrieveAWSFiles } from '../../../../helpers/retrieveImages';
 
-
+// Clase controladora para las sucursales
 export class BranchOfficeController extends ResponseData {
     protected path = '/branch_office';
 
+    // Constructor de la clase
     constructor(private branchOfficeUseCase: BranchOfficeUseCase,
         private documentationUseCase: DocumentationUseCase,
         private productOrderUseCase : ProductOrderUseCase,
@@ -32,6 +34,7 @@ export class BranchOfficeController extends ResponseData {
         this.getCloserBranches = this.getCloserBranches.bind(this);
     }
 
+    // Función para obtener todas las sucursales
     public async getAllBranchOffices(req: Request, res: Response, next: NextFunction) {
         try {
             const response: any | null = await this.branchOfficeUseCase.getAllBranchOffices()
@@ -46,15 +49,7 @@ export class BranchOfficeController extends ResponseData {
         }
     }
 
-    public async getCichmexBranches(req: Request, res: Response, next: NextFunction) {
-        try {
-            const response = await this.branchOfficeUseCase;
-            this.invoke(response, 200, res, "", next);
-        } catch (error) {
-            next(new ErrorHandler('Hubo un error al consultar la información', 500));
-        }
-    }
-
+    // Función para obtener información de las sucursales
     public async getBranchOfficesInfo(req: Request, res: Response, next: NextFunction) {
         try {
             // Obtener la información de las sucursales
@@ -65,6 +60,7 @@ export class BranchOfficeController extends ResponseData {
         }
     }
 
+    // Función para obtener detalles de una sucursal específica
     public async getBranchOfficeDetail(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
 
@@ -78,6 +74,7 @@ export class BranchOfficeController extends ResponseData {
         }
     }
 
+    // Función para obtener sucursales por usuario
     public async getBranchesByUser(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         try {
@@ -89,6 +86,7 @@ export class BranchOfficeController extends ResponseData {
         }
     }   
 
+    // Función para crear una nueva sucursal
     public async createBranchOffice(req: Request, res: Response, next: NextFunction) {
         const { name, description, phone_number, location, schedules, type, tag } = req.body; 
         const user = req.user                   
@@ -156,6 +154,7 @@ export class BranchOfficeController extends ResponseData {
         }
     }
 
+    // Función para eliminar una imagen de una sucursal
     public async deleteImage(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { image_id } = req.body;
@@ -176,6 +175,7 @@ export class BranchOfficeController extends ResponseData {
     } 
     
 
+    // Función para agregar servicios a una sucursal
     public async addServices(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params
         const { services } = req.body;
@@ -188,6 +188,7 @@ export class BranchOfficeController extends ResponseData {
 
     }
 
+    // Función para actualizar una sucursal
     public async updateBranchOffice(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { description, phone_number, location, name, schedules, type } = req.body;
@@ -263,6 +264,7 @@ export class BranchOfficeController extends ResponseData {
     }
 
 
+    // Función para eliminar una sucursal
     public async deleteBranchOffice(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         
@@ -286,6 +288,7 @@ export class BranchOfficeController extends ResponseData {
     
 
 
+    // Función para verificar una sucursal
     public async verifyBranchOffice(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const { user_id } = req.body
@@ -297,6 +300,7 @@ export class BranchOfficeController extends ResponseData {
         }
     }
 
+    // Función para desactivar una sucursal
     public async desactivateBranchOffice(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         try {
@@ -307,6 +311,7 @@ export class BranchOfficeController extends ResponseData {
         }
     }
 
+    // Función para obtener las sucursales más cercanas
     public async getCloserBranches(req: Request, res: Response, next: NextFunction) {
         const { coords } = req.body;
         try{
@@ -322,4 +327,3 @@ export class BranchOfficeController extends ResponseData {
 
 
 }
-

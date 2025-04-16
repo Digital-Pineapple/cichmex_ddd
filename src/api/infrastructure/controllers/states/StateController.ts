@@ -3,6 +3,7 @@ import { StateUseCase } from '../../../application/states/StateUseCase';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ResponseData } from '../../../../shared/infrastructure/validation/ResponseData';
 
+// Controlador para manejar los estados
 export class StateController extends ResponseData {
     constructor(private stateUseCase: StateUseCase) {
         super();
@@ -13,6 +14,7 @@ export class StateController extends ResponseData {
         this.deleteState = this.deleteState.bind(this);
     }
 
+    // Método para obtener todos los estados
     public async getAllStates(req: Request, res: Response, next: NextFunction) {
         try {
             const states = await this.stateUseCase.getAllStates();
@@ -22,6 +24,7 @@ export class StateController extends ResponseData {
         }
     }
 
+    // Método para obtener un estado por su ID
     public async getOneState(req: Request, res: Response, next: NextFunction) {
         try {
             const state = await this.stateUseCase.getOneState(req.params.id);
@@ -31,6 +34,7 @@ export class StateController extends ResponseData {
         }
     }
 
+    // Método para crear un nuevo estado
     public async createState(req: Request, res: Response, next: NextFunction) {
         try {
             const state = await this.stateUseCase.createState(req.body);
@@ -40,6 +44,7 @@ export class StateController extends ResponseData {
         }
     }
 
+    // Método para actualizar un estado
     public async updateState(req: Request, res: Response, next: NextFunction) {
         try {
             const state = await this.stateUseCase.updateState(req.params.id, req.body);
@@ -49,6 +54,7 @@ export class StateController extends ResponseData {
         }
     }
 
+    // Método para eliminar un estado
     public async deleteState(req: Request, res: Response, next: NextFunction) {
         try {
             await this.stateUseCase.deleteState(req.params.id);
