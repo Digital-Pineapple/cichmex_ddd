@@ -70,15 +70,15 @@ export function buildInputsReportPDF(report: any, dataCallback: any, endCallback
     // Generar código QR con la información de la orden
     // const qrData = JSON.stringify({ order_id: orderData.order_id });
     // const qrImage = qr.imageSync(qrData, { type: 'png' });
-    const writeStream = fs.createWriteStream('output.pdf');
+    // const writeStream = fs.createWriteStream('output.pdf');
 
-    const imagePath = path.join(__dirname, '../shared/assets/CHMX/Imagotipo CHMX Negro.png');
+    // const imagePath = path.join(__dirname, '../shared/assets/CHMX/Imagotipo CHMX Negro.png');
 
 
 
-    doc.pipe(writeStream);
+    // doc.pipe(writeStream);
 
-    doc.image(imagePath, 440, doc.y - 50, { width: 100, align: 'right' });
+    // doc.image(imagePath, 440, doc.y - 50, { width: 100, align: 'right' });
     // Primera columna
     doc.fontSize(16);
     doc.text(`Reporte de entrada de productos`, column1X, currentY, { align: 'center' });
