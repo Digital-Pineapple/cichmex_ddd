@@ -18,9 +18,8 @@ export function buildReportSectionPDF(section: any, dataCallback: any, endCallba
     // Generar código QR con la información de la orden
     // const qrData = JSON.stringify({ order_id: orderData.order_id });
     // const qrImage = qr.imageSync(qrData, { type: 'png' });
-    const writeStream = fs.createWriteStream('output.pdf');
     // const imagePath = path.join(__dirname, '.../shared/assets/CHMX/Imagotipo CHMX Negro.png');
-    doc.pipe(writeStream);
+   
 
     const qrBuffer = qr.imageSync(JSON.stringify(_id), { type: 'png' });
 
