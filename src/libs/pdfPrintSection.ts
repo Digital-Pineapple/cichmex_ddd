@@ -18,15 +18,14 @@ export function buildReportSectionPDF(section: any, dataCallback: any, endCallba
     // Generar código QR con la información de la orden
     // const qrData = JSON.stringify({ order_id: orderData.order_id });
     // const qrImage = qr.imageSync(qrData, { type: 'png' });
-    const writeStream = fs.createWriteStream('output.pdf');
-    const imagePath = path.join(__dirname, '../shared/assets/CHMX/Imagotipo CHMX Negro.png');
-    doc.pipe(writeStream);
+    // const imagePath = path.join(__dirname, '.../shared/assets/CHMX/Imagotipo CHMX Negro.png');
+   
 
     const qrBuffer = qr.imageSync(JSON.stringify(_id), { type: 'png' });
 
 
 
-    doc.image(imagePath, 450, doc.y - 20, { width: 80, align: 'right' });
+    // doc.image(imagePath, 450, doc.y - 20, { width: 80, align: 'right' });
     doc.image(qrBuffer, column2X, currentY, { width: 200, align: 'center' });
     // Primera columna
     doc.fontSize(20);
