@@ -116,6 +116,7 @@ export interface ILocationOrder {
 }
 
 export interface ProductOrderResume {
+  totalOrdersPending?: number,
   ordersDay?: number,
   ordersWeek?: number,
   ordersMonth?: number

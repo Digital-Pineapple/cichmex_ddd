@@ -121,6 +121,14 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
             paymentType: { $ne: 'transfer' }
         };
 
+        const queryYearPending = {
+            payment_status: "pending",
+            createdAt: {
+                $gte: startOfYear,
+                $lt: endOfYear
+            },
+        };
+
         const startOfWeek = moment().startOf('week').toDate();
         const endOfWeek = moment().endOf('week').toDate();
 
@@ -132,6 +140,7 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
             },
             paymentType: { $ne: 'transfer' }
         };
+        const salesPending: ProductOrderEntity[] = await this.ProductOrderModel.find(queryYearPending).populate(InfoPayment);
 
         const salesDay: ProductOrderEntity[] = await this.ProductOrderModel.find(queryDay).populate(InfoPayment);
 
@@ -149,6 +158,8 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
             sales: salesDay.filter(sale => new Date(sale.createdAt).getUTCHours() === hour).length
         }));
 
+        const numPending = salesPending.length;
+        
         const numDay = salesDay.length;
         const totalSumDay = salesDay.reduce((sum, item: any) => sum + item.total, 0);
         const SalesMoneyDayMP = salesDay.map((item: any) => item.payment.MP_info.transaction_details.net_received_amount)
@@ -195,6 +206,9 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
 
 
         return {
+
+            totalOrdersPending: numPending,
+
             ordersDay: numDay,
             ordersWeek: numWeek,
             ordersMonth: numMonth,
