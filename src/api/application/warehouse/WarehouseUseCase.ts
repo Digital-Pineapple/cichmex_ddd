@@ -47,7 +47,7 @@ export class WarehouseUseCase {
         return await this.sectionRepository.findDetailSection(id)
     }
     public async searchProductInSection(id: string): Promise<ISection | null> {
-        return await this.sectionRepository.findOneItem({ $or:[{"stock.product": id}, {"stock.variant":id}] }, PopulateAisle)
+        return await this.sectionRepository.findOneItem({ $or:[{"stock.product": id}, {"stock.variant":id}] }, PopulateAisle, PopulateStorehouse)
     }
     public async getProductInSection(product_id: string): Promise<ISection[] | null> {
         return await this.sectionRepository.findProductInSections(product_id)

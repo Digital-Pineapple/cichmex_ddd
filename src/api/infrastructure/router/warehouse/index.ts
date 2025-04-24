@@ -36,7 +36,7 @@ warehouseRouter
 .get('/aisle/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN","WAREHOUSE-MANAGER"]), warehouseController.getAisle)
 .get('/section/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), warehouseController.getSection)
 .get('/print_section_code/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN","WAREHOUSE-MANAGER"]), warehouseController.PrintPdfSection)
-.get('/search_product_section/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), warehouseController.searchProductSection)
+.get('/search_product_section/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), warehouseController.searc hProductSection)
 .post('/add_zone',userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN","WAREHOUSE-MANAGER"]),ActivityLogger, warehouseController.createZone)
 .post('/add_aisle',userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN","WAREHOUSE-MANAGER"]),ActivityLogger, warehouseController.createAisle)
 .post('/add_section',userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN","WAREHOUSE-MANAGER"]),ActivityLogger, warehouseController.createSection)

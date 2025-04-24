@@ -186,7 +186,8 @@ export class StockStoreHouseController extends ResponseData {
 
 
     public async getAvailableStock(req: Request, res: Response, next: NextFunction) {
-        const response = await this.stockStoreHouseUseCase.getStock("662fe69b9ba1d8b3cfcd3634")
+        const { storehouse_id } = req.params
+        const response = await this.stockStoreHouseUseCase.getStock(storehouse_id)
         this.invoke(response, 200, res, '', next);
 
     }
@@ -237,8 +238,10 @@ export class StockStoreHouseController extends ResponseData {
     }
 
     public async createMultipleStock(req: Request, res: Response, next: NextFunction) {
-        const { products } = req.body;
+        const { values,storehouse_id } = req.body;
         const user = req.user;
+        const products = values.products;
+        
 
         if (!Array.isArray(products) || products.length === 0) {
             return next(new ErrorHandler('Faltan datos necesarios o los productos no son válidos', 400));
@@ -254,7 +257,7 @@ export class StockStoreHouseController extends ResponseData {
             email: user.email,
             type_user: user.type_user,
         };
-        const SH_id = '662fe69b9ba1d8b3cfcd3634';
+        const SH_id = storehouse_id ; // Cambia esto por el ID real del almacén
         const code_folio = RandomCodeId('FO');
 
         try {
@@ -356,6 +359,7 @@ export class StockStoreHouseController extends ResponseData {
     public async createMultipleOutputs(req: Request, res: Response, next: NextFunction) {
         const { products } = req.body;
         const user = req.user;
+      
 
         // Validación inicial de `products` y `user`
         if (!products || !Array.isArray(products) || products.length === 0) {
@@ -370,7 +374,6 @@ export class StockStoreHouseController extends ResponseData {
             type_user: user.type_user,
         };
 
-        const SH_id = "662fe69b9ba1d8b3cfcd3634";
         const code_folio = RandomCodeId("FO");
 
         try {
@@ -404,6 +407,8 @@ export class StockStoreHouseController extends ResponseData {
                 if (isNaN(itemQuantity) || itemQuantity <= 0) {
                     throw new Error(`La cantidad del producto ${item.name || "desconocido"} no es válida`);
                 }
+                console.log(item, "item");
+                
 
                 // Obtener detalles de stock
                 const stockDetails = await this.stockStoreHouseUseCase.getDetailStock(item.stock_id);

@@ -22,6 +22,7 @@ export class DynamicRouteUseCase {
         return await this.dynamicRouteRepository.findPublicRoutes(system)
     }
     public async createOneRoute(body: any): Promise<DynamicRouteEntity | ErrorHandler | null> {
+
         const noRepeat = await this.dynamicRouteRepository.findOneItem({ name: body.name, status: true })    
         if (noRepeat) {
             return new ErrorHandler('Ruta existente', 500)
