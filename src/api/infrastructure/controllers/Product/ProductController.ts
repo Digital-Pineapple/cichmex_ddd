@@ -72,6 +72,7 @@ export class ProductController extends ResponseData {
     this.getAllProductsByCategory = this.getAllProductsByCategory.bind(this)
     this.getAllProductsBySubCategory = this.getAllProductsBySubCategory.bind(this)
     this.getProductsBySearch = this.getProductsBySearch.bind(this)
+    this.getAllProductsPaginateSearch = this.getAllProductsPaginateSearch.bind(this)
   }
 
   // Método para obtener todos los productos
@@ -134,6 +135,48 @@ export class ProductController extends ResponseData {
       const [products, totalProducts] = await Promise.all([
         this.productUseCase.findProductsPaginate(skip, limit),
         this.productUseCase.countProducts(), // Método que devuelve el total de productos
+      ]);
+
+      // Obtener todos los productos
+      if (!(products instanceof ErrorHandler) && products !== null) {
+        // Actualizar las variantes de cada producto en paralelo
+        await Promise.all(
+          products.map(async (item: any) => {
+            // Buscar variantes asociadas al producto
+            const variants: any = await this.variantProductUseCase.findAllVarinatsByProduct(item._id)
+            
+            const hasVariants = Array.isArray(variants) && variants.length > 0;
+            await this.productUseCase.updateProduct(item._id, { has_variants: hasVariants });
+          })
+        );
+      }
+
+      // Enviar la respuesta
+      const response = {
+        totalProducts,
+        totalPages: Math.ceil(totalProducts / limit),
+        currentPage: page,
+        pageSize: limit,
+        products,
+      };
+      this.invoke(response, 200, res, "", next);
+    } catch (error) {
+      console.error(error);
+      // Manejo de errores
+      next(new ErrorHandler("Hubo un error al consultar la información", 500));
+    }
+  }
+  public async getAllProductsPaginateSearch(req: Request, res: Response, next: NextFunction) {
+    const page = parseInt(req.query.page as string, 10) || 1; // Página actual
+    const limit = parseInt(req.query.limit as string, 10) || 20; // Tamaño de página
+    const search = req.query.search as string || "";
+    const skip = (page - 1) * limit;
+
+    // Obtener los productos con paginación y ordenados por `createdAt`
+    try {
+      const [products, totalProducts] = await Promise.all([
+        this.productUseCase.findProductsPaginateSearch( search ,skip, limit),
+        this.productUseCase.countProductsSearch(search), // Método que devuelve el total de productos
       ]);
 
       // Obtener todos los productos

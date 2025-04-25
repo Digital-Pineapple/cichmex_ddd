@@ -124,10 +124,16 @@ export class ProductUseCase {
   public async findProductsPaginate(skip: number, limit:number): Promise<ProductEntity[] | ErrorHandler | null> {
     return this.productRepository.GetProductPaginate(skip, limit)
   }
+  public async findProductsPaginateSearch(search: string,skip: number, limit:number): Promise<ProductEntity[] | ErrorHandler | null> {
+    return this.productRepository.GetProductPaginateSearch( search, skip, limit)
+  }
 
   // Método para contar la cantidad de productos
   public async countProducts (): Promise <any>{
     return this.productRepository.countProducts()
+  }
+  public async countProductsSearch (search:any): Promise <any>{
+    return this.productRepository.countProductsSearch(search)
   }
   
 

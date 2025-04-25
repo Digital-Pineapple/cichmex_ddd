@@ -1049,13 +1049,60 @@ async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> 
    async GetProductPaginate (skip: number, limit:number){
     return await this.ProductModel.find({status:true}).populate(PopulateProductCategory).populate(PopulateProductSubCategory).skip(skip).limit(limit).sort({createdAt:-1}).exec()
    }
+   async GetProductPaginateSearch(search: string, skip: number, limit: number) {
+    const query: any = { status: true };
+    
+    if (search.trim()) {
+      const searchTerms = search.trim().split(/\s+/);
+      const orConditions = [];
+      
+      for (const term of searchTerms) {
+        const termRegex = new RegExp(term, 'i');
+        orConditions.push(
+          { name: { $regex: termRegex } },
+          { tag: { $regex: termRegex } }
+        );
+      }
+      
+      query.$and = [{ $or: orConditions }];
+    }
+  
+    return await this.ProductModel.find(query)
+      .populate(PopulateProductCategory)
+      .populate(PopulateProductSubCategory)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 })
+      .exec();
+  }
 
   // Este método asincrónico cuenta el número de documentos en la colección de productos
   // que tienen el estado 'status' igual a 'true'. Utiliza el método 'find' para filtrar
   // los documentos por el estado, luego llama a 'countDocuments' para contar el número
   // de documentos que coinciden con el filtro. Finalmente, 'exec' ejecuta la consulta.
   async countProducts() {
-    return this.ProductModel.find({status:true}).countDocuments().exec();
+    return await this.ProductModel.find({status:true}).countDocuments().exec();
+  }
+  async countProductsSearch(search: string) {
+    const query: any = { status: true };
+    
+    if (search.trim()) {
+      const searchTerms = search.trim().split(/\s+/);
+      const orConditions = [];
+      
+      for (const term of searchTerms) {
+        const termRegex = new RegExp(term, 'i');
+        orConditions.push(
+          { name: { $regex: termRegex } },
+          { tag: { $regex: termRegex } }
+        );
+      }
+      
+      query.$and = [{ $or: orConditions }];
+    }
+    return await this.ProductModel.find(query).countDocuments().exec();
+    
+    
   }
 
 }
