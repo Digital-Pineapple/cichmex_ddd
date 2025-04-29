@@ -591,13 +591,38 @@ export class PaymentController extends ResponseData {
     public async addTicket(req: Request, res: Response, next: NextFunction): Promise<void> {
         const { id, reference, amount } = req.body;
         const date = new MomentService().newDate();
+        const parsedAmount = parseFloat(amount);
+        
 
         try {
             const payment: any = await this.paymentUseCase.getDetailPayment(id);
+            const productOrder : any = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id })
+            
+            if (!productOrder) {
+                return next(new ErrorHandler('No se encontró la orden de producto', 400));
+            }
+            if (productOrder.status !== true) {
+                return next(new ErrorHandler('El pedido no está activo', 400));
+            }
+            if (productOrder.point_pickup_status === true) {
+                return next(new ErrorHandler('El pedido ya fue entregado', 400));
+            }
+            if (productOrder.total !== parsedAmount) {
+                return next(new ErrorHandler('El monto no coincide con el total del pedido', 400));
+            }
             
             if (!payment) {
                 return next(new ErrorHandler('No se encontró el pago', 400));
             }
+            if (payment.payment_status !== 'pending') {
+                return next(new ErrorHandler('El pago se esta validando', 400));
+            }
+            const tickets = payment.verification?.payment_vouchers;
+if (tickets && tickets.some((ticket: PaymentVoucher) => ticket.status === true)) {
+    return next(new ErrorHandler('Ya existe un voucher que necesita validación', 400));
+}
+        
+            
 
             if (req.file) {
                 const pathObject = `${this.path}/${id}/${date}`;
@@ -610,7 +635,7 @@ export class PaymentController extends ResponseData {
                 const newVoucher = {
                     url: pathObject,
                     reference: reference,
-                    amount: amount,
+                    amount: parsedAmount,
                     status: 'pending',
                     createdAt: date,
                 };
@@ -837,6 +862,7 @@ export class PaymentController extends ResponseData {
 
             const productOrder: any = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id })
 
+
             payment.verification!.payment_vouchers![voucherIndex] = {
                 ...payment.verification!.payment_vouchers![voucherIndex],
                 verification_responsible: userId,
@@ -847,7 +873,7 @@ export class PaymentController extends ResponseData {
             };
             payment.verification.last_verification_time = date
 
-                const updatePayment = await this.paymentUseCase.updateOnePayment(id, { verification: payment.verification, });
+                const updatePayment = await this.paymentUseCase.updateOnePayment(id, { verification: payment.verification, payment_status:'pending', });
                 if (!updatePayment) {
                     return  next(new ErrorHandler('Error al acutualizar el pago',500))
                 }

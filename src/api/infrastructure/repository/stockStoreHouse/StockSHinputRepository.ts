@@ -50,25 +50,116 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
       }
     ])
   }
-  async getInputsByOneFolio(folio: string): Promise<SHProductInput[]> {
+  async getInputsByOneFolio(folio: string): Promise<any[]> {
     return await this.StockInputModel.aggregate([
+      // 1. Filtrar por folio
       { $match: { folio: folio } },
+  
+      // 2. Normalizar product_detail (para ambos formatos)
+      {
+        $addFields: {
+          productId: {
+            $cond: [
+              { $eq: [{ $type: "$product_detail" }, "object"] },
+              "$product_detail._id",
+              { $toObjectId: "$product_detail" }
+            ]
+          },
+          
+        }
+      },
+  
+      // 3. Buscar detalles completos del producto (si product_detail era solo ID)
+      {
+        $lookup: {
+          from: "products",
+          localField: "productId",
+          foreignField: "_id",
+          as: "productDetailLookup"
+        }
+      },
+      { $unwind: { path: "$productDetailLookup", preserveNullAndEmptyArrays: true } },
+  
+      // 4. Crear campo unificado de producto
+      
+  
+      // 5. Buscar ubicación en sections
+      {
+        $lookup: {
+          from: "sections",
+          let: {
+            productId: "$productId",
+          },
+          pipeline: [
+            { $unwind: "$stock" },
+            {
+              $match: {
+                $expr: {
+                      $or: [
+                        { $eq: ["$stock.product", "$productId"] },
+                        { $eq: ["$stock.variant", "$productId"] }
+                      ]
+                    }
+                  
+                
+              }
+            },
+            // Buscar detalles del pasillo
+            {
+              $lookup: {
+                from: "aisles",
+                localField: "aisle",
+                foreignField: "_id",
+                as: "aisleDetails"
+              }
+            },
+            { $unwind: "$aisleDetails" },
+
+          ],
+          as: "locationInfo"
+        }
+      },
+      { $unwind: { path: "$locationInfo", preserveNullAndEmptyArrays: true } },
+  
+      // 6. Formatear el resultado final
+      {
+        $project: {
+          _id: 1,
+          folio: 1,
+          SHStock_id: 1,
+          quantity: 1,
+          newQuantity: 1,
+          status: 1,
+          responsible: 1,
+          user_received: 1,
+          product_detail: "$finalProductDetail",
+          in_storehouse: 1,
+          in_section: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          date_received: 1,
+          notes: 1,
+          quantity_received: 1,
+          product_id: "$productId",
+          location: "$locationInfo",
+        }
+      },
+  
+      // 7. Agrupar por folio
       {
         $group: {
           _id: "$folio",
-          in_storehouse: { $addToSet: "$in_storehouse" }, // Agrupa valores únicos
-          responsible: { $addToSet: "$responsible" }, // Agrupa valores únicos
-          user_received: { $addToSet: "$user_received" }, // Agrupa valores únicos
-          createdAt: { $addToSet: "$createdAt" }, // Agrupa valores únicos
-          date_received: { $addToSet: "$date_received" }, // Agrupa valores únicos
-          inputs: { $push: "$$ROOT" },
+          in_storehouse: { $addToSet: "$in_storehouse" },
+          responsible: { $addToSet: "$responsible" },
+          user_received: { $addToSet: "$user_received" },
+          createdAt: { $addToSet: "$createdAt" },
+          date_received: { $addToSet: "$date_received" },
+          inputs: { $push: "$$ROOT" }
         }
-      },
-      {
-        $sort: { "createdAt": -1 }
       }
-    ])
+    ]);
   }
+  
 
   async getAllSHInputs(): Promise<SHProductInput[]> {
     return await this.MODEL.aggregate([

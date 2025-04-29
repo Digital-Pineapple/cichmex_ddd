@@ -411,13 +411,10 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
 
 //     return result;
 // }
-async findVideoProducts(page: number): Promise<ProductEntity[]  | ErrorHandler | null> {
-    // Esta función busca productos que tienen videos verticales y los devuelve paginados.
-    // Primero, se establece el ID del almacén en línea y el tamaño de la página.
+async findVideoProducts(page: number): Promise<ProductEntity[] | ErrorHandler | null> {
     const storehouseId = new ObjectId(this.onlineStoreHouse);
     const PAGESIZE = 10;
 
-    // Se ejecuta una agregación de MongoDB para filtrar y procesar los productos.
     const result = await this.MODEL.aggregate([
         {
             $match: {
@@ -427,7 +424,7 @@ async findVideoProducts(page: number): Promise<ProductEntity[]  | ErrorHandler |
         },
         {
             $facet: {
-                metadata: [{ $count: 'total' }], // Cuenta el total de registros
+                metadata: [{ $count: 'total' }],
                 data: [
                     { $sort: { createdAt: -1 } },
                     { $skip: (page - 1) * PAGESIZE },
@@ -557,6 +554,26 @@ async findVideoProducts(page: number): Promise<ProductEntity[]  | ErrorHandler |
                             },
                         },
                     },
+                    // ⬇️ Filtro para excluir productos sin stock
+                    {
+                        $match: {
+                            $or: [
+                                {
+                                    hasVariants: true,
+                                    variants: {
+                                        $elemMatch: {
+                                            stock: { $gt: 0 },
+                                            status: true,
+                                        },
+                                    },
+                                },
+                                {
+                                    hasVariants: false,
+                                    stock: { $gt: 0 },
+                                },
+                            ],
+                        },
+                    },
                     {
                         $project: {
                             variants: 1,
@@ -582,13 +599,12 @@ async findVideoProducts(page: number): Promise<ProductEntity[]  | ErrorHandler |
         }
     ]);
 
-    // Se extraen el total de productos y los productos paginados del resultado.
     const total = result[0].metadata[0]?.total || 0;
     const products = result[0].data;
 
-    // Se devuelve el total de productos y los productos encontrados.
     return { total, products };
 }
+
 
 
 // Este método asincrónico busca los productos más recientemente agregados.
@@ -614,9 +630,9 @@ async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> 
                 createdAt: -1,
             },
         },
-        // 3. Limitar a los primeros 15 resultados
+        // 3. Limitar a los primeros 20 resultados
         {
-            $limit: 12,
+            $limit: 20,
         },
         // 4. Buscar categorías y subcategorías asociadas
         {
@@ -660,7 +676,18 @@ async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> 
         {
             $addFields: {
                 hasVariants: {
-                    $gt: [{ $size: { $filter: { input: '$variants', as: 'v', cond: { $eq: ['$$v.status', true] } } } }, 0],
+                    $gt: [
+                        {
+                            $size: {
+                                $filter: {
+                                    input: '$variants',
+                                    as: 'v',
+                                    cond: { $eq: ['$$v.status', true] },
+                                },
+                            },
+                        },
+                        0,
+                    ],
                 },
             },
         },
@@ -684,9 +711,10 @@ async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> 
                 as: 'variantStocks',
             },
         },
+        // 8. Agregar el stock a cada variante
         {
             $addFields: {
-                'variants': {
+                variants: {
                     $map: {
                         input: '$variants',
                         as: 'variant',
@@ -704,17 +732,19 @@ async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> 
                                                                 $filter: {
                                                                     input: '$variantStocks',
                                                                     as: 'stock',
-                                                                    cond: { $eq: ['$$stock.variant_id', '$$variant._id'] },
+                                                                    cond: {
+                                                                        $eq: ['$$stock.variant_id', '$$variant._id'],
+                                                                    },
                                                                 },
                                                             },
                                                             as: 'filteredStock',
-                                                            in: '$$filteredStock.stock', // Solo extraer la propiedad stock
+                                                            in: '$$filteredStock.stock',
                                                         },
                                                     },
                                                     0,
                                                 ],
                                             },
-                                            0, // Valor predeterminado si no hay stock
+                                            0,
                                         ],
                                     },
                                 },
@@ -724,7 +754,7 @@ async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> 
                 },
             },
         },
-        // 8. Si no tiene variantes, buscar el stock por `product_id`
+        // 9. Buscar stock directo del producto (sin variantes)
         {
             $lookup: {
                 from: 'storehousestocks',
@@ -750,12 +780,34 @@ async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> 
                     $cond: {
                         if: { $eq: ['$hasVariants', true] },
                         then: null,
-                        else: { $ifNull: [{ $arrayElemAt: ['$productStock.stock', 0] }, 0] },
+                        else: {
+                            $ifNull: [{ $arrayElemAt: ['$productStock.stock', 0] }, 0],
+                        },
                     },
                 },
             },
         },
-        // 9. Consolidar variantes en un solo producto
+        // 10. Filtrar productos con stock disponible (directo o en variantes)
+        {
+            $match: {
+                $or: [
+                    {
+                        hasVariants: true,
+                        variants: {
+                            $elemMatch: {
+                                stock: { $gt: 0 },
+                                status: true,
+                            },
+                        },
+                    },
+                    {
+                        hasVariants: false,
+                        stock: { $gt: 0 },
+                    },
+                ],
+            },
+        },
+        // 11. Proyección final
         {
             $project: {
                 variants: 1,
@@ -783,57 +835,179 @@ async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> 
 
 
 
+
    // Esta función busca productos aleatorios por categoría, excluyendo un producto específico y filtrando por el estado y el almacén.
-   async findRandomProductsByCategory(categoryId : any, skiproduct:any , storehouse: any ): Promise<ProductEntity[] | ErrorHandler | null> {
+   async findRandomProductsByCategory(categoryId: any, skiproduct: any, storehouse: any): Promise<ProductEntity[] | ErrorHandler | null> {
     const storehouseId = new ObjectId(storehouse);  
-     const result = await this.MODEL.aggregate([
-         {$match: {
-             status: true,
-             category: categoryId,
-             _id: { $ne: skiproduct }, 
-         }},
-         {$sample: {size: 20}},
-         {
-            $lookup: {
-                from: "storehousestocks",
-                let: { productId: '$_id' },
-                pipeline: [{
-                    $match: {
-                      $expr: {
-                        $and: [
-                          { $eq: ['$product_id', '$$productId'] },
-                          { $eq: ['$StoreHouse_id', storehouseId] } // Filtrar por el ID de almacén específico
-                        ]
-                      }
-              }}],
-                as: "stock"
-              },
-              
-         },
-         {
-          $lookup: {
-              from: "variant-products", // Colección de variantes
-              let: { productId: '$_id' },
-              pipeline: [
-                  {
-                      $match: {
-                          $expr: { $eq: ['$product_id', '$$productId'] }, // Vincular por product_id
-                          status: true // Solo variantes con status true
-                      }
-                  }
-              ],
-              as: "variants"
+  
+    const result = await this.MODEL.aggregate([
+      {
+        $match: {
+          status: true,
+          category: categoryId,
+          _id: { $ne: skiproduct },
+        }
+      },
+      { $sample: { size: 20 } },
+  
+      // Lookup variantes activas
+      {
+        $lookup: {
+          from: 'variant-products',
+          let: { productId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$product_id', '$$productId'] },
+                status: true
+              }
+            }
+          ],
+          as: 'variants'
+        }
+      },
+  
+      // Flag para saber si tiene variantes activas
+      {
+        $addFields: {
+          hasVariants: {
+            $gt: [
+              { $size: { $filter: { input: '$variants', as: 'v', cond: { $eq: ['$$v.status', true] } } } },
+              0
+            ]
           }
-        },
-         {
-            $addFields: {
-              // stock: { $arrayElemAt: ['$stock.stock', 0] } // Obtener el campo 'stock' del array resultante
-              stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] } // Obtener el campo 'stock' del array resultante
+        }
+      },
+  
+      // Lookup de stock por variantes
+      {
+        $lookup: {
+          from: 'storehousestocks',
+          let: { variantIds: '$variants._id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $in: ['$variant_id', '$$variantIds'] },
+                    { $eq: ['$StoreHouse_id', storehouseId] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'variantStocks'
+        }
+      },
+  
+      // Agregar stock a cada variante
+      {
+        $addFields: {
+          variants: {
+            $map: {
+              input: '$variants',
+              as: 'variant',
+              in: {
+                $mergeObjects: [
+                  '$$variant',
+                  {
+                    stock: {
+                      $ifNull: [
+                        {
+                          $arrayElemAt: [
+                            {
+                              $map: {
+                                input: {
+                                  $filter: {
+                                    input: '$variantStocks',
+                                    as: 'stock',
+                                    cond: { $eq: ['$$stock.variant_id', '$$variant._id'] }
+                                  }
+                                },
+                                as: 'filteredStock',
+                                in: '$$filteredStock.stock'
+                              }
+                            },
+                            0
+                          ]
+                        },
+                        0
+                      ]
+                    }
+                  }
+                ]
+              }
             }
           }
-     ]) 
-     return result;
-   }
+        }
+      },
+  
+      // Lookup de stock para productos sin variantes
+      {
+        $lookup: {
+          from: 'storehousestocks',
+          let: { productId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$product_id', '$$productId'] },
+                    { $eq: ['$StoreHouse_id', storehouseId] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'productStock'
+        }
+      },
+  
+      // Agregar campo de stock total solo si no tiene variantes
+      {
+        $addFields: {
+          stock: {
+            $cond: {
+              if: { $eq: ['$hasVariants', true] },
+              then: null,
+              else: { $ifNull: [{ $arrayElemAt: ['$productStock.stock', 0] }, 0] }
+            }
+          }
+        }
+      },
+  
+      // Filtrar productos sin stock
+      {
+        $match: {
+          $or: [
+            { hasVariants: true, 'variants.stock': { $gt: 0 } },
+            { hasVariants: false, stock: { $gt: 0 } }
+          ]
+        }
+      },
+  
+      // Proyección final
+      {
+        $project: {
+          name: 1,
+          images: 1,
+          price: 1,
+          discountPrice: 1,
+          porcentDiscount: 1,
+          status: 1,
+          stock: 1,
+          variants: 1,
+          hasVariants: 1,
+          category: 1,
+          description: 1,
+          slug: 1
+        }
+      }
+    ]);
+  
+    return result;
+  }
+  
 
    /**
     * Esta función busca productos por categoría, filtrando por el estado, rango de precios, y paginando los resultados.

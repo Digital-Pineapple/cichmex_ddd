@@ -29,4 +29,6 @@ export interface ProductOrderRepository extends MongoRepository {
      
      getAssignedPOUser(user_id:any): Promise<ProductOrderEntity[] | ErrorHandler | null> 
 
+     getPOforSupply(_id: string): Promise<ProductOrderEntity | null >
+
 }

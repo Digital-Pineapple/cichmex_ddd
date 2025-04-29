@@ -18,6 +18,8 @@ import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHout
 import { PopulateVariantProduct } from '../../../../shared/domain/PopulateInterfaces';
 import { VariantProductEntity } from '../../../domain/variantProduct/variantProductEntity';
 import { log } from 'console';
+import { product } from '../../../../../swaggerdocs';
+import { all } from 'axios';
 
 // Definición de la clase ProductController que extiende de ResponseData
 export class ProductController extends ResponseData {
@@ -1358,7 +1360,8 @@ export class ProductController extends ResponseData {
 
   public async getRecentProducts(req: Request, res: Response, next: NextFunction) {
     try {
-      const response = await this.productUseCase.getRecentAddedProducts();       
+      const response = await this.productUseCase.getRecentAddedProducts(); 
+      
       this.invoke(response, 200, res, "", next);
       // console.log("newly added");            
     } catch (error) {

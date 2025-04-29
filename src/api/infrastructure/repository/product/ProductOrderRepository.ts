@@ -1,4 +1,4 @@
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { ProductOrderRepository as ProductOrderConfig } from '../../../domain/product/ProductOrderRepository'
 import { MongoRepository } from '../MongoRepository';
 import { ProductOrderEntity, ProductOrderResume } from '../../../domain/product/ProductEntity';
@@ -80,7 +80,203 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
         return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: true, route_status: true, deliveryStatus: false }).sort({ createdAt: -1 })
 
     }
-
+    
+    async getPOforSupply(_id: any): Promise<ProductOrderEntity | null> {
+        const objectId = _id instanceof mongoose.Types.ObjectId ? _id : new mongoose.Types.ObjectId(_id);
+        const result = await this.MODEL.aggregate([
+            // 1. Filtrar por ID de la orden
+            { $match: { _id: objectId } },
+    
+            // 2. Descomponer productos
+            { $unwind: "$products" },
+    
+            // 3. Buscar detalles del producto
+            {
+                $lookup: {
+                    from: "Product",
+                    localField: "products._id",
+                    foreignField: "_id",
+                    as: "products.productDetails"
+                }
+            },
+            { $unwind: "$products.productDetails" },
+    
+            // 4. Buscar ubicación (Sección + Pasillo) - CORRECCIÓN CLAVE
+            {
+                $lookup: {
+                    from: "Section",
+                    let: {
+                        productId: "$products._id",
+                        storeHouseId: "$branch.StoreHouse_id",
+                        variantId: "$products.variant_id"
+                    },
+                    pipeline: [
+                        { $unwind: "$stock" }, // Primero descomponer el array
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$storehouse", "$$storeHouseId"] },
+                                        { 
+                                            $or: [
+                                                { $eq: ["$stock.product", "$$productId"] },
+                                                { 
+                                                    $and: [
+                                                        { $ne: ["$$variantId", null] },
+                                                        { $eq: ["$stock.variant", "$$variantId"] }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        // Buscar detalles del pasillo
+                        {
+                            $lookup: {
+                                from: "Aisle",
+                                localField: "aisle",
+                                foreignField: "_id",
+                                as: "aisleDetails"
+                            }
+                        },
+                        { $unwind: "$aisleDetails" },
+                        // Formatear ubicación
+                        {
+                            $project: {
+                                _id: 0,
+                                location: {
+                                    $concat: ["Pasillo ", "$aisleDetails.name", ", Sección ", "$name"]
+                                }
+                            }
+                        }
+                    ],
+                    as: "products.locationDetails"
+                }
+            },
+            { $unwind: { path: "$products.locationDetails", preserveNullAndEmptyArrays: true } },
+    
+            // 5. Buscar stock SIN variante
+            {
+                $lookup: {
+                    from: "StockStoreHouse",
+                    let: { 
+                        productId: "$products._id",
+                        storeHouseId: "$branch.StoreHouse_id"
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$product_id", "$$productId"] },
+                                        { $eq: ["$StoreHouse_id", "$$storeHouseId"] },
+                                        { $eq: ["$variant_id", null] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: "products.stockDetails"
+                }
+            },
+            { $unwind: { path: "$products.stockDetails", preserveNullAndEmptyArrays: true } },
+    
+            // 6. Buscar stock CON variante
+            {
+                $lookup: {
+                    from: "StockStoreHouse",
+                    let: { 
+                        variantId: "$products.variant_id",
+                        storeHouseId: "$branch.StoreHouse_id"
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$variant_id", "$$variantId"] },
+                                        { $eq: ["$StoreHouse_id", "$$storeHouseId"] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: "products.variantStockDetails"
+                }
+            },
+            { $unwind: { path: "$products.variantStockDetails", preserveNullAndEmptyArrays: true } },
+    
+            // 7. Calcular stock final y asignar ubicación
+            {
+                $addFields: {
+                    "products.finalStock": {
+                        $ifNull: [
+                            {
+                                $cond: [
+                                    { $gt: [{ $size: "$products.variantStockDetails" }, 0] },
+                                    "$products.variantStockDetails.stock",
+                                    "$products.stockDetails.stock"
+                                ]
+                            },
+                            0
+                        ]
+                    },
+                    "products.location": "$products.locationDetails.location" // Asignar ubicación
+                }
+            },
+    
+            // 8. Reagrupar productos
+            {
+                $group: {
+                    _id: "$_id",
+                    root: { $first: "$$ROOT" },
+                    products: { $push: "$products" }
+                }
+            },
+    
+            // 9. Reconstruir documento
+            {
+                $replaceRoot: {
+                    newRoot: {
+                        $mergeObjects: [
+                            "$root",
+                            { products: "$products" }
+                        ]
+                    }
+                }
+            },
+            // 10. Proyectar campos deseados
+            {
+                $project: {
+                    _id: 1,
+                    branch: 1,
+                    user_id: 1,
+                    payment_status: 1,
+                    order_status: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    products: {
+                        $map: {
+                            input: "$products",
+                            as: "product",
+                            in: {
+                                _id: "$$product._id",
+                                name: "$$product.productDetails.name",
+                                quantity: "$$product.quantity",
+                                price: "$$product.price",
+                                finalStock: "$$product.finalStock",
+                                location: "$$product.location"
+                            }
+                        }
+                    }
+                }
+            }
+        ]);
+        return result.length > 0 ? result[0] : null;
+    }
+    
     async ResumeProductOrders(): Promise<ProductOrderResume> {
 
         // Obtener el inicio y el fin del día actual

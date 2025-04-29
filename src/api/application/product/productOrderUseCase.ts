@@ -27,6 +27,9 @@ export class ProductOrderUseCase {
     const response =  await this.productOrderRepository.findById(_id, InfoBranchOrder, PopulateInfoUser, PopulatePayment, InfoAddressOrder)
     return response
   }
+  public async getPOSupply( _id: string): Promise<ProductOrderEntity | null > {
+    return  await this.productOrderRepository.getPOforSupply(_id)
+  }
   public async ProductOrdersByBranch( _id: string): Promise<ProductOrderEntity[] | ErrorHandler| null > {
     const response =  await this.productOrderRepository.getProductOrdersByBranch(_id, PopulateInfoUser)
     return response

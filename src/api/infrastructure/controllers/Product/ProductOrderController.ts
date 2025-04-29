@@ -57,6 +57,7 @@ export class ProductOrderController extends ResponseData {
     this.ReadyProductOrdersToDelivery = this.ReadyProductOrdersToDelivery.bind(this);
     this.OptimizedPackagesToDelivery = this.OptimizedPackagesToDelivery.bind(this);
     this.getOrdersDelivered = this.getOrdersDelivered.bind(this);
+    this.getPOforSupppy = this.getPOforSupppy.bind(this);
   }
 
   public async getAllProductOrders(req: Request, res: Response, next: NextFunction) {
@@ -243,6 +244,28 @@ export class ProductOrderController extends ResponseData {
     }
   }
 
+  public async getPOforSupppy(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    try {
+      // Obteniendo la orden de producto
+      const response: any = await this.productOrderUseCase.getOneProductOrder(id);
+
+      // Verificando si existen vouchers de pago y obteniendo las URLs desde S3
+      if (response.payment && response.payment.verification && response.payment.verification.payment_vouchers) {
+        const promises = response.payment.verification.payment_vouchers.map(async (item: any) => {
+          const url = await this.s3Service.getUrlObject(item.url);
+          item.url = url; // Actualizando el URL con el valor desde S3
+        });
+        await Promise.all(promises); // Espera a que todas las promesas se resuelvan
+      }
+
+      // Invocando la respuesta final
+      this.invoke(response, 200, res, "", next);
+
+    } catch (error) {
+      next(new ErrorHandler(`Error al consultar la información`, 500)); // Manejo de error
+    }
+  }
 
   public async getDeliveries(req: Request, res: Response, next: NextFunction) {
     try {
