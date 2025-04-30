@@ -1,3 +1,4 @@
+import { locationProductRepository } from './../../../domain/warehouse/locationProductRepository';
 import { Router } from 'express';
 import { UserValidations } from '../../../../shared/infrastructure/validation/User/UserValidation';
 import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
@@ -15,16 +16,20 @@ import { StockStoreHouseUseCase } from '../../../application/storehouse/stockSto
 import { StoreHouseRepository } from '../../repository/storeHouse/StoreHouseRepository';
 import { StoreHouseModel } from '../../models/storeHouse/StoreHouseModel';
 import { StoreHouseUseCase } from '../../../application/storehouse/storeHouseUseCase';
+import { LocationProductRepository } from '../../repository/warehouse/LocationProductRepository';
+import { LocationProductModel } from '../../models/warehouse/LocationProductModel';
 
 const warehouseRouter = Router();
 
 const zoneRepository     = new ZoneRepository(ZoneModel);
 const aisleRepository = new AisleRepository(AisleModel)
 const sectionRepository = new SectionRepository(SectionModel)
+const locationProductRepository = new LocationProductRepository(LocationProductModel)
+
 const storeHouseRepository = new StoreHouseRepository(StoreHouseModel)  
 
 
-const warehouseUseCase = new WarehouseUseCase(zoneRepository,aisleRepository,sectionRepository) 
+const warehouseUseCase = new WarehouseUseCase(zoneRepository,aisleRepository,sectionRepository, locationProductRepository) 
 const storeHouseUseCase = new StoreHouseUseCase(storeHouseRepository)
 const warehouseController     = new WarehouseController(warehouseUseCase, storeHouseUseCase)
 const userValidations = new UserValidations();

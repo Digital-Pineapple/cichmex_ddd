@@ -5,12 +5,15 @@ import { IZone } from '../../domain/warehouse/zoneEntity';
 import { IAisle } from '../../domain/warehouse/aisleEntity';
 import { ISection } from '../../domain/warehouse/sectionEntity';
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
-import { PopulateAisle, PopulateStorehouse, PopulateZone } from '../../../shared/domain/PopulateInterfaces';
+import { PopulateAisle, PopulateSection, PopulateStorehouse, PopulateZone } from '../../../shared/domain/PopulateInterfaces';
+import { locationProductRepository } from '../../domain/warehouse/locationProductRepository';
+import { LocationProductEntity } from '../../domain/warehouse/locationProductEntity';
 export class WarehouseUseCase {
 
     constructor(private readonly zoneRepository: zoneRepository,
         private readonly aisleRepository: aisleRepository,
-        private readonly sectionRepository: sectionRepository
+        private readonly sectionRepository: sectionRepository,
+        private readonly locationProductRepository: locationProductRepository,
     ) { }
 
     public async getAllZones(): Promise<IZone[] | ErrorHandler | null> {
@@ -49,6 +52,9 @@ export class WarehouseUseCase {
     public async searchProductInSection(id: string): Promise<ISection | null> {
         return await this.sectionRepository.findOneItem({ $or:[{"stock.product": id}, {"stock.variant":id}] }, PopulateAisle)
     }
+    public async searchProductInLocationProduct (id: string): Promise< LocationProductEntity |ErrorHandler| null> {
+        return await this.locationProductRepository.findOneItem({ $or:[ {product: id}, {variant:id}] }, PopulateAisle, PopulateZone,PopulateSection)
+    }
     public async getProductInSection(product_id: string): Promise<ISection[] | null> {
         return await this.sectionRepository.findProductInSections(product_id)
     }
@@ -70,6 +76,13 @@ export class WarehouseUseCase {
         return await this.aisleRepository.createOne({ ...body })
     }
     public async createSection(body: any): Promise<ISection | ErrorHandler | null> {
+        const noRepeat = await this.sectionRepository.findOneItem({ name: body.name, aisle: body.aisle, status: true, storehouse: body.storehouse }, PopulateAisle)
+        if (noRepeat) {
+            throw new ErrorHandler(`Ya existe una sección con el nombre: ${noRepeat.name} en el pasillo : ${noRepeat.aisle.name}`, 400)
+        }
+        return await this.sectionRepository.createOne({ ...body })
+    }
+    public async createProductLocation(body: any): Promise<LocationProductEntity | ErrorHandler | null> {
         const noRepeat = await this.sectionRepository.findOneItem({ name: body.name, aisle: body.aisle, status: true, storehouse: body.storehouse }, PopulateAisle)
         if (noRepeat) {
             throw new ErrorHandler(`Ya existe una sección con el nombre: ${noRepeat.name} en el pasillo : ${noRepeat.aisle.name}`, 400)

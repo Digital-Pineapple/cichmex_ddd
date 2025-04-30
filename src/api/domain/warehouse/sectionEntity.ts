@@ -5,12 +5,13 @@ export interface ISection extends Document {
   name: string;
   aisle: mongoose.Types.ObjectId; // Relación con Pasillo
   capacity: number;
-  stock: [{
-    product?: mongoose.Types.ObjectId;
-    variant?: mongoose.Types.ObjectId;
-    quantity: number;
-    type: string;
-  }];
+  locations: [LocationProduct];
   status?: boolean;
 }
-
+export interface LocationProduct {
+  id: string;
+  product?: mongoose.Types.ObjectId;
+  variant?: mongoose.Types.ObjectId;
+  quantity: number;
+  type: string;
+}

@@ -65,11 +65,23 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
               { $toObjectId: "$product_detail" }
             ]
           },
-          
+          variantId: {
+            $cond: [
+              { $ifNull: ["$variant", false] },
+              {
+                $cond: [
+                  { $eq: [{ $type: "$variant" }, "object"] },
+                  "$variant._id",
+                  { $toObjectId: "$variant" }
+                ]
+              },
+              null
+            ]
+          }
         }
       },
   
-      // 3. Buscar detalles completos del producto (si product_detail era solo ID)
+      // 3. Buscar detalles completos del producto
       {
         $lookup: {
           from: "products",
@@ -80,31 +92,71 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
       },
       { $unwind: { path: "$productDetailLookup", preserveNullAndEmptyArrays: true } },
   
-      // 4. Crear campo unificado de producto
-      
+      // 4. Buscar detalles completos de la variante (si existe)
+      {
+        $lookup: {
+          from: "variant-products",
+          localField: "variantId",
+          foreignField: "_id",
+          as: "variantDetailLookup"
+        }
+      },
+      { $unwind: { path: "$variantDetailLookup", preserveNullAndEmptyArrays: true } },
   
-      // 5. Buscar ubicación en sections
+      // 5. Crear campos unificados
+      {
+        $addFields: {
+          finalProductDetail: {
+            $cond: [
+              { $eq: [{ $type: "$product_detail" }, "object"] },
+              "$product_detail",
+              "$productDetailLookup"
+            ]
+          },
+          finalVariantDetail: {
+            $cond: [
+              { $ifNull: ["$variant", false] },
+              {
+                $cond: [
+                  { $eq: [{ $type: "$variant" }, "object"] },
+                  "$variant",
+                  "$variantDetailLookup"
+                ]
+              },
+              null
+            ]
+          }
+        }
+      },
+  
+      // 6. Buscar ubicaciones (versión optimizada)
       {
         $lookup: {
           from: "sections",
-          let: {
+          let: { 
             productId: "$productId",
+            variantId: "$variantId"
           },
           pipeline: [
-            { $unwind: "$stock" },
+            { $unwind: "$locations" },
             {
               $match: {
                 $expr: {
-                      $or: [
-                        { $eq: ["$stock.product", "$productId"] },
-                        { $eq: ["$stock.variant", "$productId"] }
+                  $or: [
+                    {
+                      $and: [
+                        { $eq: ["$locations.product", "$productId"] },
+                      ]
+                    },
+                    {
+                      $and: [
+                        { $eq: ["$locations.variant", "$variantId"] },
                       ]
                     }
-                  
-                
+                  ]
+                }
               }
             },
-            // Buscar detalles del pasillo
             {
               $lookup: {
                 from: "aisles",
@@ -114,14 +166,31 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
               }
             },
             { $unwind: "$aisleDetails" },
-
+            {
+              $lookup: {
+                from: "zones",
+                localField: "aisleDetails.zone",
+                foreignField: "_id",
+                as: "zoneDetails"
+              }
+            },
+            { $unwind: "$zoneDetails" },
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                aisle: 1,
+                aisleDetails: 1,
+                zoneDetails: 1,
+                locations: 1
+              }
+            }
           ],
           as: "locationInfo"
         }
       },
-      { $unwind: { path: "$locationInfo", preserveNullAndEmptyArrays: true } },
   
-      // 6. Formatear el resultado final
+      // 7. Formatear el resultado final
       {
         $project: {
           _id: 1,
@@ -133,6 +202,7 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
           responsible: 1,
           user_received: 1,
           product_detail: "$finalProductDetail",
+          variant_detail: "$finalVariantDetail",
           in_storehouse: 1,
           in_section: 1,
           createdAt: 1,
@@ -141,19 +211,31 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
           notes: 1,
           quantity_received: 1,
           product_id: "$productId",
-          location: "$locationInfo",
+          variant_id: "$variantId",
+          locations: "$locationInfo"
         }
       },
   
-      // 7. Agrupar por folio
+      // 8. Eliminar duplicados (si los hay)
+      {
+        $group: {
+          _id: "$_id",
+          doc: { $first: "$$ROOT" }
+        }
+      },
+      {
+        $replaceRoot: { newRoot: "$doc" }
+      },
+      
+      // 9. Agrupar por folio (opcional - solo si necesitas esta estructura)
       {
         $group: {
           _id: "$folio",
-          in_storehouse: { $addToSet: "$in_storehouse" },
-          responsible: { $addToSet: "$responsible" },
-          user_received: { $addToSet: "$user_received" },
-          createdAt: { $addToSet: "$createdAt" },
-          date_received: { $addToSet: "$date_received" },
+          in_storehouse: { $first: "$in_storehouse" },
+          responsible: { $first: "$responsible" },
+          user_received: { $first: "$user_received" },
+          createdAt: { $first: "$createdAt" },
+          date_received: { $first: "$date_received" },
           inputs: { $push: "$$ROOT" }
         }
       }

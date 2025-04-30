@@ -18,6 +18,7 @@ import { ZoneModel } from '../../api/infrastructure/models/warehouse/ZoneModel';
 import { AisleModel } from '../../api/infrastructure/models/warehouse/AisleModel';
 import AddressModel from '../../api/infrastructure/models/AddressModel';
 import { StoreHouseModel } from '../../api/infrastructure/models/storeHouse/StoreHouseModel';
+import { SectionModel } from '../../api/infrastructure/models/warehouse/SectionModel';
 export interface IAuthPopulateConfig {
     path    : string;
     select  : string;
@@ -222,6 +223,11 @@ export const PopulateGuide : IGuideConfig = {
 export const PopulateZone : IGuideConfig ={
     path: 'zone',
     model: ZoneModel
+
+}
+export const PopulateSection : IGuideConfig ={
+    path: 'sections',
+    model: SectionModel
 
 }
 export const PopulateAisle : IGuideConfig ={

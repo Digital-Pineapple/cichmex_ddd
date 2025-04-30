@@ -20,11 +20,11 @@ public async findProductInSections(productId: string) : Promise<ISection[] | nul
     const objectId = new mongoose.Types.ObjectId(productId);
 
     const result = await this.SectionModel.aggregate([
-        { $match: { "stock.product": objectId } }, // Filtrar secciones que contienen el producto
+        { $match: { "locations.product": objectId } }, // Filtrar secciones que contienen el producto
         { 
             $lookup: { 
                 from: "products", 
-                localField: "stock.product", 
+                localField: "locations.product", 
                 foreignField: "_id", 
                 as: "productDetails" 
             } 
@@ -53,7 +53,7 @@ public async findProductInSections(productId: string) : Promise<ISection[] | nul
                 "productDetails.name": 1,
                 "productDetails.sku": 1,
                 "aisleDetails.name": 1,
-                "zoneDetails.name": 1
+                "zoneDetails.name": 1,
             } 
         }
     ]);
@@ -68,11 +68,11 @@ public async findVariantInSections(variantId: string) : Promise<ISection[] | nul
     const objectId = new mongoose.Types.ObjectId(variantId);
 
     const result = await this.SectionModel.aggregate([
-        { $match: { "stock.variant": objectId } }, // Filtrar secciones que contienen el producto
+        { $match: { "locations.variant": objectId } }, // Filtrar secciones que contienen el producto
         { 
             $lookup: { 
                 from: "products", 
-                localField: "stock.product", 
+                localField: "locations.product", 
                 foreignField: "_id", 
                 as: "productDetails" 
             } 

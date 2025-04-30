@@ -5,6 +5,7 @@ import { WarehouseUseCase } from '../../../application/warehouse/WarehouseUseCas
 import { buildReportSectionPDF } from '../../../../libs/pdfPrintSection';
 import mongoose from 'mongoose';
 import { StoreHouseUseCase } from '../../../application/storehouse/storeHouseUseCase';
+import CounterService from '../../../utils/CounterService';
 
 export class WarehouseController extends ResponseData {
     protected path = '/warehouse'
@@ -306,28 +307,22 @@ export class WarehouseController extends ResponseData {
         try {
             const isUniqueProduct = product.product_id === null;
             const valuate = isUniqueProduct ? "unique_product" : "variant_product";
-            const exist = await this.warehouseUseCase.getOneSection(section);
-            const oldStock = exist?.stock || [];
-
-            const checkExistence = isUniqueProduct
-                ? this.warehouseUseCase.getProductInSection
-                : this.warehouseUseCase.getVariantInSection;
-
-            const noRepeat = await checkExistence.call(this.warehouseUseCase, product._id);
-            if (Array.isArray(noRepeat) && noRepeat.length > 0) {
-                return next(new ErrorHandler(`El producto se encuentra en la sección: ${noRepeat[0].name}`, 400));
+            const exist = await this.warehouseUseCase.getOneSection(section)
+            if (!exist) {
+                return next(new ErrorHandler('La sección no existe', 400));
+                
             }
-
-            const newStock = {
+            
+            const nextId = await CounterService.getNextSequence('LocationProduct')
+       const idLocation = `${exist.name}_${nextId}`
+            const newPL = {
                 [isUniqueProduct ? 'product' : 'variant']: product._id,
                 quantity: quantity,
-                type: valuate
+                type: valuate,
+                id: idLocation
             };
-
-            const updatedStock = [newStock, ...oldStock];
-            const updated = await this.warehouseUseCase.updateOneSection(section, { stock: updatedStock });
-
-            this.invoke(updated, 200, res, 'Se agregó con éxito', next);
+            const created = await this.warehouseUseCase.createProductLocation(newPL)
+            this.invoke(created, 200, res, 'Se agregó con éxito', next);
         } catch (error) {
             console.error(error);
             next(error);
@@ -341,7 +336,7 @@ export class WarehouseController extends ResponseData {
             const mySection = await this.warehouseUseCase.getOneSection(section);
             if (!mySection) return res.status(404).json({ message: "Sección no encontrada" });
 
-            let updatedStock = mySection.stock || [];
+            let updatedStock = mySection.locations || [];
             const productKey = product.type === "unique_product" ? "product" : "variant";
             const ObjectId = new mongoose.Types.ObjectId(product._id)
             // Buscar el producto en el stock
