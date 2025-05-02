@@ -49,7 +49,7 @@ warehouseRouter
 .post('/add_multiple_sections',userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN","WAREHOUSE-MANAGER"]),ActivityLogger, warehouseController.addMultipleSections)
 .post('/section/add_multiple_products',userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN","WAREHOUSE-MANAGER"]),ActivityLogger, warehouseController.addMultipleProductsToSection)
 .post('/section/add_product',userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]),ActivityLogger, warehouseController.addSingleProductToSection)
-.patch('/section/update_stock',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN", "WAREHOUSE-MANAGER", "WAREHOUSEMAN"]),ActivityLogger, warehouseController.updateAddStockProduct)
+.patch('/location/update_stock',userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN", "WAREHOUSE-MANAGER", "WAREHOUSEMAN"]),ActivityLogger, warehouseController.updateAddStockProduct)
 .post('/update_zone/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN","WAREHOUSE-MANAGER"]),ActivityLogger, warehouseController.updateZone)
 .post('/update_aisle/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN","WAREHOUSE-MANAGER"]),ActivityLogger, warehouseController.updateAisle)
 .post('/update_section/:id',userValidations.authTypeUserValidation(['SUPER-ADMIN',"ADMIN","WAREHOUSE-MANAGER"]),ActivityLogger, warehouseController.updateSection)

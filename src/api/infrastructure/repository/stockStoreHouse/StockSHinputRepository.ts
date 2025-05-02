@@ -92,17 +92,6 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
       },
       { $unwind: { path: "$productDetailLookup", preserveNullAndEmptyArrays: true } },
   
-      // 4. Buscar detalles completos de la variante (si existe)
-      {
-        $lookup: {
-          from: "variant-products",
-          localField: "variantId",
-          foreignField: "_id",
-          as: "variantDetailLookup"
-        }
-      },
-      { $unwind: { path: "$variantDetailLookup", preserveNullAndEmptyArrays: true } },
-  
       // 5. Crear campos unificados
       {
         $addFields: {
@@ -113,82 +102,64 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
               "$productDetailLookup"
             ]
           },
-          finalVariantDetail: {
-            $cond: [
-              { $ifNull: ["$variant", false] },
-              {
-                $cond: [
-                  { $eq: [{ $type: "$variant" }, "object"] },
-                  "$variant",
-                  "$variantDetailLookup"
-                ]
-              },
-              null
-            ]
-          }
         }
       },
+      { $unwind: { path: "$finalProductDetail", preserveNullAndEmptyArrays: true } },
+
   
-      // 6. Buscar ubicaciones (versión optimizada)
+      // 6. Buscar ubicaciones (versión corregida para LocationProductEntity)
       {
         $lookup: {
-          from: "sections",
-          let: { 
-            productId: "$productId",
-            variantId: "$variantId"
+          from: "locationproducts",
+          let: {
+            isVariant: {
+              $gt: [
+                { $strLenCP: { $ifNull: ["$finalProductDetail.product_id", ""] } },
+                0
+              ]
+            },
+            productId: {
+              $cond: {
+                if: {
+                  $gt: [
+                    { $strLenCP: { $ifNull: ["$finalProductDetail.product_id", ""] } },
+                    0
+                  ]
+                },
+                then: { $toObjectId: "$finalProductDetail.product_id" },
+                else: { $toObjectId: "$finalProductDetail._id" }  // si es producto único
+              }
+            },
+            variantId: {
+              $cond: {
+                if: {
+                  $gt: [
+                    { $strLenCP: { $ifNull: ["$finalProductDetail.product_id", ""] } },
+                    0
+                  ]
+                },
+                then: { $toObjectId: "$finalProductDetail._id" },  // es variante
+                else: null  // producto único, no hay variante
+              }
+            }
           },
           pipeline: [
-            { $unwind: "$locations" },
             {
               $match: {
                 $expr: {
-                  $or: [
-                    {
-                      $and: [
-                        { $eq: ["$locations.product", "$productId"] },
-                      ]
-                    },
-                    {
-                      $and: [
-                        { $eq: ["$locations.variant", "$variantId"] },
-                      ]
-                    }
+                  $and: [
+                    { $eq: ["$product", "$$productId"] },
+                    { $eq: ["$variant", "$$variantId"] }
                   ]
                 }
-              }
-            },
-            {
-              $lookup: {
-                from: "aisles",
-                localField: "aisle",
-                foreignField: "_id",
-                as: "aisleDetails"
-              }
-            },
-            { $unwind: "$aisleDetails" },
-            {
-              $lookup: {
-                from: "zones",
-                localField: "aisleDetails.zone",
-                foreignField: "_id",
-                as: "zoneDetails"
-              }
-            },
-            { $unwind: "$zoneDetails" },
-            {
-              $project: {
-                _id: 1,
-                name: 1,
-                aisle: 1,
-                aisleDetails: 1,
-                zoneDetails: 1,
-                locations: 1
               }
             }
           ],
           as: "locationInfo"
         }
       },
+      { $unwind: { path: "$locationInfo", preserveNullAndEmptyArrays: true } },      
+      
   
       // 7. Formatear el resultado final
       {
@@ -202,7 +173,6 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
           responsible: 1,
           user_received: 1,
           product_detail: "$finalProductDetail",
-          variant_detail: "$finalVariantDetail",
           in_storehouse: 1,
           in_section: 1,
           createdAt: 1,
@@ -210,9 +180,10 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
           date_received: 1,
           notes: 1,
           quantity_received: 1,
-          product_id: "$productId",
-          variant_id: "$variantId",
-          locations: "$locationInfo"
+          product_id: "$finalProductDetail.product_id",
+          variant_id: "$finalProductDetail._id",
+          location:"$locationInfo", 
+          location_id: "$locationInfo._id",
         }
       },
   
@@ -241,7 +212,6 @@ export class StockSHinputRepository extends MongoRepository implements StockInpu
       }
     ]);
   }
-  
 
   async getAllSHInputs(): Promise<SHProductInput[]> {
     return await this.MODEL.aggregate([

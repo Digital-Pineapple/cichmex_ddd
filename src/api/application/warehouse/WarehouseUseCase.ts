@@ -1,3 +1,4 @@
+import { ProductRepository } from './../../domain/product/ProductRepository';
 import { zoneRepository } from '../../domain/warehouse/zoneRepository';
 import { aisleRepository } from '../../domain/warehouse/aisleRepository'
 import { sectionRepository } from '../../domain/warehouse/sectionRepository'
@@ -46,14 +47,47 @@ export class WarehouseUseCase {
     public async getOneSection(id: string): Promise<ISection | null> {
         return await this.sectionRepository.findById(id, PopulateAisle)
     }
+    public async getOneLocationProduct(id: string): Promise<LocationProductEntity | null> {
+        return await this.locationProductRepository.findById(id, PopulateAisle, PopulateZone, PopulateSection)
+    }
     public async getDetailSection(id: string): Promise<ISection[] | null> {
         return await this.sectionRepository.findDetailSection(id)
+    }
+    public async getDetailLocationProduct(id: string): Promise<LocationProductEntity | null> {
+        return await this.locationProductRepository.findById(id, PopulateAisle, PopulateZone, PopulateSection)
     }
     public async searchProductInSection(id: string): Promise<ISection | null> {
         return await this.sectionRepository.findOneItem({ $or:[{"stock.product": id}, {"stock.variant":id}] }, PopulateAisle)
     }
-    public async searchProductInLocationProduct (id: string): Promise< LocationProductEntity |ErrorHandler| null> {
-        return await this.locationProductRepository.findOneItem({ $or:[ {product: id}, {variant:id}] }, PopulateAisle, PopulateZone,PopulateSection)
+    public async searchProductInLocationProduct(
+        productId: string, 
+        variantId: string | null
+    ): Promise<LocationProductEntity | null> {
+        if (variantId === null) {
+            // Caso de producto único: buscamos donde product=productId y variant=null
+            return await this.locationProductRepository.findOneItem(
+                { 
+                    product: productId, 
+                    variant: null,
+                    type: 'unique_product'
+                }, 
+                PopulateAisle, 
+                PopulateZone, 
+                PopulateSection
+            );
+        } else {
+            // Caso de producto con variante: buscamos donde product=productId y variant=variantId
+            return await this.locationProductRepository.findOneItem(
+                { 
+                    product: productId, 
+                    variant: variantId,
+                    type: 'variant_product'
+                }, 
+                PopulateAisle, 
+                PopulateZone, 
+                PopulateSection
+            );
+        }
     }
     public async getProductInSection(product_id: string): Promise<ISection[] | null> {
         return await this.sectionRepository.findProductInSections(product_id)
@@ -82,12 +116,12 @@ export class WarehouseUseCase {
         }
         return await this.sectionRepository.createOne({ ...body })
     }
-    public async createProductLocation(body: any): Promise<LocationProductEntity | ErrorHandler | null> {
-        const noRepeat = await this.sectionRepository.findOneItem({ name: body.name, aisle: body.aisle, status: true, storehouse: body.storehouse }, PopulateAisle)
+    public async addProductToLocation(body: any): Promise<LocationProductEntity | ErrorHandler | null> {
+        const noRepeat = await this.locationProductRepository.findOneItem({ name: body.name, section: body.section, status: true, storehouse: body.storehouse }, PopulateAisle)
         if (noRepeat) {
             throw new ErrorHandler(`Ya existe una sección con el nombre: ${noRepeat.name} en el pasillo : ${noRepeat.aisle.name}`, 400)
         }
-        return await this.sectionRepository.createOne({ ...body })
+        return await this.locationProductRepository.createOne({ ...body })
     }
     public async addProductsToSection(section_id: any, products: any): Promise<ISection | null> {
         return await this.sectionRepository.updateOne(section_id, { stock: products })
@@ -123,6 +157,9 @@ export class WarehouseUseCase {
         }
 
         return await this.sectionRepository.updateOne(id, { ...updated });
+    }
+    public async updateOneLocationProduct(id: string, updated: any): Promise<LocationProductEntity  | null> {
+        return await this.locationProductRepository.updateOne(id, { ...updated });
     }
     public async deleteOneZone(id: string): Promise<IZone | ErrorHandler | null> {
         const aisle = await this.aisleRepository.findOneItem({ zone: id, status: true })

@@ -1,4 +1,3 @@
-import { LocationProduct } from './../../../domain/warehouse/sectionEntity';
 import mongoose, { Schema } from "mongoose";
 import { ISection } from "../../../domain/warehouse/sectionEntity";
 

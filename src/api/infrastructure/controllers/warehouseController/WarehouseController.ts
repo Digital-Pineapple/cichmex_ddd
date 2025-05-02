@@ -6,7 +6,7 @@ import { buildReportSectionPDF } from '../../../../libs/pdfPrintSection';
 import mongoose from 'mongoose';
 import { StoreHouseUseCase } from '../../../application/storehouse/storeHouseUseCase';
 import CounterService from '../../../utils/CounterService';
-
+import { generateRandomCode, RandomCodeShipping } from '../../../../shared/infrastructure/validation/Utils';
 export class WarehouseController extends ResponseData {
     protected path = '/warehouse'
 
@@ -305,60 +305,74 @@ export class WarehouseController extends ResponseData {
     public async addSingleProductToSection(req: Request, res: Response, next: NextFunction) {
         const { section, product, quantity } = req.body;
         try {
-            const isUniqueProduct = product.product_id === null;
-            const valuate = isUniqueProduct ? "unique_product" : "variant_product";
-            const exist = await this.warehouseUseCase.getOneSection(section)
-            if (!exist) {
+            // Determinar si es un producto único o una variante
+            const isUniqueProduct = product.product_id === null;    
+            const type = isUniqueProduct ? "unique_product" : "variant_product";
+            
+            // Validar la sección
+            const valsection = await this.warehouseUseCase.getOneSection(section);
+            if (!valsection) {
                 return next(new ErrorHandler('La sección no existe', 400));
-                
             }
             
-            const nextId = await CounterService.getNextSequence('LocationProduct')
-       const idLocation = `${exist.name}_${nextId}`
+            // Buscar si el producto ya existe en alguna ubicación
+            // Si es producto único, buscar por el ID del producto
+            // Si es variante, buscar por el ID del producto base y la variante específica
+            const productIdToSearch = isUniqueProduct ? product._id : product.product_id;
+            const variantIdToSearch = isUniqueProduct ? null : product._id;
+            
+            const location = await this.warehouseUseCase.searchProductInLocationProduct(
+                productIdToSearch, 
+                variantIdToSearch
+            );
+            
+            if (location) {
+                return next(new ErrorHandler(`El producto ya existe en la ubicación: ${location.name}`, 400));
+            }
+            
+            // Generar código para la nueva ubicación
+            const nextCode = await CounterService.getNextSequence(valsection.name);
+            const nameLocation = `${valsection.aisle.name}_${valsection.name}_${nextCode}`;
+            
+            // Crear el objeto de ubicación con la lógica correcta:
+            // - product: siempre contiene el ID del producto base
+            // - variant: contiene el ID de la variante (o null si es producto único)
             const newPL = {
-                [isUniqueProduct ? 'product' : 'variant']: product._id,
+                product: isUniqueProduct ? product._id : product.product_id,
+                variant: isUniqueProduct ? null : product._id,
                 quantity: quantity,
-                type: valuate,
-                id: idLocation
+                type: type,
+                name: nameLocation,
+                section: section,
+                aisle: valsection.aisle?._id,
+                zone: valsection.aisle?.zone?._id,
             };
-            const created = await this.warehouseUseCase.createProductLocation(newPL)
-            this.invoke(created, 200, res, 'Se agregó con éxito', next);
+            
+            const add = await this.warehouseUseCase.addProductToLocation(newPL);
+            this.invoke(add, 200, res, 'Se agregó con éxito', next);
         } catch (error) {
             console.error(error);
-            next(error);
+            if (error instanceof ErrorHandler) {
+                return next(error);
+            }
+            next(new ErrorHandler('Hubo un error al agregar el producto', 500));
         }
     }
 
     public async updateAddStockProduct(req: Request, res: Response, next: NextFunction) {
         try {
-            const { section, product, quantity } = req.body;
+            const { location, quantity } = req.body;
+            let newQuantity = 0
             // Obtener la sección
-            const mySection = await this.warehouseUseCase.getOneSection(section);
-            if (!mySection) return res.status(404).json({ message: "Sección no encontrada" });
-
-            let updatedStock = mySection.locations || [];
-            const productKey = product.type === "unique_product" ? "product" : "variant";
-            const ObjectId = new mongoose.Types.ObjectId(product._id)
-            // Buscar el producto en el stock
-            const stockItem = updatedStock.find((item: any) => item[productKey]?.equals(ObjectId));
-
-
-
-            if (!stockItem) return next(new ErrorHandler('El producto no existe en esta sección', 400));
-
-            const newQuantity = (stockItem.quantity ?? 0) + (quantity ?? 0);
-
-            if (newQuantity < 0) {
-                return next(new ErrorHandler(`Stock en sección: ${stockItem.quantity}`, 400));
+            const myLocation = await this.warehouseUseCase.getOneLocationProduct(location)
+            if (!myLocation) return res.status(404).json({ message: "Ubicación no encontrada" });
+            // Buscar el producto en el stockx
+            const oldQuantity = myLocation.quantity;
+             newQuantity = oldQuantity + quantity;
+            const updatedStock = await this.warehouseUseCase.updateOneLocationProduct(location, { quantity: newQuantity });
+            if (updatedStock instanceof ErrorHandler) {
+                return next(updatedStock);
             }
-
-            // Si la cantidad es válida, actualizar el stock
-            stockItem.quantity = newQuantity;
-
-
-            // Actualizar la sección con el nuevo stock
-            const response = await this.warehouseUseCase.updateOneSection(section, { stock: updatedStock });
-
             this.invoke(response, 200, res, 'Se actualizo el stock con éxito', next);
         } catch (error) {
             console.error(error);
@@ -416,11 +430,11 @@ export class WarehouseController extends ResponseData {
 
             // 🔹 Obtener stock existente en la sección
             const existStock = await this.warehouseUseCase.getOneSection(section);
-            const stockExist = existStock?.stock || [];
+            
 
             // 🔹 Concatenar productos sin sobrescribir el stock existente, evitando duplicados
             const updatedStock = Array.from(
-                new Map([...stockExist, ...validProducts].map(p => [p.product || p.variant, p])).values()
+                new Map([ ...validProducts].map(p => [p.product || p.variant, p])).values()
             );
 
             // 🔹 Guardar los productos en la sección solo si TODAS las validaciones pasaron

@@ -53,7 +53,7 @@ export class StockStoreHouseController extends ResponseData {
         this.feedDailyProduct = this.feedDailyProduct.bind(this);
         this.readyToAccommodate = this.readyToAccommodate.bind(this)
         this.PrintReportInputsByFolio = this.PrintReportInputsByFolio.bind(this);
-        this.inputInSection = this.inputInSection.bind(this);
+        this.inputInLocation = this.inputInLocation.bind(this);
 
     }
 
@@ -544,7 +544,7 @@ export class StockStoreHouseController extends ResponseData {
             next(new ErrorHandler('Hubo un error al actualizar', 500));
         }
     }
-    public async inputInSection(req: Request, res: Response, next: NextFunction) {
+    public async inputInLocation(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params
         const user = req.user
 

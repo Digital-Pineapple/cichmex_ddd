@@ -226,7 +226,7 @@ export const PopulateZone : IGuideConfig ={
 
 }
 export const PopulateSection : IGuideConfig ={
-    path: 'sections',
+    path: 'section',
     model: SectionModel
 
 }

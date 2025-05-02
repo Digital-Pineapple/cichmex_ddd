@@ -2,7 +2,11 @@ import mongoose, { Schema } from "mongoose";
 import { LocationProductEntity } from "../../../domain/warehouse/locationProductEntity";
 
 const LocationProductSchema = new Schema<LocationProductEntity>({
-  _id: { type: Schema.Types.ObjectId },
+  _id: {
+    type: Schema.Types.ObjectId,
+    default: () => new mongoose.Types.ObjectId(),
+  },
+  name: { type: String, required: true, unique: false },
   product: { type: Schema.Types.ObjectId, ref: 'Product' },
   variant: { type: Schema.Types.ObjectId, ref: 'Variants' },
   section: { type: Schema.Types.ObjectId, ref: 'Section' },

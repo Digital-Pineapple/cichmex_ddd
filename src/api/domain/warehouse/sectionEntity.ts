@@ -1,17 +1,13 @@
 import mongoose from "mongoose";
+import { LocationProductEntity } from "./locationProductEntity";
+import { IAisle } from "./aisleEntity";
+import { storeHouseEntity } from "../storehouse/storeHouseEntity";
 
 export interface ISection extends Document {
-  storehouse: mongoose.Types.ObjectId;
+  storehouse: storeHouseEntity;
   name: string;
-  aisle: mongoose.Types.ObjectId; // Relación con Pasillo
+  aisle: IAisle; // Relación con Pasillo
   capacity: number;
-  locations: [LocationProduct];
+  locations: [LocationProductEntity];
   status?: boolean;
-}
-export interface LocationProduct {
-  id: string;
-  product?: mongoose.Types.ObjectId;
-  variant?: mongoose.Types.ObjectId;
-  quantity: number;
-  type: string;
 }
