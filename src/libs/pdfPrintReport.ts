@@ -47,11 +47,88 @@ export function buildInputsReportPDF(report: any, dataCallback: any, endCallback
                 `Municipio: ${data.branch.location.municipality}`,
                 `Dirección: ${data.branch.location.direction}`,
                 `Numero de teléfono: ${data.branch.phone_number}`,
-
             ].join('\n');
         }
     };
 
+    // Función para crear la tabla con información de ubicación
+    function createTable(doc: any, inputsData: any[]) {
+        // Definir las columnas de la tabla
+        const tableTop = doc.y + 10;
+        const tableHeaders = ['Producto', 'SKU', 'Cantidad', 'Ubicación'];
+        const columnWidths = [200, 100, 60, 170];
+        
+        let yPosition = tableTop;
+        
+        // Dibujar el encabezado de la tabla
+        doc.font('Helvetica-Bold');
+        doc.fontSize(9);
+        
+        // Dibujar línea superior de la cabecera
+        doc.moveTo(50, yPosition).lineTo(50 + columnWidths.reduce((a, b) => a + b, 0), yPosition).stroke();
+        
+        let xPosition = 50;
+        for (let i = 0; i < tableHeaders.length; i++) {
+            doc.text(tableHeaders[i], xPosition + 5, yPosition + 5, {
+                width: columnWidths[i],
+                align: 'left'
+            });
+            xPosition += columnWidths[i];
+        }
+        
+        yPosition += 20;
+        
+        // Dibujar línea inferior de la cabecera
+        doc.moveTo(50, yPosition).lineTo(50 + columnWidths.reduce((a, b) => a + b, 0), yPosition).stroke();
+        
+        // Dibujar las filas de datos
+        doc.font('Helvetica');
+        
+        for (const input of inputsData) {
+            xPosition = 50;
+            
+            // Preparar texto de ubicación
+            let locationText = input.location ? input.location.name : 'Sin ubicación asignada';
+            
+            // Dibujar cada celda de la fila
+            doc.text(input.product_detail.name, xPosition + 5, yPosition + 5, {
+                width: columnWidths[0],
+                align: 'left'
+            });
+            xPosition += columnWidths[0];
+            
+            doc.text(input.product_detail.sku, xPosition + 5, yPosition + 5, {
+                width: columnWidths[1],
+                align: 'left'
+            });
+            xPosition += columnWidths[1];
+            
+            doc.text(input.quantity.toString(), xPosition + 5, yPosition + 5, {
+                width: columnWidths[2],
+                align: 'left'
+            });
+            xPosition += columnWidths[2];
+            
+            doc.text(locationText, xPosition + 5, yPosition + 5, {
+                width: columnWidths[3],
+                align: 'left'
+            });
+            
+            yPosition += 25;
+            
+            // Dibujar línea inferior de la fila
+            doc.moveTo(50, yPosition).lineTo(50 + columnWidths.reduce((a, b) => a + b, 0), yPosition).stroke();
+            
+            // Comprobar si necesitamos una nueva página
+            if (yPosition > doc.page.height - 100) {
+                doc.addPage();
+                yPosition = 50;
+                doc.moveTo(50, yPosition).lineTo(50 + columnWidths.reduce((a, b) => a + b, 0), yPosition).stroke();
+            }
+        }
+        
+        doc.y = yPosition + 10;
+    }
 
     // const localDate = momentService.convertUtcToLocal(orderData.createdAt);
     const doc = new PDFDocument();
@@ -67,14 +144,6 @@ export function buildInputsReportPDF(report: any, dataCallback: any, endCallback
     const columntoolbar2X = 350;
     // Coordenada X para la segunda columna
     let currentY = doc.y; // Coordenada Y inicial
-    // Generar código QR con la información de la orden
-    // const qrData = JSON.stringify({ order_id: orderData.order_id });
-    // const qrImage = qr.imageSync(qrData, { type: 'png' });
-    // const writeStream = fs.createWriteStream('output.pdf');
-
-    // const imagePath = path.join(__dirname, '../shared/assets/CHMX/Imagotipo CHMX Negro.png');
-
-
 
     // doc.pipe(writeStream);
 
@@ -83,8 +152,8 @@ export function buildInputsReportPDF(report: any, dataCallback: any, endCallback
     doc.fontSize(16);
     doc.text(`Reporte de entrada de productos`, column1X, currentY, { align: 'center' });
     doc.fontSize(8);
-    doc.text(`Fecha de creación: ${momentService.convertUtcToLocal(createdAt[0])}`, column3X, doc.y, { align: 'right' });
-    doc.text(`Fecha de recibido: ${momentService.convertUtcToLocal(date_received[0])}`, column3X, doc.y, { align: 'right' });
+    doc.text(`Fecha de creación: ${momentService.convertUtcToLocal(createdAt)}`, column3X, doc.y, { align: 'right' });
+    doc.text(`Fecha de recibido: ${momentService.convertUtcToLocal(date_received)}`, column3X, doc.y, { align: 'right' });
     doc.fontSize(10);
     doc.text(`Folio de entrada: ${_id}`, column1X, doc.y + 10, { align: 'left' });
     doc.moveDown(1);
@@ -93,22 +162,21 @@ export function buildInputsReportPDF(report: any, dataCallback: any, endCallback
 
     currentY = doc.y + 70;
 
-
     doc.fontSize(8);
     doc.underline(columntoolbar1X, currentY - 5, 200, 1)
     doc.text(`Firma`, 140, currentY);
     doc.text(`Responsable de entrada:`, columntoolbar1X, doc.y);
-    doc.text(`Nombre:  ${responsible[0].fullname}`, columntoolbar1X, doc.y);
-    doc.text(`Correo:  ${responsible[0].email}`, columntoolbar1X, doc.y);
-    doc.text(`Tipo de usuario: ${RenderName(responsible[0].type_user.role[0])}`, columntoolbar1X, doc.y);
+    doc.text(`Nombre:  ${responsible.fullname}`, columntoolbar1X, doc.y);
+    doc.text(`Correo:  ${responsible.email}`, columntoolbar1X, doc.y);
+    doc.text(`Tipo de usuario: ${RenderName(responsible.type_user.role[0])}`, columntoolbar1X, doc.y);
     doc.moveDown(0.2);
 
     doc.underline(columntoolbar2X, currentY - 5, 200, 1)
     doc.text(`Firma`, 450, currentY);
     doc.text(`Responsable de recibo en almacén:`, columntoolbar2X, doc.y);
-    doc.text(`Nombre: ${user_received[0].fullname}`, columntoolbar2X, doc.y);
-    doc.text(`Correo: ${user_received[0].email}`, columntoolbar2X, doc.y);
-    doc.text(`Tipo de usuario: ${RenderName(user_received[0].type_user.role[0])}`, columntoolbar2X, doc.y);
+    doc.text(`Nombre: ${user_received.fullname}`, columntoolbar2X, doc.y);
+    doc.text(`Correo: ${user_received.email}`, columntoolbar2X, doc.y);
+    doc.text(`Tipo de usuario: ${RenderName(user_received.type_user.role[0])}`, columntoolbar2X, doc.y);
 
     doc.end();
 }

@@ -128,20 +128,16 @@ export class StockStoreHouseController extends ResponseData {
         const { folio } = req.params
         try {
             const response = await this.stockSHinputUseCase.getInputsByFolio(folio)
-            
             res.writeHead(200, {
                     "Content-Type": "application/pdf",
                     "Content-Disposition": `attachment; filename=order${folio}.pdf`
                   });
-            
                   const stream = res;
-            
                   buildInputsReportPDF(
                     response[0],
                     (data: any) => stream.write(data),
                     () => stream.end()
                   );
-            
         } catch (error) {
             console.log(error);
 
@@ -547,7 +543,6 @@ export class StockStoreHouseController extends ResponseData {
     public async inputInLocation(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params
         const user = req.user
-
         const UserInfo = {
             _id: user._id,
             fullname: user.fullname,
@@ -557,9 +552,8 @@ export class StockStoreHouseController extends ResponseData {
 
         try {
             const response = await this.stockSHinputUseCase.updateInputStorehouse(id,{in_section: true, user_arrange:UserInfo})
-            this.invoke (response, 200,res,'Se agrego producto a sección',next)
+            this.invoke (response, 200,res,'Se agrego producto a la ubicación',next)
         } catch (error) {
-
             next(new ErrorHandler('Hubo un error al actualizar', 500));
         }
     }
@@ -600,27 +594,18 @@ export class StockStoreHouseController extends ResponseData {
     public async removeStock(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params
         const { stock } = req.body;
-
-
-
         try {
             const response = await this.stockStoreHouseUseCase.getDetailStock(id)
-
-
             if (response) {
-                const num1 = response.stock
+                const num1 = response.stock || 0;
                 const num2 = parseInt(stock)
                 const newQuantity = num1 - num2
-
-
                 const update = await this.stockSHoutputUseCase.createOutput({ newQuantity: newQuantity, quantity: stock, SHStock_id: response._id })
                 const allData = await this.stockStoreHouseUseCase.updateStock(response._id, { stock: update?.newQuantity })
                 this.invoke(allData, 201, res, 'Se actualizó con éxito', next);
             } else {
                 next(new ErrorHandler('No existe este stock', 500));
             }
-
-
         } catch (error) {
 
             next(new ErrorHandler('Hubo un error al actualizar', 500));
