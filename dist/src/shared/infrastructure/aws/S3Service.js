@@ -50,7 +50,7 @@ class S3Service {
     }
     uploadToS3AndGetUrl(key, file, contentType) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.uploadToS3(key, file, contentType).then((_a) => __awaiter(this, [_a], void 0, function* ({ message, success }) {
+            return yield this.uploadToS3(key, file, contentType).then(({ message, success }) => __awaiter(this, void 0, void 0, function* () {
                 const params = {
                     Bucket: this.bucket,
                     Key: this.environment + key,

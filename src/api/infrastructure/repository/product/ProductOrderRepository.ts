@@ -83,151 +83,133 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
     
     async getPOforSupply(_id: any): Promise<ProductOrderEntity | null> {
         const objectId = _id instanceof mongoose.Types.ObjectId ? _id : new mongoose.Types.ObjectId(_id);
+        
         const result = await this.MODEL.aggregate([
             // 1. Filtrar por ID de la orden
             { $match: { _id: objectId } },
-    
-            // 2. Descomponer productos
+            
+      
+        // 3. Lookup para información del usuario
+        {
+            $lookup: {
+                from: "users", // Asegúrate de que este sea el nombre correcto de tu colección de usuarios
+                localField: "user_id",
+                foreignField: "_id",
+                as: "user_id"
+            }
+        },
+        { $unwind: { path: "$user_id", preserveNullAndEmptyArrays: true } },
+        
+        // 4. Lookup para información de la sucursal
+        {
+            $lookup: {
+                from: "branchoffices",
+                localField: "branch",
+                foreignField: "_id",
+                as: "branch"
+            }
+        },
+        { $unwind: { path: "$branch", preserveNullAndEmptyArrays: true } },
+        
+            // 2. Desenrollar los productos para procesarlos individualmente
             { $unwind: "$products" },
-    
-            // 3. Buscar detalles del producto
+            
             {
                 $lookup: {
-                    from: "Product",
-                    localField: "products._id",
-                    foreignField: "_id",
-                    as: "products.productDetails"
-                }
-            },
-            { $unwind: "$products.productDetails" },
-    
-            // 4. Buscar ubicación (Sección + Pasillo) - CORRECCIÓN CLAVE
-            {
-                $lookup: {
-                    from: "Section",
+                    from: "locationproducts",
                     let: {
-                        productId: "$products._id",
-                        storeHouseId: "$branch.StoreHouse_id",
-                        variantId: "$products.variant_id"
+                        // Usamos el campo has_variants del item para determinar el tipo
+                        isVariantProduct: "$products.item.has_variants",
+                        productId: { $toObjectId: "$products.item._id" },
+                        variantId: {
+                            $cond: {
+                                if: "$products.item.has_variants",
+                                then: { $toObjectId: "$products.variant._id" },
+                                else: null
+                            }
+                        }
                     },
                     pipeline: [
-                        { $unwind: "$stock" }, // Primero descomponer el array
                         {
                             $match: {
                                 $expr: {
                                     $and: [
-                                        { $eq: ["$storehouse", "$$storeHouseId"] },
-                                        { 
-                                            $or: [
-                                                { $eq: ["$stock.product", "$$productId"] },
-                                                { 
+                                        { $eq: ["$product", "$$productId"] },
+                                        {
+                                            $cond: {
+                                                if: "$$isVariantProduct",
+                                                then: { $eq: ["$variant", "$$variantId"] },
+                                                else: { 
                                                     $and: [
-                                                        { $ne: ["$$variantId", null] },
-                                                        { $eq: ["$stock.variant", "$$variantId"] }
+                                                        { $eq: ["$variant", null] },
+                                                        { $eq: ["$type", "unique_product"] }
                                                     ]
                                                 }
-                                            ]
+                                            }
                                         }
                                     ]
                                 }
                             }
                         },
-                        // Buscar detalles del pasillo
+                        // Lookups para detalles de ubicación
                         {
                             $lookup: {
-                                from: "Aisle",
+                                from: "sections",
+                                localField: "section",
+                                foreignField: "_id",
+                                as: "sectionDetails"
+                            }
+                        },
+                        { $unwind: { path: "$sectionDetails", preserveNullAndEmptyArrays: true } },
+                        
+                        {
+                            $lookup: {
+                                from: "aisles",
                                 localField: "aisle",
                                 foreignField: "_id",
                                 as: "aisleDetails"
                             }
                         },
-                        { $unwind: "$aisleDetails" },
-                        // Formatear ubicación
+                        { $unwind: { path: "$aisleDetails", preserveNullAndEmptyArrays: true } },
+                        
+                        {
+                            $lookup: {
+                                from: "zones",
+                                localField: "zone",
+                                foreignField: "_id",
+                                as: "zoneDetails"
+                            }
+                        },
+                        { $unwind: { path: "$zoneDetails", preserveNullAndEmptyArrays: true } },
+                        
+                        // Proyección final
                         {
                             $project: {
-                                _id: 0,
-                                location: {
-                                    $concat: ["Pasillo ", "$aisleDetails.name", ", Sección ", "$name"]
-                                }
-                            }
-                        }
-                    ],
-                    as: "products.locationDetails"
-                }
-            },
-            { $unwind: { path: "$products.locationDetails", preserveNullAndEmptyArrays: true } },
-    
-            // 5. Buscar stock SIN variante
-            {
-                $lookup: {
-                    from: "StockStoreHouse",
-                    let: { 
-                        productId: "$products._id",
-                        storeHouseId: "$branch.StoreHouse_id"
-                    },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ["$product_id", "$$productId"] },
-                                        { $eq: ["$StoreHouse_id", "$$storeHouseId"] },
-                                        { $eq: ["$variant_id", null] }
+                                _id: 1,
+                                name: 1,
+                                quantity: 1,
+                                type: 1,
+                                section: "$sectionDetails.name",
+                                aisle: "$aisleDetails.name",
+                                zone: "$zoneDetails.name",
+                                locationString: {
+                                    $concat: [
+                                        { $ifNull: ["$zoneDetails.name", "Zona N/A"] },
+                                        " > ",
+                                        { $ifNull: ["$aisleDetails.name", "Pasillo N/A"] },
+                                        " > ",
+                                        { $ifNull: ["$sectionDetails.name", "Sección N/A"] },
                                     ]
                                 }
                             }
                         }
                     ],
-                    as: "products.stockDetails"
+                    as: "products.locationInfo"
                 }
             },
-            { $unwind: { path: "$products.stockDetails", preserveNullAndEmptyArrays: true } },
-    
-            // 6. Buscar stock CON variante
-            {
-                $lookup: {
-                    from: "StockStoreHouse",
-                    let: { 
-                        variantId: "$products.variant_id",
-                        storeHouseId: "$branch.StoreHouse_id"
-                    },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ["$variant_id", "$$variantId"] },
-                                        { $eq: ["$StoreHouse_id", "$$storeHouseId"] }
-                                    ]
-                                }
-                            }
-                        }
-                    ],
-                    as: "products.variantStockDetails"
-                }
-            },
-            { $unwind: { path: "$products.variantStockDetails", preserveNullAndEmptyArrays: true } },
-    
-            // 7. Calcular stock final y asignar ubicación
-            {
-                $addFields: {
-                    "products.finalStock": {
-                        $ifNull: [
-                            {
-                                $cond: [
-                                    { $gt: [{ $size: "$products.variantStockDetails" }, 0] },
-                                    "$products.variantStockDetails.stock",
-                                    "$products.stockDetails.stock"
-                                ]
-                            },
-                            0
-                        ]
-                    },
-                    "products.location": "$products.locationDetails.location" // Asignar ubicación
-                }
-            },
-    
-            // 8. Reagrupar productos
+            { $unwind: { path: "$products.locationInfo", preserveNullAndEmptyArrays: true } },
+            
+            // 3. Volver a agrupar los productos
             {
                 $group: {
                     _id: "$_id",
@@ -235,8 +217,8 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
                     products: { $push: "$products" }
                 }
             },
-    
-            // 9. Reconstruir documento
+            
+            // 4. Reconstruir el documento original
             {
                 $replaceRoot: {
                     newRoot: {
@@ -247,33 +229,8 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
                     }
                 }
             },
-            // 10. Proyectar campos deseados
-            {
-                $project: {
-                    _id: 1,
-                    branch: 1,
-                    user_id: 1,
-                    payment_status: 1,
-                    order_status: 1,
-                    createdAt: 1,
-                    updatedAt: 1,
-                    products: {
-                        $map: {
-                            input: "$products",
-                            as: "product",
-                            in: {
-                                _id: "$$product._id",
-                                name: "$$product.productDetails.name",
-                                quantity: "$$product.quantity",
-                                price: "$$product.price",
-                                finalStock: "$$product.finalStock",
-                                location: "$$product.location"
-                            }
-                        }
-                    }
-                }
-            }
         ]);
+        
         return result.length > 0 ? result[0] : null;
     }
     
