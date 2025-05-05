@@ -10,6 +10,8 @@ import { RegionsService } from '../../../../shared/infrastructure/Regions/Region
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 import { log } from 'console';
 import mongoose from 'mongoose';
+import { product } from '../../../../../swaggerdocs';
+import { userInfo } from 'os';
 export class ProductOrderController extends ResponseData {
   protected path = "/productOrder";
   private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634";
@@ -58,6 +60,7 @@ export class ProductOrderController extends ResponseData {
     this.OptimizedPackagesToDelivery = this.OptimizedPackagesToDelivery.bind(this);
     this.getOrdersDelivered = this.getOrdersDelivered.bind(this);
     this.getPOforSupply = this.getPOforSupply.bind(this);
+    this.fillOrder = this.fillOrder.bind(this);
   }
 
   public async getAllProductOrders(req: Request, res: Response, next: NextFunction) {
@@ -77,16 +80,17 @@ export class ProductOrderController extends ResponseData {
 
       res.writeHead(200, {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename=order${response.order_id}.pdf`
+        "Content-Disposition": `attachment; filename=order${response.folio}.pdf`
       });
 
-      const stream = res;
-
+      const stream = res ;
+       
       buildPDF(
         response,
         (data: any) => stream.write(data),
         () => stream.end()
       );
+      // this.invoke(response, 200, res, 'ok', next)
 
     } catch (error) {
       console.log(error);
@@ -510,6 +514,41 @@ export class ProductOrderController extends ResponseData {
       next(error);
     }
   }
+
+  public async fillOrder(req: Request, res: Response, next: NextFunction) {
+    const { _id } = req.body;
+    const user = req.user;
+    const date = new Date()
+  
+    const UserInfo = {
+      _id: user._id,
+      fullname: user.fullname,
+      email: user.email,
+      type_user: user.type_user
+    };
+  
+    try {
+       const FillData = await this.productOrderUseCase.supplyData(_id, UserInfo);
+       if (!(FillData instanceof ErrorHandler)) {
+        const update = await this.productOrderUseCase.updateProductOrder(_id, {
+          supply_detail: FillData,
+          order_status: 3,
+          storeHouseStatus: true,
+          supply_date: date,
+        });
+        const data = await this.productOrderUseCase.getPOSupply(_id)
+        return this.invoke(data, 201, res, 'Producto surtido con éxito', next);
+      }
+      
+      // Solo se llega aquí si FillData es un ErrorHandler
+      return this.invoke(FillData, 200, res, '', next);
+      
+    } catch (error) {
+      console.error(error);
+      next(error); 
+    }
+  }
+  
 
 
   public async autoAssignProductOrders(req: Request, res: Response, next: NextFunction) {

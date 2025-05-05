@@ -98,21 +98,23 @@ function createTable(doc: PDFDocument, products: any[], orderData: any) {
     const table = {
         title: "Productos",
         subtitle: "Productos del pedido",
-        headers: ["Código", "Nombre", "Cantidad", "Precio"],
+        headers: ["Código", "Nombre","Ubicación", "Cantidad", "Precio" ],
 
         rows: products.map(product => [
-           `${product.variant ? product.variant.tag : product.item.tag } `,
+           `${product.variant ? product.variant.tag : product.item.tag}`,
             `${product.item.name}-${product.variant ? product.variant.attributes.color: ''}-${product.variant ? product.variant.attributes.size : ''}`,
+            `${getLocationInfo(product)}`,
             product.quantity.toString(),
             `$${product.variant? product.variant.price.toFixed(2): product.item.price.toFixed(2)}`
+            
         ])
     };
     
     // Asegúrate de que `doc.table` sea un método válido
     doc.table(table, {
-        width: 350,
-        y:180,
-        x:50
+        width: 500, // Aumentamos el ancho para acomodar la nueva columna
+        y: 200,
+        x: 50
     });
     
     const tableBottomPosition = doc.y; // Obtiene la posición Y después de la tabla
@@ -123,4 +125,19 @@ function createTable(doc: PDFDocument, products: any[], orderData: any) {
 
     // Mover la posición Y hacia abajo si es necesario para el espaciado
     doc.y = tableBottomPosition + 40; // Ajusta el espaciado según sea necesario
+}
+
+// Función auxiliar para obtener la información de localización formateada
+function getLocationInfo(product: any): string {
+    if (product.locationInfo) {
+        // Usar locationString si está disponible, ya que es la ruta completa
+        if (product.locationInfo.name) {
+            return product.locationInfo.name;
+        } else {
+            // Construir la ruta manualmente si no está disponible locationString
+            return `${product.locationInfo.name}`;
+        }
+    } else {
+        return 'Sin ubicación';
+    }
 }

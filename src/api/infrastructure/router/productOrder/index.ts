@@ -14,12 +14,16 @@ import StockStoreHouseModel from '../../models/stockStoreHouse/StockStoreHouseMo
 import { StockStoreHouseUseCase } from '../../../application/storehouse/stockStoreHouseUseCase';
 import { DocumentationValidations } from '../../../../shared/infrastructure/validation/Documentation/DocumentationValidation';
 import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
+import { LocationProductRepository } from '../../repository/warehouse/LocationProductRepository';
+import { LocationProductModel } from '../../models/warehouse/LocationProductModel';
+import { WarehouseUseCase } from '../../../application/warehouse/WarehouseUseCase';
 
 const productOrderRouter = Router();
 const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
 const regionRepository = new RegionRepository(RegionModel)
 const productOrderRepository = new ProductOrderRepository(ProductOrderModel);
-const productOrderUseCase = new ProductOrderUseCase(productOrderRepository);
+const locationProductRepository = new LocationProductRepository(LocationProductModel)
+const productOrderUseCase = new ProductOrderUseCase(productOrderRepository, locationProductRepository);
 const regionUseCase = new RegionUseCase(regionRepository)
 const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository)
 const userValidations = new UserValidations();
@@ -62,6 +66,7 @@ productOrderRouter
   .post('/fill-order/:id',userValidations.authTypeUserValidation(["SUPER-ADMIN","ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]),ActivityLogger,  productOrderController.fillProductOrder)
   .post("/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN"]), ActivityLogger,productOrderController.updateProductOrder)
   .post("/fill_one_product/:id",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), ActivityLogger,productOrderController.fillOneProduct)
+  .put("/fill_order",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), ActivityLogger,productOrderController.fillOrder)
   .put('/verifyQrToPoint',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]),ActivityLogger, productOrderController.verifyQrToPoint)
   .put("/start_routes",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CARRIER-DRIVER"]), ActivityLogger,productOrderController.startMyRoutes)
   .delete("/:id",userValidations.authTypeUserValidation(["CUSTOMER"]),ActivityLogger, productOrderController.deleteProductOrder)

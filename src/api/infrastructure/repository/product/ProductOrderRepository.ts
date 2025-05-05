@@ -50,8 +50,14 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
     }
 
     async getPaidProductOrders(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
-        return await this.ProductOrderModel.find({ payment_status: 'approved', storeHouseStatus: false }).sort({ createdAt: -1 })
-    }
+        return await this.ProductOrderModel.find({
+          payment_status: 'approved',
+          $or: [
+            { storeHouseStatus: false },
+            { order_status: 2 }
+          ]
+        }).sort({ createdAt: -1 });
+      }
     async getPendingTransferPO(): Promise<ProductOrderEntity[] | ErrorHandler | null> {
         return await this.ProductOrderModel.find({ payment_status: { $in: ['pending', 'pending_to_verify'] }, storeHouseStatus: false, paymentType: 'transfer' }).sort({ createdAt: -1 }).populate(PopulatePayment)
     }

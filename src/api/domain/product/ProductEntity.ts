@@ -81,6 +81,7 @@ export interface ProductOrderEntity {
   deliveryLocation?: ILocation;
   storeHouseStatus?: boolean;
   supply_detail?: SupplyOneProduct[];
+  supply_date?: string,
   route_status?: boolean;
   route_detail?: PORouteDetail
   point_pickup_status?: boolean;
@@ -138,10 +139,11 @@ export interface ProductOrderResume {
   lastTen?: any
 
 }
- export interface SupplyOneProduct{
-  product_id: ObjectId,
+ export interface   SupplyOneProduct{
+  product_id?: ObjectId,
+  variant_id?:ObjectId, 
   status: boolean,
-  section:ObjectId,
+  location:ObjectId,
   quantity: number,
   type: string,
   user:UserEntity,

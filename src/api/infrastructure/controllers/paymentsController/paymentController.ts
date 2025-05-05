@@ -808,7 +808,7 @@ if (tickets && tickets.some((ticket: PaymentVoucher) => ticket.status === true))
                     return  next(new ErrorHandler('Error al acutualizar el pago',500))
                 }
 
-                const updateOnePayment = await this.productOrderUseCase.updateProductOrder(productOrder._id,{payment_status:'approved'})
+                const updateOnePayment = await this.productOrderUseCase.updateProductOrder(productOrder._id,{payment_status:'approved', order_status:2})
                 if (!updateOnePayment){
                     return  next(new ErrorHandler('Error al acutualizar la orden de productos',500))
                 }
