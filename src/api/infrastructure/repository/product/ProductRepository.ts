@@ -1279,4 +1279,192 @@ async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> 
     
   }
 
+async GetOutOfStock(skip: number, limit: number, minNumber: number, page: number) {
+  try {
+    const baseMatch = { status: true };
+
+    const variantPipeline = [
+      { $match: baseMatch },
+      {
+        $lookup: {
+          from: 'variant-products',
+          localField: '_id',
+          foreignField: 'product_id',
+          as: 'variants'
+        }
+      },
+      { $match: { 'variants.0': { $exists: true } } },
+      { $unwind: '$variants' },
+      {
+        $lookup: {
+          from: 'storehousestocks',
+          let: { variantId: '$variants._id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$variant_id', '$$variantId'] },
+                    { $eq: ['$status', true] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'stockData'
+        }
+      },
+      {
+        $addFields: {
+          totalStock: { $sum: '$stockData.stock' },
+          name: {
+            $concat: [
+              '$name',
+              ' - ',
+              { $ifNull: ['$variants.attributes.color', ''] },
+              ' - ',
+              { $ifNull: ['$variants.attributes.size', ''] }
+            ]
+          },
+          sku: '$variants.sku',
+          tag: '$variants.tag',
+          variantId: '$variants._id'
+        }
+      },
+      {
+        $project: {
+          name: 1,
+          sku: 1,
+          tag: 1,
+          totalStock: 1,
+          createdAt: 1,
+          productId: '$_id',
+          variantId: 1
+        }
+      }
+    ];
+
+    const productOnlyPipeline = [
+      { $match: baseMatch },
+      {
+        $lookup: {
+          from: 'variant-products',
+          localField: '_id',
+          foreignField: 'product_id',
+          as: 'variants'
+        }
+      },
+      { $match: { variants: { $size: 0 } } },
+      {
+        $lookup: {
+          from: 'storehousestocks',
+          let: { productId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$product_id', '$$productId'] },
+                    { $eq: ['$variant_id', null] },
+                    { $eq: ['$status', true] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'stockData'
+        }
+      },
+      {
+        $addFields: {
+          totalStock: { $sum: '$stockData.stock' },
+          name: '$name',
+          sku: '$sku',
+          tag: '$tag',
+          productId: '$_id',
+          variantId: null
+        }
+      },
+      {
+        $project: {
+          name: 1,
+          sku: 1,
+          tag: 1,
+          totalStock: 1,
+          createdAt: 1,
+          productId: 1,
+          variantId: 1
+        }
+      }
+    ];
+
+    const pipeline = [
+      {
+        $facet: {
+          variantProducts: variantPipeline,
+          normalProducts: productOnlyPipeline
+        }
+      },
+      {
+        $project: {
+          combined: { $concatArrays: ['$variantProducts', '$normalProducts'] }
+        }
+      },
+      { $unwind: '$combined' },
+      { $replaceRoot: { newRoot: '$combined' } },
+      ...(minNumber != null ? [{ $match: { totalStock: { $lte: minNumber } } }] : []),
+
+      // DEBUG block to detect duplicated SKUs
+      {
+        $group: {
+          _id: {
+            sku: '$sku',
+            productId: '$productId',
+            variantId: '$variantId'
+          },
+          doc: { $first: '$$ROOT' },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $replaceRoot: { newRoot: '$doc' }
+      },
+
+      { $sort: { createdAt: -1 } },
+      {
+        $facet: {
+          paginated: [
+            { $skip: skip },
+            { $limit: limit }
+          ],
+          totalCount: [
+            { $count: 'count' }
+          ]
+        }
+      }
+    ];
+
+    const result = await this.ProductModel.aggregate(pipeline).exec();
+
+    const totalProducts = result[0]?.totalCount[0]?.count || 0;
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    return {
+      totalProducts,
+      totalPages,
+      currentPage: page,
+      pageSize: limit,
+      products: result[0]?.paginated || []
+    };
+  } catch (error) {
+    console.error('Error in GetOutOfStock:', error);
+    throw new Error(`Failed to fetch out of stock products: ${error.message}`);
+  }
+}
+
+
+
+  
+
+
 }

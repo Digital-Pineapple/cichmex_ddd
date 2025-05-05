@@ -56,6 +56,7 @@ productRouter
 
   .get("/", productController.getAllProducts)
   .get("/paginate", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProductsPaginate)
+  .get("/stock/paginate", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN",'WAREHOUSE-MANAGER']), productController.getOutOfStockPaginate)
   .get("/paginate/search/products", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProductsPaginateSearch)
   .get("/for_search", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getProductsBySearch)
   .get("/:id", productController.getProduct)

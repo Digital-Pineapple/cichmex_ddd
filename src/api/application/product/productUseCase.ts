@@ -124,6 +124,9 @@ export class ProductUseCase {
   public async findProductsPaginate(skip: number, limit:number): Promise<ProductEntity[] | ErrorHandler | null> {
     return this.productRepository.GetProductPaginate(skip, limit)
   }
+  public async findOutOfStock(skip: number, limit:number, minNumber: number, page: number): Promise<ProductEntity[] | ErrorHandler | null> {
+    return this.productRepository.GetOutOfStock(skip, limit, minNumber, page)
+  }
   public async findProductsPaginateSearch(search: string,skip: number, limit:number): Promise<ProductEntity[] | ErrorHandler | null> {
     return this.productRepository.GetProductPaginateSearch( search, skip, limit)
   }

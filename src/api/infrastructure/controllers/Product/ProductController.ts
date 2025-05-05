@@ -75,6 +75,7 @@ export class ProductController extends ResponseData {
     this.getAllProductsBySubCategory = this.getAllProductsBySubCategory.bind(this)
     this.getProductsBySearch = this.getProductsBySearch.bind(this)
     this.getAllProductsPaginateSearch = this.getAllProductsPaginateSearch.bind(this)
+    this.getOutOfStockPaginate = this.getOutOfStockPaginate.bind(this)
   }
 
   // Método para obtener todos los productos
@@ -167,6 +168,22 @@ export class ProductController extends ResponseData {
       // Manejo de errores
       next(new ErrorHandler("Hubo un error al consultar la información", 500));
     }
+  }
+  public async getOutOfStockPaginate(req: Request, res: Response, next: NextFunction) {
+    const page = parseInt(req.query.page as string, 10) || 1; // Página actual
+    const limit = parseInt(req.query.limit as string, 10) || 20; // Tamaño de página
+    const skip = (page - 1) * limit;
+    const minNumber =parseInt( req.query.minNumber as string) || 5
+
+    try {
+      const response = await this.productUseCase.findOutOfStock(skip, limit, minNumber, page)
+      this.invoke(response, 200, res, '', next)
+    } catch (error) {
+      console.log(error);
+      
+      next (new ErrorHandler('Error al consultar la información', 500))
+    }
+   
   }
   public async getAllProductsPaginateSearch(req: Request, res: Response, next: NextFunction) {
     const page = parseInt(req.query.page as string, 10) || 1; // Página actual

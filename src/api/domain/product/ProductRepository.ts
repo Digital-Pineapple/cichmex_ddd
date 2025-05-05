@@ -15,6 +15,7 @@ export interface ProductRepository extends MongoRepository {
     findSearchProducts(search: string, page: number): Promise<ProductEntity[] | ErrorHandler | null>
     findProductsByCategory(categoryId: ObjectId, storehouse: string, queryparams: Object): Promise<ProductEntity[] | ErrorHandler | null>
     GetProductPaginate(skip: number, limit: number): Promise<ProductEntity[] | null>
+    GetOutOfStock(skip: number, limit: number, minNumber: number, page: number): Promise<any | null>
     GetProductPaginateSearch(search: string,skip: number, limit: number): Promise<ProductEntity[] | null>
     countProducts(): Promise<any>
     countProductsSearch(search:any): Promise<any>
