@@ -116,6 +116,15 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
             }
         },
         { $unwind: { path: "$branch", preserveNullAndEmptyArrays: true } },
+        {
+            $lookup: {
+                from: "addresses",
+                localField: "deliveryLocation",
+                foreignField: "_id",
+                as: "deliveryLocation"
+            }
+        },
+        { $unwind: { path: "$deliveryLocation", preserveNullAndEmptyArrays: true } },
         
             // 2. Desenrollar los productos para procesarlos individualmente
             { $unwind: "$products" },
@@ -188,6 +197,7 @@ export class ProductOrderRepository extends MongoRepository implements ProductOr
                         },
                         { $unwind: { path: "$zoneDetails", preserveNullAndEmptyArrays: true } },
                         
+                        { $unwind: { path: "$zoneDetails", preserveNullAndEmptyArrays: true } },
                         // Proyección final
                         {
                             $project: {
