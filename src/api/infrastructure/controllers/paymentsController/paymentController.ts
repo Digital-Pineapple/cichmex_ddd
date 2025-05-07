@@ -26,6 +26,7 @@ import MetadataModel from '../../models/metadata/MetadataModel';
 
 export class PaymentController extends ResponseData {
     protected path = '/payment'
+    private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634";
 
     constructor(private paymentUseCase: PaymentUseCase,
         private readonly productOrderUseCase: ProductOrderUseCase,
@@ -82,83 +83,166 @@ export class PaymentController extends ResponseData {
         }
     }
 
-    public async autoCancelPO(req: Request, res: Response, next: NextFunction) {
-        try {
-            const access_token = config.MERCADOPAGO_TOKEN;
-            const client = new MercadoPagoConfig({ accessToken: access_token, options: { timeout: 5000 } });
-            const payment1 = new Payment(client);
+    /**
+ * Cancela automáticamente órdenes de pago expiradas y actualiza el inventario
+ */
+public async autoCancelPO(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const user = req.user;
+    // Generamos un folio único por sesión de cancelación
+    const sessionFolio = RandomCodeId('RT_');
     
-            // Obtener pagos expirados
-            const [PaymentMP , PaymentsTransfer ] = await Promise.all([
-                this.paymentUseCase.getPaymentsMPExpired(),
-                this.paymentUseCase.getPaymentsTransferExpired(),
-            ]);
+    const userInfo = {
+        _id: user._id,
+        fullname: user.fullname,
+        email: user.email,
+        type_user: user.type_user
+    };
     
-            // Función para actualizar pagos y órdenes
-            const cancelPaymentAndOrder = async (payment: any, statusReason: string) => {
-                
-                await this.paymentUseCase.updateOnePayment(payment._id, {
-                    status: false,
-                    payment_status: 'cancelled',
-    
-                });
-                
-                const PO = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id });
-               
-                await this.productOrderUseCase.updateProductOrder(PO._id, {
-                    status: false,
-                    payment_status: 'cancelled',
-                });
-            };
-            
-    
-   //         Procesar pagos de MercadoPago
-            const paymentMPPromises : any = PaymentMP?.map(async (payment: any) => {
-                
-                try {
-                    // Intentar obtener información de MercadoPago
-                    const infoPayment = await payment1.get({ id: payment.MP_info.id.toString() });
-                    await this.updatePaymentAndOrder(payment, infoPayment);
-                } catch (err: any) {
-                    console.log(err);
-                    
-                    if (err.status === 404) {
-                        // Si el pago no existe, cancelar pago y orden
-                        await cancelPaymentAndOrder(payment, 'Payment not found in MercadoPago');
-                    } else {
-                        console.error(`Error al obtener información de pago con id ${payment.MP_info.id}:`, err);
-                    }
-                }
-            });
+    try {
+        // Configuración de MercadoPago con timeout adecuado
+        const access_token = config.MERCADOPAGO_TOKEN;
+        const client = new MercadoPagoConfig({ 
+            accessToken: access_token, 
+            options: { timeout: 15000 } // Aumentado a 15 segundos para evitar timeouts
+        });
+        const paymentClient = new Payment(client);
 
-          //  Procesar pagos por transferencia
-            const paymentTransferPromises = PaymentsTransfer.map(async (payment: any) => {
+        // Obtener pagos expirados
+        const [paymentsMP, paymentsTransfer] = await Promise.all([
+            this.paymentUseCase.getPaymentsMPExpired(),
+            this.paymentUseCase.getPaymentsTransferExpired(),
+        ]);
+
+        /**
+         * Función para cancelar un pago y actualizar inventario
+         */
+        const cancelPaymentAndOrder = async (payment: any, status: string): Promise<void> => {
+            try {
+                // Generamos un folio único por cada orden para mejor trazabilidad
+                const folio = RandomCodeId('RT_');
+                const order = await this.productOrderUseCase.getOnePO({
+                    order_id: payment.order_id, 
+                    status: true
+                });
                 
-                try {
-                    // Cancelar pago y orden directamente
-                    await cancelPaymentAndOrder(payment, 'Expired transfer payment');
-                } catch (err: any) {
-                    console.error(`Error al procesar el pago por transferencia con id ${payment._id}:`, err);
+                if (!order) {
+                    console.error(`No se encontró el pedido ${payment.order_id}`);
+                    // En lugar de retornar next(), solo registramos y seguimos
+                    return;
                 }
-            });
-    
-            // Esperar a que todas las operaciones se completen
-            await Promise.all([...paymentMPPromises, ...paymentTransferPromises]);
-    
-            // Respuesta final
-            this.invoke('', 200, res, 'Verificación completa', next);
-        } catch (error: any) {
-            console.log(error);
-            
-            next(new ErrorHandler(`Hubo un error al consultar la información: ${error.message}`, 500));
-        }
+                
+                if (!order.products || !Array.isArray(order.products) || order.products.length === 0) {
+                    console.error(`El pedido ${payment.order_id} no tiene productos válidos`);
+                    return;
+                }
+                
+                // Procesamos cada producto para actualizar inventario
+                await Promise.all(order.products.map(async (product: any) => {
+                    try {
+                        const isVariant = Boolean(product.item?.variant);
+                        let stock;
+                        
+                        if (isVariant && product.variant?._id) {
+                            stock = await this.stockStoreHouseUseCase.getVariantStock(
+                                product.variant._id, 
+                                this.onlineStoreHouse
+                            );
+                        } else if (product.item?._id) {
+                            stock = await this.stockStoreHouseUseCase.getProductStock(
+                                product.item._id, 
+                                this.onlineStoreHouse
+                            );
+                        } else {
+                            console.error(`Producto inválido en pedido ${payment.order_id}`);
+                            return;
+                        }
+                        
+                        if (!stock) {
+                            console.error(`No se encontró stock para el producto en pedido ${payment.order_id}`);
+                            return;
+                        }
+                        
+                        // Creamos el retorno al inventario
+                        await this.stockStoreHouseUseCase.createReturn(
+                            folio,
+                            order.order_id,
+                            stock,
+                            userInfo,
+                            product,
+                            'Retorno de producto por cancelación de orden expirada',
+                            product.quantity , 
+                        );
+                    } catch (productError) {
+                        console.error(`Error procesando producto en pedido ${payment.order_id}:`, productError);
+                        // Continuamos con el siguiente producto
+                    }
+                }));
+                
+                // Actualizamos estado del pago y la orden
+                await Promise.all([
+                    this.paymentUseCase.updateOnePayment(payment._id, { 
+                        status: false, 
+                        payment_status: status 
+                    }),
+                    this.productOrderUseCase.updateProductOrder(order._id, { 
+                        status: false, 
+                        payment_status: status, 
+                        order_status: 9 
+                    })
+                ]);
+                
+            } catch (orderError) {
+                console.error(`Error cancelando orden ${payment.order_id}:`, orderError);
+                // Continuamos con la siguiente orden
+            }
+        };
+
+        // Procesamos pagos de MercadoPago
+        const paymentMPPromises = (paymentsMP || []).map(async (payment: any) => {
+            try {
+                // Verificamos estado en MercadoPago
+                const infoPayment = await paymentClient.get({ 
+                    id: payment.MP_info?.id?.toString() 
+                });
+                
+                await this.updatePaymentAndOrder(payment, infoPayment);
+            } catch (err: any) {
+                if (err.status === 404) {
+                    // Si el pago no existe, cancelamos
+                    await cancelPaymentAndOrder(payment, 'cancelled');
+                } else {
+                    console.error(`Error al obtener información de pago MP ${payment.MP_info?.id || 'desconocido'}:`, err);
+                }
+            }
+        });
+
+        // Procesamos pagos por transferencia
+        const paymentTransferPromises = (paymentsTransfer || []).map(async (payment: any) => {
+            try {
+                await cancelPaymentAndOrder(payment, 'Expired transfer payment');
+            } catch (err: any) {
+                console.error(`Error al procesar transferencia ${payment._id}:`, err);
+            }
+        });
+
+        // Esperamos a que todas las operaciones se completen
+        await Promise.all([
+            ...(paymentMPPromises || []), 
+            ...(paymentTransferPromises || [])
+        ]);
+
+        // Enviamos respuesta exitosa
+        this.invoke('', 200, res, 'Verificación y cancelación automática completada', next);
+    } catch (error: any) {
+        console.error('Error en autoCancelPO:', error);
+        next(new ErrorHandler(`Error al procesar cancelaciones automáticas: ${error.message}`, 500));
     }
+}
     
     
     private async updatePaymentAndOrder(payment: any, infoPayment: any) {
         const status = infoPayment.status;
         const payment_id = payment._id.toString()
-        console.log(status);
         
         // Actualizar el estado del pago en tu base de datos
         await this.paymentUseCase.updateOnePayment(payment_id, { payment_status: status });
@@ -167,7 +251,7 @@ export class PaymentController extends ResponseData {
         const PO = await this.productOrderUseCase.getOnePO({ order_id: payment.order_id});
         
         if (PO) {
-            if (status === "approved" || status === "in_process") {
+            if (status === "approved" || status === "in_process" || status === "pending") {
                 // Actualizar la orden de producto si el pago fue aprobado o está en proceso
                 await this.productOrderUseCase.updateProductOrder(PO._id, { payment_status: status });
             } else {
@@ -444,6 +528,7 @@ export class PaymentController extends ResponseData {
         const user = req.user;
         const origin = req.headers["x-origin"];                
         try {
+ 
             if(!typeDelivery) return next(new ErrorHandler(`tipo de entrega es requerido`, 404))           
             if(typeDelivery === "homedelivery" && !location) return next(new ErrorHandler(`id de direccion requerida`, 404))           
             if(typeDelivery === "pickup" && !branch_id) return next(new ErrorHandler(`id de sucursal requerida`, 404))           

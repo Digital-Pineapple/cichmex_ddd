@@ -47,10 +47,16 @@ export interface SHProductInput {
     status?:boolean;
   }
   export interface SHProductReturn {
+    folio ?: string,
+    order_id ?: string,
     SHStock_id ?: string,
     quantity: number,
     newQuantity: number,
-    responsible_id: UserEntity,
+    user_received?: string,
+    user_delivery?: string,
+    responsible?:  UserEntity,
+    product_detail:ProductEntity,
+    reason ?: string,
     createdAt: NativeDate;
     status?:boolean;
   }

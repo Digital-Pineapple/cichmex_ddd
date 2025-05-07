@@ -1,3 +1,4 @@
+import { SHProductReturn } from './../../../domain/storehouse/stockStoreHouseEntity';
 import { StockStoreHouseRepository } from './../../repository/stockStoreHouse/StockStoreHouseRepository';
 import { Router } from "express";
 import { ProductOrderRepository } from "../../repository/product/ProductOrderRepository";
@@ -17,20 +18,28 @@ import { ActivityLogger } from '../../../../shared/infrastructure/middleware/Act
 import { LocationProductRepository } from '../../repository/warehouse/LocationProductRepository';
 import { LocationProductModel } from '../../models/warehouse/LocationProductModel';
 import { WarehouseUseCase } from '../../../application/warehouse/WarehouseUseCase';
+import { StockSHReturnRepository } from '../../repository/stockStoreHouse/StockSHReturnRepository';
+import StockSHReturnModel from '../../models/stockStoreHouse/StockSHReturnModel';
+import { PaymentRepository } from '../../repository/payments/PaymentRespository';
+import PaymentModel from '../../models/payments/PaymentModel';
+import { PaymentUseCase } from '../../../application/payment/paymentUseCase';
 
 const productOrderRouter = Router();
 const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
+const paymentRepository = new PaymentRepository(PaymentModel);
 const regionRepository = new RegionRepository(RegionModel)
 const productOrderRepository = new ProductOrderRepository(ProductOrderModel);
+const stockSHReturnRepository = new StockSHReturnRepository(StockSHReturnModel)
 const locationProductRepository = new LocationProductRepository(LocationProductModel)
 const productOrderUseCase = new ProductOrderUseCase(productOrderRepository, locationProductRepository);
 const regionUseCase = new RegionUseCase(regionRepository)
-const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository)
+const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository, stockSHReturnRepository)
+const paymentUseCase = new PaymentUseCase(paymentRepository)
 const userValidations = new UserValidations();
 const documentationValidations = new DocumentationValidations()
 const s3Service = new S3Service();
 const regionsService = new RegionsService()
-const productOrderController = new ProductOrderController(productOrderUseCase,regionUseCase, s3Service, regionsService, stockStoreHouseUseCase);
+const productOrderController = new ProductOrderController(productOrderUseCase,regionUseCase,paymentUseCase, s3Service, regionsService, stockStoreHouseUseCase);
 
 productOrderRouter
 
@@ -69,6 +78,6 @@ productOrderRouter
   .put("/fill_order",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "WAREHOUSEMAN", "WAREHOUSE-MANAGER"]), ActivityLogger,productOrderController.fillOrder)
   .put('/verifyQrToPoint',userValidations.authTypeUserValidation(["SUPER-ADMIN", "PARTNER", "ADMIN"]),ActivityLogger, productOrderController.verifyQrToPoint)
   .put("/start_routes",userValidations.authTypeUserValidation(["SUPER-ADMIN", "ADMIN", "CARRIER-DRIVER"]), ActivityLogger,productOrderController.startMyRoutes)
-  .delete("/:id",userValidations.authTypeUserValidation(["CUSTOMER"]),ActivityLogger, productOrderController.deleteProductOrder)
+  .delete("/:id",userValidations.authTypeUserValidation(["CUSTOMER"]),ActivityLogger, productOrderController.cancelledProductOrder)
 
 export default productOrderRouter;

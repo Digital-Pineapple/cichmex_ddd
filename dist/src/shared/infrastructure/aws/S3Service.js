@@ -37,7 +37,7 @@ class S3Service {
                 const params = {
                     Bucket: this.bucket,
                     Key: this.environment + key,
-                    ContentType: contentType,
+                    ContentType: contentType, //
                     Body: fileContent,
                 };
                 yield this.s3.upload(params).promise();

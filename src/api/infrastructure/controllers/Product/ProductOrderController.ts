@@ -1,9 +1,10 @@
+import { Payment } from 'mercadopago';
 import { S3Service } from './../../../../shared/infrastructure/aws/S3Service';
 import { Request, Response, NextFunction } from 'express';
 import { ErrorHandler } from "../../../../shared/domain/ErrorHandler";
 import { ResponseData } from "../../../../shared/infrastructure/validation/ResponseData";
 import { ProductOrderUseCase } from '../../../application/product/productOrderUseCase';
-import { RandomCodeShipping } from '../../../../shared/infrastructure/validation/Utils';
+import { RandomCodeId, RandomCodeShipping } from '../../../../shared/infrastructure/validation/Utils';
 import { buildPDF } from '../../../../libs/pdfKit';
 import { RegionUseCase } from '../../../application/regions/regionUseCase';
 import { RegionsService } from '../../../../shared/infrastructure/Regions/RegionsService';
@@ -12,6 +13,7 @@ import { log } from 'console';
 import mongoose from 'mongoose';
 import { product } from '../../../../../swaggerdocs';
 import { userInfo } from 'os';
+import { PaymentUseCase } from '../../../application/payment/paymentUseCase';
 export class ProductOrderController extends ResponseData {
   protected path = "/productOrder";
   private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634";
@@ -19,6 +21,7 @@ export class ProductOrderController extends ResponseData {
   constructor(
     private productOrderUseCase: ProductOrderUseCase,
     private readonly regionUseCase: RegionUseCase,
+    private readonly paymentUseCase: PaymentUseCase,
     private readonly s3Service: S3Service,
     private readonly regionsService: RegionsService,
     private stockStoreHouseUseCase: StockStoreHouseUseCase,
@@ -31,7 +34,7 @@ export class ProductOrderController extends ResponseData {
     this.getOneProductOrderByUser = this.getOneProductOrderByUser.bind(this);
     this.createProductOrder = this.createProductOrder.bind(this);
     this.updateProductOrder = this.updateProductOrder.bind(this);
-    this.deleteProductOrder = this.deleteProductOrder.bind(this);
+    this.cancelledProductOrder = this.cancelledProductOrder.bind(this);
     this.fillProductOrder = this.fillProductOrder.bind(this);
     this.fillOneProduct = this.fillOneProduct.bind(this);
     this.paidAndSupplyPOToPoint = this.paidAndSupplyPOToPoint.bind(this);
@@ -871,32 +874,57 @@ export class ProductOrderController extends ResponseData {
     }
   }
 
-
-
-
-
-  public async deleteProductOrder(req: Request, res: Response, next: NextFunction) {
+  public async cancelledProductOrder(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const user = req.user.id
+    const user = req.user
+    const folio = RandomCodeId('RT_')
+    const UserInfo = {
+      _id: user._id,
+      fullname: user.fullname,
+      email: user.email,
+      type_user: user.type_user
+    };
     try {
       if (!id) return next(new ErrorHandler('El id de la orden es requerido', 404));
-      const userOrder: any = await this.productOrderUseCase.getOnePO({ order_id: id, status: true, user_id: user })
-      const products = userOrder.products
-      await Promise.all(products.map(async (product: any) => {
-        const stockProduct = await this.stockStoreHouseUseCase.getProductStock(product.item._id, this.onlineStoreHouse)
-        const currentProductStock = stockProduct.stock;
-        const stockToReturn = product.quantity;
-        const newProductStock = currentProductStock + stockToReturn;
-        const updateStock = await this.stockStoreHouseUseCase.updateStock(stockProduct._id, { stock: newProductStock })
-      }))
-
+      const userOrder: any = await this.productOrderUseCase.getOnePO({ order_id: id, status: true, user_id: user._id })
       if (!userOrder) {
         return next(new ErrorHandler('No se encontro el pedido', 500));
       }
-      const response = await this.productOrderUseCase.updateProductOrder(userOrder._id, { status: false })
+      const products = userOrder.products
+      await Promise.all(products.map(async (product: any) => {
+        const isVariant = product.item.variant
+        if (isVariant) {
+          const stock = await this.stockStoreHouseUseCase.getVariantStock(product.variant._id, this.onlineStoreHouse )
+          await this.stockStoreHouseUseCase.createReturn(
+            folio,
+            userOrder.order_id,
+            stock,
+            UserInfo,
+            product,
+            'Retorno de producto por cancelación de orden',
+            product.quantity,
+          )
+      }else{
+        const stock = await this.stockStoreHouseUseCase.getProductStock(product.item._id, this.onlineStoreHouse)
+        await this.stockStoreHouseUseCase.createReturn(
+          folio,
+          userOrder.order_id,
+          stock,
+          UserInfo,
+          product,
+          'Retorno de producto por cancelación de orden',
+          product.quantity,
+        )
+      }
+      }  ))
+      const payment_id = userOrder.payment.toString()
+      await this.paymentUseCase.updateOnePayment(payment_id, { status: false, payment_status: 'cancelled' })
+      const response = await this.productOrderUseCase.updateProductOrder(userOrder._id, { status: false, payment_status: 'cancelled', order_status: 9 })
       // const stock = await this.stockStoreHouseUseCase.getProductStock()
       this.invoke(response, 201, res, 'Se eliminó con éxito', next);
-    } catch (error) {
+    } catch (error) {  
+      console.log(error);
+      
       next(new ErrorHandler("Hubo un error al consultar la información ", 500));
     }
   }

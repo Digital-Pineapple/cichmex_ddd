@@ -1,3 +1,4 @@
+import { locationProductRepository } from './../../../domain/warehouse/locationProductRepository';
 import { Router } from 'express';
 import { PaymentRepository } from '../../repository/payments/PaymentRespository';
 
@@ -38,6 +39,10 @@ import TypeUserModel from '../../models/TypeUserModel';
 import UserModel from '../../models/UserModel';
 import NotificationModel from '../../models/notification/NotificationModel';
 import { validateOrderFields } from '../../../../shared/infrastructure/validation/Order/OrderMiddleware';
+import { LocationProductRepository } from '../../repository/warehouse/LocationProductRepository';
+import { LocationProductModel } from '../../models/warehouse/LocationProductModel';
+import StockSHReturnModel from '../../models/stockStoreHouse/StockSHReturnModel';
+import { StockSHReturnRepository } from '../../repository/stockStoreHouse/StockSHReturnRepository';
 
 const paymentRouter = Router();
 
@@ -48,15 +53,15 @@ const membershipHistoryRepository = new MembershipHistoryRepository(MembershipHi
 const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
 const stockSHOutputRepository = new StockSHOutputRepository(StockSHoutputModel)
 const shoppingCartRepository = new ShoppingCartRepository(ShoppingCartModel)
-
+const locationProductRepository = new LocationProductRepository(LocationProductModel)
 
 const membershipHistoryUseCase = new MembershipHistoryUseCase(membershipHistoryRepository)
-const productOrderUseCase = new ProductOrderUseCase(productOrderRepository)
-
+const productOrderUseCase = new ProductOrderUseCase(productOrderRepository, locationProductRepository)
+const stockSHReturnRepository = new StockSHReturnRepository(StockSHReturnModel)
 const membershipBenefitsRespository = new MembershipBenefitsRepository(MembershipBenefitsModel)
 const membershipBenefitsUseCase = new MembershipBenefitsUseCase(membershipBenefitsRespository)
 const membershipUseCase = new MembershipUseCase(membershipRepository)
-const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository);
+const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository,stockSHReturnRepository);
 const stockSHoutputUseCase = new StockSHoutputUseCase(stockSHOutputRepository)
 const shoppingCartUseCase = new ShoppingCartUseCase(shoppingCartRepository)
 

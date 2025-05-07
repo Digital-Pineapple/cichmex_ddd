@@ -1,14 +1,22 @@
+import { StockSHReturnRepository } from './../../domain/storehouse/stockStoreHouseRepository';
 import { ErrorHandler } from '../../../shared/domain/ErrorHandler';
 import { StockStoreHouseRepository } from '../../domain/storehouse/stockStoreHouseRepository';
-import { StockStoreHouseEntity } from '../../domain/storehouse/stockStoreHouseEntity';
+import { SHProductReturn, StockStoreHouseEntity } from '../../domain/storehouse/stockStoreHouseEntity';
 import { getProperties } from '../../../helpers/products';
+import { log } from 'console';
+import { UserEntity } from '../../domain/user/UserEntity';
+import { ProductEntity } from '../../domain/product/ProductEntity';
+import { product } from '../../../../swaggerdocs';
 
 
 export class StockStoreHouseUseCase {
     protected path = '/stock-store-house'
     readonly storeHouseId = '662fe69b9ba1d8b3cfcd3634';
 
-    constructor(private readonly stockStoreHouseRepository: StockStoreHouseRepository) { }
+    constructor(private readonly stockStoreHouseRepository: StockStoreHouseRepository,
+        private readonly  stockSHReturnRepository :StockSHReturnRepository
+
+    ) { }
 
     public async getStock(id:any): Promise<StockStoreHouseEntity[] | ErrorHandler | null> {
         return await this.stockStoreHouseRepository.findStockByStoreHouse(id);
@@ -51,28 +59,61 @@ export class StockStoreHouseUseCase {
     public async getAllProductOutputs(): Promise<StockStoreHouseEntity[]| null> {
         return this.stockStoreHouseRepository.findAllOutputs()
     }
-
-    public async validateProductsStock(products: any): Promise<any> {
-        await Promise.all(
-            products.map(async (product: any) => {
-                let available;                    
-                const isVariant = Boolean(product?.variant ?? null);
-                let name = product.item.name;                     
-                if(isVariant){
-                   available = await this.getVariantStock(product.variant._id)                           
-                   name = name + getProperties(product.variant.attributes)
-                }else{
-                    available = await this.getProductStockPayment(product.item._id);                          
-                }
-                if (!available) {
-                    throw new ErrorHandler(`Sin existencias del producto: ${name}`, 500)                    
-                }
-            })
-        );
+    public async createReturn(folio: string, order_id: string,stock:any, responsible:Object, productDetail: ProductEntity, reason: string, quantity : number ): Promise<SHProductReturn| null> {
         
+        const ret = await this.stockSHReturnRepository.createOne({
+            SHStock_id: stock._id,
+            quantity: quantity,
+            newQuantity: stock.stock + quantity,
+            responsible_id: responsible,
+            product_detail: productDetail,
+            reason: reason,
+            order_id: order_id,
+            folio: folio,
+            status: true,
+        })
+        if(!ret) {
+            throw new ErrorHandler('No se pudo crear el retorno', 404);
+        }
+        const updatedStock = await this.stockStoreHouseRepository.updateOne(stock._id, {
+            stock: stock.stock + quantity,
+            status: true,
+        })
+        if(!updatedStock) {
+            throw new ErrorHandler('No se pudo actualizar el stock', 404);
+        }
+        return ret;
     }
+
+    public async validateProductsStock(products: any): Promise<void> {
+          await Promise.all(
+            products.map(async (product: any) => {
+              const isVariant = Boolean(product.variant);
+              let stockInfo: any;
+              
+              if (isVariant && product.variant) {
+                stockInfo = await this.getVariantStock(product.variant, this.storeHouseId);
+              } else {
+                stockInfo = await this.getProductStock(product._id, this.storeHouseId);
+              }
+              console.log(product);
+              
+              if (!stockInfo) {
+                throw new ErrorHandler(`El producto ${product.name} no tiene stock`, 404);
+              }
+              
+              const availableStock = stockInfo.stock || 0;
+              if (availableStock < product.quantity) {
+                throw new ErrorHandler(`Lo sentimos, el producto ${product.item.name} 
+                    ${ product.variant? product.variant.attributes.size: null} 
+                    ${product.variant? product.variant.attributes.color: null} 
+                    no tiene suficiente stock`, 404);
+              }
+            })
+          );
+       
     
-    
+    }
 
 
 
