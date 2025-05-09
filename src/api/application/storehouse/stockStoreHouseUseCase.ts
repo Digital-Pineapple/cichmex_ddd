@@ -30,7 +30,7 @@ export class StockStoreHouseUseCase {
     }
     
     public async getProductStock(product_id: any,StoreHouse_id?:any, populateConfig?:any,   ) : Promise <StockStoreHouseEntity > { 
-          return await this.stockStoreHouseRepository.findOneItem({product_id: product_id, StoreHouse_id:StoreHouse_id, status:true}) 
+          return await this.stockStoreHouseRepository.findOneItem({product_id: product_id, StoreHouse_id:StoreHouse_id ?? this.storeHouseId, status:true}) 
     }
     public async getVariantStock(variant_id: string,StoreHouse_id?:any , populateConfig?:any,   ) : Promise <StockStoreHouseEntity > { 
         return await this.stockStoreHouseRepository.findOneItem({variant_id: variant_id, StoreHouse_id: StoreHouse_id ?? this.storeHouseId, status:true}) 

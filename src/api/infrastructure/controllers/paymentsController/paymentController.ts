@@ -1056,7 +1056,7 @@ if (tickets && tickets.some((ticket: PaymentVoucher) => ticket.status === true))
                     if (product?.variant) {
                         available = await this.stockStoreHouseUseCase.getVariantStock(product.variant._id);
                     } else {
-                        available = await this.stockStoreHouseUseCase.getProductStockPayment(product.item._id);
+                        available = await this.stockStoreHouseUseCase.getProductStock(product.item._id);
                     }
                     if (available) {
                         const newQuantity = available.stock - parseInt(product.quantity);

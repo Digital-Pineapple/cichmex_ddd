@@ -26,6 +26,8 @@ import { StockSHOutputRepository } from '../../repository/stockStoreHouse/StockS
 import StockSHoutputModel from '../../models/stockStoreHouse/StockSHoutputModel';
 import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHoutputUseCase';
 import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
+import StockSHReturnModel from '../../models/stockStoreHouse/StockSHReturnModel';
+import { StockSHReturnRepository } from '../../repository/stockStoreHouse/StockSHReturnRepository';
 
 const productRouter = Router();
 
@@ -41,7 +43,8 @@ const stockOutputSHRepository = new StockSHOutputRepository(StockSHoutputModel)
 const productUseCase = new ProductUseCase(productRepository);
 const categoryUseCase = new CategoryUseCase(categoryRepository)
 const subCategoryUseCase = new SubCategoryUseCase(subcategoryRepository);
-const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository);
+const stockSHReturnRepository = new StockSHReturnRepository(StockSHReturnModel)
+const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository, stockSHReturnRepository);
 const stockSHinputUseCase = new StockSHinputUseCase(stockInputSHRepository)
 const stockSHOutputUseCase = new StockSHoutputUseCase(stockOutputSHRepository)
 const variantProductUseCase = new VariantProductUseCase(variantProductRepository)
