@@ -156,15 +156,17 @@ export class StockStoreHouseController extends ResponseData {
     public async getAllMovements(req: Request, res: Response, next: NextFunction) {
         try {
             // Ejecutar las consultas en paralelo
-            const [allOutputs, allInputs] = await Promise.all([
+            const [allOutputs, allInputs, allReurns] = await Promise.all([
                 this.stockSHoutputUseCase.startGetAllOutputs(),
-                this.stockSHinputUseCase.getInputs()
+                this.stockSHinputUseCase.getInputs(),
+                this.stockSHreturnUseCase.getAllReturns()
             ]);
 
             // Añadir el tipo directamente en la combinación de arrays
             const allTransactions = [
                 ...allOutputs.map(output => ({ ...output, type: 'output' })),
-                ...allInputs.map(input => ({ ...input, type: 'input' }))
+                ...allInputs.map(input => ({ ...input, type: 'input' })),
+                ...allReurns.map(returnItem => ({ ...returnItem, type: 'return' }))
             ];
 
 

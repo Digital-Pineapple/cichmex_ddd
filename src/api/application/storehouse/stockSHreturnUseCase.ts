@@ -14,6 +14,9 @@ export class StockSHreturnUseCase {
         return await this.stockSHReturnRepository.findById(branchId)
       }
     
+    async getAllReturns () : Promise<SHProductReturn[]> {
+        return this.stockSHReturnRepository.getAllSHReturns()
+    }
     
 
 }

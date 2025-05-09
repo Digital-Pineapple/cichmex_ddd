@@ -413,10 +413,7 @@ export class AuthController extends ResponseData {
     public async restorePassword(req: Request, res: Response, next: NextFunction) {
         const { user } = req;
         const { password } = req.body;
-        console.log(user, password);
-
         const id = user.toString()
-
         try {
             await this.authUseCase.restorePassword(id, password)
             this.invoke('', 200, res, 'Cambio la contraseña exitosamente', next);

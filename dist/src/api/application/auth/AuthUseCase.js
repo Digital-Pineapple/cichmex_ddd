@@ -155,7 +155,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     signInWithGoogle(idToken, typeUser) {
         return __awaiter(this, void 0, void 0, function* () {
             let { email, picture } = yield this.validateGoogleToken(idToken);
-            let user = yield this.authRepository.findOneItem({ email: email, google: true, status: true, }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
+            let user = yield this.authRepository.findOneItem({ email: email, status: true, }, PopulateInterfaces_1.TypeUserPopulateConfig, PopulateInterfaces_1.PhonePopulateConfig, PopulateInterfaces_1.PopulatePointStore);
             if (!user)
                 return new ErrorHandler_1.ErrorHandler('No existe el usuario, Registrate', 409);
             user.profile_image = picture;
@@ -333,7 +333,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     uploadCustomerFiles(customer_id, keys) {
         return __awaiter(this, void 0, void 0, function* () {
             let customer = yield this.authRepository.findById(customer_id);
-            keys.forEach(({ key, field }) => __awaiter(this, void 0, void 0, function* () {
+            keys.forEach((_a) => __awaiter(this, [_a], void 0, function* ({ key, field }) {
                 customer[field] = key;
             }));
             return yield customer.save();

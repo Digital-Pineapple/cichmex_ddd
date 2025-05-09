@@ -326,8 +326,8 @@ class AuthController extends ResponseData_1.ResponseData {
         });
     }
     uploadProfilePhoto(req, res, next) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             const { id } = req.params;
             try {
                 const pathObject = `${this.path}/${id}/${(_a = req.file) === null || _a === void 0 ? void 0 : _a.fieldname}`;
@@ -393,7 +393,6 @@ class AuthController extends ResponseData_1.ResponseData {
         return __awaiter(this, void 0, void 0, function* () {
             const { user } = req;
             const { password } = req.body;
-            console.log(user, password);
             const id = user.toString();
             try {
                 yield this.authUseCase.restorePassword(id, password);
