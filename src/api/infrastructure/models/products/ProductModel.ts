@@ -54,6 +54,11 @@ const ProductSchema = new Schema<ProductEntity>(
       type: Schema.Types.ObjectId,
       default: () => new mongoose.Types.ObjectId()
     },
+    sku: {
+      type: String,
+      required: false,
+      unique:true,
+    },
     name: {
       type: String,
       required: true,

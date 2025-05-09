@@ -33,7 +33,7 @@ const productRepository  = new ProductRepository(ProductModel)
 const stockSHinputUseCase    = new StockSHinputUseCase(stockSHinputRepository)
 const stockSHoutputUseCase   = new StockSHoutputUseCase(stockSHOutputRepository);
 const stockSHreturnUseCase   = new StockSHreturnUseCase(stockSHReturnRepository)
-const stockStoreHouseUseCase      = new StockStoreHouseUseCase (stockStoreHouseRepository);
+const stockStoreHouseUseCase      = new StockStoreHouseUseCase (stockStoreHouseRepository, stockSHReturnRepository);
 const productUseCase = new ProductUseCase( productRepository )
 const s3Service = new S3Service()
 

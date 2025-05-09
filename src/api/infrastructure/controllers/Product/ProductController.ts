@@ -20,6 +20,7 @@ import { VariantProductEntity } from '../../../domain/variantProduct/variantProd
 import { log } from 'console';
 import { product } from '../../../../../swaggerdocs';
 import { all } from 'axios';
+import CounterService from '../../../utils/CounterService'
 
 // Definición de la clase ProductController que extiende de ResponseData
 export class ProductController extends ResponseData {
@@ -27,7 +28,6 @@ export class ProductController extends ResponseData {
   protected path = "/product";
   // ID de la tienda en línea
   private readonly onlineStoreHouse = "662fe69b9ba1d8b3cfcd3634"
-
   // Constructor de la clase que recibe las dependencias necesarias
   constructor(
     private productUseCase: ProductUseCase,
@@ -38,7 +38,9 @@ export class ProductController extends ResponseData {
     private readonly s3Service: S3Service,
     private subCategoryUseCase: SubCategoryUseCase,
     private variantProductUseCase: VariantProductUseCase,
-  ) {
+
+
+  ){
     // Inicialización de los métodos de la clase
     super();
     this.getAllProducts = this.getAllProducts.bind(this);
@@ -76,6 +78,7 @@ export class ProductController extends ResponseData {
     this.getProductsBySearch = this.getProductsBySearch.bind(this)
     this.getAllProductsPaginateSearch = this.getAllProductsPaginateSearch.bind(this)
     this.getOutOfStockPaginate = this.getOutOfStockPaginate.bind(this)
+    this.SeedProducts = this.SeedProducts.bind(this)
   }
 
   // Método para obtener todos los productos
@@ -103,6 +106,55 @@ export class ProductController extends ResponseData {
     }
   }
 
+  public async SeedProducts(req: Request, res: Response, next: NextFunction) {
+  try {
+    // Obtener todos los productos
+    const response = await this.productUseCase.getProducts();
+    
+    await Promise.all(
+      response.map(async (item: any) => {
+        // Buscar variantes asociadas al producto
+        const variants = await this.variantProductUseCase.findAllVarinatsByProduct(item._id);
+        
+        if (variants.length > 0) {
+          // Si tiene variantes, actualizar SKU de cada variante
+          const updateVariants = await Promise.all(
+            variants.map(async (variant: any) => {
+              // Generar un nuevo SKU para cada variante
+              const sku = await CounterService.getNextSequence('sku');
+              // Actualizar la variante con el nuevo SKU
+              await this.variantProductUseCase.UpdateVariant(
+                variant._id,
+                { sku: sku }
+              );
+            })
+          );
+          
+          // Actualizar el producto principal indicando que tiene variantes
+          // y limpiando su SKU ya que las variantes tienen sus propios SKUs
+          await this.productUseCase.updateProduct(item._id, { 
+            has_variants: true,
+            sku: null  // Opcional: limpia el SKU del producto principal cuando tiene variantes
+          });
+        } else {
+          // Si no tiene variantes, asignar un nuevo SKU directamente al producto
+          const sku = await CounterService.getNextSequence('sku');
+          await this.productUseCase.updateProduct(item._id, { 
+            sku: sku,
+            has_variants: false 
+          });
+        }
+      })
+    );
+    
+    // Enviar la respuesta con la lista actualizada de productos
+    this.invoke(response, 200, res, "", next);
+  } catch (error) {
+    console.error(error);
+    // Manejo de errores
+    next(new ErrorHandler("Hubo un error al actualizar los SKUs", 500));
+  }
+}
   public async getProductsBySearch(req: Request, res: Response, next: NextFunction) {
     try {
       // Obtener todos los productos

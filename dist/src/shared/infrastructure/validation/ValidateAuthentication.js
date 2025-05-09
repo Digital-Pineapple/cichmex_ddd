@@ -44,8 +44,8 @@ const validateAuthentication = (req, res, next) => __awaiter(void 0, void 0, voi
 });
 exports.validateAuthentication = validateAuthentication;
 const validateTokenRestorePassword = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
-    const token = (_b = req.headers.authorization) === null || _b === void 0 ? void 0 : _b.split(' ').pop();
+    var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ').pop();
     if (!token)
         return next(new ErrorHandler_1.ErrorHandler('Token is required', 401));
     try {
@@ -63,9 +63,9 @@ const validateTokenRestorePassword = (req, res, next) => __awaiter(void 0, void 
 });
 exports.validateTokenRestorePassword = validateTokenRestorePassword;
 const checkTypeUserAuth = (type_user) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
+    var _a;
     try {
-        const token = (_c = req.headers.authorization) === null || _c === void 0 ? void 0 : _c.split(' ').pop();
+        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ').pop();
         if (!token) {
             throw new ErrorHandler_1.ErrorHandler('Token es requerido', 401);
         }

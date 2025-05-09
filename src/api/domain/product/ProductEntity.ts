@@ -11,6 +11,7 @@ import { Size } from "aws-sdk/clients/s3";
 
 export interface ProductEntity {
   _id: ObjectId,
+  sku?: string;
   name: string;
   price?: number;
   discountPrice?: number;

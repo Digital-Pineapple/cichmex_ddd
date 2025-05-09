@@ -26,6 +26,9 @@ import { StockSHOutputRepository } from '../../repository/stockStoreHouse/StockS
 import StockSHoutputModel from '../../models/stockStoreHouse/StockSHoutputModel';
 import { StockSHoutputUseCase } from '../../../application/storehouse/stockSHoutputUseCase';
 import { ActivityLogger } from '../../../../shared/infrastructure/middleware/ActivityLogger';
+import StockSHReturnModel from '../../models/stockStoreHouse/StockSHReturnModel';
+import { StockSHReturnRepository } from '../../repository/stockStoreHouse/StockSHReturnRepository';
+import CounterService from '../../../utils/CounterService';
 
 const productRouter = Router();
 
@@ -37,25 +40,28 @@ const variantProductRepository = new VariantProductRepository(VariantProductMode
 const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
 const stockInputSHRepository = new StockSHinputRepository(StockSHinputModel)
 const stockOutputSHRepository = new StockSHOutputRepository(StockSHoutputModel)
+const stockSHReturnRepository = new StockSHReturnRepository(StockSHReturnModel)
 
 const productUseCase = new ProductUseCase(productRepository);
 const categoryUseCase = new CategoryUseCase(categoryRepository)
 const subCategoryUseCase = new SubCategoryUseCase(subcategoryRepository);
-const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository);
+const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository, stockSHReturnRepository);
 const stockSHinputUseCase = new StockSHinputUseCase(stockInputSHRepository)
 const stockSHOutputUseCase = new StockSHoutputUseCase(stockOutputSHRepository)
 const variantProductUseCase = new VariantProductUseCase(variantProductRepository)
 
 const s3Service = new S3Service();
 const productvalidations = new ProductValidations()
+const counterService = new CounterService();
 
-const productController = new ProductController(productUseCase, categoryUseCase, stockStoreHouseUseCase, stockSHinputUseCase, stockSHOutputUseCase, s3Service, subCategoryUseCase, variantProductUseCase);
+const productController = new ProductController(productUseCase, categoryUseCase, stockStoreHouseUseCase, stockSHinputUseCase, stockSHOutputUseCase, s3Service, subCategoryUseCase, variantProductUseCase, counterService);
 const userValidations = new UserValidations();
 
 productRouter
 
   .get("/", productController.getAllProducts)
   .get("/paginate", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProductsPaginate)
+  .get("/sku/seed", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.SeedProducts)
   .get("/stock/paginate", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN",'WAREHOUSE-MANAGER']), productController.getOutOfStockPaginate)
   .get("/paginate/search/products", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getAllProductsPaginateSearch)
   .get("/for_search", userValidations.authTypeUserValidation(['SUPER-ADMIN', "ADMIN"]), productController.getProductsBySearch)

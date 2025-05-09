@@ -1,5 +1,5 @@
 import { MongoRepository } from "../../infrastructure/repository/MongoRepository"
-import { SHProductInput, SHProductOutput } from "./stockStoreHouseEntity"
+import { SHProductInput, SHProductOutput, SHProductReturn } from "./stockStoreHouseEntity"
 
 export interface StockStoreHouseRepository extends MongoRepository {
 
@@ -20,6 +20,7 @@ export interface StockSHInputRepository extends MongoRepository {
     findStockByStoreHouseNoDetail(id: any, populateOne?: any, populateTwo?: any): Promise<any>
 
     getAllSHInputs(): Promise<SHProductInput[]>
+
     getAllSHInputsPending(): Promise<SHProductInput[]>
 
     getInputsByFolio (): Promise<SHProductInput[]>
@@ -39,4 +40,5 @@ export interface StockSHReturnRepository extends MongoRepository {
 
     findStockByStoreHouseNoDetail(id: any, populateOne?: any, populateTwo?: any): Promise<any>
 
+    getAllSHReturns(): Promise<SHProductReturn[]> 
 }
