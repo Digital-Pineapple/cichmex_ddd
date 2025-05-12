@@ -333,7 +333,7 @@ class AuthUseCase extends AuthenticationService_1.Authentication {
     uploadCustomerFiles(customer_id, keys) {
         return __awaiter(this, void 0, void 0, function* () {
             let customer = yield this.authRepository.findById(customer_id);
-            keys.forEach((_a) => __awaiter(this, [_a], void 0, function* ({ key, field }) {
+            keys.forEach(({ key, field }) => __awaiter(this, void 0, void 0, function* () {
                 customer[field] = key;
             }));
             return yield customer.save();

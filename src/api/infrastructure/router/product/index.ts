@@ -49,7 +49,6 @@ const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseReposit
 const stockSHinputUseCase = new StockSHinputUseCase(stockInputSHRepository)
 const stockSHOutputUseCase = new StockSHoutputUseCase(stockOutputSHRepository)
 const variantProductUseCase = new VariantProductUseCase(variantProductRepository)
-
 const s3Service = new S3Service();
 const productvalidations = new ProductValidations()
 const productController = new ProductController(productUseCase, categoryUseCase, stockStoreHouseUseCase, stockSHinputUseCase, stockSHOutputUseCase, s3Service, subCategoryUseCase, variantProductUseCase);
