@@ -17,10 +17,13 @@ import { ProductRepository } from '../../repository/product/ProductRepository';
 import { VariantProductRepository } from '../../repository/variantProduct/VariantProductRepository';
 import { VariantProductModel } from '../../models/variantProduct/VariantProductModel';
 import { VariantProductUseCase } from '../../../application/variantProduct/VariantProductUseCase';
+import StockSHReturnModel from '../../models/stockStoreHouse/StockSHReturnModel';
+import { StockSHReturnRepository } from '../../repository/stockStoreHouse/StockSHReturnRepository';
 
 const shoppingCartRouter = Router();
 const stockStoreHouseRepository = new StockStoreHouseRepository(StockStoreHouseModel);
-const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository);
+const stockSHReturnRepository = new StockSHReturnRepository( StockSHReturnModel)
+const stockStoreHouseUseCase = new StockStoreHouseUseCase(stockStoreHouseRepository, stockSHReturnRepository);
 const productRepository = new ProductRepository(ProductModel);
 const variantProductRepository = new VariantProductRepository(VariantProductModel);
 const shoppingCartRepository    = new ShoppingCartRepository(ShoppingCartModel);

@@ -2,7 +2,7 @@
 import { Model, ObjectId as MongooseObjectId } from 'mongoose';
 import { ProductRepository as ProductConfig } from '../../../domain/product/ProductRepository'
 import { MongoRepository } from '../MongoRepository';
-import { ProductEntity } from '../../../domain/product/ProductEntity';
+import { ProductEntity, ResponseProductsByCategory } from '../../../domain/product/ProductEntity';
 import { ErrorHandler } from '../../../../shared/domain/ErrorHandler';
 import { ObjectId } from 'mongodb';
 import { PopulateProductCategory, PopulateProductSubCategory } from '../../../../shared/domain/PopulateInterfaces';
@@ -108,127 +108,198 @@ export class ProductRepository extends MongoRepository implements ProductConfig 
    }
 
    // Método para buscar productos por su nombre
-   async findSearchProducts(search: string, page: number): Promise<any> {
-    // console.log('search', search);    
+async findSearchProducts(search: string, page: number): Promise<any> {
     const PAGESIZE = 30;
     const storehouseId = new ObjectId(this.onlineStoreHouse);
 
     // Limpia espacios innecesarios en el término de búsqueda
-    const cleanSearch = search.trim().toLocaleLowerCase();
+    const cleanSearch = search.trim().toLowerCase();
 
     // Expresión regular para búsqueda parcial
     const regexSearch = new RegExp(cleanSearch, "i");
-    // await this.MODEL.createIndexes({ name: "xd" });
-    // Filtro que combina `$text` y `$regex` para máxima flexibilidad
+    
+    // Filtro para la búsqueda
     const searchFilter = {
         $or: [
-            // { $xdt: { $search: cleanSearch } }, // Búsqueda por índice de texto
+            // { $text: { $search: cleanSearch } }, // Búsqueda por índice de texto (descomentar si el índice está creado)
             { name: { $regex: regexSearch } },  // Búsqueda parcial
         ],
     };
 
-    const result = await this.MODEL.aggregate([
-        {
-            $match: {
-              ...searchFilter,
-              status: true
-            }, // Filtro dinámico
-        },
-        {
-            $lookup: {
-                from: "storehousestocks",
-                let: { productId: "$_id" },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $eq: ["$product_id", "$$productId"] },
-                                    { $eq: ["$StoreHouse_id", storehouseId] },
+    try {
+        const result = await this.MODEL.aggregate([
+            // 1. Filtrar productos por término de búsqueda y status activo
+            {
+                $match: {
+                    ...searchFilter,
+                    status: true
+                },
+            },
+            
+            // 2. Lookup para categorías
+            {
+                $lookup: {
+                    from: "categories",
+                    localField: "category",
+                    foreignField: "_id",
+                    pipeline: [
+                        { $project: { name: 1, slug: 1 } }
+                    ],
+                    as: "category",
+                },
+            },
+            
+            // 3. Lookup para subcategorías
+            {
+                $lookup: {
+                    from: "subcategories",
+                    localField: "subCategory",
+                    foreignField: "_id",
+                    pipeline: [
+                        { $project: { name: 1, slug: 1 } }
+                    ],
+                    as: "subCategory",
+                },
+            },
+            
+            // 4. Lookup para variantes
+            {
+                $lookup: {
+                    from: "variant-products",
+                    localField: "_id",
+                    foreignField: "product_id",
+                    pipeline: [
+                        { $match: { status: true } }
+                    ],
+                    as: "variants"
+                }
+            },
+            
+            // 5. Buscar stock para variantes
+            {
+                $lookup: {
+                    from: "storehousestocks",
+                    let: { variantIds: "$variants._id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $in: ["$variant_id", "$$variantIds"] },
+                                        { $eq: ["$StoreHouse_id", storehouseId] },
+                                    ],
+                                },
+                            },
+                        },
+                    ],
+                    as: "variantStocks",
+                },
+            },
+            
+            // 6. Buscar stock directo del producto
+            {
+                $lookup: {
+                    from: "storehousestocks",
+                    let: { productId: "$_id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$product_id", "$$productId"] },
+                                        { $eq: ["$StoreHouse_id", storehouseId] },
+                                    ],
+                                },
+                            },
+                        },
+                    ],
+                    as: "productStock",
+                },
+            },
+            
+            // 7. Procesamiento de campos
+            {
+                $addFields: {
+                    // Desempaquetar categoría y subcategoría
+                    category: { $arrayElemAt: ["$category", 0] },
+                    subCategory: { $arrayElemAt: ["$subCategory", 0] },
+                    
+                    // Determinar si tiene variantes
+                    hasVariants: { $gt: [{ $size: "$variants" }, 0] },
+                    
+                    // Agregar stock a las variantes
+                    variants: {
+                        $map: {
+                            input: "$variants",
+                            as: "variant",
+                            in: {
+                                $mergeObjects: [
+                                    "$$variant",
+                                    {
+                                        stock: {
+                                            $ifNull: [
+                                                {
+                                                    $arrayElemAt: [
+                                                        {
+                                                            $map: {
+                                                                input: {
+                                                                    $filter: {
+                                                                        input: "$variantStocks",
+                                                                        as: "stock",
+                                                                        cond: { $eq: ["$$stock.variant_id", "$$variant._id"] },
+                                                                    },
+                                                                },
+                                                                as: "filteredStock",
+                                                                in: "$$filteredStock.stock",
+                                                            },
+                                                        },
+                                                        0,
+                                                    ],
+                                                },
+                                                0,
+                                            ],
+                                        },
+                                    },
                                 ],
                             },
                         },
                     },
-                ],
-                as: "storehouseStock",
-            },
-        },
-        {
-            $lookup: {
-                from: "categories",
-                let: { category: "$category" },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $eq: ["$_id", "$$category"] },
-                                   
-                                ],
-                            },
+                    
+                    // Agregar stock al producto principal
+                    stock: {
+                        $cond: {
+                            if: { $eq: ["$hasVariants", true] },
+                            then: null,
+                            else: { $ifNull: [{ $arrayElemAt: ["$productStock.stock", 0] }, 0] },
                         },
                     },
-                ],
-                as: "category",
+                },
             },
-        },
-        {
-            $lookup: {
-                from: "subcategories",
-                let: { subCategory: "$subCategory" },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $eq: ["$_id", "$$subCategory"] },
-                                   
-                                ],
-                            },
-                        },
-                    },
-                ],
-                as: "subCategory",
+            
+            // 8. Paginación y conteo total
+            {
+                $facet: {
+                    products: [
+                        { $skip: (page - 1) * PAGESIZE },
+                        { $limit: PAGESIZE },
+                    ],
+                    total: [{ $count: "total" }],
+                },
             },
-        },
-        {
-            $addFields: {
-                category: { $arrayElemAt: ["$category", 0] },
-                subCategory: { $arrayElemAt: ["$subCategory", 0] },
-                stock: { $ifNull: [{ $arrayElemAt: ["$storehouseStock.stock", 0] }, 0] },
-            },
-        },
-        {
-          $lookup: {
-              from: "variant-products", // Colección de variantes
-              let: { productId: '$_id' },
-              pipeline: [
-                  {
-                      $match: {
-                          $expr: { $eq: ['$product_id', '$$productId'] }, // Vincular por product_id
-                          status: true // Solo variantes con status true
-                      }
-                  }
-              ],
-              as: "variants"
-          }
-        },
-        
-        {
-            $facet: {
-                products: [
-                    { $skip: (page - 1) * PAGESIZE },
-                    { $limit: PAGESIZE },
-                ],
-                total: [{ $count: "total" }],
-            },
-        },
-    ]);
+        ], { 
+            allowDiskUse: true,
+            maxTimeMS: 30000
+        });
 
-    return {
-        products: result[0]?.products || [],
-        total: result[0]?.total[0]?.total || 0,
-    };
+        // Formatear resultados
+        return {
+            products: result[0]?.products || [],
+            total: result[0]?.total[0]?.total || 0,
+        };
+    } catch (error) {
+        console.error("Error en findSearchProducts:", error);
+        throw new ErrorHandler("Error al buscar productos", 500);
+    }
 }
 
 // Método para encontrar productos de video
@@ -1017,106 +1088,173 @@ async findRecentAddedProducts(): Promise<ProductEntity[] | ErrorHandler | null> 
     * @param qparams Los parámetros de consulta, incluyendo la página, el rango de precios, y la subcategoría.
     * @returns Un objeto que contiene los productos encontrados, el total de productos, el rango de precios, el número de páginas, el límite de productos por página, y la página actual.
     */
-   async findProductsByCategory(categoryId : MongooseObjectId, storehouse: string, qparams: any ): Promise<ProductEntity[] | ErrorHandler | null> {    
-    const page = Number(qparams.page) || 1;
-    let matchStage: any = {
-      status: true,
-      category: categoryId,
-    };
+   async findProductsByCategory(categoryId: MongooseObjectId, storehouse: string, qparams: any): Promise<ResponseProductsByCategory> {    
+  const page = Number(qparams.page) || 1;
+  const PAGESIZE = 30;
+  const storehouseId = new ObjectId(storehouse);
   
-    // Agregar subcategoría si está en los query params
-    if (qparams.subcategory) {
-      matchStage.subCategory = new ObjectId(qparams.subcategory);
-    }
-  
-    // Condicional para rango de precios
-    const priceFilter: any = {};
-    if (qparams.minPrice) {
-      priceFilter.$gte = Number(qparams.minPrice);
-    }
-    if (qparams.maxPrice) {
-      priceFilter.$lte = Number(qparams.maxPrice);
-    }
-  
-    const storehouseId = new ObjectId(storehouse);
-    const PAGESIZE = 30;
-  
-    const result = await this.MODEL.aggregate([
-      {
-        $match: matchStage, // Primer match basado en categoría, estado, etc.
-      },
-      {
-        $lookup: {
-          from: "storehousestocks",
-          let: { productId: '$_id' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$product_id', '$$productId'] },
-                    { $eq: ['$StoreHouse_id', storehouseId] },
-                  ],
-                },
+  // Construir el matchStage inicial para filtrar productos
+  let matchStage: any = {
+    status: true,
+    category: categoryId,
+  };
+
+  // Agregar subcategoría si está en los query params
+  if (qparams.subcategory) {
+    matchStage.subCategory = new ObjectId(qparams.subcategory);
+  }
+
+  // Aplicar filtro de precio desde el inicio cuando sea necesario
+  if (qparams.minPrice) {
+    matchStage.price = { ...(matchStage.price || {}), $gte: Number(qparams.minPrice) };
+  }
+  if (qparams.maxPrice) {
+    matchStage.price = { ...(matchStage.price || {}), $lte: Number(qparams.maxPrice) };
+  }
+
+  const result = await this.MODEL.aggregate([
+    {
+      $match: matchStage, // Primer match optimizado con todos los filtros
+    },
+    {
+      $lookup: {
+        from: "storehousestocks",
+        let: { productId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$product_id', '$$productId'] },
+                  { $eq: ['$StoreHouse_id', storehouseId] },
+                ],
               },
             },
-          ],
-          as: "stock",
-        },
+          },
+        ],
+        as: "productStock",
       },
-      {
-        $addFields: {
-          stock: { $ifNull: [{ $arrayElemAt: ['$stock.stock', 0] }, 0] },
-        },
+    },
+    {
+      $addFields: {
+        stock: { $ifNull: [{ $arrayElemAt: ['$productStock.stock', 0] }, 0] },
       },
-      {
-        $lookup: {
-            from: "variant-products", // Colección de variantes
-            let: { productId: '$_id' },
-            pipeline: [
+    },
+    {
+      $lookup: {
+        from: "variant-products",
+        let: { productId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ['$product_id', '$$productId'] },
+              status: true
+            }
+          }
+        ],
+        as: "variants"
+      }
+    },
+    {
+      $lookup: {
+        from: "storehousestocks",
+        let: { variantIds: "$variants._id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $in: ["$variant_id", "$$variantIds"] },
+                  { $eq: ["$StoreHouse_id", storehouseId] },
+                ],
+              },
+            },
+          },
+        ],
+        as: "variantStocks",
+      },
+    },
+    {
+      $addFields: {
+        // Calcular el stock total (producto principal + variantes)
+        totalStock: {
+          $add: [
+            "$stock",
+            { $ifNull: [{ $sum: "$variantStocks.stock" }, 0] }
+          ]
+        },
+        // Asociar cada variante con su stock correspondiente
+        variants: {
+          $map: {
+            input: "$variants",
+            as: "variant",
+            in: {
+              $mergeObjects: [
+                "$$variant",
                 {
-                    $match: {
-                        $expr: { $eq: ['$product_id', '$$productId'] }, // Vincular por product_id
-                        status: true // Solo variantes con status true
-                    }
+                  stock: {
+                    $ifNull: [
+                      {
+                        $arrayElemAt: [
+                          "$variantStocks.stock",
+                          {
+                            $indexOfArray: [
+                              "$variantStocks.variant_id",
+                              "$$variant._id"
+                            ]
+                          }
+                        ]
+                      },
+                      0
+                    ]
+                  }
                 }
-            ],
-            as: "variants"
+              ]
+            }
+          }
         }
+      }
+    },
+    {
+      $facet: {
+        // Productos paginados (el filtro de precio ya se aplicó en el $match inicial)
+        products: [
+          { $skip: (page - 1) * PAGESIZE },
+          { $limit: PAGESIZE },
+        ],
+        // Total de productos que coinciden con los filtros
+        total: [
+          { $count: "total" },
+        ],
+        // Precio mínimo y máximo de todos los productos de la categoría
+        priceRange: [
+          // Eliminamos los filtros de precio para obtener el rango completo
+          { 
+            $match: { 
+              status: true,
+              category: categoryId,
+              ...(qparams.subcategory ? { subCategory: new ObjectId(qparams.subcategory) } : {}) 
+            } 
+          },
+          { $group: { _id: null, minPrice: { $min: "$price" }, maxPrice: { $max: "$price" } } },
+        ],
       },
-      {
-        $facet: {
-          // Productos filtrados y paginados
-          products: [
-            { $match: { ...(Object.keys(priceFilter).length ? { price: priceFilter } : {}) } },
-            { $skip: (page - 1) * PAGESIZE },
-            { $limit: PAGESIZE },
-          ],
-          // Total de productos en el rango de precios
-          total: [
-            { $match: { ...(Object.keys(priceFilter).length ? { price: priceFilter } : {}) } },
-            { $count: "total" },
-          ],
-          // Precio mínimo y máximo de todos los productos de la categoría
-          priceRange: [
-            { $group: { _id: null, minPrice: { $min: "$price" }, maxPrice: { $max: "$price" } } },
-          ],
-        },
-      },
-    ]);
-    
-    const priceRange = result[0]?.priceRange[0] || {};
-    
-    return {
-      products: result[0]?.products || [],
-      total: result[0]?.total[0]?.total || 0,
-      minPrice: priceRange.minPrice || null, // Global de la categoría
-      maxPrice: priceRange.maxPrice || null, // Global de la categoría
-      numPages: Math.ceil((result[0]?.total[0]?.total || 0) / PAGESIZE),
-      limit: PAGESIZE,
-      page,
-    };        
-  }
+    },
+  ]);
+  
+  const priceRange = result[0]?.priceRange[0] || {};
+  const totalCount = result[0]?.total[0]?.total || 0;
+  
+  return {
+    products: result[0]?.products || [],
+    total: totalCount,
+    minPrice: priceRange.minPrice || null,
+    maxPrice: priceRange.maxPrice || null,
+    numPages: Math.ceil(totalCount / PAGESIZE),
+    limit: PAGESIZE,
+    page,
+  };        
+}
   
    // Este método asincrónico busca productos por subcategoría, filtrando por el estado, rango de precios, y paginando los resultados.
    // 

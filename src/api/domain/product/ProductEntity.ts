@@ -165,3 +165,13 @@ export interface VerificationDetail {
   verification_status: boolean,
   verification_time: string,
 }
+ 
+export interface ResponseProductsByCategory {
+  products: ProductEntity[];
+  total: number;
+  minPrice: number | null;
+  maxPrice: number | null;
+  numPages: number;
+  limit: number;
+  page: number;
+}

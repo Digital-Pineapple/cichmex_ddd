@@ -53,6 +53,7 @@ export class ShoppingCartController extends ResponseData {
     // Fetch a specific shopping cart for the logged-in user
     public async getShoppingCart(req: Request, res: Response, next: NextFunction) {
         const user = req.user;
+        
         try {
             const response: any | null = await this.shoppingCartUseCase.getShoppingCartByUser(user._id + "");
             if (!response) return next(new ErrorHandler('No existe un carrito de compras asociado a este usuario', 404));
@@ -240,7 +241,7 @@ export class ShoppingCartController extends ResponseData {
                     const response = await this.shoppingCartUseCase.updateShoppingCart(responseShoppingCartUser._id.toString(), { products: responseShoppingCartUser.products });
                     this.invoke(response, 201, res, 'Carrito de compras actualizado', next);
                 } else {
-                    next(new ErrorHandler('Producto no encontrado en el carrito', 404));
+                    next(new ErrorHandler('Producto no encontrado en el carrito', 412));
                 }
             } else {
                 next(new ErrorHandler('Carrito de compras no encontrado', 404));
